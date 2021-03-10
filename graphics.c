@@ -230,7 +230,7 @@ SDL_Surface *grNewLayer()
     SDL_Surface *sfc = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
     SDL_Rect dest = { 0, 0, 640, 480 };
     SDL_FillRect(sfc, &dest, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
-    SDL_SetColorKey(sfc, SDL_TRUE, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
+    SDL_SetColorKey(sfc, SDL_SRCCOLORKEY, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
 
     return sfc;
 }
@@ -605,7 +605,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void*)outData,
                                                width, height, 32, 4*width, 0, 0, 0, 0);
-        SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 0xa8, 0, 0xa8));
+        SDL_SetColorKey(surface, SDL_SRCCOLORKEY, SDL_MapRGB(surface->format, 0xa8, 0, 0xa8));
         ttmSlot->sprites[slotNo][image] = surface;
     }
 }

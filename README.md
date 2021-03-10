@@ -4,6 +4,8 @@ Johnny Reborn is an open source engine for the classic Johnny Castaway screen sa
 
 It is written in C using the SDL2 library, and was successfully compiled and tested on Linux as well as Windows (MinGW), both 32 and 64 bits.
 
+Update from Hunter D. Mar/10/21 - I backported this to use SDL 1.2. This still has the framebuffer (useful for old 386 laptop target) and dreamcast (love me some dreamcast) targets 
+
 
 ## How to install
 

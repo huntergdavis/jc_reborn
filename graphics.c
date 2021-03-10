@@ -147,7 +147,10 @@ void graphicsInit()
 
 void graphicsEnd()
 {
-    SDL_DestroyWindow(sdl_window);
+ 
+    // SDL_Destroywindow is not needed in sdl 1.2
+    // our window has a context only SDL_Quit can destroy
+    // SDL_DestroyWindow(sdl_window);
     SDL_Quit();
 }
 
@@ -162,12 +165,16 @@ void grToggleFullScreen()
 {
     grWindowed = !grWindowed;
 
+    Uint32 flags = sdl_window->flags; // Get the video surface flags 
+    
     if (grWindowed) {
-        SDL_SetWindowFullscreen(sdl_window, 0);
+        flags &= ~SDL_FULLSCREEN; 
+        sdl_window = SDL_SetVideoMode(640, 480, 0, flags);
         SDL_ShowCursor(SDL_ENABLE);
     }
     else {
-        SDL_SetWindowFullscreen(sdl_window, SDL_FULLSCREEN);
+        flags = flags|SDL_FULLSCREEN; 
+        sdl_window = SDL_SetVideoMode(640, 480, 0, flags);
         SDL_ShowCursor(SDL_DISABLE);
     }
 
@@ -183,14 +190,14 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     if (grBackgroundSfc != NULL)
         SDL_BlitSurface(grBackgroundSfc,
                         NULL,
-                        SDL_GetWindowSurface(sdl_window),
+                        sdl_window,
                         &grScreenOrigin);
 
     // If not NULL, blit the optional layer of saved zones
     if (grSavedZonesLayer != NULL)
         SDL_BlitSurface(grSavedZonesLayer,
                         NULL,
-                        SDL_GetWindowSurface(sdl_window),
+                        sdl_window,
                         &grScreenOrigin);
 
 
@@ -199,7 +206,7 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
         if (ttmThreads[i].isRunning)
             SDL_BlitSurface(ttmThreads[i].ttmLayer,
                             NULL,
-                            SDL_GetWindowSurface(sdl_window),
+                            sdl_window,
                             &grScreenOrigin);
 
     // Finally, blit the holiday layer
@@ -207,7 +214,7 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
         if (ttmHolidayThread->isRunning)
             SDL_BlitSurface(ttmHolidayThread->ttmLayer,
                             NULL,
-                            SDL_GetWindowSurface(sdl_window),
+                            sdl_window,
                             &grScreenOrigin);
 
     // Wait for the tick ...
@@ -607,7 +614,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 void grFadeOut()
 {
     static int fadeOutType = 0;
-    SDL_Surface *sfc = SDL_GetWindowSurface(sdl_window);
+    SDL_Surface *sfc = sdl_window;
     SDL_Surface *tmpSfc = grNewLayer();
 
 

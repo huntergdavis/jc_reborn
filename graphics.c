@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <SDL2/SDL.h>
+#include "SDL.h"
 
 #include "mytypes.h"
 #include "utils.h"
@@ -33,7 +33,7 @@
 #include "events.h"
 
 
-static SDL_Window *sdl_window;
+static SDL_Surface *sdl_window;
 
 static uint8 ttmPalette[16][4];
 
@@ -114,14 +114,17 @@ void graphicsInit()
 {
     SDL_Init(SDL_INIT_VIDEO);
 
-    sdl_window = SDL_CreateWindow(
+    sdl_window = SDL_SetVideoMode(640, 480, 0, (grWindowed ? 0 : SDL_FULLSCREEN));
+
+    
+   /* sdl_window = SDL_CreateWindow(
         "Johnny Reborn ...?",
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
         (grWindowed ? 0 : SDL_WINDOW_FULLSCREEN)
-    );
+    );*/
 
     if (sdl_window == NULL)
         fatalError("Could not create window: %s", SDL_GetError());
@@ -132,7 +135,7 @@ void graphicsInit()
     if (!grWindowed)
         SDL_ShowCursor(SDL_DISABLE);
 
-    SDL_UpdateWindowSurface(sdl_window);
+    SDL_Flip(sdl_window);
 
     grLoadPalette(palResources[0]);  // TODO ?
 
@@ -151,7 +154,7 @@ void graphicsEnd()
 
 void grRefreshDisplay()
 {
-    SDL_UpdateWindowSurface(sdl_window);
+    SDL_Flip(sdl_window);
 }
 
 
@@ -164,11 +167,11 @@ void grToggleFullScreen()
         SDL_ShowCursor(SDL_ENABLE);
     }
     else {
-        SDL_SetWindowFullscreen(sdl_window, SDL_WINDOW_FULLSCREEN);
+        SDL_SetWindowFullscreen(sdl_window, SDL_FULLSCREEN);
         SDL_ShowCursor(SDL_DISABLE);
     }
 
-    SDL_UpdateWindowSurface(sdl_window);
+    SDL_Flip(sdl_window);
 }
 
 
@@ -211,7 +214,7 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     eventsWaitTick(grUpdateDelay);
 
     // ... and refresh the display
-    SDL_UpdateWindowSurface(sdl_window);
+    SDL_Flip(sdl_window);
 }
 
 
@@ -621,7 +624,7 @@ void grFadeOut()
                     radius << 1, radius << 1, 5, 5);
                 SDL_BlitSurface(tmpSfc, NULL, sfc, &grScreenOrigin);
                 eventsWaitTick(1);
-                SDL_UpdateWindowSurface(sdl_window);
+                SDL_Flip(sdl_window);
             }
             break;
 
@@ -630,7 +633,7 @@ void grFadeOut()
             for (int i=1; i <= 20; i++) {
                 grDrawRect(sfc, grScreenOrigin.x + 320 - i*16, grScreenOrigin.y + 240 - i*12, i*32, i*24, 5);
                 eventsWaitTick(1);
-                SDL_UpdateWindowSurface(sdl_window);
+                SDL_Flip(sdl_window);
             }
             break;
 
@@ -639,7 +642,7 @@ void grFadeOut()
             for (int i=600; i >= 0; i -= 40) {
                 grDrawRect(sfc, grScreenOrigin.x + i, grScreenOrigin.y, 40, 480, 5);
                 eventsWaitTick(1);
-                SDL_UpdateWindowSurface(sdl_window);
+                SDL_Flip(sdl_window);
             }
             break;
 
@@ -648,7 +651,7 @@ void grFadeOut()
             for (int i=0; i < 640; i += 40) {
                 grDrawRect(sfc, grScreenOrigin.x + i, grScreenOrigin.y, 40, 480, 5);
                 eventsWaitTick(1);
-                SDL_UpdateWindowSurface(sdl_window);
+                SDL_Flip(sdl_window);
             }
             break;
 
@@ -658,7 +661,7 @@ void grFadeOut()
                 grDrawRect(sfc, grScreenOrigin.x + 320+i, grScreenOrigin.y, 20, 480, 5);
                 grDrawRect(sfc, grScreenOrigin.x + 300-i, grScreenOrigin.y, 20, 480, 5);
                 eventsWaitTick(1);
-                SDL_UpdateWindowSurface(sdl_window);
+                SDL_Flip(sdl_window);
             }
             break;
     }

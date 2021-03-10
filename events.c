@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include <SDL2/SDL.h>
+#include "SDL.h"
 #include "mytypes.h"
 #include "graphics.h"
 #include "events.h"
@@ -84,7 +84,7 @@ static void eventsProcessEvents()
                 }
                 break;
 
-            case SDL_WINDOWEVENT:
+            case SDL_ACTIVEEVENT:
                 grRefreshDisplay();
                 break;
 

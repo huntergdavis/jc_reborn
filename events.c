@@ -74,6 +74,8 @@ static void eventsProcessEvents()
                             graphicsEnd();
                             exit(255);
                             break;
+                        default:
+                            break;
                     }
                 }
                 else {
@@ -91,6 +93,9 @@ static void eventsProcessEvents()
             case SDL_QUIT:
                 graphicsEnd();
                 exit(255);
+                break;
+                
+            default:
                 break;
         }
     }

@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "SDL.h"
+#include <SDL/SDL.h>
 
 #include "mytypes.h"
 #include "utils.h"

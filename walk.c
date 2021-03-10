@@ -21,7 +21,7 @@
  *
  */
 
-#include "SDL.h"
+#include <SDL/SDL.h>
 
 #include "mytypes.h"
 #include "graphics.h"

@@ -1,7 +1,7 @@
 
-CFLAGS=-Wall -Wpedantic -std=c99
+CFLAGS=-Wall -Wpedantic -std=c99  -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
 
-LDLIBS=-lSDL2
+LDLIBS=-lSDL
 
 EXE =   jc_reborn
 

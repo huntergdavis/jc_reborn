@@ -1,6 +1,6 @@
-CFLAGS=-Wall -Wpedantic -std=c99 -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -m32 -L/usr/lib/i386-linux-gnu 
+CFLAGS=-Wall -Wpedantic -std=c99 -I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT -m32 -L/usr/lib/i386-linux-gnu  -march=i586
 
-LDLIBS=-m32 -L/usr/lib/i386-linux-gnu -lSDL 
+LDLIBS=-m32 -L/usr/lib/i386-linux-gnu -lSDL -march=i586
 
 LDFLAGS=
 

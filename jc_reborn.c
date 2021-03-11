@@ -36,6 +36,10 @@
 #include "ads.h"
 #include "story.h"
 
+//needed for romdisk
+#include <kos.h>
+
+
 
 static int  argDump     = 0;
 static int  argBench    = 0;
@@ -149,14 +153,24 @@ static void parseArgs(int argc, char **argv)
 }
 
 
+/* romdisk */
+extern uint8 romdisk_boot[];
+
 int main(int argc, char **argv)
 {
     parseArgs(argc, argv);
 
     if (argDump)
         debugMode = 1;
+    
+    
+    KOS_INIT_ROMDISK(romdisk_boot);
+    
+    /* init kos  */
+    pvr_init_defaults();
 
-    parseResourceFiles("RESOURCE.MAP");
+
+    parseResourceFiles("/rd/RESOURCE.MAP");
 
     if (argPlayAll) {
         graphicsInit();

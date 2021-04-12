@@ -112,6 +112,12 @@ void islandInit(struct TTtmThread *ttmThread)
                 cloudX = rand() % (640 - 264);
                 cloudY = rand() % (135 - 76 );
                 break;
+
+            default:
+                cloudX = rand() % (640 - 264);
+                cloudY = rand() % (135 - 76 );
+                break;
+
         }
 
         if (windDirection)

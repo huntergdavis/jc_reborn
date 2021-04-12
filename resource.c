@@ -355,7 +355,9 @@ static void parseMapFile(char *fileName)
     mapFile.unknown5 = readUint8(f_map);
     mapFile.unknown6 = readUint8(f_map);
 
-    mapFile.resFileName = (char *) getString(f_map,13);
+    mapFile.resFileName = "/rd/";
+
+    strcat(mapFile.resFileName, (char *) getString(f_map,13));
 
     mapFile.numEntries = readUint16(f_map);
 
@@ -370,7 +372,7 @@ static void parseMapFile(char *fileName)
 }
 
 
-static void parseResourceFile(char * filename)
+static void parseResourceFile()
 {
     FILE *f;
 
@@ -439,7 +441,7 @@ static void parseResourceFile(char * filename)
 void parseResourceFiles(char * filename)
 {
     parseMapFile(filename);
-    parseResourceFile(filename);
+    parseResourceFile();
 }
 
 

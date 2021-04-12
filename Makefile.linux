@@ -1,11 +1,5 @@
-
-CFLAGS=-Wall -Wpedantic -std=c99
-
-LDLIBS=-lSDL2
-
-EXE =   jc_reborn
-
-OBJ =   jc_reborn.o \
+TARGET = johnny_dc.elf
+OBJS =  main.o \
         utils.o \
         uncompress.o \
         resource.o \
@@ -20,13 +14,25 @@ OBJ =   jc_reborn.o \
         graphics.o \
         sound.o \
         events.o \
-        config.o
+        config.o \
+	romdisk.o
 
+KOS_ROMDISK_DIR = romdisk
 
-all: $(EXE)
+CFLAGS = -std=c99
 
-$(EXE): $(OBJ)
+all: clean $(TARGET) 
+
+include $(KOS_BASE)/Makefile.rules
 
 clean:
-	rm -v $(OBJ) $(EXE) 2> /dev/null ; true
+	-rm -f $(TARGET) $(OBJS) romdisk.img 
 
+$(TARGET): $(OBJS)
+	kos-cc -o $(TARGET) $(OBJS) $(DATAOBJS) $(OBJEXTRA) -lSDL
+
+run:
+	$(KOS_LOADER) $(TARGET)
+
+dist: $(TARGET)
+	$(KOS_STRIP) $(TARGET)

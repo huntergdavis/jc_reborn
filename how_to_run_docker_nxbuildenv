@@ -1,0 +1,6 @@
+xhost local:root && XSOCK=/tmp/.X11-unix && sudo docker run -i -v $XSOCK:$XSOCK -e DISPLAY -u hunter -t nxdk-buildbase
+
+and
+
+sudo docker build -t nxdk-buildbase .
+

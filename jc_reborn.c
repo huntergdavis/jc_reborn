@@ -149,9 +149,9 @@ static void parseArgs(int argc, char **argv)
 }
 
 
-int main(int argc, char **argv)
+int main(void)
 {
-    parseArgs(argc, argv);
+	//parseArgs(argc, argv);
 
     if (argDump)
         debugMode = 1;
@@ -169,7 +169,7 @@ int main(int argc, char **argv)
     }
 
     else if (argDump) {
-        dumpAllResources();
+//dumpAllResources();
     }
 
     else if (argBench) {

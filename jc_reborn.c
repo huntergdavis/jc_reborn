@@ -22,8 +22,16 @@
  */
 
 #include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+//#include <stdio.h>
+//#include <string.h>
+
+#include <hal/debug.h>
+#include <hal/xbox.h>
+#include <hal/video.h>
+#include <windows.h>
+#include "stdio.h"
+#include "string.h"
+#include <SDL.h>
 
 #include "mytypes.h"
 #include "utils.h"
@@ -152,6 +160,7 @@ static void parseArgs(int argc, char **argv)
 int main(void)
 {
 	//parseArgs(argc, argv);
+    XVideoSetMode(640, 480, 32, REFRESH_DEFAULT);
 
     if (argDump)
         debugMode = 1;

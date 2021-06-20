@@ -1,6 +1,6 @@
 XBE_TITLE = johnnyx
 GEN_XISO = $(XBE_TITLE).iso
-SRCS = $(CURDIR)/jc_reborn.c $(CURDIR)/utils.c $(CURDIR)/uncompress.c $(CURDIR)/resource.c $(CURDIR)/story.c $(CURDIR)/walk.c $(CURDIR)/calclpath.c $(CURDIR)/ads.c $(CURDIR)/ttm.c $(CURDIR)/island.c $(CURDIR)/bench.c $(CURDIR)/graphics.c $(CURDIR)/sound.c $(CURDIR)/events.c $(CURDIR)/config.c
+SRCS = $(CURDIR)/jc_reborn.c $(CURDIR)/utils.c $(CURDIR)/uncompress.c $(CURDIR)/resource.c $(CURDIR)/story.c $(CURDIR)/walk.c $(CURDIR)/calcpath.c $(CURDIR)/ads.c $(CURDIR)/ttm.c $(CURDIR)/island.c $(CURDIR)/bench.c $(CURDIR)/graphics.c $(CURDIR)/sound.c $(CURDIR)/events.c $(CURDIR)/config.c
 NXDK_DIR ?= $(CURDIR)/../..
 NXDK_SDL = y
 

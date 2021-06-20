@@ -120,7 +120,7 @@ void graphicsInit()
         SDL_WINDOWPOS_UNDEFINED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
-        (grWindowed ? 0 : SDL_WINDOW_FULLSCREEN)
+        SDL_WINDOW_SHOWN
     );
 
     if (sdl_window == NULL)

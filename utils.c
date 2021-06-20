@@ -273,35 +273,18 @@ void hexdump(uint8 *data, uint32 len)
 int getDayOfYear()
 {
 
-    time_t CurrentTime;
-    time(&CurrentTime);
-
-    struct tm *localTime = gmtime(&CurrentTime);
-
-    return localTime->tm_yday;
+    return 349;
 }
 
 
 int getHour()
 {
-    time_t CurrentTime;
-    time(&CurrentTime);
-
-    struct tm *localTime = gmtime(&CurrentTime);
-
-    return localTime->tm_hour;
+    return 8;
 }
 
 
 char *getMonthAndDay()
 {
-    time_t CurrentTime;
-    time(&CurrentTime);
-	static char result[5];
-    
-    struct tm *localTime = gmtime(&CurrentTime);
-
-    strftime(result, 5, "%m%d", localTime);
-    return result;
+    return "1222";
 }
 

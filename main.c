@@ -69,9 +69,9 @@
 KOS_INIT_FLAGS(INIT_DEFAULT | INIT_MALLOCSTATS);
 
 /* Declaration of the romdisk
-   You can access the files inside it by using the "/rd" mounting point. */
-extern uint8 romdisk[];
-KOS_INIT_ROMDISK(romdisk);
+n   You can access the files inside it by using the "/rd" mounting point. */
+//extern uint8 romdisk[];
+//KOS_INIT_ROMDISK(romdisk);
 
 /* Your program's main entry point */
 int main(int argc, char *argv[]) {
@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     /* Your program start here... */
-    parseResourceFiles("/rd/RESOURCE.MAP");
+    parseResourceFiles("/cd/RESOURCE.MAP");
 
 
     graphicsInit();

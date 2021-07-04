@@ -1,0 +1,217 @@
+# depslib dependency file v1.0
+1616344000 source:c:\users\hunter\documents\johnny_dreamcastaway\bench.c
+	"mytypes.h"
+	"graphics.h"
+	"bench.h"
+
+1616344000 c:\users\hunter\documents\johnny_dreamcastaway\mytypes.h
+	<stdint.h>
+
+1616344026 c:\users\hunter\documents\johnny_dreamcastaway\graphics.h
+	<SDL/SDL.h>
+
+1616344000 c:\users\hunter\documents\johnny_dreamcastaway\bench.h
+
+1616344000 source:c:\users\hunter\documents\johnny_dreamcastaway\calcpath.c
+	<stdlib.h>
+	<stdio.h>
+	"mytypes.h"
+	"utils.h"
+	"calcpath.h"
+	"calcpath_data.h"
+
+1616344000 c:\users\hunter\documents\johnny_dreamcastaway\utils.h
+	<stdlib.h>
+	<stdio.h>
+	<stdarg.h>
+
+1616344000 c:\users\hunter\documents\johnny_dreamcastaway\calcpath.h
+
+1616344000 c:\users\hunter\documents\johnny_dreamcastaway\calcpath_data.h
+
+1616344000 source:c:\users\hunter\documents\johnny_dreamcastaway\config.c
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"mytypes.h"
+	"utils.h"
+	"config.h"
+
+1616344000 c:\users\hunter\documents\johnny_dreamcastaway\config.h
+
+1616346203 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\ads.c
+	<stdlib.h>
+	<stdio.h>
+	<unistd.h>
+	<SDL/SDL.h>
+	"mytypes.h"
+	"utils.h"
+	"resource.h"
+	"graphics.h"
+	"ttm.h"
+	"island.h"
+	"walk.h"
+	"bench.h"
+	"ads.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\mytypes.h
+	<stdint.h>
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\utils.h
+	<stdlib.h>
+	<stdio.h>
+	<stdarg.h>
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\resource.h
+
+1616344026 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\graphics.h
+	<SDL/SDL.h>
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\ttm.h
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\island.h
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\walk.h
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\bench.h
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\ads.h
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\bench.c
+	"mytypes.h"
+	"graphics.h"
+	"bench.h"
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\calcpath.c
+	<stdlib.h>
+	<stdio.h>
+	"mytypes.h"
+	"utils.h"
+	"calcpath.h"
+	"calcpath_data.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\calcpath.h
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\calcpath_data.h
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\config.c
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"mytypes.h"
+	"utils.h"
+	"config.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\config.h
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\dump.c
+	<stdio.h>
+	<string.h>
+	<sys/types.h>
+	<sys/stat.h>
+	<unistd.h>
+	"mytypes.h"
+	"resource.h"
+	"utils.h"
+
+1616344621 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\events.c
+	<stdlib.h>
+	<stdio.h>
+	<SDL/SDL.h>
+	"mytypes.h"
+	"graphics.h"
+	"events.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\events.h
+
+1616344621 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\graphics.c
+	<stdlib.h>
+	<string.h>
+	<time.h>
+	<SDL/SDL.h>
+	"mytypes.h"
+	"utils.h"
+	"graphics.h"
+	"resource.h"
+	"events.h"
+
+1616346327 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\island.c
+	<stdlib.h>
+	<stdio.h>
+	"mytypes.h"
+	"graphics.h"
+	"island.h"
+
+1616345914 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\resource.c
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	"mytypes.h"
+	"utils.h"
+	"resource.h"
+	"uncompress.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\uncompress.h
+
+1616344943 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\sound.c
+	<SDL/SDL.h>
+	<string.h>
+	"mytypes.h"
+	"utils.h"
+	"sound.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\sound.h
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\story.c
+	<stdlib.h>
+	<string.h>
+	"mytypes.h"
+	"utils.h"
+	"graphics.h"
+	"sound.h"
+	"ttm.h"
+	"ads.h"
+	"island.h"
+	"config.h"
+	"story.h"
+	"story_data.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\story.h
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\story_data.h
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\ttm.c
+	<stdio.h>
+	"mytypes.h"
+	"utils.h"
+	"resource.h"
+	"graphics.h"
+	"sound.h"
+	"ttm.h"
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\uncompress.c
+	<stdlib.h>
+	<stdio.h>
+	"mytypes.h"
+	"utils.h"
+
+1616344000 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\utils.c
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+	<stdarg.h>
+	<time.h>
+	<sys/time.h>
+	"mytypes.h"
+
+1616344622 source:c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\walk.c
+	<SDL/SDL.h>
+	"mytypes.h"
+	"graphics.h"
+	"utils.h"
+	"calcpath.h"
+	"walk.h"
+	"walk_data.h"
+
+1616344000 c:\dreamsdk\msys\1.0\home\hunter\johnny_dreamcastaway\walk_data.h
+

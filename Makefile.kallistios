@@ -1,0 +1,38 @@
+TARGET = johnny_dc.elf
+OBJS =  main.o \
+        utils.o \
+        uncompress.o \
+        resource.o \
+        dump.o \
+        story.o \
+        walk.o \
+        calcpath.o \
+        ads.o \
+        ttm.o \
+        island.o \
+        bench.o \
+        graphics.o \
+        sound.o \
+        events.o \
+        config.o \
+	romdisk.o
+
+KOS_ROMDISK_DIR = romdisk
+
+CFLAGS = -std=c99
+
+all: clean $(TARGET) 
+
+include $(KOS_BASE)/Makefile.rules
+
+clean:
+	-rm -f $(TARGET) $(OBJS) romdisk.img 
+
+$(TARGET): $(OBJS)
+	kos-cc -o $(TARGET) $(OBJS) $(DATAOBJS) $(OBJEXTRA) -lSDL
+
+run:
+	$(KOS_LOADER) $(TARGET)
+
+dist: $(TARGET)
+	$(KOS_STRIP) $(TARGET)

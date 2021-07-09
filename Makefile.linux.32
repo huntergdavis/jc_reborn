@@ -1,0 +1,30 @@
+
+CFLAGS=-Wall -Wpedantic -std=c99 -O3 -m32 -L/usr/lib/i386-linux-gnu
+
+LDLIBS=-lSDL2 -m32 -L/usr/lib/i386-linux-gnu 
+
+EXE =   jc_reborn
+
+OBJ =   jc_reborn.o \
+        utils.o \
+        uncompress.o \
+        resource.o \
+        story.o \
+        walk.o \
+        calcpath.o \
+        ads.o \
+        ttm.o \
+        island.o \
+        graphics.o \
+        sound.o \
+        events.o \
+        config.o
+
+
+all: $(EXE)
+
+$(EXE): $(OBJ)
+
+clean:
+	rm -v $(OBJ) $(EXE) 2> /dev/null ; true
+

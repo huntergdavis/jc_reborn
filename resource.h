@@ -25,27 +25,6 @@
 //    Types definitions
 //------------------------
 
-struct TMapFile {
-    uint8 unknown1;
-    uint8 unknown2;
-    uint8 unknown3;
-    uint8 unknown4;
-    uint8 unknown5;
-    uint8 unknown6;
-    char *resFileName;
-    uint16 numEntries;
-    struct TMapFileEntry *Entries;
-};
-
-
-struct TMapFileEntry {
-    uint32 length;
-    uint32 offset;
-    char *resName;
-    uint32 resSize;
-};
-
-
 struct TAdsResource {
     char *resName;
     uint32 versionSize;
@@ -149,23 +128,14 @@ struct TTags {
 //    Public variables
 //------------------------
 
-extern struct TAdsResource *adsResources[];
-extern struct TBmpResource *bmpResources[];
 extern struct TPalResource *palResources[];
-extern struct TScrResource *scrResources[];
-extern struct TTtmResource *ttmResources[];
-extern int numAdsResources;
-extern int numBmpResources;
-extern int numPalResources;
-extern int numScrResources;
-extern int numTtmResources;
 
 
 //----------------------------
 //    Functions prototypes
 //----------------------------
 
-void parseResourceFiles(char *);
+void parseResourceFiles();
 struct TAdsResource *findAdsResource(char *searchString);
 struct TBmpResource *findBmpResource(char *searchString);
 struct TScrResource *findScrResource(char *searchString);

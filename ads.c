@@ -33,7 +33,6 @@
 #include "ttm.h"
 #include "island.h"
 #include "walk.h"
-#include "bench.h"
 #include "ads.h"
 
 
@@ -801,54 +800,6 @@ void adsPlay(char *adsName, uint16 adsTag)
     grRestoreZone(NULL, 0, 0, 0, 0);
 
     adsReleaseAds();
-}
-
-
-void adsPlayBench()  // TODO - tempo
-{
-    int numsLayers[] = { 1, 4, 8 };
-
-    uint32 startTicks, counter;
-
-    adsInit();
-
-    for (int i=0; i < 8; i++) {
-        ttmThreads[i].ttmSlot         = &ttmSlots[0];;
-        ttmThreads[i].isRunning       = 1;
-        ttmThreads[i].selectedBmpSlot = 0;
-        ttmThreads[i].ttmLayer        = grNewLayer();
-    }
-
-    benchInit(ttmSlots);
-    grUpdateDelay = 0;
-
-    for (int j=0; j < 3; j++) {
-
-        int numLayers = numsLayers[j];
-
-        for (int i=0; i < MAX_TTM_THREADS; i++)
-            ttmThreads[i].isRunning = (i<numLayers ? 1 : 0);
-
-        startTicks = SDL_GetTicks();
-        counter = 0;
-
-        while ((SDL_GetTicks() - startTicks) <= 3000) {
-
-            for (int i=0; i < numLayers; i++)
-                benchPlay(&ttmThreads[i], i);
-
-            grUpdateDisplay(NULL, ttmThreads, NULL);
-
-            counter++;
-        }
-
-        printf(" %d-layers test --> %d fps\n", numLayers, counter/3);
-    }
-
-    for (int i=0; i < 8; i++)
-        adsStopScene(i);
-
-    ttmResetSlot(&ttmSlots[0]);
 }
 
 

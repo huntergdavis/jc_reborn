@@ -28,7 +28,6 @@
 #include "mytypes.h"
 #include "utils.h"
 #include "resource.h"
-#include "dump.h"
 #include "graphics.h"
 #include "events.h"
 #include "sound.h"
@@ -156,7 +155,7 @@ int main(int argc, char **argv)
     if (argDump)
         debugMode = 1;
 
-    parseResourceFiles("RESOURCE.MAP");
+    parseResourceFiles();
 
     if (argPlayAll) {
         graphicsInit();
@@ -165,16 +164,6 @@ int main(int argc, char **argv)
         storyPlay();
 
         soundEnd();
-        graphicsEnd();
-    }
-
-    else if (argDump) {
-        dumpAllResources();
-    }
-
-    else if (argBench) {
-        graphicsInit();
-        adsPlayBench();
         graphicsEnd();
     }
 

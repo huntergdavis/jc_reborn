@@ -30,23 +30,8 @@
 #include "resource.h"
 #include "uncompress.h"
 
-#define MAX_ADS_RESOURCES 100
-#define MAX_BMP_RESOURCES 200
-#define MAX_PAL_RESOURCES 1
-#define MAX_SCR_RESOURCES 20
-#define MAX_TTM_RESOURCES 100
-
-
-struct TAdsResource *adsResources[MAX_ADS_RESOURCES];
-struct TBmpResource *bmpResources[MAX_BMP_RESOURCES];
-struct TPalResource *palResources[MAX_PAL_RESOURCES];
-struct TScrResource *scrResources[MAX_SCR_RESOURCES];
-struct TTtmResource *ttmResources[MAX_TTM_RESOURCES];
-int numAdsResources = 0;
-int numBmpResources = 0;
+struct TPalResource *palResources[1];
 int numPalResources = 0;
-int numScrResources = 0;
-int numTtmResources = 0;
 
 //static struct TMapFile mapFile;
 
@@ -338,11 +323,8 @@ static struct TTtmResource *parseTtmResource(FILE *f)
     return ttmResource;
 }
 
-void parseResourceFiles(char * filename)
+void parseResourceFiles()
 {
-    //parseMapFile(filename);
-    //parseResourceFile(filename);
-
 
     FILE *fpal;
     fpal = safe_fopen("JOHNCAST.PAL" ,"rb");

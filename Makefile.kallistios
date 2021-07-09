@@ -15,9 +15,7 @@ OBJS =  main.o \
         sound.o \
         events.o \
         config.o \
-	romdisk.o
 
-KOS_ROMDISK_DIR = romdisk
 
 CFLAGS = -std=c99
 

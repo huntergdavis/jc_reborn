@@ -194,7 +194,7 @@ static void dumpScr(struct TScrResource *scrResource, struct TPalResource *palRe
 
 
 static void dumpAds(struct TAdsResource *adsResource)
-{
+{/*
     FILE *fout;
     char filename[MAX_FILENAME_LEN];
 
@@ -206,14 +206,12 @@ static void dumpAds(struct TAdsResource *adsResource)
 
     printf("---- Dumping ADS : %s  \n", adsResource->resName);
 
-    snprintf(filename, MAX_FILENAME_LEN, "%s/%s/%s.txt",
-                                               dumpDir,
-                                               dumpAdsDir,
+    snprintf(filename, MAX_FILENAME_LEN, "%s",
                                                adsResource->resName);
     fout = safe_fopen(filename ,"w");
+    fwrite(&adsResource, sizeof(struct TAdsResource),1,fout);*/
 
-
-
+/*
     fprintf(fout, "\n ======== Resources list ========\n\n");
 
     for (int i=0; i < adsResource->numRes; i++)
@@ -266,8 +264,8 @@ static void dumpAds(struct TAdsResource *adsResource)
 
         fprintf(fout, "\n");
     }
-
-    fclose(fout);
+*/
+   // fclose(fout);
 }
 
 

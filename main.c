@@ -41,7 +41,6 @@
 #include "mytypes.h"
 #include "utils.h"
 #include "resource.h"
-#include "dump.h"
 #include "graphics.h"
 #include "events.h"
 #include "sound.h"

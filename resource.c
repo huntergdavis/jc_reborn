@@ -327,7 +327,7 @@ void parseResourceFiles()
 {
 
     FILE *fpal;
-    fpal = safe_fopen("JOHNCAST.PAL" ,"rb");
+    fpal = safe_fopen("/cd/JOHNCAST.PAL" ,"rb");
 
     palResources[numPalResources] = parsePalResource(fpal);
     palResources[numPalResources]->resName = "JOHNCAST.PAL";
@@ -342,9 +342,9 @@ struct TAdsResource *findAdsResource(char *searchString)
     FILE *f;
 
     int searchSiz = sizeof(searchString);
-    char fullSearch[searchSiz + 2];
+    char fullSearch[searchSiz + 4];
 
-    strcpy(fullSearch,"./");
+    strcpy(fullSearch,"/cd/");
     strcat(fullSearch,searchString);
 
     f = fopen(fullSearch,"rb");
@@ -374,9 +374,9 @@ struct TBmpResource *findBmpResource(char *searchString)
   FILE *f;
 
     int searchSiz = sizeof(searchString);
-    char fullSearch[searchSiz + 2];
+    char fullSearch[searchSiz + 4];
 
-    strcpy(fullSearch,"./");
+    strcpy(fullSearch,"/cd/");
     strcat(fullSearch,searchString);
 
     f = fopen(fullSearch,"rb");
@@ -406,9 +406,9 @@ struct TScrResource *findScrResource(char *searchString)
   FILE *f;
 
     int searchSiz = sizeof(searchString);
-    char fullSearch[searchSiz + 2];
+    char fullSearch[searchSiz + 4];
 
-    strcpy(fullSearch,"./");
+    strcpy(fullSearch,"/cd/");
     strcat(fullSearch,searchString);
 
     f = fopen(fullSearch,"rb");
@@ -440,9 +440,9 @@ struct TTtmResource *findTtmResource(char *searchString)
     FILE *f;
 
     int searchSiz = sizeof(searchString);
-    char fullSearch[searchSiz + 2];
+    char fullSearch[searchSiz + 4];
 
-    strcpy(fullSearch,"./");
+    strcpy(fullSearch,"/cd/");
     strcat(fullSearch,searchString);
 
     f = fopen(fullSearch,"rb");

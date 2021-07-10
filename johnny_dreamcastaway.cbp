@@ -55,10 +55,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="ads.h" />
-		<Unit filename="bench.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="bench.h" />
 		<Unit filename="calcpath.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -68,10 +64,6 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="config.h" />
-		<Unit filename="dump.c">
-			<Option compilerVar="CC" />
-		</Unit>
-		<Unit filename="dump.h" />
 		<Unit filename="events.c">
 			<Option compilerVar="CC" />
 		</Unit>

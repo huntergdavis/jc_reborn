@@ -64,6 +64,8 @@ static struct TStoryScene *storyPickScene(
 
     globalExportScene = &storyScenes[sceneNumber];
     sceneNumber++;
+
+    printf("Moving to next Scene to Dump scene #%d\n",sceneNumber);
     sceneFrameCounter = 0;
     return &storyScenes[sceneNumber];
 }

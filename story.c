@@ -190,17 +190,10 @@ static void storyCalculateIslandFromScene(struct TStoryScene *scene)
         islandState.holiday = 0;
 }
 
-
-void storyPlay()
-{
     uint16 wantedFlags   = 0;
     uint16 unwantedFlags = 0;
-
-
-    adsInit();
-    adsPlayIntro();
-
-    while (1) {
+void storyPlay()
+{
 
         storyUpdateCurrentDay();
         storyCalculateIslandFromDateAndTime();
@@ -274,6 +267,5 @@ void storyPlay()
 
         if (finalScene->flags & ISLAND)
             adsReleaseIsland();
-    }
 }
 

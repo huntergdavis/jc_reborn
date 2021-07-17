@@ -112,7 +112,7 @@ void eventsWaitTick(uint16 delay)
 
     while ((paused && !oneFrame)
             || (!maxSpeed && (SDL_GetTicks() - lastTicks < delay))) {
-        SDL_Delay(5);
+        //SDL_Delay(5);
         eventsProcessEvents();
     }
 

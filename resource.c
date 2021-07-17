@@ -346,7 +346,7 @@ static void parseMapFile(char *fileName)
     f_map = fopen(fileName,"rb");
 
     if (f_map == NULL)
-        fatalError("Resources map file not found: %s\n", fileName);
+        fatalError("Resources map file not founddddddd: %s\n", fileName);
 
     mapFile.unknown1 = readUint8(f_map);   // first 5 uint8s unknown
     mapFile.unknown2 = readUint8(f_map);
@@ -374,7 +374,7 @@ static void parseResourceFile(char * filename)
 {
     FILE *f;
 
-    f = fopen(mapFile.resFileName,"rb");
+    f = fopen("./res/RESOURCE.001","rb");
 
     if (f == NULL)
         fatalError("Main resources file not found: %s\n", mapFile.resFileName);

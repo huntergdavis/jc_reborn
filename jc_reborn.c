@@ -25,6 +25,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+
 #include "mytypes.h"
 #include "utils.h"
 #include "resource.h"
@@ -156,16 +161,28 @@ int main(int argc, char **argv)
     if (argDump)
         debugMode = 1;
 
-    parseResourceFiles("RESOURCE.MAP");
+    parseResourceFiles("./res/RESOURCE.MAP");
+
+
+    #ifdef __EMSCRIPTEN__
+    argPlayAll = 1;
+    grWindowed  = 1;
+    #endif 
+
 
     if (argPlayAll) {
         graphicsInit();
         soundInit();
+        
+        adsInit();
+        adsPlayIntro();
 
-        storyPlay();
 
-        soundEnd();
-        graphicsEnd();
+        #ifdef __EMSCRIPTEN__
+        emscripten_set_main_loop(storyPlay, 60, 0);
+        #endif
+
+
     }
 
     else if (argDump) {
@@ -203,7 +220,5 @@ int main(int argc, char **argv)
         soundEnd();
         graphicsEnd();
     }
-
-    return 0;
 }
 

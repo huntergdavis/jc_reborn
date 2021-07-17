@@ -229,21 +229,24 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     extern int  sceneFrameCounter;
 */
 
+
+    sceneFrameCounter++;
+
     char sceneName[20];
-    strcpy(sceneName,"./intro/");
+    strcpy(sceneName,"./intro");
     
     if(sceneNumber > -1) {
-        strcpy(sceneName, "./");
-        strcat(sceneName, globalExportScene->adsName);
-        strcat(sceneName,"/");
+        char bufa[12];
+        snprintf(bufa, 12, "./scene_%05d_", sceneNumber); 
+        strcpy(sceneName,bufa);
     }
 
 
     char buf[12];
-    snprintf(buf, 12, "%d", sceneFrameCounter); 
+    snprintf(buf, 12, "frame_%05d", sceneFrameCounter); 
     strcat(sceneName,buf);
     strcat(sceneName,".png");
-    IMG_SavePNG(sdl_window, sceneName);
+    IMG_SavePNG(SDL_GetWindowSurface(sdl_window), sceneName);
 
 
     // ... and refresh the display

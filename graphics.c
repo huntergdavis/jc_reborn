@@ -25,12 +25,14 @@
 #include <string.h>
 #include <time.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "mytypes.h"
 #include "utils.h"
 #include "graphics.h"
 #include "resource.h"
 #include "events.h"
+#include "story_data.h"
 
 
 static SDL_Window *sdl_window;
@@ -47,6 +49,10 @@ int grDx = 0;
 int grDy = 0;
 int grWindowed = 0;
 int grUpdateDelay = 0;
+
+extern struct TStoryScene *globalExportScene;
+extern int sceneNumber; 
+extern int  sceneFrameCounter;
 
 
 static void grReleaseScreen()
@@ -209,6 +215,36 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
 
     // Wait for the tick ...
     eventsWaitTick(grUpdateDelay);
+
+
+    // dump a png into a directory named after the story scene or intro
+    /*
+    char fullSearch[searchSiz + 2];
+
+    strcpy(fullSearch,"./");
+    strcat(fullSearch,searchString);
+
+    extern struct TStoryScene *globalExportScene;
+    extern int sceneNumber; 
+    extern int  sceneFrameCounter;
+*/
+
+    char sceneName[20];
+    strcpy(sceneName,"./intro/");
+    
+    if(sceneNumber > -1) {
+        strcpy(sceneName, "./");
+        strcat(sceneName, globalExportScene->adsName);
+        strcat(sceneName,"/");
+    }
+
+
+    char buf[12];
+    snprintf(buf, 12, "%d", sceneFrameCounter); 
+    strcat(sceneName,buf);
+    strcat(sceneName,".png");
+    IMG_SavePNG(sdl_window, sceneName);
+
 
     // ... and refresh the display
     SDL_UpdateWindowSurface(sdl_window);

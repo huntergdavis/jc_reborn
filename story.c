@@ -38,6 +38,10 @@
 
 static int storyCurrentDay = 1;
 
+struct TStoryScene *globalExportScene;
+int sceneNumber = -1; 
+int sceneFrameCounter = 0;
+
 
 static struct TStoryScene *storyPickScene(
                 uint16 wantedFlags, uint16 unwantedFlags)
@@ -58,7 +62,10 @@ static struct TStoryScene *storyPickScene(
         }
     }
 
-    return &storyScenes[scenes[rand() % numScenes]];
+    globalExportScene = &storyScenes[sceneNumber];
+    sceneNumber++;
+    sceneFrameCounter = 0;
+    return &storyScenes[sceneNumber];
 }
 
 

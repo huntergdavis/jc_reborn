@@ -32,7 +32,7 @@
 
 static uint32 lastTicks = 0x00ffffff;
 static int paused   = 0;
-static int maxSpeed = 0;
+static int maxSpeed = 1;
 static int oneFrame = 0;
 
 int evHotKeysEnabled = 0;

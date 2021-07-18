@@ -31,9 +31,13 @@
 Inkplate display(INKPLATE_1BIT); // Create an object on Inkplate library and also set library into 1 Bit mode (BW)
 SdFile file;                     // Create SdFile object used for accessing files on SD card
 
-#define FULLREFRESH 40
+#define FULLREFRESH 400
 
-
+bool buttonOverride = false;
+int imageIterator = 0;
+int frame_count = 1;
+int numberOfScenesToIterateInto = 10;
+    
 void setup()
 {
     Serial.begin(115200);
@@ -42,9 +46,7 @@ void setup()
     display.clearDisplay(); // Clear frame buffer of display
     display.display();      // Put clear image on display
 
-    int imageIterator = 0;
-    int frame_count = 1;
-    int numberOfScenesToIterateInto = 10;
+
 
     // Init SD card. Display if SD card is init propery or not.
     if (display.sdCardInit())
@@ -54,13 +56,17 @@ void setup()
         bool runforever = true;
         while(runforever) {
 
-          // play NUMBEROFSCENESTOITERATEINTO scenes, then jump to random
-          if((frame_count % numberOfScenesToIterateInto) == 0){
-            //random scene
-            imageIterator = random(19938) +1;
+          if(!buttonOverride) {
+            // play NUMBEROFSCENESTOITERATEINTO scenes, then jump to random
+            if((frame_count % numberOfScenesToIterateInto) == 0){
+              //random scene
+              imageIterator = random(19938) +1;
+            }else {
+              //next scene
+              imageIterator = (imageIterator % 19940) + 1;
+            }         
           }else {
-            //next scene
-            imageIterator = (imageIterator % 19940) + 1;
+            buttonOverride = false;
           }
           
           String image = String(String(imageIterator) + ".png");
@@ -124,5 +130,28 @@ void setup()
 
 void loop()
 {
-    // Nothing...
+          if (display.readTouchpad(PAD1))
+          { // Check if first pad has been touched. If it is, go to title screen
+            imageIterator = 1;
+            buttonOverride = 1;
+          }
+      
+          if (display.readTouchpad(PAD2))
+          { // If you touched second touchpad, jump to random image
+            
+            //random scene
+            imageIterator = random(19938) +1;
+
+            // full refresh it
+            frame_count = FULLREFRESH;
+
+            buttonOverride = 1;
+            
+          }
+      
+          if (display.readTouchpad(PAD3))
+          { // If you touched third touchpad, keep current image but full refresh
+            frame_count = FULLREFRESH;
+            buttonOverride = 1;
+          }
 }

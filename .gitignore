@@ -7,3 +7,9 @@ RESOURCE.MAP
 RESOURCE.001
 *.wav
 dump/
+node_modules
+test
+.vscode
+bin
+ipkg
+

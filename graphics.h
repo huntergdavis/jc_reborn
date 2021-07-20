@@ -23,7 +23,7 @@
 
 #include <SDL2/SDL.h>
 
-#define SCREEN_WIDTH        640
+#define SCREEN_WIDTH        320
 #define SCREEN_HEIGHT       480
 
 #define MAX_BMP_SLOTS       6

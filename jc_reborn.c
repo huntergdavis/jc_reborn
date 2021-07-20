@@ -41,7 +41,7 @@ static int  argDump     = 0;
 static int  argBench    = 0;
 static int  argTtm      = 0;
 static int  argAds      = 0;
-static int  argPlayAll  = 0;
+static int  argPlayAll  = 1;
 static int  argIsland   = 0;
 
 static char *args[3];
@@ -151,7 +151,7 @@ static void parseArgs(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    parseArgs(argc, argv);
+    //parseArgs(argc, argv);
 
     if (argDump)
         debugMode = 1;
@@ -162,6 +162,10 @@ int main(int argc, char **argv)
         graphicsInit();
         soundInit();
 
+
+        while(1) {
+            ;
+        }
         storyPlay();
 
         soundEnd();

@@ -33,10 +33,14 @@
 
 #define BUF_LEN 256
 
-int debugMode = 0;
+int debugMode = 1;
 
 void fatalError(char *message, ... )
 {
+
+    const char *restruct = "a";
+    freopen("error.txt",restruct,stderr);
+
     va_list(args);
 
     va_start(args, message);
@@ -51,6 +55,10 @@ void fatalError(char *message, ... )
 
 void debugMsg(char *message, ... )
 {
+    const char *restruct = "a";
+    freopen("debug.txt",restruct,stderr);
+
+
     if (debugMode) {
         va_list(args);
         va_start(args, message);

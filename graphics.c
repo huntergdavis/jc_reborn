@@ -62,9 +62,9 @@ static void grReleaseScreen()
     SDL_FreeSurface(grBackgroundSfc);
     grBackgroundSfc = NULL;
 
-    free(virtualSurface->pixels);
-    SDL_FreeSurface(virtualSurface);
-    virtualSurface = NULL;
+    //free(virtualSurface->pixels);
+    //SDL_FreeSurface(virtualSurface);
+    //virtualSurface = NULL;
 }
 
 
@@ -144,10 +144,10 @@ void graphicsInit()
         SDL_WINDOWPOS_UNDEFINED,
         320,
         240,
-        SDL_WINDOW_FULLSCREEN
+        SDL_WINDOW_FULLSCREEN_DESKTOP
     );
 
-    virtualSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
+    virtualSurface = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 16, 0, 0, 0, 0);
 
     if (sdl_window == NULL)
         fatalError("Could not create window: %s", SDL_GetError());

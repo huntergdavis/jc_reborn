@@ -151,14 +151,14 @@ static void parseArgs(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    parseArgs(argc, argv);
+    //parseArgs(argc, argv);
 
     if (argDump)
         debugMode = 1;
 
     parseResourceFiles("RESOURCE.MAP");
 
-    if (argPlayAll) {
+    if (1 == 1) {
         graphicsInit();
         soundInit();
 

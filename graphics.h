@@ -23,6 +23,8 @@
 
 #include <SDL2/SDL.h>
 
+
+// this is for the internal resolution, not actual in this branch
 #define SCREEN_WIDTH        640
 #define SCREEN_HEIGHT       480
 
@@ -88,6 +90,8 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
 
 SDL_Surface *grNewEmptyBackground();
 SDL_Surface *grNewLayer();
+
+void UpdateScaleWindowSurface(SDL_Window *win);
 void grFreeLayer(SDL_Surface *sfc);
 
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg);

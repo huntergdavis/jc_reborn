@@ -1,0 +1,10 @@
+Package: JohnnyCastaway
+Version: 20210712
+Description: Johnny Castaway
+Section: apps
+Priority: optional
+Maintainer: huntergdavis
+Architecture: mipsel
+Homepage: https://github.com/huntergdavis/jc_reborn
+Depends:
+Source: https://github.com/huntergdavis/jc_reborn

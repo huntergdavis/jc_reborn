@@ -1,7 +1,14 @@
 
-CFLAGS=-I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
+ARCH = mipsel-RetroFW-linux-uclibc-
+AS = $(ARCH)as
+CC = $(ARCH)cc
+CXX = $(ARCH)g++
+LD = $(ARCH)ld
 
-LDLIBS=-L/usr/lib/x86_64-linux-gnu -lSDL
+
+CFLAGS=-Wall -Wpedantic -std=c99 -I/home/huntergdavis/workspace/buildroot/output/host/mipsel-RetroFW-linux-uclibc/sysroot/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
+
+LDLIBS=-L/home/huntergdavis/workspace/buildroot/output/host/mipsel-RetroFW-linux-uclibc/sysroot/usr/lib -lSDL -lpthread
 
 EXE =   jc_reborn
 

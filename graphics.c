@@ -87,7 +87,7 @@ static void downScaleFlip(SDL_Surface *src) {
     //SDL_Rect destRec;
     //SDL_Rect srcRec;
     
-
+/*
     for (int w=0;w<320;w++) {
         for(int h=0;h<240;h++) {
 
@@ -113,10 +113,11 @@ static void downScaleFlip(SDL_Surface *src) {
             destPixel[2] = color[2];
             destPixel[3] = color[3];
             */
+           /*
         }
-    }
+    }*/
 
-    SDL_Flip(sdl_virtual);
+    SDL_Flip(sdl_window);
 }
 
 
@@ -152,11 +153,14 @@ void graphicsInit()
 {
     SDL_Init(SDL_INIT_VIDEO);
 
+/*
     sdl_virtual = SDL_SetVideoMode(320, 240, 32, SDL_FULLSCREEN);
     sdl_window =  SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
 
-    SDL_SetColorKey(sdl_window, SDL_SRCCOLORKEY, SDL_MapRGB(sdl_window->format, 0xa8, 0, 0xa8));
+    SDL_SetColorKey(sdl_window, SDL_SRCCOLORKEY, SDL_MapRGB(sdl_virtual->format, 0xa8, 0, 0xa8));
+*/
 
+sdl_window = SDL_SetVideoMode(640, 480, 32, SDL_FULLSCREEN);
     
    /* sdl_window = SDL_CreateWindow(
         "Johnny Reborn ...?",
@@ -177,10 +181,10 @@ void graphicsInit()
         SDL_ShowCursor(SDL_DISABLE);
 
 
-    grLoadPalette(palResources[0]);  // TODO ?
 
 
     downScaleFlip(sdl_window);
+    grLoadPalette(palResources[0]);  // TODO ?
 
     
     srand(time(NULL));

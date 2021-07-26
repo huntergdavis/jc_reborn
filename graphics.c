@@ -152,8 +152,10 @@ void graphicsInit()
 {
     SDL_Init(SDL_INIT_VIDEO);
 
-    sdl_virtual = SDL_SetVideoMode(320, 240, 24, SDL_FULLSCREEN);
+    sdl_virtual = SDL_SetVideoMode(320, 240, 32, SDL_FULLSCREEN);
     sdl_window =  SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
+
+    SDL_SetColorKey(sdl_window, SDL_SRCCOLORKEY, SDL_MapRGB(sdl_window->format, 0xa8, 0, 0xa8));
 
     
    /* sdl_window = SDL_CreateWindow(

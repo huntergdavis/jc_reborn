@@ -34,6 +34,7 @@
 
 
 static SDL_Surface *sdl_window;
+static SDL_Surface *sdl_virtual;
 
 static uint8 ttmPalette[16][4];
 
@@ -82,6 +83,43 @@ static void grPutPixel(SDL_Surface *sfc, uint16 x, uint16 y, uint8 color)
     }
 }
 
+static void downScaleFlip(SDL_Surface *src) {
+    //SDL_Rect destRec;
+    //SDL_Rect srcRec;
+    
+
+    for (int w=0;w<320;w++) {
+        for(int h=0;h<240;h++) {
+
+
+            SDL_Rect destRec = { w, h, 1, 1 };
+            SDL_Rect srcRec= {w*2,h*2,1,1};
+
+            SDL_BlitSurface(src,
+                                        &srcRec,
+                                        sdl_virtual,
+                                        &destRec);
+
+
+            /*
+            uint8 *color = (uint8*) src->pixels;
+            color += (h * src->pitch * 2) + (w * src->format->BytesPerPixel * 2);
+
+            uint8 *destPixel = (uint8*) sdl_virtual->pixels;
+            destPixel += (h * sdl_virtual->pitch) + (w * sdl_virtual->format->BytesPerPixel);
+
+            destPixel[0] = color[0];
+            destPixel[1] = color[1];
+            destPixel[2] = color[2];
+            destPixel[3] = color[3];
+            */
+        }
+    }
+
+    SDL_Flip(sdl_virtual);
+}
+
+
 
 static void grDrawHorizontalLine(SDL_Surface *sfc, sint16 x1, sint16 x2, sint16 y, uint8 color)
 {
@@ -114,7 +152,8 @@ void graphicsInit()
 {
     SDL_Init(SDL_INIT_VIDEO);
 
-    sdl_window = SDL_SetVideoMode(640, 480, 0, (grWindowed ? 0 : SDL_FULLSCREEN));
+    sdl_virtual = SDL_SetVideoMode(320, 240, 24, SDL_FULLSCREEN);
+    sdl_window =  SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
 
     
    /* sdl_window = SDL_CreateWindow(
@@ -135,10 +174,13 @@ void graphicsInit()
     if (!grWindowed)
         SDL_ShowCursor(SDL_DISABLE);
 
-    SDL_Flip(sdl_window);
 
     grLoadPalette(palResources[0]);  // TODO ?
 
+
+    downScaleFlip(sdl_window);
+
+    
     srand(time(NULL));
 
     eventsInit();
@@ -157,7 +199,7 @@ void graphicsEnd()
 
 void grRefreshDisplay()
 {
-    SDL_Flip(sdl_window);
+    downScaleFlip(sdl_window);
 }
 
 
@@ -178,7 +220,7 @@ void grToggleFullScreen()
         SDL_ShowCursor(SDL_DISABLE);
     }
 
-    SDL_Flip(sdl_window);
+    downScaleFlip(sdl_window);
 }
 
 
@@ -221,7 +263,7 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     eventsWaitTick(grUpdateDelay);
 
     // ... and refresh the display
-    SDL_Flip(sdl_window);
+    downScaleFlip(sdl_window);
 }
 
 
@@ -631,7 +673,7 @@ void grFadeOut()
                     radius << 1, radius << 1, 5, 5);
                 SDL_BlitSurface(tmpSfc, NULL, sfc, &grScreenOrigin);
                 eventsWaitTick(1);
-                SDL_Flip(sdl_window);
+                downScaleFlip(sdl_window);
             }
             break;
 
@@ -640,7 +682,7 @@ void grFadeOut()
             for (int i=1; i <= 20; i++) {
                 grDrawRect(sfc, grScreenOrigin.x + 320 - i*16, grScreenOrigin.y + 240 - i*12, i*32, i*24, 5);
                 eventsWaitTick(1);
-                SDL_Flip(sdl_window);
+                downScaleFlip(sdl_window);
             }
             break;
 
@@ -649,7 +691,7 @@ void grFadeOut()
             for (int i=600; i >= 0; i -= 40) {
                 grDrawRect(sfc, grScreenOrigin.x + i, grScreenOrigin.y, 40, 480, 5);
                 eventsWaitTick(1);
-                SDL_Flip(sdl_window);
+                downScaleFlip(sdl_window);
             }
             break;
 
@@ -658,7 +700,7 @@ void grFadeOut()
             for (int i=0; i < 640; i += 40) {
                 grDrawRect(sfc, grScreenOrigin.x + i, grScreenOrigin.y, 40, 480, 5);
                 eventsWaitTick(1);
-                SDL_Flip(sdl_window);
+                downScaleFlip(sdl_window);
             }
             break;
 
@@ -668,7 +710,7 @@ void grFadeOut()
                 grDrawRect(sfc, grScreenOrigin.x + 320+i, grScreenOrigin.y, 20, 480, 5);
                 grDrawRect(sfc, grScreenOrigin.x + 300-i, grScreenOrigin.y, 20, 480, 5);
                 eventsWaitTick(1);
-                SDL_Flip(sdl_window);
+                downScaleFlip(sdl_window);
             }
             break;
     }

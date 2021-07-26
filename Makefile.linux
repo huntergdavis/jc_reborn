@@ -1,7 +1,10 @@
+-L/usr/lib/x86_64-linux-gnu -lSDL
+-I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
 
-CFLAGS=-Wall -Wpedantic -std=c99
 
-LDLIBS=-lSDL2
+CFLAGS=-I/usr/include/SDL -D_GNU_SOURCE=1 -D_REENTRANT
+
+LDLIBS=-L/usr/lib/x86_64-linux-gnu -lSDL
 
 EXE =   jc_reborn
 

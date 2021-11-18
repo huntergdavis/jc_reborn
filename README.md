@@ -1,7 +1,7 @@
 # Hunter's Notes on Johnny Reborn
 This is a forked version of jc_reborn from https://github.com/jno6809/jc_reborn 
 
-I've finished ports to the following systems (each generally has their own branch in this repository)
+I've finished porting to the following systems (each generally has their own branch in this repository)
 - Low Memory and SDL1 Systems
 - Sega Dreamcast
 - RetroFW based devices

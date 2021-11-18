@@ -1,3 +1,32 @@
+# Hunter's Notes on Johnny Reborn
+This is a forked version of jc_reborn from https://github.com/jno6809/jc_reborn 
+
+I've finished ports to the following systems (each generally has their own branch in this repository)
+Low Memory and SDL1 Systems
+Sega Dreamcast
+RetroFW based devices
+InkPlate and microcontroller based boards 
+
+If you're looking to get Johnny onto a photo frame or embedded display device, I recommend checking out the inkplate port.  As part of that, I pre-rendered every frame from every scene and a minimal ordering of walk paths from scene to scene.  Roughly 20K files, fits on a 1GB SD card, in the rawframes directory.
+
+I've half-finished ports to the following systems, I'll fully finish these one day (again, generally they all have their own branch in this repository)
+Xbox
+emscripten (ugh the need for a message passing interface between engine and screen render)
+
+I'm currently working on:
+Closed Captions - Adding descriptive text for all actions and scenes, support closed captioning and screen readers for the visually impaired. 
+
+Next up:
+Adding voice samples for the closed captioning
+Scripting up a 'fortune' type unix command for a random johnny scene description
+
+Here are systems that I'll target in the future
+Switch
+Serenity OS
+Oculus Go era VR hardware
+Dos (allegro backend?)
+Have any suggestions?  Let me know!  
+
 # Johnny Reborn
 
 Johnny Reborn is an open source engine for the classic Johnny Castaway screen saver, developed by Dynamix for Windows 3.x and published by Sierra, back in 1992.

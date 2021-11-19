@@ -22,6 +22,7 @@
  */
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "mytypes.h"
@@ -37,6 +38,7 @@
 
 
 static int storyCurrentDay = 1;
+static 
 
 
 static struct TStoryScene *storyPickScene(
@@ -235,9 +237,11 @@ void storyPlay()
                 struct TStoryScene *scene = storyPickScene(wantedFlags,
                                                            unwantedFlags);
 
-                if (prevSpot != -1)
+                if (prevSpot != -1){
+                    printWalk();
                     adsPlayWalk(prevSpot, prevHdg,
                         scene->spotStart, scene->hdgStart);
+                }
 
                 ttmDx = islandState.xPos
                             + (scene->flags & LEFT_ISLAND ? 272 : 0);
@@ -254,9 +258,10 @@ void storyPlay()
             }
         }
 
-        if (prevSpot != -1)
+        if (prevSpot != -1){
+            printWalk();
             adsPlayWalk(prevSpot, prevHdg, finalScene->spotStart, finalScene->hdgStart);
-
+        }
         if (finalScene->flags & ISLAND) {
             ttmDx = islandState.xPos + (finalScene->flags & LEFT_ISLAND ? 272 : 0);
             ttmDy = islandState.yPos;
@@ -277,3 +282,33 @@ void storyPlay()
     }
 }
 
+void printCaptionsForCurrentSceneAndState() {
+
+}
+
+void printWalk() {
+    printFromFile("./captions/en/walk.txt");
+}
+
+void printIslandState()  {
+
+}
+
+void printFromFile(char* fileName) {
+    fptr = fopen(fileName, "r");
+    if (fptr == NULL)
+    {
+        printf("Cannot open file \n");
+        exit(0);
+    }
+  
+    // Read contents from file
+    c = fgetc(fptr);
+    while (c != EOF)
+    {
+        printf ("%c", c);
+        c = fgetc(fptr);
+    }
+  
+    fclose(fptr);
+}

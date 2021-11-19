@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include "mytypes.h"
 #include "utils.h"
@@ -283,10 +284,10 @@ void storyPlay()
 void printScene(int sceneNumber) {
 
 }
-void printTide(boolean isHighTide) {
+void printTide(bool isHighTide) {
 
 }
-void printDayNight(boolean  isDay) {
+void printDayNight(bool  isDay) {
     if(isDay) {
 
     }else {

@@ -38,8 +38,6 @@
 
 
 static int storyCurrentDay = 1;
-static 
-
 
 static struct TStoryScene *storyPickScene(
                 uint16 wantedFlags, uint16 unwantedFlags)

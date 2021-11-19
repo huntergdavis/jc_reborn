@@ -285,7 +285,7 @@ void printCaptionsForCurrentSceneAndState() {
 }
 
 void printWalk() {
-    printFromFile("./captions/en/walk.txt");
+    printFromFile("./captions/en/walking.txt");
 }
 
 void printIslandState()  {

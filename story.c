@@ -283,10 +283,10 @@ void storyPlay()
 void printScene(int sceneNumber) {
 
 }
-void printTide(bool isHighTide) {
+void printTide(boolean isHighTide) {
 
 }
-void printDayNight(bool  isDay) {
+void printDayNight(boolean  isDay) {
     if(isDay) {
 
     }else {

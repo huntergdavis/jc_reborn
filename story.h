@@ -22,4 +22,8 @@
  */
 
 void storyPlay();
+void printCaptionsForCurrentSceneAndState();
+void printWalk();
+void printIslandState();
+void printFromFile(char* fileName);
 

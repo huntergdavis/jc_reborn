@@ -280,16 +280,36 @@ void storyPlay()
     }
 }
 
-void printCaptionsForCurrentSceneAndState() {
+void printScene(int sceneNumber) {
+
+}
+void printTide(bool isHighTide) {
+
+}
+void printDayNight(bool  isDay) {
+    if(isDay) {
+
+    }else {
+
+    }
+}
+void printHoliday(int holidayNum) {
 
 }
 
 void printWalk() {
-    printFromFile("./captions/en/walking.txt");
+    printCaption("walking.txt");
 }
 
-void printIslandState()  {
 
+char* getCurrentLanguageDir() {
+    char* currentLanguage = "en";
+    return strcat(strcat("./captions/",currentLanguage),"/");
+}
+
+void printCaption(char* captionName)
+{
+    printFromFile(strcat(getCurrentLanguageDir(),captionName) );
 }
 
 void printFromFile(char* fileName) {

@@ -309,6 +309,9 @@ void printFromFile(char* fileName) {
         printf ("%c", c);
         c = fgetc(fptr);
     }
+
+    // newline after any output
+    printf("\n"); 
   
     fclose(fptr);
 }

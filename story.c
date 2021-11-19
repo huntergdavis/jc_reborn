@@ -296,6 +296,7 @@ void printIslandState()  {
 
 void printFromFile(char* fileName) {
     FILE *fptr;
+    char c;
     fptr = fopen(fileName, "r");
     if (fptr == NULL)
     {

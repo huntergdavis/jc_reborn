@@ -307,7 +307,7 @@ void printCaption(char* captionName)
     printFromFile(strcat(getCurrentLanguageDir(),captionName));
 }
 
-char[] getCurrentLanguageDir() {
+char* getCurrentLanguageDir() {
 
     // Allocates storage
     char languageDir[16];
@@ -315,7 +315,7 @@ char[] getCurrentLanguageDir() {
     return languageDir;
 }
 
-char[] getCurrentLanguage() {
+char* getCurrentLanguage() {
     return "en";
 }
 

@@ -304,8 +304,11 @@ void printWalk() {
 
 
 char* getCurrentLanguageDir() {
-    char* currentLanguage = "en";
-    return strcat(strcat("./captions/",currentLanguage),"/");
+    return strcat(strcat("./captions/",getCurrentLanguage()),"/");
+}
+
+char* getCurrentLanguage() {
+    return "en";
 }
 
 void printCaption(char* captionName)

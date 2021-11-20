@@ -30,4 +30,5 @@ void printHoliday(int holidayNum);
 void printCaption(char* captionName);
 void printFromFile(char* fileName);
 char* getCurrentLanguageDir();
+char* getCurrentLanguage();
 

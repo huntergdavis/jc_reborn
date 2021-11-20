@@ -302,18 +302,18 @@ void printWalk() {
     printCaption("walking.txt");
 }
 
+void printCaption(char* captionName)
+{
+    printFromFile(strcat(getCurrentLanguageDir(),captionName));
+}
 
 char* getCurrentLanguageDir() {
-    return strcat(strcat("./captions/",getCurrentLanguage()),"/");
+
+    return printf("./captions/%s/",getCurrentLanguage());
 }
 
 char* getCurrentLanguage() {
     return "en";
-}
-
-void printCaption(char* captionName)
-{
-    printFromFile(strcat(getCurrentLanguageDir(),captionName) );
 }
 
 void printFromFile(char* fileName) {

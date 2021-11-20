@@ -25,7 +25,7 @@ void storyPlay();
 void printScene(int sceneNumber);
 void printWalk();
 void printTide(bool isHighTide);
-void printDayNight(bool  isDay);
+void printDayNight(bool  isNight);
 void printHoliday(int holidayNum);
 void printCaption(char* captionName);
 void printFromFile(char* fileName);

@@ -98,6 +98,8 @@ static void storyCalculateIslandFromDateAndTime()
     int hour = (getHour() % 8);
     islandState.night = (hour == 0 || hour == 7);
 
+    printDayNight(islandState.night);
+
     // Holidays ?
     islandState.holiday = 0;
     char *currentDate = getMonthAndDay();
@@ -287,11 +289,11 @@ void printScene(int sceneNumber) {
 void printTide(bool isHighTide) {
 
 }
-void printDayNight(bool  isDay) {
-    if(isDay) {
-        printCaption("day.txt");
-    }else {
+void printDayNight(bool  isNight) {
+    if(isNight) {
         printCaption("night.txt");
+    }else {
+        printCaption("day.txt");
     }
 }
 void printHoliday(int holidayNum) {

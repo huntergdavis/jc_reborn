@@ -292,7 +292,7 @@ void storyPlay()
 
 void printScene(int sceneNumber) {
     char scene[14];
-    sprintf(scene,"scene%d.txt",sceneNumber);
+    sprintf(scene,"scene%02d.txt",sceneNumber);
     printCaption(scene);
 }
 void printTide(bool isLowTide) {

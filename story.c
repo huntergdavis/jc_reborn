@@ -59,7 +59,9 @@ static struct TStoryScene *storyPickScene(
         }
     }
 
-    return &storyScenes[scenes[rand() % numScenes]];
+    int storySceneNum = rand() % numScenes;
+    printScene(storySceneNum);
+    return &storyScenes[scenes[storySceneNum]];
 }
 
 
@@ -119,6 +121,9 @@ static void storyCalculateIslandFromDateAndTime()
     // New year  : 29/12 to 01/01
     if (strcmp("1228", currentDate) < 0 || strcmp(currentDate, "0102") < 0)
         islandState.holiday = 4;
+
+
+    printHoliday(islandState.holiday);
 
 }
 
@@ -286,7 +291,9 @@ void storyPlay()
 }
 
 void printScene(int sceneNumber) {
-
+    char scene[14];
+    sprintf(scene,"scene%d.txt",sceneNumber);
+    printCaption(scene);
 }
 void printTide(bool isLowTide) {
     if(isLowTide) {
@@ -303,7 +310,24 @@ void printDayNight(bool  isNight) {
     }
 }
 void printHoliday(int holidayNum) {
-
+    switch (holidayNum) {
+        case 1:
+            printCaption("halloween.txt");
+            break;
+        case 2:
+            printCaption("stpatrick.txt");
+            break;    
+        case 3:
+            printCaption("christmas.txt");
+            break;
+        case 4:
+            printCaption("newyears.txt");
+            break;
+        case 0:
+        default:
+            printCaption("regularday.txt");
+            break;
+    }
 }
 
 void printWalk() {
@@ -316,7 +340,6 @@ void printCaption(char* captionName)
 }
 
 char* getCurrentLanguageDir() {
-
     // Allocates storage
     char languageDir[2048];
     sprintf(languageDir,"./captions/%s",getCurrentLanguage());

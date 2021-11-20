@@ -131,6 +131,8 @@ static void storyCalculateIslandFromScene(struct TStoryScene *scene)
     else
         islandState.lowTide = 0;
 
+    printTide(islandState.lowTide);
+
 
     // Randomize the position of the island
     if (scene->flags  & VARPOS_OK) {
@@ -286,8 +288,12 @@ void storyPlay()
 void printScene(int sceneNumber) {
 
 }
-void printTide(bool isHighTide) {
-
+void printTide(bool isLowTide) {
+    if(isLowTide) {
+        printCaption("lowtide.txt");
+    }else {
+        printCaption("hightide.txt");
+    }
 }
 void printDayNight(bool  isNight) {
     if(isNight) {

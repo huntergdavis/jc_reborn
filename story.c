@@ -311,7 +311,7 @@ char* getCurrentLanguageDir() {
 
     // Allocates storage
     char *languageDir = (char*)malloc(15 * sizeof(char));
-    snprintf(languageDir,"./captions/%s/",getCurrentLanguage());
+    snprintf(languageDir,15,"./captions/%s/",getCurrentLanguage());
     return languageDir;
 }
 

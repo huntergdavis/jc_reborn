@@ -311,8 +311,8 @@ char* getCurrentLanguageDir() {
 
     // Allocates storage
     char languageDir[16];
-    snprintf(languageDir,15,"./captions/%s/",getCurrentLanguage());
-    return "./captions/en/";
+    snprintf(languageDir,16,"./captions/%s",getCurrentLanguage());
+    return strcat(languageDir,"/");
 }
 
 char* getCurrentLanguage() {

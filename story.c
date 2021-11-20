@@ -309,7 +309,7 @@ void printCaption(char* captionName)
 
 char* getCurrentLanguageDir() {
 
-    return printf("./captions/%s/",getCurrentLanguage());
+    return sprintf("./captions/%s/",getCurrentLanguage());
 }
 
 char* getCurrentLanguage() {

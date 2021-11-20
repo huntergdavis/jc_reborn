@@ -289,9 +289,9 @@ void printTide(bool isHighTide) {
 }
 void printDayNight(bool  isDay) {
     if(isDay) {
-
+        printCaption("day.txt");
     }else {
-
+        printCaption("night.txt");
     }
 }
 void printHoliday(int holidayNum) {
@@ -310,7 +310,7 @@ void printCaption(char* captionName)
 char* getCurrentLanguageDir() {
 
     // Allocates storage
-    char *languageDir = (char*)malloc(15 * sizeof(char));
+    char languagDir[16];
     snprintf(languageDir,15,"./captions/%s/",getCurrentLanguage());
     return languageDir;
 }

@@ -310,8 +310,8 @@ void printCaption(char* captionName)
 char* getCurrentLanguageDir() {
 
     // Allocates storage
-    char languageDir[16];
-    snprintf(languageDir,16,"./captions/%s",getCurrentLanguage());
+    char languageDir[2048];
+    sprintf(languageDir,"./captions/%s",getCurrentLanguage());
     return strcat(languageDir,"/");
 }
 

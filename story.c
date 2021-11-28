@@ -210,6 +210,8 @@ void storyPlay()
     adsInit();
     adsPlayIntro();
 
+    printIntro();
+
     while (1) {
 
         storyUpdateCurrentDay();
@@ -295,7 +297,7 @@ void printScene(int sceneNumber) {
     sprintf(scene,"scene%02d.txt",sceneNumber);
     printCaption(scene);
 }
-void printTide(bool isLowTide) {
+void printTide(bool isLowTide) { 
     if(isLowTide) {
         printCaption("lowtide.txt");
     }else {
@@ -328,6 +330,10 @@ void printHoliday(int holidayNum) {
             printCaption("regularday.txt");
             break;
     }
+}
+
+void printIntro() {
+    printCaption("intro.txt");
 }
 
 void printWalk() {

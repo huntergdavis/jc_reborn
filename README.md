@@ -9,13 +9,14 @@ I pulled the text from my closed captions branch for jc_reborn.
 
 Uses output of DATE command to determine holidays/tide/randomness factor
 
--h Help Usage Output -> 
-Johnny Castaway - The Bash Script.
+ -h Help Usage Output -> 
+ ```
+ Johnny Castaway - The Bash Script.
 
-Syntax: johnnyCastaway.sh [-h|i|f|V]
-options:
-h     Print this Help.
-i     Print the Intro
-V     Print software version and exit.
-f     Loop and run forever.
-
+ Syntax: johnnyCastaway.sh [-h|i|f|V]
+ options:
+ h     Print this Help.
+ i     Print the Intro
+ V     Print software version and exit.
+ f     Loop and run forever.
+```

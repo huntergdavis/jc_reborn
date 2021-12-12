@@ -6,6 +6,7 @@ I've finished porting to the following systems (each generally has their own bra
 - Sega Dreamcast
 - RetroFW based devices
 - InkPlate and microcontroller based boards 
+- Bash and text only systems
 
 If you're looking to get Johnny onto a photo frame or embedded display device, I recommend checking out the inkplate port.  As part of that, I pre-rendered every frame from every scene and a minimal ordering of walk paths from scene to scene.  Roughly 20K files, fits on a 1GB SD card, in the rawframes directory.
 
@@ -13,12 +14,12 @@ I've half-finished ports to the following systems, I'll fully finish these one d
 - Xbox
 - emscripten (ugh the need for a message passing interface between engine and screen render)
 
-I'm currently working on:
-- Closed Captions - Adding descriptive text for all actions and scenes, support closed captioning and screen readers for the visually impaired. 
+I've most recently worked on:
+- Closed Captions - Adding descriptive text output for all actions and scenes, support closed captioning and screen readers for the visually impaired. You can find the script files in the closed_captions branch
 
 Next up:
-- Adding voice samples for the closed captioning
-- Scripting up a 'fortune' type unix command for a random johnny scene description
+- Adding voice samples for the closed captioning and scene descriptions
+- Fixing spelling and grammatical mistakes in captions, adding more dramatic flair
 
 Here are systems that I'll target in the future
 - Switch

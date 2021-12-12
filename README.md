@@ -7,7 +7,8 @@ This is a textual script that attempts to simulate a textual Johnny Castaway exp
 
 I pulled the text from my closed captions branch for jc_reborn.
 
-Uses output of DATE command to determine holidays/tide/randomness factor
+Uses output of DATE command to determine holidays/tide
+Uses bash $RANDOM for randomness factor
 
  -h Help Usage Output -> 
  ```

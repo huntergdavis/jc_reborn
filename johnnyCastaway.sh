@@ -64,7 +64,7 @@ else
 fi
 
 # choose a random number from 0 to 99
-CHOICE=`date +%2N`
+CHOICE=$((1 + $RANDOM % 99))
 
 # is it (christmas, NYE, STPAT,halloween,regular day)
 # is it a holiday?
@@ -100,17 +100,20 @@ elif ((CHOICE <= 99)); then
   echo "There is a fully complete raft ready to sail on the island."
 fi
 
-# is it a scene, or just walking
-# johnny should be walking like, 30% of the time
-if ((CHOICE >= 70)); then
-	echo "Johnny is walking around the island."
-fi	
+
 }
 
 RunOnce() 
 {
 # choose a random number from 0 to 99
-CHOICE=`date +%2N`
+CHOICE=$((1 + $RANDOM % 99))
+
+
+# is it a scene, or just walking
+# johnny should be walking like, 30% of the time
+if ((CHOICE >= 64)); then
+	echo "Johnny is walking around the island."
+fi	
 
 # now let's go through all the scenes
 if ((CHOICE == 0)); then

@@ -40,7 +40,7 @@ Intro()
 {
 	echo "This is the story of Johnny Castaway"
 	echo "Johnny is stranded on a small island."
-	echo "There is naught but a single palm tree."
+	echo "There is naught but a single coconut tree."
 	echo "Johnny wears white shorts and a "
 	echo "boating hat.  His beard is scruffy."
 }
@@ -114,7 +114,7 @@ CHOICE=`date +%2N`
 
 # now let's go through all the scenes
 if ((CHOICE == 0)); then
-    echo "Johnny climbs the lone palm tree on the island."
+    echo "Johnny climbs the lone coconut tree on the island."
     echo "He pokes his head out of the fronds that top the tree."
     echo "Johnny jumps off of the tree like a diving board."
     echo "His flight starts out professionally, and Johnny"
@@ -122,7 +122,7 @@ if ((CHOICE == 0)); then
     echo "The crabs and seagull which inhabit the island cheer"
     echo "and raise dive scorecards, which range in score but are low."
 elif ((CHOICE == 1)); then
-    echo "Johnny climbs the lone palm tree on the island."
+    echo "Johnny climbs the lone coconut tree on the island."
     echo "He pokes his head out of the fronds that top the tree."
     echo "Johnny jumps off of the tree like a diving board."
     echo "His flight starts out professionally, but quickly"
@@ -130,8 +130,8 @@ elif ((CHOICE == 1)); then
     echo "The crabs and seagull which inhabit the island cheer"
     echo "and raise dive scorecards, which range in score but are low."
 elif ((CHOICE == 2)); then
-    echo "Johnny sits under the shade of the palm tree to read a book."
-    echo "A seagull lands on the palm tree."
+    echo "Johnny sits under the shade of the coconut tree to read a book."
+    echo "A seagull lands on the coconut tree."
     echo "The seagull then lands on Johnny's head."
     echo "Johnny attempts to hit the seagull with a large club, but misses and hits his head while the seagull flies up with his hat."
     echo "Johnny lifts his hands in a display of "what can I do?""
@@ -139,14 +139,14 @@ elif ((CHOICE == 3)); then
     echo "Johnny is bathing in the ocean."
     echo "he washes his hair and uses a scrub brush on his back."
     echo "His clothes are hanging on a stick on the beach."
-    echo "A seagull is perched on the palm tree."
+    echo "A seagull is perched on the coconut tree."
     echo "The seagull swoops down and steals Johnny's clothes for its nest."
 elif ((CHOICE == 4)); then
-    echo "Johnny sits down to read a book under the palm tree."
-    echo "A seagull lands on the palm tree."
+    echo "Johnny sits down to read a book under the coconut tree."
+    echo "A seagull lands on the coconut tree."
     echo "The seagull swoops down and steals Johnny's book."
 elif ((CHOICE == 5)); then
-    echo "Johnny climbs the palm tree."
+    echo "Johnny climbs the coconut tree."
     echo "Johnny looks around."
     echo "Johnny dives into the water."
     echo "Johnny walks back into the foreground."
@@ -157,7 +157,7 @@ elif ((CHOICE == 6)); then
     echo "Johnny puts away the fan."
     echo "Johnny dreams of rain, and contemplates how he can make it rain."
     echo "Johnny has an idea, and a lightbulb appears above his head as he smiles and points skyward excitedly."
-    echo "Johnny walks out of the foreground behind the palm tree."
+    echo "Johnny walks out of the foreground behind the coconut tree."
     echo "Johnny's arms flail wildly as he changes clothes."
     echo "Johnny appears wearing a stereotypical pacific islander ceremonial mask and grass skirt."
     echo "Johhny dances softshoe style."
@@ -167,7 +167,7 @@ elif ((CHOICE == 6)); then
     echo "Lightning strikes Johnny, sendiing the mask flying."
     echo "Johnny is burnt to a crisp, leaving only cartoon ashes and eyes."
 elif ((CHOICE == 7)); then
-    echo "Johnny is reading under the palm tree."
+    echo "Johnny is reading under the coconut tree."
     echo "Johnny falls asleep."
     echo "A coconut falls on Johnny's head and rolls into the ocean."
 elif ((CHOICE == 8)); then
@@ -186,7 +186,7 @@ elif ((CHOICE == 10)); then
     echo "Johnny appears wearing a stereotypical pacific islander ceremonial mask and grass skirt."
     echo "He begins to dance around, just as a man and a woman on a yaught appear to take photos."
     echo "They start taking photos of Johnny, and he begins to wave."
-    echo "Johnny uses the palm frond from his grass skirt like a flag, waving down the ship."
+    echo "Johnny uses the coconut frond from his grass skirt like a flag, waving down the ship."
     echo "This exposes Johnny's private parts."
     echo "Horrified, the man attempts to cover the woman's eyes on the yaught."
     echo "Johnny drops to his knees, begging them to take him away."
@@ -195,23 +195,23 @@ elif ((CHOICE == 11)); then
     echo "Johnny walks to the edge of the island."
     echo "He builds a sand castle."
 elif ((CHOICE == 12)); then
-    echo "Johnny lays down to rest under the palm tree."
+    echo "Johnny lays down to rest under the coconut tree."
     echo "A 16th century three-mast ship sails into view."
     echo "Tiny lilliputians row ashore as Johnny sleeps."
     echo "They tie Johnny down to the island and sail away."
     echo "When Johnny awakes, he cannot move."
     echo "A seagull lands on Johnny, builds a nest, and lays an egg in the nest."
 elif ((CHOICE == 13)); then
-    echo "Johnny lays down to rest under the palm tree."
+    echo "Johnny lays down to rest under the coconut tree."
     echo "Zs appear as Johnny sleeps and rolls around."
 elif ((CHOICE == 14)); then
     echo "Johnny walks to the edge of the island."
     echo "He builds a sand castle."
     echo "A 16th century three-mast ship sails into view."
-    echo "Tiny lilliputians row ashore as Johnny climbs the palm tree."
+    echo "Tiny lilliputians row ashore as Johnny climbs the coconut tree."
     echo "The lilliputians climb into the castle, and claim it as their own."
     echo "Tiny airplanes fly out of the castle, and begin to attack Johnny atop the tree."
-    echo "Johnny swats at the tiny planes atop the palm tree in a scene akin to King Kong."
+    echo "Johnny swats at the tiny planes atop the coconut tree in a scene akin to King Kong."
 elif ((CHOICE == 15)); then
     echo "Johnny builds a fire at the ends of his island."
     echo "Or he attempts to anyway, setting sticks and rubbing them together to attempt to create fire."
@@ -231,7 +231,7 @@ elif ((CHOICE == 16)); then
     echo "Johnny eats the roasted boot whole."
     echo "Johnny warms his hands by the fire."
 elif ((CHOICE == 17)); then
-    echo "Johnny lays down to rest under the palm tree."
+    echo "Johnny lays down to rest under the coconut tree."
     echo "A 16th century three-mast ship sails into view."
     echo "Tiny lilliputians row ashore as Johnny sleeps."
     echo "They tie Johnny down to the island and sail away."
@@ -372,13 +372,13 @@ elif ((CHOICE == 46)); then
     echo "Johnny lifts his hat."
 elif ((CHOICE == 47)); then
     echo "Johnny taps his foot nervously."
-    echo "Johnny lifts his hat and looks at the palm tree."
+    echo "Johnny lifts his hat and looks at the coconut tree."
 elif ((CHOICE == 48)); then
     echo "Johnny looks at his raft."
 elif ((CHOICE == 49)); then
     echo "Johnny looks out over the ocean."
 elif ((CHOICE == 50)); then
-    echo "Johnny lifts his hat and looks around, shading himself under the palm tree."
+    echo "Johnny lifts his hat and looks around, shading himself under the coconut tree."
 elif ((CHOICE == 51)); then
     echo "Johnny pulls a spyglass out of his pants, and looks around the island."
 elif ((CHOICE == 52)); then

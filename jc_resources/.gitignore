@@ -1,0 +1,12 @@
+# Exclude compiled binaries
+jc_reborn
+*.exe
+
+# Exclude original Sierra resource files (users must provide these)
+RESOURCE.MAP
+RESOURCE.001
+
+# Exclude WAV files
+*.wav
+
+# Include everything else (especially extracted/ directory)

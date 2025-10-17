@@ -512,6 +512,29 @@ void grLoadScreen(char *strArg)
 
     struct TScrResource *scrResource = findScrResource(strArg);
 
+    /* If SCR data was already freed (memory optimization), reload from extracted file */
+    if (scrResource->uncompressedData == NULL) {
+        char extractedPath[512];
+        snprintf(extractedPath, sizeof(extractedPath), "extracted/scr/%s",
+                 scrResource->resName);
+
+        FILE *f = fopen(extractedPath, "rb");
+        if (f) {
+            scrResource->uncompressedData = safe_malloc(scrResource->uncompressedSize);
+            if (fread(scrResource->uncompressedData, 1, scrResource->uncompressedSize, f) !=
+                scrResource->uncompressedSize) {
+                fatalError("Failed to reload SCR data from extracted file");
+            }
+            fclose(f);
+            if (debugMode) {
+                printf("Reloaded SCR data for %s from disk (%u bytes)\n",
+                       scrResource->resName, scrResource->uncompressedSize);
+            }
+        } else {
+            fatalError("SCR data freed and extracted file not found - cannot reload");
+        }
+    }
+
     if ((scrResource->width % 2) == 1) {
         fprintf(stderr, "Warning: grLoadScreen(): can't manage odd widths\n");
     }
@@ -536,6 +559,16 @@ void grLoadScreen(char *strArg)
 
     grBackgroundSfc = SDL_CreateRGBSurfaceFrom((void*)outData,
                                       width, height, 32, 4*width, 0, 0, 0, 0);
+
+    /* Free SCR data after converting to SDL surface - saves memory */
+    if (scrResource->uncompressedData) {
+        free(scrResource->uncompressedData);
+        scrResource->uncompressedData = NULL;
+        if (debugMode) {
+            printf("Freed SCR data for %s (%u bytes)\n",
+                   scrResource->resName, scrResource->uncompressedSize);
+        }
+    }
 }
 
 
@@ -572,14 +605,26 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
 
-    /* If BMP data was already freed (memory optimization), we need to reload it */
+    /* If BMP data was already freed (memory optimization), reload from extracted file */
     if (bmpResource->uncompressedData == NULL) {
-        /* Reload from extracted file or decompress again */
-        FILE *f = fopen("RESOURCE.001", "rb");
+        char extractedPath[512];
+        snprintf(extractedPath, sizeof(extractedPath), "extracted/bmp/%s",
+                 bmpResource->resName);
+
+        FILE *f = fopen(extractedPath, "rb");
         if (f) {
-            /* Find the resource in the file and reload */
-            /* For now, this is a fatal error - BMPs should only be loaded once */
-            fatalError("BMP data already freed - attempted to reload same BMP multiple times");
+            bmpResource->uncompressedData = safe_malloc(bmpResource->uncompressedSize);
+            if (fread(bmpResource->uncompressedData, 1, bmpResource->uncompressedSize, f) !=
+                bmpResource->uncompressedSize) {
+                fatalError("Failed to reload BMP data from extracted file");
+            }
+            fclose(f);
+            if (debugMode) {
+                printf("Reloaded BMP data for %s from disk (%u bytes)\n",
+                       bmpResource->resName, bmpResource->uncompressedSize);
+            }
+        } else {
+            fatalError("BMP data freed and extracted file not found - cannot reload");
         }
     }
 

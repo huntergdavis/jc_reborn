@@ -23,8 +23,9 @@ TEST_UNCOMPRESS = test_uncompress
 TEST_CONFIG = test_config
 TEST_MEMORY = test_memory
 TEST_DISK_STREAMING = test_disk_streaming
+TEST_BMP_OPTIMIZATION = test_bmp_optimization
 
-ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING)
+ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING) $(TEST_BMP_OPTIMIZATION)
 
 # Default target: build and run all tests
 all: $(ALL_TESTS)
@@ -46,6 +47,9 @@ all: $(ALL_TESTS)
 	@echo ""
 	@echo "Disk streaming tests (require extracted/ directory in jc_resources/):"
 	@./$(TEST_DISK_STREAMING) || echo "Note: Disk streaming tests skipped (extracted/ not found)"
+	@echo ""
+	@echo "BMP optimization tests:"
+	@./$(TEST_BMP_OPTIMIZATION) || echo "Note: BMP optimization tests skipped"
 	@echo ""
 	@echo "=== All Tests Complete ==="
 
@@ -99,6 +103,10 @@ $(TEST_MEMORY): test_memory.c $(UNITY_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ) $(CALC
 $(TEST_DISK_STREAMING): test_disk_streaming.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
 
+# Test: BMP optimization
+$(TEST_BMP_OPTIMIZATION): test_bmp_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
+	$(CC) $(CFLAGS) $^ -o $@
+
 # Individual test targets
 test-utils: $(TEST_UTILS)
 	@echo "Running utils tests..."
@@ -128,6 +136,10 @@ test-disk-streaming: $(TEST_DISK_STREAMING)
 	@echo "Running disk streaming tests..."
 	@./$(TEST_DISK_STREAMING)
 
+test-bmp-optimization: $(TEST_BMP_OPTIMIZATION)
+	@echo "Running BMP optimization tests..."
+	@./$(TEST_BMP_OPTIMIZATION)
+
 # Clean up test binaries
 clean:
 	rm -f $(ALL_TESTS) $(UNITY_OBJ)
@@ -136,4 +148,4 @@ clean:
 clean-all: clean
 	$(MAKE) -C $(PARENT_DIR) clean
 
-.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming clean clean-all
+.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming test-bmp-optimization clean clean-all

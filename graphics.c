@@ -571,6 +571,18 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         grReleaseBmp(ttmSlot, slotNo);
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
+
+    /* If BMP data was already freed (memory optimization), we need to reload it */
+    if (bmpResource->uncompressedData == NULL) {
+        /* Reload from extracted file or decompress again */
+        FILE *f = fopen("RESOURCE.001", "rb");
+        if (f) {
+            /* Find the resource in the file and reload */
+            /* For now, this is a fatal error - BMPs should only be loaded once */
+            fatalError("BMP data already freed - attempted to reload same BMP multiple times");
+        }
+    }
+
     uint8 *inPtr = bmpResource->uncompressedData;
 
     ttmSlot->numSprites[slotNo] = bmpResource->numImages;
@@ -597,6 +609,16 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
                                                width, height, 32, 4*width, 0, 0, 0, 0);
         SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 0xa8, 0, 0xa8));
         ttmSlot->sprites[slotNo][image] = surface;
+    }
+
+    /* Free BMP data after converting to SDL surfaces - saves memory */
+    if (bmpResource->uncompressedData) {
+        free(bmpResource->uncompressedData);
+        bmpResource->uncompressedData = NULL;
+        if (debugMode) {
+            printf("Freed BMP data for %s (%u bytes)\n",
+                   bmpResource->resName, bmpResource->uncompressedSize);
+        }
     }
 }
 

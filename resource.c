@@ -50,6 +50,51 @@ int numTtmResources = 0;
 
 static struct TMapFile mapFile;
 
+/* Load resource data from extracted file if available, otherwise decompress */
+static uint8 *loadOrUncompress(FILE *compressedFile,
+                                const char *resourceName,
+                                const char *resourceType,
+                                uint8 compressionMethod,
+                                uint32 compressedSize,
+                                uint32 uncompressedSize)
+{
+    char extractedPath[512];
+    FILE *extractedFile;
+    uint8 *data;
+
+    /* Try to load from extracted file first */
+    snprintf(extractedPath, sizeof(extractedPath), "extracted/%s/%s",
+             resourceType, resourceName);
+
+    extractedFile = fopen(extractedPath, "rb");
+    if (extractedFile != NULL) {
+        /* Load directly from disk - no decompression needed */
+        data = safe_malloc(uncompressedSize);
+        if (fread(data, 1, uncompressedSize, extractedFile) != uncompressedSize) {
+            if (debugMode) {
+                printf("Warning: Failed to read %s, falling back to decompression\n",
+                       extractedPath);
+            }
+            free(data);
+            fclose(extractedFile);
+            /* Fall through to decompression */
+        } else {
+            fclose(extractedFile);
+            /* Skip past compressed data in resource file */
+            fseek(compressedFile, compressedSize, SEEK_CUR);
+            if (debugMode) {
+                printf("Loaded %s from extracted file (saved ~16KB working memory)\n",
+                       resourceName);
+            }
+            return data;
+        }
+    }
+
+    /* Fall back to decompression */
+    return uncompress(compressedFile, compressionMethod,
+                      compressedSize, uncompressedSize);
+}
+
 
 static struct TAdsResource *parseAdsResource(FILE *f)
 {
@@ -105,7 +150,9 @@ static struct TAdsResource *parseAdsResource(FILE *f)
     adsResource->compressionMethod = readUint8(f);
     adsResource->uncompressedSize = readUint32(f);
 
-    adsResource->uncompressedData = uncompress(f,
+    adsResource->uncompressedData = loadOrUncompress(f,
+                                      adsResource->resName,
+                                      "ads",
                                       adsResource->compressionMethod,
                                       adsResource->compressedSize,
                                       adsResource->uncompressedSize
@@ -170,7 +217,9 @@ static struct TBmpResource *parseBmpResource(FILE *f)
     bmpResource->compressionMethod = readUint8(f);
     bmpResource->uncompressedSize = readUint32(f);
 
-    bmpResource->uncompressedData = uncompress(f,
+    bmpResource->uncompressedData = loadOrUncompress(f,
+                                      bmpResource->resName,
+                                      "bmp",
                                       bmpResource->compressionMethod,
                                       bmpResource->compressedSize,
                                       bmpResource->uncompressedSize
@@ -256,7 +305,9 @@ static struct TScrResource *parseScrResource(FILE *f)
     scrResource->compressionMethod = readUint8(f);
     scrResource->uncompressedSize = readUint32(f) ;
 
-    scrResource->uncompressedData = uncompress(f,
+    scrResource->uncompressedData = loadOrUncompress(f,
+                                      scrResource->resName,
+                                      "scr",
                                       scrResource->compressionMethod,
                                       scrResource->compressedSize,
                                       scrResource->uncompressedSize
@@ -302,7 +353,9 @@ static struct TTtmResource *parseTtmResource(FILE *f)
     ttmResource->compressionMethod = readUint8(f);
     ttmResource->uncompressedSize = readUint32(f);
 
-    ttmResource->uncompressedData = uncompress(f,
+    ttmResource->uncompressedData = loadOrUncompress(f,
+                                      ttmResource->resName,
+                                      "ttm",
                                       ttmResource->compressionMethod,
                                       ttmResource->compressedSize,
                                       ttmResource->uncompressedSize

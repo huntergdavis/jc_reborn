@@ -103,6 +103,87 @@ What Johnny Reborn brings is:
   - all the work was made by observing the behaviour of the original software and trying to reproduce it as accurately as possible. For a better result, a complete disassembly of the original exe may be necessary - but wasn't done to this point.
 
 
+## Testing
+
+Johnny Reborn includes comprehensive test suites to ensure quality and catch regressions.
+
+### Running All Tests
+
+```bash
+cd tests
+make
+```
+
+This runs all test suites including:
+- Unit tests (utils, calcpath, resource parsing, etc.)
+- Memory optimization tests (disk streaming, lazy loading, LRU cache)
+- Visual regression tests
+
+### Visual Regression Testing
+
+The visual regression framework ensures memory optimizations don't introduce rendering bugs.
+
+**Capture reference frames from all scenes:**
+```bash
+cd tests
+./capture_all_reference_frames.sh
+```
+
+This captures frames from all 41 TTMs and 10 ADS scripts (~51 reference frames, ~60MB).
+
+**Run visual regression tests:**
+```bash
+cd tests
+make test-visual-regression
+```
+
+**Manual frame capture:**
+```bash
+cd jc_resources
+# Capture frame 50 from a TTM
+../jc_reborn window nosound capture-frame 50 capture-output test.bmp ttm GJNAT1.TTM
+
+# Capture frame 25 from an ADS
+../jc_reborn window nosound capture-frame 25 capture-output test.bmp ads ACTIVITY.ADS 0
+```
+
+For more details, see [tests/VISUAL_TESTING.md](tests/VISUAL_TESTING.md).
+
+### Memory Optimization Tests
+
+Tests for the 7 memory optimizations that reduce memory usage from ~5MB to 2-4MB:
+
+```bash
+cd tests
+make test-disk-streaming       # Disk streaming optimization
+make test-bmp-optimization     # BMP data freeing
+make test-scr-optimization     # SCR data freeing
+make test-sdl-optimization     # SDL indexed surfaces
+make test-ttm-optimization     # TTM lazy loading
+make test-ads-optimization     # ADS lazy loading
+make test-lru-cache            # LRU cache with 2MB budget
+```
+
+### Memory Budget Control
+
+Set custom memory budget for LRU cache:
+```bash
+JC_MEM_BUDGET_MB=4 ./jc_reborn window
+```
+
+Default is 2MB. Debug mode shows evictions:
+```bash
+./jc_reborn window debug
+```
+
+### Test Organization
+
+- `tests/` - All test files
+- `tests/unity/` - Unity test framework
+- `tests/visual_reference/` - Reference frames for visual regression
+- `tests/VISUAL_TESTING.md` - Visual testing documentation
+- `tests/Makefile` - Build system for tests
+
 ## Thanks
 
 I never would have been able to write Johnny Reborn without, directly or indirectly, all the people listed below. Many thanks to them.

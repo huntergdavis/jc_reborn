@@ -54,7 +54,7 @@ char *grCaptureFilename = NULL;
 static int grCurrentFrame = 0;
 
 /* SDL Surface Pool for memory optimization */
-#define MAX_SURFACE_POOL_SIZE 12  /* Max concurrent surfaces (TTM threads + extras) */
+#define MAX_SURFACE_POOL_SIZE 4  /* Reduced to 4 for 1MB target (typical usage: 1-4) */
 static SDL_Surface *surfacePool[MAX_SURFACE_POOL_SIZE];
 static int surfacePoolInUse[MAX_SURFACE_POOL_SIZE];
 static int surfacePoolInitialized = 0;
@@ -317,13 +317,26 @@ SDL_Surface *grNewLayer()
             /* Reuse existing surface */
             surfacePoolInUse[i] = 1;
 
-            /* Clear the surface for reuse */
+            /* Clear the surface for reuse with magenta color index */
+            /* Find magenta (0xa8, 0, 0xa8) in the palette for transparent color key */
+            int magentaIndex = -1;
+            for (int j = 0; j < 16; j++) {
+                if (ttmPalette[j][2] == 0xa8 && ttmPalette[j][1] == 0 && ttmPalette[j][0] == 0xa8) {
+                    magentaIndex = j;
+                    break;
+                }
+            }
+
             SDL_Rect dest = { 0, 0, 640, 480 };
-            SDL_FillRect(surfacePool[i], &dest,
-                        SDL_MapRGB(surfacePool[i]->format, 0xa8, 0, 0xa8));
+            if (magentaIndex >= 0) {
+                SDL_FillRect(surfacePool[i], &dest, magentaIndex);
+            } else {
+                /* Fallback if magenta not found */
+                SDL_FillRect(surfacePool[i], &dest, 0);
+            }
 
             if (debugMode) {
-                printf("Surface pool: reused slot %d\n", i);
+                printf("Surface pool: reused 8-bit slot %d\n", i);
             }
 
             return surfacePool[i];
@@ -333,38 +346,84 @@ SDL_Surface *grNewLayer()
     /* No available surface, try to allocate a new one */
     for (int i = 0; i < MAX_SURFACE_POOL_SIZE; i++) {
         if (surfacePool[i] == NULL) {
-            /* Allocate new surface and add to pool */
-            surfacePool[i] = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
+            /* Allocate 8-bit indexed surface instead of 32-bit RGBA - 4x memory savings! */
+            surfacePool[i] = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 8, 0, 0, 0, 0);
 
             if (surfacePool[i] == NULL) {
                 fprintf(stderr, "Error: Failed to create surface: %s\n", SDL_GetError());
                 return NULL;
             }
 
+            /* Set up the 16-color palette for this indexed surface */
+            SDL_Color colors[16];
+            for (int j = 0; j < 16; j++) {
+                colors[j].r = ttmPalette[j][2];
+                colors[j].g = ttmPalette[j][1];
+                colors[j].b = ttmPalette[j][0];
+                colors[j].a = 255;
+            }
+            SDL_SetPaletteColors(surfacePool[i]->format->palette, colors, 0, 16);
+
+            /* Find magenta (0xa8, 0, 0xa8) in the palette for transparent color key */
+            int magentaIndex = -1;
+            for (int j = 0; j < 16; j++) {
+                if (ttmPalette[j][2] == 0xa8 && ttmPalette[j][1] == 0 && ttmPalette[j][0] == 0xa8) {
+                    magentaIndex = j;
+                    break;
+                }
+            }
+
+            /* Clear surface with magenta color index and set as transparent */
             SDL_Rect dest = { 0, 0, 640, 480 };
-            SDL_FillRect(surfacePool[i], &dest,
-                        SDL_MapRGB(surfacePool[i]->format, 0xa8, 0, 0xa8));
-            SDL_SetColorKey(surfacePool[i], SDL_TRUE,
-                           SDL_MapRGB(surfacePool[i]->format, 0xa8, 0, 0xa8));
+            if (magentaIndex >= 0) {
+                SDL_FillRect(surfacePool[i], &dest, magentaIndex);
+                SDL_SetColorKey(surfacePool[i], SDL_TRUE, magentaIndex);
+            } else {
+                /* Fallback if magenta not found in palette */
+                SDL_FillRect(surfacePool[i], &dest, 0);
+            }
 
             surfacePoolInUse[i] = 1;
 
             if (debugMode) {
-                printf("Surface pool: allocated new slot %d\n", i);
+                printf("Surface pool: allocated new 8-bit indexed slot %d (307KB instead of 1.2MB)\n", i);
             }
 
             return surfacePool[i];
         }
     }
 
-    /* Pool exhausted - fall back to non-pooled allocation */
-    fprintf(stderr, "Warning: Surface pool exhausted, allocating non-pooled surface\n");
-    SDL_Surface *sfc = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
+    /* Pool exhausted - fall back to non-pooled 8-bit allocation */
+    fprintf(stderr, "Warning: Surface pool exhausted, allocating non-pooled 8-bit surface\n");
+    SDL_Surface *sfc = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 8, 0, 0, 0, 0);
 
     if (sfc != NULL) {
+        /* Set up the 16-color palette for this indexed surface */
+        SDL_Color colors[16];
+        for (int j = 0; j < 16; j++) {
+            colors[j].r = ttmPalette[j][2];
+            colors[j].g = ttmPalette[j][1];
+            colors[j].b = ttmPalette[j][0];
+            colors[j].a = 255;
+        }
+        SDL_SetPaletteColors(sfc->format->palette, colors, 0, 16);
+
+        /* Find magenta for transparent color key */
+        int magentaIndex = -1;
+        for (int j = 0; j < 16; j++) {
+            if (ttmPalette[j][2] == 0xa8 && ttmPalette[j][1] == 0 && ttmPalette[j][0] == 0xa8) {
+                magentaIndex = j;
+                break;
+            }
+        }
+
         SDL_Rect dest = { 0, 0, 640, 480 };
-        SDL_FillRect(sfc, &dest, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
-        SDL_SetColorKey(sfc, SDL_TRUE, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
+        if (magentaIndex >= 0) {
+            SDL_FillRect(sfc, &dest, magentaIndex);
+            SDL_SetColorKey(sfc, SDL_TRUE, magentaIndex);
+        } else {
+            SDL_FillRect(sfc, &dest, 0);
+        }
     }
 
     return sfc;

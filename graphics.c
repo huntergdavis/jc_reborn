@@ -53,6 +53,15 @@ int grCaptureFrameNumber = -1;
 char *grCaptureFilename = NULL;
 static int grCurrentFrame = 0;
 
+/* SDL Surface Pool for memory optimization */
+#define MAX_SURFACE_POOL_SIZE 12  /* Max concurrent surfaces (TTM threads + extras) */
+static SDL_Surface *surfacePool[MAX_SURFACE_POOL_SIZE];
+static int surfacePoolInUse[MAX_SURFACE_POOL_SIZE];
+static int surfacePoolInitialized = 0;
+
+/* Forward declarations for surface pool */
+static void grInitSurfacePool(void);
+static void grCleanupSurfacePool(void);
 
 static void grReleaseScreen()
 {
@@ -149,6 +158,7 @@ void graphicsInit()
 
 void graphicsEnd()
 {
+    grCleanupSurfacePool();
     SDL_DestroyWindow(sdl_window);
     SDL_Quit();
 }
@@ -242,19 +252,159 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
 }
 
 
+/*
+ * Initialize surface pool
+ * Called once at graphics init
+ */
+static void grInitSurfacePool(void)
+{
+    if (surfacePoolInitialized) {
+        return;
+    }
+
+    for (int i = 0; i < MAX_SURFACE_POOL_SIZE; i++) {
+        surfacePool[i] = NULL;
+        surfacePoolInUse[i] = 0;
+    }
+
+    surfacePoolInitialized = 1;
+
+    if (debugMode) {
+        printf("Surface pool initialized (max %d surfaces)\n", MAX_SURFACE_POOL_SIZE);
+    }
+}
+
+/*
+ * Clean up surface pool
+ * Called at graphics shutdown
+ */
+static void grCleanupSurfacePool(void)
+{
+    if (!surfacePoolInitialized) {
+        return;
+    }
+
+    int freed = 0;
+    for (int i = 0; i < MAX_SURFACE_POOL_SIZE; i++) {
+        if (surfacePool[i] != NULL) {
+            SDL_FreeSurface(surfacePool[i]);
+            surfacePool[i] = NULL;
+            freed++;
+        }
+        surfacePoolInUse[i] = 0;
+    }
+
+    surfacePoolInitialized = 0;
+
+    if (debugMode) {
+        printf("Surface pool cleaned up (%d surfaces freed)\n", freed);
+    }
+}
+
+/*
+ * Acquire a surface from the pool
+ * Replaces grNewLayer() with pooled allocation
+ */
 SDL_Surface *grNewLayer()
 {
+    if (!surfacePoolInitialized) {
+        grInitSurfacePool();
+    }
+
+    /* Try to find an available surface in the pool */
+    for (int i = 0; i < MAX_SURFACE_POOL_SIZE; i++) {
+        if (surfacePool[i] != NULL && !surfacePoolInUse[i]) {
+            /* Reuse existing surface */
+            surfacePoolInUse[i] = 1;
+
+            /* Clear the surface for reuse */
+            SDL_Rect dest = { 0, 0, 640, 480 };
+            SDL_FillRect(surfacePool[i], &dest,
+                        SDL_MapRGB(surfacePool[i]->format, 0xa8, 0, 0xa8));
+
+            if (debugMode) {
+                printf("Surface pool: reused slot %d\n", i);
+            }
+
+            return surfacePool[i];
+        }
+    }
+
+    /* No available surface, try to allocate a new one */
+    for (int i = 0; i < MAX_SURFACE_POOL_SIZE; i++) {
+        if (surfacePool[i] == NULL) {
+            /* Allocate new surface and add to pool */
+            surfacePool[i] = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
+
+            if (surfacePool[i] == NULL) {
+                fprintf(stderr, "Error: Failed to create surface: %s\n", SDL_GetError());
+                return NULL;
+            }
+
+            SDL_Rect dest = { 0, 0, 640, 480 };
+            SDL_FillRect(surfacePool[i], &dest,
+                        SDL_MapRGB(surfacePool[i]->format, 0xa8, 0, 0xa8));
+            SDL_SetColorKey(surfacePool[i], SDL_TRUE,
+                           SDL_MapRGB(surfacePool[i]->format, 0xa8, 0, 0xa8));
+
+            surfacePoolInUse[i] = 1;
+
+            if (debugMode) {
+                printf("Surface pool: allocated new slot %d\n", i);
+            }
+
+            return surfacePool[i];
+        }
+    }
+
+    /* Pool exhausted - fall back to non-pooled allocation */
+    fprintf(stderr, "Warning: Surface pool exhausted, allocating non-pooled surface\n");
     SDL_Surface *sfc = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0, 0, 0, 0);
-    SDL_Rect dest = { 0, 0, 640, 480 };
-    SDL_FillRect(sfc, &dest, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
-    SDL_SetColorKey(sfc, SDL_TRUE, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
+
+    if (sfc != NULL) {
+        SDL_Rect dest = { 0, 0, 640, 480 };
+        SDL_FillRect(sfc, &dest, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
+        SDL_SetColorKey(sfc, SDL_TRUE, SDL_MapRGB(sfc->format, 0xa8, 0, 0xa8));
+    }
 
     return sfc;
 }
 
 
+/*
+ * Release a surface back to the pool
+ * Replaces grFreeLayer() with pooled deallocation
+ */
 void grFreeLayer(SDL_Surface *sfc)
 {
+    if (sfc == NULL) {
+        return;
+    }
+
+    if (!surfacePoolInitialized) {
+        /* Pool not initialized, just free directly */
+        SDL_FreeSurface(sfc);
+        return;
+    }
+
+    /* Check if this surface is in the pool */
+    for (int i = 0; i < MAX_SURFACE_POOL_SIZE; i++) {
+        if (surfacePool[i] == sfc) {
+            /* Mark as available for reuse */
+            surfacePoolInUse[i] = 0;
+
+            if (debugMode) {
+                printf("Surface pool: released slot %d\n", i);
+            }
+
+            return;
+        }
+    }
+
+    /* Surface not in pool, free it directly */
+    if (debugMode) {
+        printf("Surface pool: freeing non-pooled surface\n");
+    }
     SDL_FreeSurface(sfc);
 }
 

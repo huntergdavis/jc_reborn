@@ -73,8 +73,13 @@ static void grReleaseScreen()
 
 static void grReleaseSavedLayer()
 {
-    SDL_FreeSurface(grSavedZonesLayer);
-    grSavedZonesLayer = NULL;
+    if (grSavedZonesLayer != NULL) {
+        SDL_FreeSurface(grSavedZonesLayer);
+        grSavedZonesLayer = NULL;
+        if (debugMode) {
+            printf("Freed grSavedZonesLayer (307KB saved)\n");
+        }
+    }
 }
 
 
@@ -483,8 +488,12 @@ void grCopyZoneToBg(SDL_Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 h
     x += grDx; y += grDy;
     SDL_Rect rect = { (short) x, (short) y, width + 2, height };
 
-    if (grSavedZonesLayer == NULL)
+    if (grSavedZonesLayer == NULL) {
         grSavedZonesLayer = grNewLayer();
+        if (debugMode) {
+            printf("Lazy allocated grSavedZonesLayer (307KB 8-bit surface)\n");
+        }
+    }
 
     SDL_BlitSurface(sfc, &rect, grSavedZonesLayer, &rect);
 

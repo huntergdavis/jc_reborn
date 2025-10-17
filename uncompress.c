@@ -74,11 +74,13 @@ static uint16 getBits(FILE *f, uint32 n)
 }
 
 
+/* Static LZW buffers to reduce stack pressure (16KB total) */
+static struct TCodeTableEntry codeTable[4096];  /* 12KB */
+static uint8 decodeStack[4096];                  /* 4KB */
+
 uint8 *uncompressLZW(FILE *f, uint32 inSize, uint32 outSize)
 {
     uint8  *outData;
-    struct TCodeTableEntry codeTable[4096];
-    uint8  decodeStack[4096];
     uint32 stackPtr = 0;
     uint8  n_bits = 9;
     uint32 free_entry = 257;

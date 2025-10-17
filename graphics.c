@@ -54,7 +54,7 @@ char *grCaptureFilename = NULL;
 static int grCurrentFrame = 0;
 
 /* SDL Surface Pool for memory optimization */
-#define MAX_SURFACE_POOL_SIZE 4  /* Reduced to 4 for 1MB target (typical usage: 1-4) */
+#define MAX_SURFACE_POOL_SIZE 2  /* Reduced to 2 for <500KB target (most scenes use 1-2) */
 static SDL_Surface *surfacePool[MAX_SURFACE_POOL_SIZE];
 static int surfacePoolInUse[MAX_SURFACE_POOL_SIZE];
 static int surfacePoolInitialized = 0;

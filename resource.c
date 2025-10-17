@@ -53,7 +53,7 @@ static struct TMapFile mapFile;
 /* LRU Cache globals */
 static uint32 globalTick = 0;
 static size_t totalMemoryUsed = 0;
-static size_t memoryBudget = 512 * 1024;  /* 512KB default for 1MB target */
+static size_t memoryBudget = 256 * 1024;  /* 256KB for <500KB target */
 
 /* Load resource data from extracted file if available, otherwise decompress */
 static uint8 *loadOrUncompress(FILE *compressedFile,

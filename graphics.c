@@ -546,19 +546,32 @@ void grLoadScreen(char *strArg)
     uint16 width  = scrResource->width;
     uint16 height = scrResource->height;
 
-    uint8 *outData = safe_malloc(width * height * sizeof(uint32));
+    /* Use 8-bit indexed surface instead of 32-bit RGBA - 4x memory savings! */
+    uint8 *outData = safe_malloc(width * height);  /* 1 byte per pixel instead of 4 */
 
     uint8 *inPtr  = scrResource->uncompressedData;
     uint8 *outPtr = outData;
 
+    /* Expand 4-bit paletted data to 8-bit indices (not full RGBA) */
     for (int inOffset=0; inOffset < width*height/2; inOffset++) {
-        memcpy(outPtr, ttmPalette[(inPtr[0] & 0xf0) >> 4] , 4); outPtr += 4;
-        memcpy(outPtr, ttmPalette[(inPtr[0] & 0x0f)     ] , 4); outPtr += 4;
+        *outPtr++ = (inPtr[0] & 0xf0) >> 4;  /* High nibble */
+        *outPtr++ = (inPtr[0] & 0x0f);       /* Low nibble */
         inPtr++;
     }
 
+    /* Create 8-bit indexed surface (not 32-bit RGBA) */
     grBackgroundSfc = SDL_CreateRGBSurfaceFrom((void*)outData,
-                                      width, height, 32, 4*width, 0, 0, 0, 0);
+                                      width, height, 8, width, 0, 0, 0, 0);
+
+    /* Set up the 16-color palette for this indexed surface */
+    SDL_Color colors[16];
+    for (int i = 0; i < 16; i++) {
+        colors[i].r = ttmPalette[i][2];
+        colors[i].g = ttmPalette[i][1];
+        colors[i].b = ttmPalette[i][0];
+        colors[i].a = 255;
+    }
+    SDL_SetPaletteColors(grBackgroundSfc->format->palette, colors, 0, 16);
 
     /* Free SCR data after converting to SDL surface - saves memory */
     if (scrResource->uncompressedData) {
@@ -580,10 +593,21 @@ void grInitEmptyBackground()
     if (grSavedZonesLayer != NULL)
         grReleaseSavedLayer();
 
-    uint8 *data = safe_malloc(640 * 480 * sizeof(uint32));
-    memset(data, 0, 640 * 480 * sizeof(uint32));
+    /* Use 8-bit indexed surface for empty background too - 4x memory savings! */
+    uint8 *data = safe_malloc(640 * 480);
+    memset(data, 0, 640 * 480);
     grBackgroundSfc = SDL_CreateRGBSurfaceFrom((void*)data,
-                                      640, 480, 32, 4*640, 0, 0, 0, 0);
+                                      640, 480, 8, 640, 0, 0, 0, 0);
+
+    /* Set up palette for empty background */
+    SDL_Color colors[16];
+    for (int i = 0; i < 16; i++) {
+        colors[i].r = ttmPalette[i][2];
+        colors[i].g = ttmPalette[i][1];
+        colors[i].b = ttmPalette[i][0];
+        colors[i].a = 255;
+    }
+    SDL_SetPaletteColors(grBackgroundSfc->format->palette, colors, 0, 16);
 }
 
 
@@ -640,19 +664,42 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         uint16 width  = bmpResource->widths[image];
         uint16 height = bmpResource->heights[image];
 
-        uint8 *outData = safe_malloc(width * height * sizeof(uint32));
+        /* Use 8-bit indexed surface instead of 32-bit RGBA - 4x memory savings! */
+        uint8 *outData = safe_malloc(width * height);  /* 1 byte per pixel instead of 4 */
 
         uint8 *outPtr = outData;
 
+        /* Expand 4-bit paletted data to 8-bit indices (not full RGBA) */
         for (int inOffset=0; inOffset < (width*height/2); inOffset++) {
-            memcpy(outPtr, ttmPalette[(inPtr[0] & 0xf0) >> 4] , 4); outPtr += 4;
-            memcpy(outPtr, ttmPalette[(inPtr[0] & 0x0f)     ] , 4); outPtr += 4;
+            *outPtr++ = (inPtr[0] & 0xf0) >> 4;  /* High nibble */
+            *outPtr++ = (inPtr[0] & 0x0f);       /* Low nibble */
             inPtr++;
         }
 
+        /* Create 8-bit indexed surface (not 32-bit RGBA) */
         SDL_Surface *surface = SDL_CreateRGBSurfaceFrom((void*)outData,
-                                               width, height, 32, 4*width, 0, 0, 0, 0);
-        SDL_SetColorKey(surface, SDL_TRUE, SDL_MapRGB(surface->format, 0xa8, 0, 0xa8));
+                                               width, height, 8, width, 0, 0, 0, 0);
+
+        /* Set up the 16-color palette for this indexed surface */
+        SDL_Color colors[16];
+        int magentaIndex = -1;
+        for (int i = 0; i < 16; i++) {
+            colors[i].r = ttmPalette[i][2];
+            colors[i].g = ttmPalette[i][1];
+            colors[i].b = ttmPalette[i][0];
+            colors[i].a = 255;
+
+            /* Find magenta (0xa8, 0, 0xa8) in the palette for transparent color key */
+            if (ttmPalette[i][2] == 0xa8 && ttmPalette[i][1] == 0 && ttmPalette[i][0] == 0xa8) {
+                magentaIndex = i;
+            }
+        }
+        SDL_SetPaletteColors(surface->format->palette, colors, 0, 16);
+
+        /* Set color key to the magenta palette index for transparency */
+        if (magentaIndex >= 0) {
+            SDL_SetColorKey(surface, SDL_TRUE, magentaIndex);
+        }
         ttmSlot->sprites[slotNo][image] = surface;
     }
 

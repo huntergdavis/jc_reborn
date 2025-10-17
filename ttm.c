@@ -75,6 +75,29 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
 
     debugMsg("---- Loading %s", ttmResource->resName);
 
+    /* TTM lazy loading: Load TTM data on demand from extracted file if not already loaded */
+    if (ttmResource->uncompressedData == NULL) {
+        char extractedPath[512];
+        snprintf(extractedPath, sizeof(extractedPath), "extracted/ttm/%s",
+                 ttmResource->resName);
+
+        FILE *f = fopen(extractedPath, "rb");
+        if (f) {
+            ttmResource->uncompressedData = safe_malloc(ttmResource->uncompressedSize);
+            if (fread(ttmResource->uncompressedData, 1, ttmResource->uncompressedSize, f) !=
+                ttmResource->uncompressedSize) {
+                fatalError("Failed to load TTM data from extracted file");
+            }
+            fclose(f);
+            if (debugMode) {
+                printf("Loaded TTM data for %s from disk (%u bytes)\n",
+                       ttmResource->resName, ttmResource->uncompressedSize);
+            }
+        } else {
+            fatalError("TTM data not loaded and extracted file not found - cannot load %s", ttmName);
+        }
+    }
+
     ttmSlot->data     = ttmResource->uncompressedData;
     ttmSlot->dataSize = ttmResource->uncompressedSize;
     ttmSlot->numTags  = ttmResource->numTags;

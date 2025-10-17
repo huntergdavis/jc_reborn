@@ -26,8 +26,9 @@ TEST_DISK_STREAMING = test_disk_streaming
 TEST_BMP_OPTIMIZATION = test_bmp_optimization
 TEST_SCR_OPTIMIZATION = test_scr_optimization
 TEST_SDL_OPTIMIZATION = test_sdl_optimization
+TEST_TTM_OPTIMIZATION = test_ttm_optimization
 
-ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING) $(TEST_BMP_OPTIMIZATION) $(TEST_SCR_OPTIMIZATION) $(TEST_SDL_OPTIMIZATION)
+ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING) $(TEST_BMP_OPTIMIZATION) $(TEST_SCR_OPTIMIZATION) $(TEST_SDL_OPTIMIZATION) $(TEST_TTM_OPTIMIZATION)
 
 # Default target: build and run all tests
 all: $(ALL_TESTS)
@@ -58,6 +59,9 @@ all: $(ALL_TESTS)
 	@echo ""
 	@echo "SDL surface optimization tests:"
 	@./$(TEST_SDL_OPTIMIZATION) || echo "Note: SDL optimization tests skipped"
+	@echo ""
+	@echo "TTM lazy loading optimization tests:"
+	@./$(TEST_TTM_OPTIMIZATION) || echo "Note: TTM optimization tests skipped"
 	@echo ""
 	@echo "=== All Tests Complete ==="
 
@@ -123,6 +127,10 @@ $(TEST_SCR_OPTIMIZATION): test_scr_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $
 $(TEST_SDL_OPTIMIZATION): test_sdl_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
 
+# Test: TTM optimization
+$(TEST_TTM_OPTIMIZATION): test_ttm_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
+	$(CC) $(CFLAGS) $^ -o $@
+
 # Individual test targets
 test-utils: $(TEST_UTILS)
 	@echo "Running utils tests..."
@@ -164,6 +172,10 @@ test-sdl-optimization: $(TEST_SDL_OPTIMIZATION)
 	@echo "Running SDL surface optimization tests..."
 	@./$(TEST_SDL_OPTIMIZATION)
 
+test-ttm-optimization: $(TEST_TTM_OPTIMIZATION)
+	@echo "Running TTM lazy loading optimization tests..."
+	@./$(TEST_TTM_OPTIMIZATION)
+
 # Clean up test binaries
 clean:
 	rm -f $(ALL_TESTS) $(UNITY_OBJ)
@@ -172,4 +184,4 @@ clean:
 clean-all: clean
 	$(MAKE) -C $(PARENT_DIR) clean
 
-.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming test-bmp-optimization test-scr-optimization test-sdl-optimization clean clean-all
+.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming test-bmp-optimization test-scr-optimization test-sdl-optimization test-ttm-optimization clean clean-all

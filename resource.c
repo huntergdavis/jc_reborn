@@ -353,13 +353,10 @@ static struct TTtmResource *parseTtmResource(FILE *f)
     ttmResource->compressionMethod = readUint8(f);
     ttmResource->uncompressedSize = readUint32(f);
 
-    ttmResource->uncompressedData = loadOrUncompress(f,
-                                      ttmResource->resName,
-                                      "ttm",
-                                      ttmResource->compressionMethod,
-                                      ttmResource->compressedSize,
-                                      ttmResource->uncompressedSize
-                                    );
+    /* TTM lazy loading: Don't decompress at startup, just skip the compressed data */
+    /* This saves ~284KB of memory at startup (only decompress when TTM is played) */
+    ttmResource->uncompressedData = NULL;  /* Will be loaded on demand in ttmLoadTtm() */
+    fseek(f, ttmResource->compressedSize, SEEK_CUR);  /* Skip compressed data for now */
 
     buffer = readUint8Block(f,4);
     if (memcmp(buffer,"TTI:",4))

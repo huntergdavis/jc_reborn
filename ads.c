@@ -665,6 +665,29 @@ void adsPlay(char *adsName, uint16 adsTag)
 
     debugMsg("\n\n========== Playing ADS: %s:%d ==========\n", adsResource->resName, adsTag);
 
+    /* ADS lazy loading: Load ADS data on demand from extracted file if not already loaded */
+    if (adsResource->uncompressedData == NULL) {
+        char extractedPath[512];
+        snprintf(extractedPath, sizeof(extractedPath), "extracted/ads/%s",
+                 adsResource->resName);
+
+        FILE *f = fopen(extractedPath, "rb");
+        if (f) {
+            adsResource->uncompressedData = safe_malloc(adsResource->uncompressedSize);
+            if (fread(adsResource->uncompressedData, 1, adsResource->uncompressedSize, f) !=
+                adsResource->uncompressedSize) {
+                fatalError("Failed to load ADS data from extracted file");
+            }
+            fclose(f);
+            if (debugMode) {
+                printf("Loaded ADS data for %s from disk (%u bytes)\n",
+                       adsResource->resName, adsResource->uncompressedSize);
+            }
+        } else {
+            fatalError("ADS data not loaded and extracted file not found - cannot load %s", adsName);
+        }
+    }
+
     data = adsResource->uncompressedData;
     dataSize = adsResource->uncompressedSize;
 

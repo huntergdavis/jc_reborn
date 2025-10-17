@@ -150,13 +150,10 @@ static struct TAdsResource *parseAdsResource(FILE *f)
     adsResource->compressionMethod = readUint8(f);
     adsResource->uncompressedSize = readUint32(f);
 
-    adsResource->uncompressedData = loadOrUncompress(f,
-                                      adsResource->resName,
-                                      "ads",
-                                      adsResource->compressionMethod,
-                                      adsResource->compressedSize,
-                                      adsResource->uncompressedSize
-                                    );
+    /* ADS lazy loading: Don't decompress at startup, just skip the compressed data */
+    /* This saves ~15KB of memory at startup (only decompress when ADS is played) */
+    adsResource->uncompressedData = NULL;  /* Will be loaded on demand in ads.c */
+    fseek(f, adsResource->compressedSize, SEEK_CUR);  /* Skip compressed data for now */
 
     buffer = readUint8Block(f,4);
     if (memcmp(buffer,"TAG:",4))

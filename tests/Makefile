@@ -27,8 +27,9 @@ TEST_BMP_OPTIMIZATION = test_bmp_optimization
 TEST_SCR_OPTIMIZATION = test_scr_optimization
 TEST_SDL_OPTIMIZATION = test_sdl_optimization
 TEST_TTM_OPTIMIZATION = test_ttm_optimization
+TEST_ADS_OPTIMIZATION = test_ads_optimization
 
-ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING) $(TEST_BMP_OPTIMIZATION) $(TEST_SCR_OPTIMIZATION) $(TEST_SDL_OPTIMIZATION) $(TEST_TTM_OPTIMIZATION)
+ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING) $(TEST_BMP_OPTIMIZATION) $(TEST_SCR_OPTIMIZATION) $(TEST_SDL_OPTIMIZATION) $(TEST_TTM_OPTIMIZATION) $(TEST_ADS_OPTIMIZATION)
 
 # Default target: build and run all tests
 all: $(ALL_TESTS)
@@ -62,6 +63,9 @@ all: $(ALL_TESTS)
 	@echo ""
 	@echo "TTM lazy loading optimization tests:"
 	@./$(TEST_TTM_OPTIMIZATION) || echo "Note: TTM optimization tests skipped"
+	@echo ""
+	@echo "ADS lazy loading optimization tests:"
+	@./$(TEST_ADS_OPTIMIZATION) || echo "Note: ADS optimization tests skipped"
 	@echo ""
 	@echo "=== All Tests Complete ==="
 
@@ -131,6 +135,10 @@ $(TEST_SDL_OPTIMIZATION): test_sdl_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $
 $(TEST_TTM_OPTIMIZATION): test_ttm_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
 
+# Test: ADS optimization
+$(TEST_ADS_OPTIMIZATION): test_ads_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
+	$(CC) $(CFLAGS) $^ -o $@
+
 # Individual test targets
 test-utils: $(TEST_UTILS)
 	@echo "Running utils tests..."
@@ -176,6 +184,10 @@ test-ttm-optimization: $(TEST_TTM_OPTIMIZATION)
 	@echo "Running TTM lazy loading optimization tests..."
 	@./$(TEST_TTM_OPTIMIZATION)
 
+test-ads-optimization: $(TEST_ADS_OPTIMIZATION)
+	@echo "Running ADS lazy loading optimization tests..."
+	@./$(TEST_ADS_OPTIMIZATION)
+
 # Clean up test binaries
 clean:
 	rm -f $(ALL_TESTS) $(UNITY_OBJ)
@@ -184,4 +196,4 @@ clean:
 clean-all: clean
 	$(MAKE) -C $(PARENT_DIR) clean
 
-.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming test-bmp-optimization test-scr-optimization test-sdl-optimization test-ttm-optimization clean clean-all
+.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming test-bmp-optimization test-scr-optimization test-sdl-optimization test-ttm-optimization test-ads-optimization clean clean-all

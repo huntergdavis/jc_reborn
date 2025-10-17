@@ -48,6 +48,11 @@ int grDy = 0;
 int grWindowed = 0;
 int grUpdateDelay = 0;
 
+/* Frame capture for visual regression testing */
+int grCaptureFrameNumber = -1;
+char *grCaptureFilename = NULL;
+static int grCurrentFrame = 0;
+
 
 static void grReleaseScreen()
 {
@@ -212,6 +217,28 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
 
     // ... and refresh the display
     SDL_UpdateWindowSurface(sdl_window);
+
+    /* Frame capture for visual regression testing */
+    if (grCaptureFrameNumber >= 0 && grCurrentFrame == grCaptureFrameNumber) {
+        char defaultFilename[256];
+        const char *filename;
+
+        if (grCaptureFilename != NULL) {
+            filename = grCaptureFilename;
+        } else {
+            snprintf(defaultFilename, sizeof(defaultFilename),
+                     "frame_%04d.bmp", grCurrentFrame);
+            filename = defaultFilename;
+        }
+
+        if (grCaptureFrame(filename) == 0) {
+            printf("Frame %d captured to %s\n", grCurrentFrame, filename);
+            /* Disable further captures after successful capture */
+            grCaptureFrameNumber = -1;
+        }
+    }
+
+    grCurrentFrame++;
 }
 
 
@@ -780,5 +807,37 @@ void grFadeOut()
     grFreeLayer(tmpSfc);
 
     fadeOutType = (fadeOutType + 1) % 5;
+}
+
+
+/*
+ * Frame capture for visual regression testing
+ * Saves the current window surface to a BMP file
+ * Returns 0 on success, -1 on error
+ */
+int grCaptureFrame(const char *filename) {
+    if (sdl_window == NULL) {
+        fprintf(stderr, "Error: Cannot capture frame, SDL window not initialized\n");
+        return -1;
+    }
+
+    SDL_Surface *windowSurface = SDL_GetWindowSurface(sdl_window);
+    if (windowSurface == NULL) {
+        fprintf(stderr, "Error: Cannot get window surface: %s\n", SDL_GetError());
+        return -1;
+    }
+
+    /* Save as BMP file */
+    if (SDL_SaveBMP(windowSurface, filename) != 0) {
+        fprintf(stderr, "Error: Cannot save frame to %s: %s\n", filename, SDL_GetError());
+        return -1;
+    }
+
+    if (debugMode) {
+        printf("Captured frame to %s (%dx%d)\n", filename,
+               windowSurface->w, windowSurface->h);
+    }
+
+    return 0;
 }
 

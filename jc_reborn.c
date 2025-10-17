@@ -61,11 +61,13 @@ static void usage()
         printf("         jc_reborn [<options>] ads <ADS name> <ADS tag no>\n");
         printf("\n");
         printf(" Available options are:\n");
-        printf("         window     - play in windowed mode\n");
-        printf("         nosound    - quiet mode\n");
-        printf("         island     - display the island as background for ADS play\n");
-        printf("         debug      - print some debug info on stdout\n");
-        printf("         hotkeys    - enable hot keys\n");
+        printf("         window          - play in windowed mode\n");
+        printf("         nosound         - quiet mode\n");
+        printf("         island          - display the island as background for ADS play\n");
+        printf("         debug           - print some debug info on stdout\n");
+        printf("         hotkeys         - enable hot keys\n");
+        printf("         capture-frame N - capture frame N to file (for visual testing)\n");
+        printf("         capture-output FILE - specify output file for captured frame\n");
         printf("\n");
         printf(" While-playing hot-keys (if enabled):\n");
         printf("         Esc        - Terminate immediately\n");
@@ -135,6 +137,26 @@ static void parseArgs(int argc, char **argv)
             else if (!strcmp(argv[i], "hotkeys")) {
                 evHotKeysEnabled = 1;
             }
+            else if (!strcmp(argv[i], "capture-frame")) {
+                if (i + 1 < argc) {
+                    grCaptureFrameNumber = atoi(argv[++i]);
+                    if (grCaptureFrameNumber < 0) {
+                        fprintf(stderr, "Error: capture-frame must be >= 0\n");
+                        usage();
+                    }
+                } else {
+                    fprintf(stderr, "Error: capture-frame requires a frame number\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "capture-output")) {
+                if (i + 1 < argc) {
+                    grCaptureFilename = argv[++i];
+                } else {
+                    fprintf(stderr, "Error: capture-output requires a filename\n");
+                    usage();
+                }
+            }
         }
     }
 
@@ -157,6 +179,9 @@ int main(int argc, char **argv)
         debugMode = 1;
 
     parseResourceFiles("RESOURCE.MAP");
+
+    /* Initialize LRU cache for memory management */
+    initLRUCache();
 
     if (argPlayAll) {
         graphicsInit();

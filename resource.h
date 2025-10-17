@@ -64,6 +64,9 @@ struct TAdsResource {
     uint32 tagSize;
     uint16 numTags;
     struct TTags *tags;
+    /* LRU cache fields */
+    uint32 lastUsedTick;
+    uint32 pinCount;
 };
 
 
@@ -85,6 +88,9 @@ struct TBmpResource {
     uint8 compressionMethod;
     uint32 uncompressedSize;
     uint8 *uncompressedData;
+    /* LRU cache fields */
+    uint32 lastUsedTick;
+    uint32 pinCount;
 };
 
 
@@ -115,6 +121,9 @@ struct TScrResource {
     uint8 compressionMethod;
     uint32 uncompressedSize;
     uint8 *uncompressedData;
+    /* LRU cache fields */
+    uint32 lastUsedTick;
+    uint32 pinCount;
 };
 
 
@@ -136,6 +145,9 @@ struct TTtmResource {
     uint32 tagSize;
     uint16 numTags;
     struct TTags *tags; // TODO : merge with ttmTags from ttm.c ?
+    /* LRU cache fields */
+    uint32 lastUsedTick;
+    uint32 pinCount;
 };
 
 
@@ -170,4 +182,12 @@ struct TAdsResource *findAdsResource(char *searchString);
 struct TBmpResource *findBmpResource(char *searchString);
 struct TScrResource *findScrResource(char *searchString);
 struct TTtmResource *findTtmResource(char *searchString);
+
+/* LRU cache management */
+void initLRUCache(void);
+void pinResource(void *resource, uint32 size, const char *type);
+void unpinResource(void *resource, const char *type);
+void touchResource(void *resource);
+void checkMemoryBudget(void);
+size_t getTotalMemoryUsed(void);
 

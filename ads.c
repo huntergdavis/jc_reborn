@@ -688,6 +688,12 @@ void adsPlay(char *adsName, uint16 adsTag)
         }
     }
 
+    /* Pin ADS resource to prevent eviction while in use */
+    pinResource(adsResource, adsResource->uncompressedSize, "ADS");
+
+    /* Check memory budget and potentially evict unused resources */
+    checkMemoryBudget();
+
     data = adsResource->uncompressedData;
     dataSize = adsResource->uncompressedSize;
 
@@ -824,6 +830,9 @@ void adsPlay(char *adsName, uint16 adsTag)
     grRestoreZone(NULL, 0, 0, 0, 0);
 
     adsReleaseAds();
+
+    /* Unpin ADS resource to allow LRU eviction */
+    unpinResource(adsResource, "ADS");
 }
 
 

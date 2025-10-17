@@ -50,6 +50,11 @@ int numTtmResources = 0;
 
 static struct TMapFile mapFile;
 
+/* LRU Cache globals */
+static uint32 globalTick = 0;
+static size_t totalMemoryUsed = 0;
+static size_t memoryBudget = 2 * 1024 * 1024;  /* 2MB default */
+
 /* Load resource data from extracted file if available, otherwise decompress */
 static uint8 *loadOrUncompress(FILE *compressedFile,
                                 const char *resourceName,
@@ -553,3 +558,193 @@ struct TTtmResource *findTtmResource(char *searchString)
     return result;
 }
 
+
+/* ============================================================================
+ * LRU Cache Implementation
+ * ============================================================================ */
+
+void initLRUCache(void) {
+    globalTick = 0;
+    totalMemoryUsed = 0;
+    
+    /* Check for JC_MEM_BUDGET_MB environment variable */
+    char *budgetEnv = getenv("JC_MEM_BUDGET_MB");
+    if (budgetEnv != NULL) {
+        int budgetMB = atoi(budgetEnv);
+        if (budgetMB > 0) {
+            memoryBudget = (size_t)budgetMB * 1024 * 1024;
+            if (debugMode) {
+                printf("LRU cache: Memory budget set to %d MB\n", budgetMB);
+            }
+        }
+    }
+    
+    /* Initialize all resource LRU fields */
+    for (int i = 0; i < numAdsResources; i++) {
+        adsResources[i]->lastUsedTick = 0;
+        adsResources[i]->pinCount = 0;
+    }
+    for (int i = 0; i < numBmpResources; i++) {
+        bmpResources[i]->lastUsedTick = 0;
+        bmpResources[i]->pinCount = 0;
+    }
+    for (int i = 0; i < numScrResources; i++) {
+        scrResources[i]->lastUsedTick = 0;
+        scrResources[i]->pinCount = 0;
+    }
+    for (int i = 0; i < numTtmResources; i++) {
+        ttmResources[i]->lastUsedTick = 0;
+        ttmResources[i]->pinCount = 0;
+    }
+}
+
+void touchResource(void *resource) {
+    globalTick++;
+    
+    /* Update lastUsedTick based on resource type */
+    for (int i = 0; i < numAdsResources; i++) {
+        if (adsResources[i] == resource) {
+            adsResources[i]->lastUsedTick = globalTick;
+            return;
+        }
+    }
+    for (int i = 0; i < numBmpResources; i++) {
+        if (bmpResources[i] == resource) {
+            bmpResources[i]->lastUsedTick = globalTick;
+            return;
+        }
+    }
+    for (int i = 0; i < numScrResources; i++) {
+        if (scrResources[i] == resource) {
+            scrResources[i]->lastUsedTick = globalTick;
+            return;
+        }
+    }
+    for (int i = 0; i < numTtmResources; i++) {
+        if (ttmResources[i] == resource) {
+            ttmResources[i]->lastUsedTick = globalTick;
+            return;
+        }
+    }
+}
+
+void pinResource(void *resource, uint32 size, const char *type) {
+    touchResource(resource);
+    
+    /* Increment pin count */
+    for (int i = 0; i < numAdsResources; i++) {
+        if (adsResources[i] == resource) {
+            adsResources[i]->pinCount++;
+            if (adsResources[i]->uncompressedData != NULL) {
+                totalMemoryUsed += size;
+            }
+            return;
+        }
+    }
+    for (int i = 0; i < numTtmResources; i++) {
+        if (ttmResources[i] == resource) {
+            ttmResources[i]->pinCount++;
+            if (ttmResources[i]->uncompressedData != NULL) {
+                totalMemoryUsed += size;
+            }
+            return;
+        }
+    }
+}
+
+void unpinResource(void *resource, const char *type) {
+    /* Decrement pin count */
+    for (int i = 0; i < numAdsResources; i++) {
+        if (adsResources[i] == resource) {
+            if (adsResources[i]->pinCount > 0) {
+                adsResources[i]->pinCount--;
+            }
+            return;
+        }
+    }
+    for (int i = 0; i < numTtmResources; i++) {
+        if (ttmResources[i] == resource) {
+            if (ttmResources[i]->pinCount > 0) {
+                ttmResources[i]->pinCount--;
+            }
+            return;
+        }
+    }
+}
+
+void checkMemoryBudget(void) {
+    if (totalMemoryUsed <= memoryBudget) {
+        return;
+    }
+    
+    if (debugMode) {
+        printf("LRU cache: Memory over budget (%.2f MB / %.2f MB), evicting...\n",
+               totalMemoryUsed / (1024.0 * 1024.0),
+               memoryBudget / (1024.0 * 1024.0));
+    }
+    
+    /* Find and evict LRU unpinned resources */
+    while (totalMemoryUsed > memoryBudget) {
+        void *lruResource = NULL;
+        uint32 lruTick = globalTick + 1;
+        size_t lruSize = 0;
+        char lruType[10] = "";
+        
+        /* Find LRU unpinned ADS */
+        for (int i = 0; i < numAdsResources; i++) {
+            if (adsResources[i]->uncompressedData != NULL &&
+                adsResources[i]->pinCount == 0 &&
+                adsResources[i]->lastUsedTick < lruTick) {
+                lruResource = adsResources[i];
+                lruTick = adsResources[i]->lastUsedTick;
+                lruSize = adsResources[i]->uncompressedSize;
+                strcpy(lruType, "ADS");
+            }
+        }
+        
+        /* Find LRU unpinned TTM */
+        for (int i = 0; i < numTtmResources; i++) {
+            if (ttmResources[i]->uncompressedData != NULL &&
+                ttmResources[i]->pinCount == 0 &&
+                ttmResources[i]->lastUsedTick < lruTick) {
+                lruResource = ttmResources[i];
+                lruTick = ttmResources[i]->lastUsedTick;
+                lruSize = ttmResources[i]->uncompressedSize;
+                strcpy(lruType, "TTM");
+            }
+        }
+        
+        /* Evict the LRU resource */
+        if (lruResource != NULL) {
+            if (strcmp(lruType, "ADS") == 0) {
+                struct TAdsResource *ads = (struct TAdsResource *)lruResource;
+                if (debugMode) {
+                    printf("LRU cache: Evicting %s (%.2f KB)\n",
+                           ads->resName, lruSize / 1024.0);
+                }
+                free(ads->uncompressedData);
+                ads->uncompressedData = NULL;
+                totalMemoryUsed -= lruSize;
+            } else if (strcmp(lruType, "TTM") == 0) {
+                struct TTtmResource *ttm = (struct TTtmResource *)lruResource;
+                if (debugMode) {
+                    printf("LRU cache: Evicting %s (%.2f KB)\n",
+                           ttm->resName, lruSize / 1024.0);
+                }
+                free(ttm->uncompressedData);
+                ttm->uncompressedData = NULL;
+                totalMemoryUsed -= lruSize;
+            }
+        } else {
+            /* No unpinned resources to evict */
+            if (debugMode) {
+                printf("LRU cache: All resources pinned, cannot evict\n");
+            }
+            break;
+        }
+    }
+}
+
+size_t getTotalMemoryUsed(void) {
+    return totalMemoryUsed;
+}

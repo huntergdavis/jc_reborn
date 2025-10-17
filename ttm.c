@@ -98,7 +98,14 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
         }
     }
 
+    /* Pin TTM resource to prevent eviction while in use */
+    pinResource(ttmResource, ttmResource->uncompressedSize, "TTM");
+
+    /* Check memory budget and potentially evict unused resources */
+    checkMemoryBudget();
+
     ttmSlot->data     = ttmResource->uncompressedData;
+    ttmSlot->ttmResource = ttmResource;  /* Store reference for unpinning later */
     ttmSlot->dataSize = ttmResource->uncompressedSize;
     ttmSlot->numTags  = ttmResource->numTags;
     ttmSlot->tags     = safe_malloc(ttmSlot->numTags * sizeof(struct TTtmTag));
@@ -140,8 +147,9 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
 
 void ttmInitSlot(struct TTtmSlot *ttmSlot)
 {
+    ttmSlot->data = NULL;
+    ttmSlot->ttmResource = NULL;
     for (int i=0; i < MAX_BMP_SLOTS; i++) {
-        ttmSlot->data          = NULL;
         ttmSlot->numSprites[i] = 0;
     }
 }
@@ -150,6 +158,12 @@ void ttmInitSlot(struct TTtmSlot *ttmSlot)
 void ttmResetSlot(struct TTtmSlot *ttmSlot)
 {
     if (ttmSlot->data != NULL) {
+        /* Unpin TTM resource to allow LRU eviction */
+        if (ttmSlot->ttmResource != NULL) {
+            unpinResource(ttmSlot->ttmResource, "TTM");
+            ttmSlot->ttmResource = NULL;
+        }
+
         ttmSlot->data = NULL;
         free(ttmSlot->tags);
     }

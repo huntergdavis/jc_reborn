@@ -23,6 +23,9 @@
 
 #include <SDL2/SDL.h>
 
+/* Forward declaration for LRU cache */
+struct TTtmResource;
+
 #define SCREEN_WIDTH        640
 #define SCREEN_HEIGHT       480
 
@@ -46,6 +49,7 @@ struct TTtmSlot {
     int         numTags;
     int         numSprites[MAX_BMP_SLOTS];
     SDL_Surface *sprites[MAX_BMP_SLOTS][MAX_SPRITES_PER_BMP];
+    struct TTtmResource *ttmResource;  /* For LRU cache unpinning */
 };
 
 struct TTtmTag {  // TODO : rename, used for ADS too
@@ -76,6 +80,10 @@ extern int grDx;
 extern int grDy;
 extern int grWindowed;
 extern int grUpdateDelay;
+
+/* Frame capture for visual regression testing */
+extern int grCaptureFrameNumber;
+extern char *grCaptureFilename;
 
 
 void graphicsInit();
@@ -110,4 +118,7 @@ void grFadeOut();
 
 void grLoadPalette();   // TODO
 void grLoadScreen(char *strArg);
+
+/* Frame capture for visual regression testing */
+int grCaptureFrame(const char *filename);
 

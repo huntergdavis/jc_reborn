@@ -28,8 +28,10 @@ TEST_SCR_OPTIMIZATION = test_scr_optimization
 TEST_SDL_OPTIMIZATION = test_sdl_optimization
 TEST_TTM_OPTIMIZATION = test_ttm_optimization
 TEST_ADS_OPTIMIZATION = test_ads_optimization
+TEST_VISUAL_REGRESSION = test_visual_regression
+TEST_LRU_CACHE = test_lru_cache
 
-ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING) $(TEST_BMP_OPTIMIZATION) $(TEST_SCR_OPTIMIZATION) $(TEST_SDL_OPTIMIZATION) $(TEST_TTM_OPTIMIZATION) $(TEST_ADS_OPTIMIZATION)
+ALL_TESTS = $(TEST_UTILS) $(TEST_CALCPATH) $(TEST_RESOURCE) $(TEST_UNCOMPRESS) $(TEST_CONFIG) $(TEST_MEMORY) $(TEST_DISK_STREAMING) $(TEST_BMP_OPTIMIZATION) $(TEST_SCR_OPTIMIZATION) $(TEST_SDL_OPTIMIZATION) $(TEST_TTM_OPTIMIZATION) $(TEST_ADS_OPTIMIZATION) $(TEST_VISUAL_REGRESSION) $(TEST_LRU_CACHE)
 
 # Default target: build and run all tests
 all: $(ALL_TESTS)
@@ -66,6 +68,12 @@ all: $(ALL_TESTS)
 	@echo ""
 	@echo "ADS lazy loading optimization tests:"
 	@./$(TEST_ADS_OPTIMIZATION) || echo "Note: ADS optimization tests skipped"
+	@echo ""
+	@echo "LRU cache tests:"
+	@./$(TEST_LRU_CACHE) || echo "Note: LRU cache tests skipped"
+	@echo ""
+	@echo "Visual regression tests:"
+	@./$(TEST_VISUAL_REGRESSION) || echo "Note: Visual regression tests skipped"
 	@echo ""
 	@echo "=== All Tests Complete ==="
 
@@ -139,6 +147,14 @@ $(TEST_TTM_OPTIMIZATION): test_ttm_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $
 $(TEST_ADS_OPTIMIZATION): test_ads_optimization.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
 	$(CC) $(CFLAGS) $^ -o $@
 
+# Test: LRU cache
+$(TEST_LRU_CACHE): test_lru_cache.c $(UNITY_OBJ) $(RESOURCE_OBJ) $(UTILS_OBJ) $(UNCOMPRESS_OBJ)
+	$(CC) $(CFLAGS) $^ -o $@
+
+# Test: Visual regression
+$(TEST_VISUAL_REGRESSION): test_visual_regression.c $(UNITY_OBJ) $(UTILS_OBJ)
+	$(CC) $(CFLAGS) $^ -o $@
+
 # Individual test targets
 test-utils: $(TEST_UTILS)
 	@echo "Running utils tests..."
@@ -188,6 +204,14 @@ test-ads-optimization: $(TEST_ADS_OPTIMIZATION)
 	@echo "Running ADS lazy loading optimization tests..."
 	@./$(TEST_ADS_OPTIMIZATION)
 
+test-lru-cache: $(TEST_LRU_CACHE)
+	@echo "Running LRU cache tests..."
+	@./$(TEST_LRU_CACHE)
+
+test-visual-regression: $(TEST_VISUAL_REGRESSION)
+	@echo "Running visual regression tests..."
+	@./$(TEST_VISUAL_REGRESSION)
+
 # Clean up test binaries
 clean:
 	rm -f $(ALL_TESTS) $(UNITY_OBJ)
@@ -196,4 +220,4 @@ clean:
 clean-all: clean
 	$(MAKE) -C $(PARENT_DIR) clean
 
-.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming test-bmp-optimization test-scr-optimization test-sdl-optimization test-ttm-optimization test-ads-optimization clean clean-all
+.PHONY: all test-utils test-calcpath test-resource test-uncompress test-config test-memory test-disk-streaming test-bmp-optimization test-scr-optimization test-sdl-optimization test-ttm-optimization test-ads-optimization test-lru-cache test-visual-regression clean clean-all

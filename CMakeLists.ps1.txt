@@ -1,0 +1,78 @@
+cmake_minimum_required(VERSION 3.21)
+
+# Project configuration
+project(
+    JohnnyReborn
+    LANGUAGES C
+    VERSION 1.0.0
+)
+
+# Find PSn00bSDK
+if(NOT DEFINED ENV{PSN00BSDK})
+    message(FATAL_ERROR "PSN00BSDK environment variable not set")
+endif()
+
+# Include PSn00bSDK CMake module
+list(APPEND CMAKE_MODULE_PATH "$ENV{PSN00BSDK}/lib/libpsn00b/cmake")
+include(FindPSn00bSDK)
+
+# Set C standard
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# Compiler flags matching the original project
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpedantic")
+
+# Source files - using PS1-specific implementations for graphics/sound/events
+set(SOURCES
+    jc_reborn.c
+    utils.c
+    uncompress.c
+    resource.c
+    dump.c
+    story.c
+    walk.c
+    calcpath.c
+    ads.c
+    ttm.c
+    island.c
+    bench.c
+    config.c
+    # PS1-specific implementations
+    graphics_ps1.c
+    sound_ps1.c
+    events_ps1.c
+)
+
+# Create PS1 executable
+psn00bsdk_add_executable(
+    jcreborn
+    ${SOURCES}
+)
+
+# Link PSn00bSDK libraries
+target_link_libraries(jcreborn
+    PRIVATE
+        PSn00bSDK::psxgpu    # GPU library
+        PSn00bSDK::psxcd     # CD-ROM library
+        PSn00bSDK::psxspu    # SPU (audio) library
+        PSn00bSDK::psxapi    # Core API
+        PSn00bSDK::psxetc    # Misc utilities
+)
+
+# Include directories
+target_include_directories(jcreborn
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Generate CD image using mkpsxiso
+add_custom_command(
+    TARGET jcreborn POST_BUILD
+    COMMAND mkpsxiso ${CMAKE_CURRENT_SOURCE_DIR}/cd_layout.xml
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Creating CD image..."
+)
+
+# Install target
+install(TARGETS jcreborn)

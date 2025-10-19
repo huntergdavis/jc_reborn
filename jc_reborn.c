@@ -25,13 +25,27 @@
 #include <stdio.h>
 #include <string.h>
 
+/* Forward declare FILE for -ffreestanding on PS1 */
+#ifdef PS1_BUILD
+typedef struct _FILE FILE;
+#endif
+
 #include "mytypes.h"
 #include "utils.h"
 #include "resource.h"
 #include "dump.h"
+
+/* Platform-specific headers */
+#ifdef PS1_BUILD
+#include "graphics_ps1.h"
+#include "events_ps1.h"
+#include "sound_ps1.h"
+#else
 #include "graphics.h"
 #include "events.h"
 #include "sound.h"
+#endif
+
 #include "ttm.h"
 #include "ads.h"
 #include "story.h"

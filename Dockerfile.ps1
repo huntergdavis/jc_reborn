@@ -26,11 +26,10 @@ RUN cd /tmp && \
     rm PSn00bSDK-0.24-Linux.zip gcc-mipsel-none-elf-12.3.0-linux.zip
 
 # Add PSn00bSDK binaries to PATH
-ENV PATH="/opt/psn00bsdk/bin:${PATH}"
+ENV PATH="/opt/psn00bsdk/bin:/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin:${PATH}"
 
-# Set PSn00bSDK environment variables
-ENV PSN00BSDK_LIBS="/opt/psn00bsdk/lib"
-ENV PSN00BSDK_INCLUDE="/opt/psn00bsdk/include"
+# Set PSn00bSDK environment variable (required by CMake)
+ENV PSN00BSDK="/opt/psn00bsdk/PSn00bSDK-0.24-Linux"
 
 # Create project directory
 WORKDIR /project

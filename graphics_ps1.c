@@ -26,6 +26,10 @@
 #include <psxapi.h>
 
 #include "mytypes.h"
+
+/* Forward declare FILE to avoid utils.h compilation errors with -ffreestanding */
+typedef struct _FILE FILE;
+
 #include "utils.h"
 #include "graphics_ps1.h"
 #include "resource.h"
@@ -78,9 +82,6 @@ void graphicsInit()
 
     /* Initialize geometry transformation engine */
     InitGeom();
-
-    /* Set screen geometry for 640x480 @ 60Hz */
-    SetGeomScreen(320);  /* Half of screen width for perspective */
 
     /* Setup display environments for double buffering */
     /* Buffer 0: (0, 0) - Buffer 1: (0, 480) */
@@ -239,8 +240,8 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     }
 
     /* 3. Draw background thread layer */
-    if (ttmBackgroundThread != NULL && ttmBackgroundThread->layer != NULL) {
-        PS1Surface *layer = ttmBackgroundThread->layer;
+    if (ttmBackgroundThread != NULL && ttmBackgroundThread->ttmLayer != NULL) {
+        PS1Surface *layer = ttmBackgroundThread->ttmLayer;
         if (layer->pixels != NULL) {
             if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
                 SPRT *layerSprt = (SPRT*)nextPrimitive[db];
@@ -261,8 +262,8 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
 
     /* 4. Draw all active TTM thread layers */
     for (int i = 0; i < 10; i++) {  /* Max 10 TTM threads */
-        if (ttmThreads[i].active && ttmThreads[i].layer != NULL) {
-            PS1Surface *layer = ttmThreads[i].layer;
+        if (ttmThreads[i].isRunning && ttmThreads[i].ttmLayer != NULL) {
+            PS1Surface *layer = ttmThreads[i].ttmLayer;
             if (layer->pixels != NULL) {
                 if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
                     SPRT *layerSprt = (SPRT*)nextPrimitive[db];
@@ -283,8 +284,8 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     }
 
     /* 5. Draw holiday thread layer if active */
-    if (ttmHolidayThread != NULL && ttmHolidayThread->active && ttmHolidayThread->layer != NULL) {
-        PS1Surface *layer = ttmHolidayThread->layer;
+    if (ttmHolidayThread != NULL && ttmHolidayThread->isRunning && ttmHolidayThread->ttmLayer != NULL) {
+        PS1Surface *layer = ttmHolidayThread->ttmLayer;
         if (layer->pixels != NULL) {
             if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
                 SPRT *layerSprt = (SPRT*)nextPrimitive[db];
@@ -370,26 +371,9 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     /* Handle lazy loading - reload from extracted file if needed */
     if (bmpResource->uncompressedData == NULL) {
-        char extractedPath[512];
-        snprintf(extractedPath, sizeof(extractedPath), "extracted/bmp/%s",
-                 bmpResource->resName);
-
-        /* On PS1, we'd use CD-ROM functions here instead of fopen */
-        FILE *f = fopen(extractedPath, "rb");
-        if (f) {
-            bmpResource->uncompressedData = safe_malloc(bmpResource->uncompressedSize);
-            if (fread(bmpResource->uncompressedData, 1, bmpResource->uncompressedSize, f) !=
-                bmpResource->uncompressedSize) {
-                fatalError("Failed to reload BMP data from extracted file");
-            }
-            fclose(f);
-            if (debugMode) {
-                printf("Reloaded BMP data for %s from disk (%u bytes)\n",
-                       bmpResource->resName, bmpResource->uncompressedSize);
-            }
-        } else {
-            fatalError("BMP data freed and extracted file not found - cannot reload");
-        }
+        /* PS1 TODO: Use CD-ROM functions to reload from disc if needed */
+        /* For now, fatal error if data was freed */
+        fatalError("BMP data freed - PS1 CD-ROM reloading not yet implemented");
     }
 
     uint8 *inPtr = bmpResource->uncompressedData;
@@ -709,30 +693,15 @@ void grLoadScreen(char *strArg)
 
     /* Handle lazy loading - reload from extracted file if needed */
     if (scrResource->uncompressedData == NULL) {
-        char extractedPath[512];
-        snprintf(extractedPath, sizeof(extractedPath), "extracted/scr/%s",
-                 scrResource->resName);
-
-        /* On PS1, we'd use CD-ROM functions here instead of fopen */
-        FILE *f = fopen(extractedPath, "rb");
-        if (f) {
-            scrResource->uncompressedData = safe_malloc(scrResource->uncompressedSize);
-            if (fread(scrResource->uncompressedData, 1, scrResource->uncompressedSize, f) !=
-                scrResource->uncompressedSize) {
-                fatalError("Failed to reload SCR data from extracted file");
-            }
-            fclose(f);
-            if (debugMode) {
-                printf("Reloaded SCR data for %s from disk (%u bytes)\n",
-                       scrResource->resName, scrResource->uncompressedSize);
-            }
-        } else {
-            fatalError("SCR data freed and extracted file not found - cannot reload");
-        }
+        /* PS1 TODO: Use CD-ROM functions to reload from disc if needed */
+        /* For now, fatal error if data was freed */
+        fatalError("SCR data freed - PS1 CD-ROM reloading not yet implemented");
     }
 
     if ((scrResource->width % 2) == 1) {
-        fprintf(stderr, "Warning: grLoadScreen(): can't manage odd widths\n");
+        if (debugMode) {
+            printf("Warning: grLoadScreen(): can't manage odd widths\n");
+        }
     }
 
     if (scrResource->width > 640 || scrResource->height > 480) {

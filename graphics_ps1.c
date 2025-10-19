@@ -77,11 +77,20 @@ static uint16 nextVRAMY = 480;  /* Start after framebuffers */
  */
 void graphicsInit()
 {
+    if (debugMode)
+        printf("GPU: Resetting GPU...\n");
+
     /* Reset GPU */
     ResetGraph(0);
 
+    if (debugMode)
+        printf("GPU: Initializing GTE...\n");
+
     /* Initialize geometry transformation engine */
     InitGeom();
+
+    if (debugMode)
+        printf("GPU: Setting up display buffers (%dx%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
     /* Setup display environments for double buffering */
     /* Buffer 0: (0, 0) - Buffer 1: (0, 480) */
@@ -92,12 +101,18 @@ void graphicsInit()
     SetDefDrawEnv(&draw[0], 0, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
     SetDefDrawEnv(&draw[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+    if (debugMode)
+        printf("GPU: Enabling display...\n");
+
     /* Enable display */
     SetDispMask(1);
 
     /* Apply first buffer */
     PutDispEnv(&disp[db]);
     PutDrawEnv(&draw[db]);
+
+    if (debugMode)
+        printf("GPU: Initializing ordering tables...\n");
 
     /* Clear ordering tables */
     ClearOTagR(ot[0], OT_LENGTH);
@@ -109,13 +124,22 @@ void graphicsInit()
     primitiveIndex[0] = 0;
     primitiveIndex[1] = 0;
 
+    if (debugMode)
+        printf("GPU: Loading default palette...\n");
+
     /* Load default palette (will be replaced by grLoadPalette) */
     for (int i = 0; i < 16; i++) {
         ttmPalette[i] = (i << 10) | (i << 5) | i;  /* Grayscale */
     }
 
+    if (debugMode)
+        printf("GPU: Initializing event system...\n");
+
     /* Initialize event system */
     eventsInit();
+
+    if (debugMode)
+        printf("GPU: Graphics initialization complete!\n");
 }
 
 /*

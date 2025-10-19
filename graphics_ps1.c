@@ -20,6 +20,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 #include <psxgpu.h>
 #include <psxgte.h>
 #include <psxapi.h>
@@ -29,6 +30,12 @@
 #include "graphics_ps1.h"
 #include "resource.h"
 #include "events_ps1.h"
+
+/* Primitive buffer for GPU commands */
+#define PRIMITIVE_BUFFER_SIZE 32768
+static uint8 primitiveBuffer[2][PRIMITIVE_BUFFER_SIZE];
+static uint32 primitiveIndex[2];
+static uint8 *nextPrimitive[2];
 
 /* PS1 Display and drawing environments */
 static DISPENV disp[2];
@@ -95,6 +102,12 @@ void graphicsInit()
     ClearOTagR(ot[0], OT_LENGTH);
     ClearOTagR(ot[1], OT_LENGTH);
 
+    /* Initialize primitive buffers */
+    nextPrimitive[0] = primitiveBuffer[0];
+    nextPrimitive[1] = primitiveBuffer[1];
+    primitiveIndex[0] = 0;
+    primitiveIndex[1] = 0;
+
     /* Load default palette (will be replaced by grLoadPalette) */
     for (int i = 0; i < 16; i++) {
         ttmPalette[i] = (i << 10) | (i << 5) | i;  /* Grayscale */
@@ -139,6 +152,11 @@ void grLoadPalette(struct TPalResource *palResource)
         uint8 b = (palResource->colors[i].b << 2) >> 3;
         ttmPalette[i] = (b << 10) | (g << 5) | r;
     }
+
+    /* Upload CLUT (Color Lookup Table) to VRAM */
+    RECT clutRect;
+    setRECT(&clutRect, 0, 480, 16, 1);  /* 16 colors, 1 row, at (0, 480) */
+    LoadImage(&clutRect, (uint32*)ttmPalette);
 }
 
 /*
@@ -159,6 +177,10 @@ void grRefreshDisplay()
 
     /* Clear next ordering table */
     ClearOTagR(ot[db], OT_LENGTH);
+
+    /* Reset primitive buffer for next frame */
+    nextPrimitive[db] = primitiveBuffer[db];
+    primitiveIndex[db] = 0;
 }
 
 /*
@@ -177,16 +199,112 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
                      struct TTtmThread *ttmThreads,
                      struct TTtmThread *ttmHolidayThread)
 {
-    /* TODO: Implement layer blitting using GPU primitives */
-    /* This is the main rendering function that composites all layers */
+    /* Main rendering function that composites all layers */
 
-    /* 1. Clear background */
-    /* 2. Blit background surface if exists */
-    /* 3. Blit saved zones layer if exists */
-    /* 4. Blit each active TTM thread layer */
-    /* 5. Blit holiday thread layer if active */
+    /* 1. Draw background layer if it exists */
+    if (grBackgroundSfc != NULL && grBackgroundSfc->pixels != NULL) {
+        /* Allocate SPRT for background */
+        if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
+            SPRT *bgSprt = (SPRT*)nextPrimitive[db];
+            nextPrimitive[db] += sizeof(SPRT);
+            primitiveIndex[db] += sizeof(SPRT);
 
-    /* For now, just swap buffers */
+            setSprt(bgSprt);
+            setXY0(bgSprt, 0, 0);
+            setWH(bgSprt, grBackgroundSfc->width, grBackgroundSfc->height);
+            setUV0(bgSprt, grBackgroundSfc->x & 0xFF, grBackgroundSfc->y & 0xFF);
+            setClut(bgSprt, grBackgroundSfc->clutX, grBackgroundSfc->clutY);
+            setRGB0(bgSprt, 128, 128, 128);
+
+            addPrim(&ot[db][7], bgSprt);  /* Lowest priority in OT */
+        }
+    }
+
+    /* 2. Draw saved zones layer if it exists */
+    if (grSavedZonesLayer != NULL && grSavedZonesLayer->pixels != NULL) {
+        if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
+            SPRT *zonesSprt = (SPRT*)nextPrimitive[db];
+            nextPrimitive[db] += sizeof(SPRT);
+            primitiveIndex[db] += sizeof(SPRT);
+
+            setSprt(zonesSprt);
+            setXY0(zonesSprt, 0, 0);
+            setWH(zonesSprt, grSavedZonesLayer->width, grSavedZonesLayer->height);
+            setUV0(zonesSprt, grSavedZonesLayer->x & 0xFF, grSavedZonesLayer->y & 0xFF);
+            setClut(zonesSprt, grSavedZonesLayer->clutX, grSavedZonesLayer->clutY);
+            setRGB0(zonesSprt, 128, 128, 128);
+
+            addPrim(&ot[db][6], zonesSprt);
+        }
+    }
+
+    /* 3. Draw background thread layer */
+    if (ttmBackgroundThread != NULL && ttmBackgroundThread->layer != NULL) {
+        PS1Surface *layer = ttmBackgroundThread->layer;
+        if (layer->pixels != NULL) {
+            if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
+                SPRT *layerSprt = (SPRT*)nextPrimitive[db];
+                nextPrimitive[db] += sizeof(SPRT);
+                primitiveIndex[db] += sizeof(SPRT);
+
+                setSprt(layerSprt);
+                setXY0(layerSprt, 0, 0);
+                setWH(layerSprt, layer->width, layer->height);
+                setUV0(layerSprt, layer->x & 0xFF, layer->y & 0xFF);
+                setClut(layerSprt, layer->clutX, layer->clutY);
+                setRGB0(layerSprt, 128, 128, 128);
+
+                addPrim(&ot[db][5], layerSprt);
+            }
+        }
+    }
+
+    /* 4. Draw all active TTM thread layers */
+    for (int i = 0; i < 10; i++) {  /* Max 10 TTM threads */
+        if (ttmThreads[i].active && ttmThreads[i].layer != NULL) {
+            PS1Surface *layer = ttmThreads[i].layer;
+            if (layer->pixels != NULL) {
+                if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
+                    SPRT *layerSprt = (SPRT*)nextPrimitive[db];
+                    nextPrimitive[db] += sizeof(SPRT);
+                    primitiveIndex[db] += sizeof(SPRT);
+
+                    setSprt(layerSprt);
+                    setXY0(layerSprt, 0, 0);
+                    setWH(layerSprt, layer->width, layer->height);
+                    setUV0(layerSprt, layer->x & 0xFF, layer->y & 0xFF);
+                    setClut(layerSprt, layer->clutX, layer->clutY);
+                    setRGB0(layerSprt, 128, 128, 128);
+
+                    addPrim(&ot[db][4], layerSprt);
+                }
+            }
+        }
+    }
+
+    /* 5. Draw holiday thread layer if active */
+    if (ttmHolidayThread != NULL && ttmHolidayThread->active && ttmHolidayThread->layer != NULL) {
+        PS1Surface *layer = ttmHolidayThread->layer;
+        if (layer->pixels != NULL) {
+            if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
+                SPRT *layerSprt = (SPRT*)nextPrimitive[db];
+                nextPrimitive[db] += sizeof(SPRT);
+                primitiveIndex[db] += sizeof(SPRT);
+
+                setSprt(layerSprt);
+                setXY0(layerSprt, 0, 0);
+                setWH(layerSprt, layer->width, layer->height);
+                setUV0(layerSprt, layer->x & 0xFF, layer->y & 0xFF);
+                setClut(layerSprt, layer->clutX, layer->clutY);
+                setRGB0(layerSprt, 128, 128, 128);
+
+                addPrim(&ot[db][3], layerSprt);
+            }
+        }
+    }
+
+    /* Submit all primitives and swap buffers */
+    DrawOTag(&ot[db][OT_LENGTH - 1]);
     grRefreshDisplay();
 
     /* Handle frame timing */
@@ -304,10 +422,10 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         memcpy(surface->pixels, inPtr, pixelDataSize);
         inPtr += pixelDataSize;
 
-        /* TODO: Upload to VRAM using LoadImage()
-         * RECT rect = {surface->x, surface->y, width, height};
-         * LoadImage(&rect, surface->pixels);
-         */
+        /* Upload texture to VRAM using DMA */
+        RECT rect;
+        setRECT(&rect, surface->x, surface->y, width / 4, height);  /* Width in 16-bit units for 4-bit */
+        LoadImage(&rect, (uint32*)surface->pixels);
 
         /* Set CLUT position (color lookup table) */
         /* For now, use a fixed position - we'll upload palette here */
@@ -450,17 +568,28 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
-    /* TODO: Implement actual SPRT primitive drawing
-     * For now, we'll create a simple SPRT structure
-     *
-     * SPRT *sprt = (SPRT*)malloc(sizeof(SPRT));
-     * setSprt(sprt);
-     * setXY0(sprt, x, y);
-     * setWH(sprt, sprite->width, sprite->height);
-     * setUV0(sprt, sprite->x, sprite->y);  // Texture coords in VRAM
-     * setClut(sprt, sprite->clutX, sprite->clutY);
-     * addPrim(&ot[db][0], sprt);
-     */
+    /* Allocate SPRT primitive from buffer */
+    if (primitiveIndex[db] + sizeof(SPRT) > PRIMITIVE_BUFFER_SIZE) {
+        if (debugMode) {
+            printf("Warning: Primitive buffer full!\n");
+        }
+        return;
+    }
+
+    SPRT *sprt = (SPRT*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(SPRT);
+    primitiveIndex[db] += sizeof(SPRT);
+
+    /* Initialize sprite primitive */
+    setSprt(sprt);
+    setXY0(sprt, x, y);
+    setWH(sprt, sprite->width, sprite->height);
+    setUV0(sprt, sprite->x & 0xFF, sprite->y & 0xFF);  /* Texture coords in VRAM (8-bit) */
+    setClut(sprt, sprite->clutX, sprite->clutY);
+    setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
+
+    /* Add to ordering table */
+    addPrim(&ot[db][0], sprt);
 
     if (debugMode) {
         printf("Draw sprite: pos=(%d,%d) size=%dx%d VRAM=(%d,%d)\n",
@@ -489,19 +618,42 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
         return;
     }
 
-    /* TODO: Implement flipped sprite drawing
-     * PS1 doesn't have hardware sprite flipping, so we'd need to:
-     * 1. Upload a flipped version to VRAM, or
-     * 2. Use polygon primitives (POLY_FT4) with flipped UV coordinates
-     *
-     * Option 2 is more efficient:
-     * POLY_FT4 *poly = (POLY_FT4*)malloc(sizeof(POLY_FT4));
-     * setPolyFT4(poly);
-     * setXY4(poly, x+w, y, x, y, x+w, y+h, x, y+h);  // Flipped X coords
-     * setUVWH(poly, sprite->x, sprite->y, sprite->width, sprite->height);
-     * setClut(poly, sprite->clutX, sprite->clutY);
-     * addPrim(&ot[db][0], poly);
-     */
+    /* Allocate POLY_FT4 primitive from buffer */
+    /* PS1 doesn't have hardware flip, so we use textured quad with reversed UVs */
+    if (primitiveIndex[db] + sizeof(POLY_FT4) > PRIMITIVE_BUFFER_SIZE) {
+        if (debugMode) {
+            printf("Warning: Primitive buffer full!\n");
+        }
+        return;
+    }
+
+    POLY_FT4 *poly = (POLY_FT4*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(POLY_FT4);
+    primitiveIndex[db] += sizeof(POLY_FT4);
+
+    /* Initialize textured quad */
+    setPolyFT4(poly);
+
+    /* Set screen coordinates (normal quad, flipping happens in UV) */
+    setXY4(poly,
+           x, y,                                    /* Top-left */
+           x + sprite->width, y,                    /* Top-right */
+           x, y + sprite->height,                   /* Bottom-left */
+           x + sprite->width, y + sprite->height);  /* Bottom-right */
+
+    /* Set UV coordinates (flipped horizontally) */
+    uint8 u0 = sprite->x + sprite->width;  /* Right edge */
+    uint8 u1 = sprite->x;                   /* Left edge */
+    uint8 v0 = sprite->y;
+    uint8 v1 = sprite->y + sprite->height;
+
+    setUV4(poly, u0, v0, u1, v0, u0, v1, u1, v1);  /* Flipped U coords */
+
+    setClut(poly, sprite->clutX, sprite->clutY);
+    setRGB0(poly, 128, 128, 128);  /* Normal brightness */
+
+    /* Add to ordering table */
+    addPrim(&ot[db][0], poly);
 
     if (debugMode) {
         printf("Draw flipped sprite: pos=(%d,%d) size=%dx%d\n",
@@ -604,7 +756,10 @@ void grLoadScreen(char *strArg)
     /* Copy packed 4-bit data directly */
     memcpy(grBackgroundSfc->pixels, scrResource->uncompressedData, pixelDataSize);
 
-    /* TODO: Upload to VRAM using LoadImage() */
+    /* Upload background to VRAM using DMA */
+    RECT rect;
+    setRECT(&rect, grBackgroundSfc->x, grBackgroundSfc->y, width / 4, height);
+    LoadImage(&rect, (uint32*)grBackgroundSfc->pixels);
 
     /* Set CLUT position */
     grBackgroundSfc->clutX = 0;

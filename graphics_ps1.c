@@ -468,9 +468,12 @@ void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo)
  */
 void grSetClipZone(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2)
 {
-    /* TODO: Set GPU clipping rectangle */
-    RECT clip = {x1, y1, x2 - x1, y2 - y1};
-    SetDrawClip(&clip);
+    /* Set clip rectangle in draw environment */
+    draw[db].clip.x = x1;
+    draw[db].clip.y = y1;
+    draw[db].clip.w = x2 - x1;
+    draw[db].clip.h = y2 - y1;
+    PutDrawEnv(&draw[db]);
 }
 
 /*

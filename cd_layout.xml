@@ -2,9 +2,6 @@
 <!-- Johnny Reborn PS1 CD-ROM Layout -->
 <iso_project image_name="jcreborn.bin" cue_sheet="jcreborn.cue">
 
-    <!-- License data (required for PS1) -->
-    <license file="license.dat"/>
-
     <!-- Main data track -->
     <track type="data">
         <identifiers
@@ -17,12 +14,12 @@
 
         <!-- Directory tree on CD -->
         <directory_tree>
-            <!-- PS1 executable -->
-            <file name="JCREBORN.EXE" type="data" source="jcreborn.elf"/>
+            <!-- PS1 executable - paths relative to cd_layout.xml location -->
+            <file name="JCREBORN.EXE" type="data" source="build-ps1/jcreborn.exe"/>
 
             <!-- Original Sierra resource files -->
-            <file name="RESOURCE.MAP" type="data" source="../jc_resources/RESOURCE.MAP"/>
-            <file name="RESOURCE.001" type="data" source="../jc_resources/RESOURCE.001"/>
+            <file name="RESOURCE.MAP" type="data" source="jc_resources/RESOURCE.MAP"/>
+            <file name="RESOURCE.001" type="data" source="jc_resources/RESOURCE.001"/>
 
             <!-- Sound files (if available) -->
             <!-- Note: These need to be converted to PS1 VAG format or streamed as XA audio -->

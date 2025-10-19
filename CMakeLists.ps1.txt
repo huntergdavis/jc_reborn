@@ -67,13 +67,13 @@ target_link_libraries(jcreborn PRIVATE
 )
 
 # Generate CD image using mkpsxiso
-# TODO: Fix path to jcreborn.elf for mkpsxiso
-# add_custom_command(
-#     TARGET jcreborn POST_BUILD
-#     COMMAND mkpsxiso ${CMAKE_CURRENT_SOURCE_DIR}/cd_layout.xml
-#     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-#     COMMENT "Creating CD image..."
-# )
+# Run from project root so paths in cd_layout.xml work correctly
+add_custom_command(
+    TARGET jcreborn POST_BUILD
+    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && mkpsxiso cd_layout.xml
+    COMMENT "Creating CD image..."
+    VERBATIM
+)
 
 # Install target
 install(TARGETS jcreborn)

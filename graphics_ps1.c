@@ -245,15 +245,99 @@ void grFreeLayer(PS1Surface *sfc)
  */
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
-    /* TODO: Implement BMP loading
-     * 1. Load BMP resource by name
-     * 2. Parse sprite data
-     * 3. Upload to VRAM
-     * 4. Store in ttmSlot->sprites[slotNo]
-     */
+    if (ttmSlot->numSprites[slotNo])
+        grReleaseBmp(ttmSlot, slotNo);
 
-    if (debugMode) {
-        printf("grLoadBmp: slot=%d, name=%s\n", slotNo, strArg);
+    struct TBmpResource *bmpResource = findBmpResource(strArg);
+
+    /* Handle lazy loading - reload from extracted file if needed */
+    if (bmpResource->uncompressedData == NULL) {
+        char extractedPath[512];
+        snprintf(extractedPath, sizeof(extractedPath), "extracted/bmp/%s",
+                 bmpResource->resName);
+
+        /* On PS1, we'd use CD-ROM functions here instead of fopen */
+        FILE *f = fopen(extractedPath, "rb");
+        if (f) {
+            bmpResource->uncompressedData = safe_malloc(bmpResource->uncompressedSize);
+            if (fread(bmpResource->uncompressedData, 1, bmpResource->uncompressedSize, f) !=
+                bmpResource->uncompressedSize) {
+                fatalError("Failed to reload BMP data from extracted file");
+            }
+            fclose(f);
+            if (debugMode) {
+                printf("Reloaded BMP data for %s from disk (%u bytes)\n",
+                       bmpResource->resName, bmpResource->uncompressedSize);
+            }
+        } else {
+            fatalError("BMP data freed and extracted file not found - cannot reload");
+        }
+    }
+
+    uint8 *inPtr = bmpResource->uncompressedData;
+
+    ttmSlot->numSprites[slotNo] = bmpResource->numImages;
+
+    for (int image=0; image < bmpResource->numImages; image++) {
+
+        if ((bmpResource->widths[image] % 2) == 1)
+            fatalError("grLoadBmp(): can't manage odd widths");
+
+        uint16 width  = bmpResource->widths[image];
+        uint16 height = bmpResource->heights[image];
+
+        /* Allocate PS1Surface structure */
+        PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+        surface->width = width;
+        surface->height = height;
+
+        /* Allocate VRAM position for this sprite */
+        surface->x = nextVRAMX;
+        surface->y = nextVRAMY;
+
+        /* Allocate pixel buffer for 4-bit indexed data */
+        /* PS1 uses 4-bit textures, so we keep the data as-is (packed nibbles) */
+        uint32 pixelDataSize = (width * height) / 2;  /* 4-bit = 0.5 bytes per pixel */
+        surface->pixels = (uint16*)safe_malloc(pixelDataSize);
+
+        /* Copy packed 4-bit data directly */
+        memcpy(surface->pixels, inPtr, pixelDataSize);
+        inPtr += pixelDataSize;
+
+        /* TODO: Upload to VRAM using LoadImage()
+         * RECT rect = {surface->x, surface->y, width, height};
+         * LoadImage(&rect, surface->pixels);
+         */
+
+        /* Set CLUT position (color lookup table) */
+        /* For now, use a fixed position - we'll upload palette here */
+        surface->clutX = 0;
+        surface->clutY = 480;  /* Below framebuffers */
+
+        /* Store sprite in slot */
+        ttmSlot->sprites[slotNo][image] = surface;
+
+        /* Update VRAM allocation tracking */
+        nextVRAMX += width;
+        if (nextVRAMX >= 1024) {  /* VRAM width limit */
+            nextVRAMX = 0;
+            nextVRAMY += height;
+        }
+
+        if (debugMode) {
+            printf("Loaded sprite %d: %dx%d at VRAM(%d,%d)\n",
+                   image, width, height, surface->x, surface->y);
+        }
+    }
+
+    /* Free BMP data after converting to PS1 surfaces - saves memory */
+    if (bmpResource->uncompressedData) {
+        free(bmpResource->uncompressedData);
+        bmpResource->uncompressedData = NULL;
+        if (debugMode) {
+            printf("Freed BMP data for %s (%u bytes)\n",
+                   bmpResource->resName, bmpResource->uncompressedSize);
+        }
     }
 }
 
@@ -351,7 +435,37 @@ void grDrawCircle(PS1Surface *sfc, sint16 x1, sint16 y1, uint16 width, uint16 he
 void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
                   uint16 spriteNo, uint16 imageNo)
 {
-    /* TODO: Implement sprite drawing using GPU SPRT primitive */
+    x += grDx;
+    y += grDy;
+
+    if (spriteNo >= ttmSlot->numSprites[imageNo]) {
+        if (debugMode) {
+            printf("Warning: sprite %d not found in slot %d\n", spriteNo, imageNo);
+        }
+        return;
+    }
+
+    PS1Surface *sprite = ttmSlot->sprites[imageNo][spriteNo];
+    if (sprite == NULL) {
+        return;
+    }
+
+    /* TODO: Implement actual SPRT primitive drawing
+     * For now, we'll create a simple SPRT structure
+     *
+     * SPRT *sprt = (SPRT*)malloc(sizeof(SPRT));
+     * setSprt(sprt);
+     * setXY0(sprt, x, y);
+     * setWH(sprt, sprite->width, sprite->height);
+     * setUV0(sprt, sprite->x, sprite->y);  // Texture coords in VRAM
+     * setClut(sprt, sprite->clutX, sprite->clutY);
+     * addPrim(&ot[db][0], sprt);
+     */
+
+    if (debugMode) {
+        printf("Draw sprite: pos=(%d,%d) size=%dx%d VRAM=(%d,%d)\n",
+               x, y, sprite->width, sprite->height, sprite->x, sprite->y);
+    }
 }
 
 /*
@@ -360,7 +474,39 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
 void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
                       uint16 spriteNo, uint16 imageNo)
 {
-    /* TODO: Implement flipped sprite drawing */
+    x += grDx;
+    y += grDy;
+
+    if (spriteNo >= ttmSlot->numSprites[imageNo]) {
+        if (debugMode) {
+            printf("Warning: sprite %d not found in slot %d\n", spriteNo, imageNo);
+        }
+        return;
+    }
+
+    PS1Surface *sprite = ttmSlot->sprites[imageNo][spriteNo];
+    if (sprite == NULL) {
+        return;
+    }
+
+    /* TODO: Implement flipped sprite drawing
+     * PS1 doesn't have hardware sprite flipping, so we'd need to:
+     * 1. Upload a flipped version to VRAM, or
+     * 2. Use polygon primitives (POLY_FT4) with flipped UV coordinates
+     *
+     * Option 2 is more efficient:
+     * POLY_FT4 *poly = (POLY_FT4*)malloc(sizeof(POLY_FT4));
+     * setPolyFT4(poly);
+     * setXY4(poly, x+w, y, x, y, x+w, y+h, x, y+h);  // Flipped X coords
+     * setUVWH(poly, sprite->x, sprite->y, sprite->width, sprite->height);
+     * setClut(poly, sprite->clutX, sprite->clutY);
+     * addPrim(&ot[db][0], poly);
+     */
+
+    if (debugMode) {
+        printf("Draw flipped sprite: pos=(%d,%d) size=%dx%d\n",
+               x, y, sprite->width, sprite->height);
+    }
 }
 
 /*
@@ -397,9 +543,93 @@ void grFadeOut()
  */
 void grLoadScreen(char *strArg)
 {
-    /* TODO: Implement SCR resource loading */
+    if (grBackgroundSfc != NULL) {
+        grFreeLayer(grBackgroundSfc);
+        grBackgroundSfc = NULL;
+    }
+
+    if (grSavedZonesLayer != NULL) {
+        grFreeLayer(grSavedZonesLayer);
+        grSavedZonesLayer = NULL;
+    }
+
+    struct TScrResource *scrResource = findScrResource(strArg);
+
+    /* Handle lazy loading - reload from extracted file if needed */
+    if (scrResource->uncompressedData == NULL) {
+        char extractedPath[512];
+        snprintf(extractedPath, sizeof(extractedPath), "extracted/scr/%s",
+                 scrResource->resName);
+
+        /* On PS1, we'd use CD-ROM functions here instead of fopen */
+        FILE *f = fopen(extractedPath, "rb");
+        if (f) {
+            scrResource->uncompressedData = safe_malloc(scrResource->uncompressedSize);
+            if (fread(scrResource->uncompressedData, 1, scrResource->uncompressedSize, f) !=
+                scrResource->uncompressedSize) {
+                fatalError("Failed to reload SCR data from extracted file");
+            }
+            fclose(f);
+            if (debugMode) {
+                printf("Reloaded SCR data for %s from disk (%u bytes)\n",
+                       scrResource->resName, scrResource->uncompressedSize);
+            }
+        } else {
+            fatalError("SCR data freed and extracted file not found - cannot reload");
+        }
+    }
+
+    if ((scrResource->width % 2) == 1) {
+        fprintf(stderr, "Warning: grLoadScreen(): can't manage odd widths\n");
+    }
+
+    if (scrResource->width > 640 || scrResource->height > 480) {
+        fatalError("grLoadScreen(): can't manage more than 640x480 resolutions");
+    }
+
+    uint16 width  = scrResource->width;
+    uint16 height = scrResource->height;
+
+    /* Allocate PS1Surface for background */
+    grBackgroundSfc = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+    grBackgroundSfc->width = width;
+    grBackgroundSfc->height = height;
+    grBackgroundSfc->x = nextVRAMX;
+    grBackgroundSfc->y = nextVRAMY;
+
+    /* Allocate pixel buffer for 4-bit indexed data */
+    uint32 pixelDataSize = (width * height) / 2;  /* 4-bit = 0.5 bytes per pixel */
+    grBackgroundSfc->pixels = (uint16*)safe_malloc(pixelDataSize);
+
+    /* Copy packed 4-bit data directly */
+    memcpy(grBackgroundSfc->pixels, scrResource->uncompressedData, pixelDataSize);
+
+    /* TODO: Upload to VRAM using LoadImage() */
+
+    /* Set CLUT position */
+    grBackgroundSfc->clutX = 0;
+    grBackgroundSfc->clutY = 480;
+
+    /* Update VRAM allocation */
+    nextVRAMX += width;
+    if (nextVRAMX >= 1024) {
+        nextVRAMX = 0;
+        nextVRAMY += height;
+    }
+
+    /* Free SCR data after converting - saves memory */
+    if (scrResource->uncompressedData) {
+        free(scrResource->uncompressedData);
+        scrResource->uncompressedData = NULL;
+        if (debugMode) {
+            printf("Freed SCR data for %s (%u bytes)\n",
+                   scrResource->resName, scrResource->uncompressedSize);
+        }
+    }
+
     if (debugMode) {
-        printf("grLoadScreen: %s\n", strArg);
+        printf("Loaded screen: %dx%d at VRAM(%d,%d)\n",
+               width, height, grBackgroundSfc->x, grBackgroundSfc->y);
     }
 }
 

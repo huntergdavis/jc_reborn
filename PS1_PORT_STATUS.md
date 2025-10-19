@@ -281,14 +281,42 @@ The foundation is solid. The original design decision to use pure C and separate
   - sound_ps1.o (3.0KB)
 - 🎯 **Major Milestone**: Platform layer compiles successfully!
 
+**Latest Updates** (Session 4 - Linking & CD-ROM Success):
+- ✅ Fixed linking errors by creating ps1_stubs.c with missing libc functions
+- ✅ Implemented complete CD-ROM file access layer (cdrom_ps1.c/h):
+  - 8 file handles with sector-based I/O (2048 bytes)
+  - Automatic uppercase filename conversion
+  - FILE* to CD-ROM handle mapping
+  - Byte-level seek/tell operations
+- ✅ Replaced all FILE I/O stubs with real CD-ROM implementation
+- ✅ Fixed CD image generation paths in cd_layout.xml
+- ✅ Added mkpsxiso post-build command to CMakeLists
+- ✅ **100% Compilation + Linking Success!**
+- ✅ **CD Image Generated Successfully (1.4MB)**
+- 🎯 **Major Milestone**: Bootable CD-ROM ready for testing!
+
+**Build Output**:
+- jcreborn.elf: 376KB (ELF executable with debug symbols)
+- jcreborn.exe: 84KB (PS-EXE format, loaded by BIOS)
+- jcreborn.bin: 1.4MB (ISO 9660 CD image)
+- jcreborn.cue: CUE sheet for emulators
+
+**Skills Documented**:
+- ps1-cdrom-integration.md - Complete CD-ROM file access patterns
+- embedded-libc-stubs.md - Freestanding C environment patterns
+- iterative-compilation-fixing.md - PS1 build debugging patterns
+
 **Next Steps**:
-1. Test full CMake build with all source files
-2. Implement linking with PSn00bSDK libraries
-3. Generate CD image for DuckStation testing
-4. Visual regression testing against SDL version
+1. ⏳ Test in DuckStation emulator (load jcreborn.cue)
+2. ⏳ Debug any runtime initialization issues
+3. ⏳ Verify resource loading from CD-ROM
+4. ⏳ Test graphics rendering and animation playback
+5. ⏳ Implement SPU audio playback
+6. ⏳ Implement controller input handling
 
 ---
 *Generated: 2025-10-18*
+*Updated: 2025-10-19 (Session 4)*
 *Branch: ps1*
 *Base: 4mb2025 (350KB memory)*
-*Commits: 4a2634b, bfb3a8f, e5e352a, 44215da*
+*Latest Commits: 1a9f380, a572086, 5920ccf*

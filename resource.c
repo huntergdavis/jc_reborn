@@ -419,10 +419,18 @@ static void parseMapFile(char *fileName)
 {
     FILE *f_map; // , *f_res;  // TODO
 
+    if (debugMode)
+        printf("Opening map file: %s\n", fileName);
+
     f_map = fopen(fileName,"rb");
 
-    if (f_map == NULL)
+    if (f_map == NULL) {
+        printf("ERROR: Cannot open map file: %s\n", fileName);
         fatalError("Resources map file not found: %s\n", fileName);
+    }
+
+    if (debugMode)
+        printf("Map file opened successfully\n");
 
     mapFile.unknown1 = readUint8(f_map);   // first 5 uint8s unknown
     mapFile.unknown2 = readUint8(f_map);

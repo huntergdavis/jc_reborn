@@ -199,6 +199,24 @@ static void parseArgs(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+#ifdef PS1_BUILD
+    printf("Johnny Reborn - PS1 Port\n");
+    printf("Initializing...\n");
+
+    /* Enable debug mode on PS1 to see what's happening */
+    debugMode = 1;
+
+    /* For PS1, default to playing a single TTM for testing */
+    /* This allows visual regression testing against the SDL version */
+    if (argc == 1) {
+        /* Default test: play SAILING.TTM which is a simple animation */
+        argc = 3;
+        static char *test_argv[] = {"jcreborn", "ttm", "SAILING"};
+        argv = test_argv;
+        printf("PS1 Test Mode: Will play SAILING.TTM animation\n");
+    }
+#endif
+
     parseArgs(argc, argv);
 
     if (argDump)
@@ -206,25 +224,40 @@ int main(int argc, char **argv)
 
 #ifdef PS1_BUILD
     /* Initialize CD-ROM subsystem for PS1 */
+    printf("Initializing CD-ROM...\n");
     if (cdromInit() < 0) {
-        printf("Failed to initialize CD-ROM\n");
-        return 1;
+        printf("ERROR: Failed to initialize CD-ROM\n");
+        while(1);  /* Hang so we can see the error */
     }
+    printf("CD-ROM initialized successfully\n");
 #endif
 
+    printf("Parsing resource files...\n");
     parseResourceFiles("RESOURCE.MAP");
+    printf("Resource files parsed successfully\n");
 
     /* Initialize LRU cache for memory management */
+    printf("Initializing LRU cache...\n");
     initLRUCache();
+    printf("LRU cache initialized\n");
 
     if (argPlayAll) {
+        printf("Initializing graphics...\n");
         graphicsInit();
-        soundInit();
+        printf("Graphics initialized\n");
 
+        printf("Initializing sound...\n");
+        soundInit();
+        printf("Sound initialized\n");
+
+        printf("Starting story mode...\n");
         storyPlay();
 
+        printf("Shutting down sound...\n");
         soundEnd();
+        printf("Shutting down graphics...\n");
         graphicsEnd();
+        printf("Shutdown complete\n");
     }
 
     else if (argDump) {

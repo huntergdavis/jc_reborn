@@ -51,6 +51,7 @@ extern int atoi(const char *str);
 #include "graphics_ps1.h"
 #include "events_ps1.h"
 #include "sound_ps1.h"
+#include "cdrom_ps1.h"
 #else
 #include "graphics.h"
 #include "events.h"
@@ -202,6 +203,14 @@ int main(int argc, char **argv)
 
     if (argDump)
         debugMode = 1;
+
+#ifdef PS1_BUILD
+    /* Initialize CD-ROM subsystem for PS1 */
+    if (cdromInit() < 0) {
+        printf("Failed to initialize CD-ROM\n");
+        return 1;
+    }
+#endif
 
     parseResourceFiles("RESOURCE.MAP");
 

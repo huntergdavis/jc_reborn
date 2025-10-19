@@ -32,37 +32,71 @@ typedef struct _FILE FILE;
 #define stderr ((FILE*)2)
 #define stdout ((FILE*)1)
 
+/* Include CD-ROM interface for real file I/O */
+#include "cdrom_ps1.h"
+
 /* ============================================================================
- * FILE I/O STUBS
+ * FILE I/O IMPLEMENTATION
  * PS1 uses CD-ROM for data, not standard FILE* streams.
- * These are stubs that will be replaced with CD-ROM I/O later.
+ * We map FILE* to CD-ROM file handles:
+ * - FILE* values 0-7 correspond to CD-ROM handles 0-7
+ * - FILE* values 1 and 2 are reserved for stdout/stderr
+ * - FILE* values 3-10 can be used for CD-ROM files
  * ============================================================================ */
 
 FILE *fopen(const char *pathname, const char *mode) {
-    /* TODO: Implement CD-ROM file loading */
-    printf("STUB: fopen(%s, %s)\n", pathname, mode);
-    return NULL;
+    /* Open file from CD-ROM */
+    int handle = cdromOpen(pathname);
+    if (handle < 0) {
+        return NULL;
+    }
+    /* Cast handle to FILE* (handle + 3 to avoid stdout/stderr) */
+    return (FILE*)(size_t)(handle + 3);
 }
 
 int fclose(FILE *stream) {
-    /* No-op for now */
-    return 0;
+    /* Don't close stdout/stderr */
+    if (stream == stdout || stream == stderr || stream == NULL) {
+        return 0;
+    }
+    /* Convert FILE* back to CD-ROM handle */
+    int handle = (int)(size_t)stream - 3;
+    return cdromClose(handle);
 }
 
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
-    /* Stub: return 0 bytes read */
-    printf("STUB: fread() called\n");
-    return 0;
+    /* Don't read from stdout/stderr */
+    if (stream == stdout || stream == stderr || stream == NULL) {
+        return 0;
+    }
+    /* Convert FILE* back to CD-ROM handle */
+    int handle = (int)(size_t)stream - 3;
+    int bytesRead = cdromRead(handle, ptr, size * nmemb);
+    if (bytesRead < 0) {
+        return 0;
+    }
+    return bytesRead / size;  /* Return number of elements read */
 }
 
 int fseek(FILE *stream, long offset, int whence) {
-    /* No-op */
-    return 0;
+    /* Don't seek on stdout/stderr */
+    if (stream == stdout || stream == stderr || stream == NULL) {
+        return -1;
+    }
+    /* Convert FILE* back to CD-ROM handle */
+    int handle = (int)(size_t)stream - 3;
+    int result = cdromSeek(handle, offset, whence);
+    return (result < 0) ? -1 : 0;
 }
 
 long ftell(FILE *stream) {
-    /* Return 0 position */
-    return 0;
+    /* Return 0 for stdout/stderr */
+    if (stream == stdout || stream == stderr || stream == NULL) {
+        return 0;
+    }
+    /* Convert FILE* back to CD-ROM handle */
+    int handle = (int)(size_t)stream - 3;
+    return cdromTell(handle);
 }
 
 int fgetc(FILE *f) {

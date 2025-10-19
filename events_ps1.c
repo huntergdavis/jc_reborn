@@ -20,6 +20,7 @@
 
 #include <psxpad.h>
 #include <psxapi.h>
+#include <psxgpu.h>
 
 #include "mytypes.h"
 #include "events_ps1.h"

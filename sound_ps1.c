@@ -20,9 +20,15 @@
 
 #include <psxspu.h>
 #include <psxapi.h>
+#include <stdint.h>
 
+/* Forward declare FILE to avoid utils.h compilation errors with -ffreestanding */
+typedef struct _FILE FILE;
+
+#include "mytypes.h"     /* Defines uint8, uint16, uint32, etc. */
 #include "sound_ps1.h"
 #include "config.h"
+#include "utils.h"
 
 /* Global variables */
 int soundDisabled = 0;
@@ -32,8 +38,8 @@ int soundDisabled = 0;
 #define SPU_RAM_BASE 0x1000  /* Start of SPU RAM for sound effects */
 
 /* Sound effect data (to be loaded from CD) */
-static uint32 soundAddresses[MAX_SOUND_EFFECTS];
-static uint32 soundSizes[MAX_SOUND_EFFECTS];
+static uint32_t soundAddresses[MAX_SOUND_EFFECTS];
+static uint32_t soundSizes[MAX_SOUND_EFFECTS];
 static int soundsLoaded = 0;
 
 /*
@@ -51,15 +57,11 @@ void soundInit()
     /* Initialize SPU */
     SpuInit();
 
-    /* Set SPU common attributes */
-    SpuCommonAttr attr;
-    attr.mask = (SPU_COMMON_MVOLL | SPU_COMMON_MVOLR);
-    attr.mvol.left = 0x3FFF;   /* Max volume */
-    attr.mvol.right = 0x3FFF;
-    SpuSetCommonAttr(&attr);
+    /* Set master volume to max using macros (SpuCommonAttr is commented out in PSn00bSDK) */
+    SpuSetCommonMasterVolume(0x3FFF, 0x3FFF);
 
-    /* Enable SPU */
-    SpuSetKey(SPU_ON, SPU_ALLCH);
+    /* Note: SpuSetKey is for individual channels, not initialization */
+    /* Channels are enabled when we start playback */
 
     /* TODO: Load sound effects from CD into SPU RAM */
     /* For now, mark all sounds as not loaded */
@@ -84,11 +86,10 @@ void soundEnd()
         return;
     }
 
-    /* Stop all SPU channels */
-    SpuSetKey(SPU_OFF, SPU_ALLCH);
+    /* Stop all SPU channels (0xFFFFFF = all 24 channels) */
+    SpuSetKey(0, 0xFFFFFF);
 
-    /* Quit SPU */
-    SpuQuit();
+    /* Note: PSn00bSDK doesn't have SpuQuit() - no cleanup needed */
 }
 
 /*
@@ -131,7 +132,7 @@ void soundPlay(int nb)
  * Load sound effect into SPU RAM
  * This should be called during resource loading
  */
-int soundLoad(int nb, void *data, uint32 size)
+int soundLoad(int nb, void *data, uint32_t size)
 {
     if (soundDisabled) {
         return 0;

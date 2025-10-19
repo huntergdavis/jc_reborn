@@ -17,6 +17,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/jcreborn.dir/island.c.obj.d"
   "CMakeFiles/jcreborn.dir/jc_reborn.c.obj"
   "CMakeFiles/jcreborn.dir/jc_reborn.c.obj.d"
+  "CMakeFiles/jcreborn.dir/ps1_stubs.c.obj"
+  "CMakeFiles/jcreborn.dir/ps1_stubs.c.obj.d"
   "CMakeFiles/jcreborn.dir/resource.c.obj"
   "CMakeFiles/jcreborn.dir/resource.c.obj.d"
   "CMakeFiles/jcreborn.dir/sound_ps1.c.obj"

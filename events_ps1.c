@@ -33,10 +33,10 @@ int evHotKeysEnabled = 0;
 static uint8 pad_buff[2][34];
 
 /* Game state variables (matching original events.c) */
-extern int quit;
-extern int pause;
-extern int maxSpeed;
-extern int frameAdvance;
+static int quit = 0;
+static int pause = 0;
+static int maxSpeed = 0;
+static int frameAdvance = 0;
 
 /*
  * Initialize input system

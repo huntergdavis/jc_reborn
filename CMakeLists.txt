@@ -42,6 +42,8 @@ set(SOURCES
     graphics_ps1.c
     sound_ps1.c
     events_ps1.c
+    # LibC stubs for missing functions
+    ps1_stubs.c
 )
 
 # Create PS1 executable
@@ -64,12 +66,13 @@ target_link_libraries(jcreborn PRIVATE
 )
 
 # Generate CD image using mkpsxiso
-add_custom_command(
-    TARGET jcreborn POST_BUILD
-    COMMAND mkpsxiso ${CMAKE_CURRENT_SOURCE_DIR}/cd_layout.xml
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Creating CD image..."
-)
+# TODO: Fix path to jcreborn.elf for mkpsxiso
+# add_custom_command(
+#     TARGET jcreborn POST_BUILD
+#     COMMAND mkpsxiso ${CMAKE_CURRENT_SOURCE_DIR}/cd_layout.xml
+#     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+#     COMMENT "Creating CD image..."
+# )
 
 # Install target
 install(TARGETS jcreborn)

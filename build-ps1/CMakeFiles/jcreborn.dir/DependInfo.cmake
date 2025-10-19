@@ -17,6 +17,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/project/graphics_ps1.c" "CMakeFiles/jcreborn.dir/graphics_ps1.c.obj" "gcc" "CMakeFiles/jcreborn.dir/graphics_ps1.c.obj.d"
   "/project/island.c" "CMakeFiles/jcreborn.dir/island.c.obj" "gcc" "CMakeFiles/jcreborn.dir/island.c.obj.d"
   "/project/jc_reborn.c" "CMakeFiles/jcreborn.dir/jc_reborn.c.obj" "gcc" "CMakeFiles/jcreborn.dir/jc_reborn.c.obj.d"
+  "/project/ps1_stubs.c" "CMakeFiles/jcreborn.dir/ps1_stubs.c.obj" "gcc" "CMakeFiles/jcreborn.dir/ps1_stubs.c.obj.d"
   "/project/resource.c" "CMakeFiles/jcreborn.dir/resource.c.obj" "gcc" "CMakeFiles/jcreborn.dir/resource.c.obj.d"
   "/project/sound_ps1.c" "CMakeFiles/jcreborn.dir/sound_ps1.c.obj" "gcc" "CMakeFiles/jcreborn.dir/sound_ps1.c.obj.d"
   "/project/story.c" "CMakeFiles/jcreborn.dir/story.c.obj" "gcc" "CMakeFiles/jcreborn.dir/story.c.obj.d"

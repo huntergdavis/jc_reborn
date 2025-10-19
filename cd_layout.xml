@@ -18,7 +18,7 @@
         <!-- Directory tree on CD -->
         <directory_tree>
             <!-- PS1 executable -->
-            <file name="JCREBORN.EXE" type="data" source="jcreborn"/>
+            <file name="JCREBORN.EXE" type="data" source="jcreborn.elf"/>
 
             <!-- Original Sierra resource files -->
             <file name="RESOURCE.MAP" type="data" source="../jc_resources/RESOURCE.MAP"/>

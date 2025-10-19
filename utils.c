@@ -21,12 +21,30 @@
  *
  */
 
+/* PS1 doesn't have full standard library */
+#include <stdarg.h>  /* For va_list - must be before PS1 check */
+#ifndef PS1_BUILD
 #include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <stdarg.h>
 #include <time.h>
 #include <sys/time.h>
+#else
+/* Minimal declarations for PS1 freestanding environment */
+#include <stddef.h>  /* For size_t */
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
+typedef struct _FILE FILE;
+#endif
+extern int printf(const char *format, ...);
+extern int vprintf(const char *format, __gnuc_va_list arg);
+extern int fprintf(FILE *stream, const char *format, ...);
+extern int vfprintf(FILE *stream, const char *format, __gnuc_va_list arg);
+extern FILE *fopen(const char *pathname, const char *mode);
+extern void *malloc(size_t size);
+extern void exit(int status) __attribute__((noreturn));
+#define stderr ((FILE*)2)
+#endif
+#include <string.h>
 
 #include "mytypes.h"
 
@@ -194,28 +212,43 @@ void hexdump(uint8 *data, uint32 len)
 
 int getDayOfYear()
 {
+#ifdef PS1_BUILD
+    /* PS1 doesn't have RTC - return fixed day for deterministic behavior */
+    return 180;  /* Mid-year */
+#else
     struct timeval tv;
     struct tm *localTime;
 
     gettimeofday(&tv, NULL);
     localTime = localtime(&tv.tv_sec);
     return localTime->tm_yday;
+#endif
 }
 
 
 int getHour()
 {
+#ifdef PS1_BUILD
+    /* PS1 doesn't have RTC - return noon for consistent lighting */
+    return 12;
+#else
     struct timeval tv;
     struct tm *localTime;
 
     gettimeofday(&tv, NULL);
     localTime = localtime(&tv.tv_sec);
     return localTime->tm_hour;
+#endif
 }
 
 
 char *getMonthAndDay()
 {
+#ifdef PS1_BUILD
+    /* Return fixed date for PS1 */
+    static char result[5] = "0630";  /* June 30 */
+    return result;
+#else
     struct timeval tv;
     struct tm *localTime;
     static char result[5];
@@ -224,5 +257,6 @@ char *getMonthAndDay()
     localTime = localtime(&tv.tv_sec);
     strftime(result, 5, "%m%d", localTime);
     return result;
+#endif
 }
 

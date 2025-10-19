@@ -21,8 +21,18 @@
  *
  */
 
+/* Conditional includes for PS1 freestanding build */
+#include <stddef.h>  /* For size_t */
+#ifndef PS1_BUILD
 #include <stdlib.h>
 #include <stdio.h>
+#else
+/* Forward declarations for PS1 */
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
+typedef struct _FILE FILE;
+#endif
+#endif
 #include <stdarg.h>
 
 extern int debugMode;

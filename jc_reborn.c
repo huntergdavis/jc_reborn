@@ -21,13 +21,24 @@
  *
  */
 
+/* PS1 has minimal standard library support */
+#ifndef PS1_BUILD
 #include <stdlib.h>
 #include <stdio.h>
+#endif
 #include <string.h>
 
-/* Forward declare FILE for -ffreestanding on PS1 */
+/* Forward declare FILE and provide minimal stdlib for PS1 */
 #ifdef PS1_BUILD
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
 typedef struct _FILE FILE;
+#endif
+extern int printf(const char *format, ...);
+extern void exit(int status) __attribute__((noreturn));
+extern int atoi(const char *str);
+#define stderr ((FILE*)2)  /* Dummy stderr */
+#define fprintf(stream, ...) printf(__VA_ARGS__)  /* Redirect to printf */
 #endif
 
 #include "mytypes.h"

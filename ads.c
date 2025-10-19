@@ -21,15 +21,32 @@
  *
  */
 
+/* Conditional includes for PS1 freestanding build */
+#ifndef PS1_BUILD
 #include <stdlib.h>
 #include <stdio.h>
-#include <unistd.h>
-#include <SDL2/SDL.h>
+#else
+#include <stddef.h>
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
+typedef struct _FILE FILE;
+#endif
+extern int rand(void);
+extern void *malloc(size_t size);
+extern int fprintf(FILE *stream, const char *format, ...);
+extern int printf(const char *format, ...);
+#define stderr ((FILE*)2)
+#endif
 
 #include "mytypes.h"
 #include "utils.h"
 #include "resource.h"
+/* Platform-specific graphics headers */
+#ifdef PS1_BUILD
+#include "graphics_ps1.h"
+#else
 #include "graphics.h"
+#endif
 #include "ttm.h"
 #include "island.h"
 #include "walk.h"

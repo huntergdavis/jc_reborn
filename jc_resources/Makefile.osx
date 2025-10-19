@@ -1,0 +1,52 @@
+# The compiler to use
+CC = cc
+
+# Get the standard SDL2 flags and pipe them to the 'sed' command.
+# This finds the path ".../include/SDL2" and replaces it with ".../include".
+# This allows #include <SDL2/SDL.h> to work as intended.
+SDL_CFLAGS = $(shell sdl2-config --cflags | sed 's|/include/SDL2|/include|g')
+SDL_LIBS = $(shell sdl2-config --libs)
+
+# Compiler flags. Note the corrected '-std=c99'.
+CFLAGS = -Wall -Wpedantic -std=c99 $(SDL_CFLAGS)
+
+# Libraries to link against.
+LDLIBS = $(SDL_LIBS)
+
+# The final executable name
+EXE = jc_reborn
+
+# All the object files
+OBJ =   jc_reborn.o \
+        utils.o \
+        uncompress.o \
+        resource.o \
+        dump.o \
+        story.o \
+        walk.o \
+        calcpath.o \
+        ads.o \
+        ttm.o \
+        island.o \
+        bench.o \
+        graphics.o \
+        sound.o \
+        events.o \
+        config.o
+
+# --- Build Targets ---
+
+# Default target
+all: $(EXE)
+
+# Rule to link the final executable
+$(EXE): $(OBJ)
+	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+
+# Rule to compile a .c file into a .o file
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Rule to clean up build files
+clean:
+	rm -f $(OBJ) $(EXE)

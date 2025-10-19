@@ -21,11 +21,31 @@
  *
  */
 
+/* Conditional includes for PS1 freestanding build */
+#ifndef PS1_BUILD
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#else
+/* PS1 freestanding: provide minimal declarations */
+#include <stddef.h>
+#include <string.h>
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
+typedef struct _FILE FILE;
+#endif
+extern FILE *fopen(const char *pathname, const char *mode);
+extern int fprintf(FILE *stream, const char *format, ...);
+extern int fputs(const char *s, FILE *stream);
+extern int fclose(FILE *stream);
+extern int snprintf(char *str, size_t size, const char *format, ...);
+/* Stub struct stat for PS1 - not actually used in freestanding */
+struct stat { int st_mode; };
+extern int stat(const char *pathname, struct stat *statbuf);
+extern int mkdir(const char *pathname, int mode);
+#endif
 
 #include "mytypes.h"
 #include "resource.h"

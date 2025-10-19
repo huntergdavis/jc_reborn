@@ -21,10 +21,13 @@
  *
  */
 
-#include <SDL2/SDL.h>
-
 #include "mytypes.h"
+/* Platform-specific graphics headers */
+#ifdef PS1_BUILD
+#include "graphics_ps1.h"
+#else
 #include "graphics.h"
+#endif
 #include "utils.h"
 #include "calcpath.h"
 #include "walk.h"

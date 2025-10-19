@@ -21,13 +21,30 @@
  *
  */
 
+/* Conditional includes for PS1 freestanding build */
+#ifndef PS1_BUILD
 #include <stdio.h>
+#else
+/* PS1 minimal stdio declarations */
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
+typedef struct _FILE FILE;
+#endif
+extern int fprintf(FILE *stream, const char *format, ...);
+#define stderr ((FILE*)2)
+#endif
 
 #include "mytypes.h"
 #include "utils.h"
 #include "resource.h"
+/* Platform-specific graphics and sound headers */
+#ifdef PS1_BUILD
+#include "graphics_ps1.h"
+#include "sound_ps1.h"
+#else
 #include "graphics.h"
 #include "sound.h"
+#endif
 #include "ttm.h"
 
 

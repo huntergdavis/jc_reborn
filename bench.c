@@ -22,7 +22,12 @@
  */
 
 #include "mytypes.h"
+/* Platform-specific graphics headers */
+#ifdef PS1_BUILD
+#include "graphics_ps1.h"
+#else
 #include "graphics.h"
+#endif
 #include "bench.h"
 
 

@@ -21,8 +21,32 @@
  *
  */
 
+/* Conditional includes for PS1 freestanding build */
+#ifndef PS1_BUILD
 #include <stdlib.h>
 #include <stdio.h>
+#else
+/* PS1 freestanding: provide minimal FILE I/O declarations */
+#include <stddef.h>
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
+typedef struct _FILE FILE;
+#endif
+extern FILE *fopen(const char *pathname, const char *mode);
+extern size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+extern int fclose(FILE *stream);
+extern int fseek(FILE *stream, long offset, int whence);
+extern long ftell(FILE *stream);
+extern int fflush(FILE *stream);
+extern void *malloc(size_t size);
+extern void *calloc(size_t nmemb, size_t size);
+extern void free(void *ptr);
+/* stdio constants */
+#define SEEK_SET 0
+#define SEEK_CUR 1
+#define SEEK_END 2
+#define stdout ((FILE*)1)
+#endif
 #include <string.h>
 
 #include "mytypes.h"

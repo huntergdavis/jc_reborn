@@ -21,13 +21,26 @@
  *
  */
 
+/* Conditional includes for PS1 freestanding build */
+#ifndef PS1_BUILD
 #include <stdlib.h>
 #include <string.h>
+#else
+#include <stddef.h>
+#include <string.h>
+extern int rand(void);
+#endif
 
 #include "mytypes.h"
 #include "utils.h"
+/* Platform-specific graphics headers */
+#ifdef PS1_BUILD
+#include "graphics_ps1.h"
+#include "sound_ps1.h"
+#else
 #include "graphics.h"
 #include "sound.h"
+#endif
 #include "ttm.h"
 #include "ads.h"
 #include "island.h"

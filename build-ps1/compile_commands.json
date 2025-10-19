@@ -1,0 +1,82 @@
+[
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/jc_reborn.c.obj -c /project/jc_reborn.c",
+  "file": "/project/jc_reborn.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/utils.c.obj -c /project/utils.c",
+  "file": "/project/utils.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/uncompress.c.obj -c /project/uncompress.c",
+  "file": "/project/uncompress.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/resource.c.obj -c /project/resource.c",
+  "file": "/project/resource.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/dump.c.obj -c /project/dump.c",
+  "file": "/project/dump.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/story.c.obj -c /project/story.c",
+  "file": "/project/story.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/walk.c.obj -c /project/walk.c",
+  "file": "/project/walk.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/calcpath.c.obj -c /project/calcpath.c",
+  "file": "/project/calcpath.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/ads.c.obj -c /project/ads.c",
+  "file": "/project/ads.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/ttm.c.obj -c /project/ttm.c",
+  "file": "/project/ttm.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/island.c.obj -c /project/island.c",
+  "file": "/project/island.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/bench.c.obj -c /project/bench.c",
+  "file": "/project/bench.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/config.c.obj -c /project/config.c",
+  "file": "/project/config.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/graphics_ps1.c.obj -c /project/graphics_ps1.c",
+  "file": "/project/graphics_ps1.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/sound_ps1.c.obj -c /project/sound_ps1.c",
+  "file": "/project/sound_ps1.c"
+},
+{
+  "directory": "/project/build-ps1",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b -I/project  -Wall -Wpedantic -DPS1_BUILD -ffreestanding -O3 -DNDEBUG -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/jcreborn.dir/events_ps1.c.obj -c /project/events_ps1.c",
+  "file": "/project/events_ps1.c"
+}
+]

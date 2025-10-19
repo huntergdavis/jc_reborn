@@ -1,0 +1,43 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/jcreborn.dir/ads.c.obj"
+  "CMakeFiles/jcreborn.dir/ads.c.obj.d"
+  "CMakeFiles/jcreborn.dir/bench.c.obj"
+  "CMakeFiles/jcreborn.dir/bench.c.obj.d"
+  "CMakeFiles/jcreborn.dir/calcpath.c.obj"
+  "CMakeFiles/jcreborn.dir/calcpath.c.obj.d"
+  "CMakeFiles/jcreborn.dir/config.c.obj"
+  "CMakeFiles/jcreborn.dir/config.c.obj.d"
+  "CMakeFiles/jcreborn.dir/dump.c.obj"
+  "CMakeFiles/jcreborn.dir/dump.c.obj.d"
+  "CMakeFiles/jcreborn.dir/events_ps1.c.obj"
+  "CMakeFiles/jcreborn.dir/events_ps1.c.obj.d"
+  "CMakeFiles/jcreborn.dir/graphics_ps1.c.obj"
+  "CMakeFiles/jcreborn.dir/graphics_ps1.c.obj.d"
+  "CMakeFiles/jcreborn.dir/island.c.obj"
+  "CMakeFiles/jcreborn.dir/island.c.obj.d"
+  "CMakeFiles/jcreborn.dir/jc_reborn.c.obj"
+  "CMakeFiles/jcreborn.dir/jc_reborn.c.obj.d"
+  "CMakeFiles/jcreborn.dir/resource.c.obj"
+  "CMakeFiles/jcreborn.dir/resource.c.obj.d"
+  "CMakeFiles/jcreborn.dir/sound_ps1.c.obj"
+  "CMakeFiles/jcreborn.dir/sound_ps1.c.obj.d"
+  "CMakeFiles/jcreborn.dir/story.c.obj"
+  "CMakeFiles/jcreborn.dir/story.c.obj.d"
+  "CMakeFiles/jcreborn.dir/ttm.c.obj"
+  "CMakeFiles/jcreborn.dir/ttm.c.obj.d"
+  "CMakeFiles/jcreborn.dir/uncompress.c.obj"
+  "CMakeFiles/jcreborn.dir/uncompress.c.obj.d"
+  "CMakeFiles/jcreborn.dir/utils.c.obj"
+  "CMakeFiles/jcreborn.dir/utils.c.obj.d"
+  "CMakeFiles/jcreborn.dir/walk.c.obj"
+  "CMakeFiles/jcreborn.dir/walk.c.obj.d"
+  "jcreborn.elf"
+  "jcreborn.exe"
+  "jcreborn.map"
+  "jcreborn.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang C)
+  include(CMakeFiles/jcreborn.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

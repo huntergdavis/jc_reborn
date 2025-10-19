@@ -50,6 +50,9 @@ typedef struct {
     uint16 clutX, clutY; /* CLUT position in VRAM */
 } PS1Surface;
 
+/* Compatibility alias for code that uses SDL_Surface */
+typedef PS1Surface SDL_Surface;
+
 struct TTtmSlot {
     uint8       *data;
     uint32      dataSize;

@@ -21,24 +21,19 @@
  *
  */
 
-/* PS1 has minimal standard library support */
-#ifndef PS1_BUILD
+/* PS1 Build - needs special header handling */
+#ifdef PS1_BUILD
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define stderr ((FILE*)2)  /* PSn00bSDK doesn't define stderr */
+#define fprintf(stream, ...) printf(__VA_ARGS__)  /* Redirect to printf */
+#else
+/* Standard SDL build */
 #include <stdlib.h>
 #include <stdio.h>
-#endif
 #include <string.h>
-
-/* Forward declare FILE and provide minimal stdlib for PS1 */
-#ifdef PS1_BUILD
-#ifndef _FILE_DEFINED
-#define _FILE_DEFINED
-typedef struct _FILE FILE;
-#endif
-extern int printf(const char *format, ...);
-extern void exit(int status) __attribute__((noreturn));
-extern int atoi(const char *str);
-#define stderr ((FILE*)2)  /* Dummy stderr */
-#define fprintf(stream, ...) printf(__VA_ARGS__)  /* Redirect to printf */
 #endif
 
 #include "mytypes.h"
@@ -48,6 +43,9 @@ extern int atoi(const char *str);
 
 /* Platform-specific headers */
 #ifdef PS1_BUILD
+#include <psxgpu.h>
+#include <psxgte.h>
+#include <psxcd.h>
 #include "graphics_ps1.h"
 #include "events_ps1.h"
 #include "sound_ps1.h"
@@ -200,6 +198,12 @@ static void parseArgs(int argc, char **argv)
 int main(int argc, char **argv)
 {
 #ifdef PS1_BUILD
+    /* Initialize PS1 subsystems BEFORE any printf calls */
+    InitHeap((void*)0x801fff00, 0x00100000);  /* Initialize heap for malloc/printf */
+    ResetGraph(0);  /* Reset GPU (mode 0 = NTSC 320x240) */
+    InitGeom();     /* Initialize GTE (geometry engine) */
+    CdInit();       /* Initialize CD-ROM */
+
     printf("Johnny Reborn - PS1 Port\n");
     printf("Initializing...\n");
 

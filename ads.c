@@ -85,11 +85,11 @@ static int    numAdsChunksLocal;
 
 static struct TTtmSlot ttmBackgroundSlot;
 static struct TTtmSlot ttmHolidaySlot;
-static struct TTtmSlot ttmSlots[MAX_TTM_SLOTS];
+static struct TTtmSlot *ttmSlots = NULL;  /* Malloc'd, not static array! */
 
 static struct TTtmThread ttmBackgroundThread;
 static struct TTtmThread ttmHolidayThread;
-static struct TTtmThread ttmThreads[MAX_TTM_THREADS];
+static struct TTtmThread *ttmThreads = NULL;  /* Malloc'd, not static array! */
 
 static struct TAdsChunk adsChunks[MAX_ADS_CHUNKS];
 
@@ -424,6 +424,27 @@ static void adsRandomEnd()
 
 void adsInit()    // Init slots and threads for TTM scripts  // TODO : rename
 {
+    /* Allocate TTM slots/threads dynamically to reduce BSS size */
+    if (ttmSlots == NULL) {
+        ttmSlots = (struct TTtmSlot*)malloc(MAX_TTM_SLOTS * sizeof(struct TTtmSlot));
+        if (!ttmSlots) {
+            if (debugMode) {
+                printf("ERROR: Failed to allocate TTM slots\n");
+            }
+            return;
+        }
+    }
+
+    if (ttmThreads == NULL) {
+        ttmThreads = (struct TTtmThread*)malloc(MAX_TTM_THREADS * sizeof(struct TTtmThread));
+        if (!ttmThreads) {
+            if (debugMode) {
+                printf("ERROR: Failed to allocate TTM threads\n");
+            }
+            return;
+        }
+    }
+
     for (int i=0; i < MAX_TTM_SLOTS; i++)
         ttmInitSlot(&ttmSlots[i]);
 

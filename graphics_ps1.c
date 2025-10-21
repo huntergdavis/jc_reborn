@@ -37,7 +37,7 @@ typedef struct _FILE FILE;
 
 /* Primitive buffer for GPU commands */
 #define PRIMITIVE_BUFFER_SIZE 32768
-static uint8 primitiveBuffer[2][PRIMITIVE_BUFFER_SIZE];
+static uint8 *primitiveBuffer[2];  /* Malloc'd, not static array! */
 static uint32 primitiveIndex[2];
 static uint8 *nextPrimitive[2];
 
@@ -80,8 +80,9 @@ void graphicsInit()
     if (debugMode)
         printf("GPU: Resetting GPU...\n");
 
-    /* Reset GPU */
+    /* Reset GPU and set video mode */
     ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
 
     if (debugMode)
         printf("GPU: Initializing GTE...\n");
@@ -93,13 +94,20 @@ void graphicsInit()
         printf("GPU: Setting up display buffers (%dx%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
     /* Setup display environments for double buffering */
-    /* Buffer 0: (0, 0) - Buffer 1: (0, 480) */
+    /* For 320x240 mode, use vertical double buffering */
+    /* Buffer 0: (0, 0) - Buffer 1: (0, 240) */
     SetDefDispEnv(&disp[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     SetDefDispEnv(&disp[1], 0, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    /* Setup drawing environments */
+    /* Setup drawing environments - swap buffers */
     SetDefDrawEnv(&draw[0], 0, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
     SetDefDrawEnv(&draw[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+
+    /* Set background clear color */
+    setRGB0(&draw[0], 0, 0, 0);
+    setRGB0(&draw[1], 0, 0, 0);
+    draw[0].isbg = 1;  /* Enable background clear */
+    draw[1].isbg = 1;
 
     if (debugMode)
         printf("GPU: Enabling display...\n");
@@ -117,6 +125,14 @@ void graphicsInit()
     /* Clear ordering tables */
     ClearOTagR(ot[0], OT_LENGTH);
     ClearOTagR(ot[1], OT_LENGTH);
+
+    /* Allocate primitive buffers dynamically to reduce BSS size */
+    primitiveBuffer[0] = (uint8*)malloc(PRIMITIVE_BUFFER_SIZE);
+    primitiveBuffer[1] = (uint8*)malloc(PRIMITIVE_BUFFER_SIZE);
+    if (!primitiveBuffer[0] || !primitiveBuffer[1]) {
+        printf("ERROR: Failed to allocate primitive buffers\n");
+        while(1);
+    }
 
     /* Initialize primitive buffers */
     nextPrimitive[0] = primitiveBuffer[0];

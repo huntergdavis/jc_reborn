@@ -29,24 +29,33 @@ static uint32 cdReadBufferSize = 0;
 
 /* CD-ROM read buffer (32KB for efficient sector reading) */
 #define CD_BUFFER_SIZE (32 * 1024)
-static uint8 cdSectorBuffer[CD_BUFFER_SIZE];
+static uint8 *cdSectorBuffer = NULL;  /* Malloc'd, not static array! */
 
 /*
  * Initialize CD-ROM subsystem
  */
 int cdromInit()
 {
-    /* Initialize CD-ROM subsystem */
-    CdInit();
+    /* DON'T call CdInit() when booting from CD-ROM! */
+    /* The BIOS already initialized it for us. Calling CdInit() crashes! */
 
-    /* Wait for drive to be ready */
-    while (CdSync(1, NULL) > 0);
+    /* DON'T wait for CdSync() - it might hang */
+    /* The CD-ROM is already ready if we booted from it! */
 
-    /* Set mode: double speed, whole sector */
-    uint8 mode = CdlModeSpeed;
-    CdControl(CdlSetmode, &mode, NULL);
+    /* DON'T change CD mode - BIOS set it up correctly for us */
 
-    /* Mark all file slots as unused */
+    /* Allocate CD sector buffer dynamically to reduce BSS size */
+    if (cdSectorBuffer == NULL) {
+        cdSectorBuffer = (uint8*)malloc(CD_BUFFER_SIZE);
+        if (!cdSectorBuffer) {
+            if (debugMode) {
+                printf("CD-ROM: ERROR - Failed to allocate sector buffer\n");
+            }
+            return -1;
+        }
+    }
+
+    /* Just initialize our internal state */
     for (int i = 0; i < MAX_CD_FILES; i++) {
         cdFileInUse[i] = 0;
         cdFilePos[i] = 0;
@@ -57,7 +66,7 @@ int cdromInit()
     cdReadBufferSize = 0;
 
     if (debugMode) {
-        printf("CD-ROM initialized\n");
+        printf("CD-ROM: Using BIOS initialization\n");
     }
 
     return 0;

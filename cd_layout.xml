@@ -14,6 +14,9 @@
 
         <!-- Directory tree on CD -->
         <directory_tree>
+            <!-- System configuration - tells PS1 BIOS which exe to boot -->
+            <file name="SYSTEM.CNF" type="data" source="SYSTEM.CNF"/>
+
             <!-- PS1 executable - paths relative to cd_layout.xml location -->
             <file name="JCREBORN.EXE" type="data" source="build-ps1/jcreborn.exe"/>
 

@@ -71,6 +71,33 @@ static int  argIsland   = 0;
 static char *args[3];
 static int  numArgs  = 0;
 
+#ifdef PS1_BUILD
+/* Visual debug helper - shows colored screen for 2 seconds */
+static void showDebugScreen(int r, int g, int b)
+{
+    #include <psxgpu.h>
+    #include <psxapi.h>
+
+    /* Reset GPU to clean state */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+
+    /* Create simple draw environment */
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, r, g, b);
+    draw.isbg = 1;  /* Enable background clear */
+    PutDrawEnv(&draw);
+
+    /* Enable display */
+    SetDispMask(1);
+
+    /* Wait 2 seconds (120 frames at 60fps) */
+    for (int i = 0; i < 120; i++) {
+        VSync(0);
+    }
+}
+#endif
 
 static void usage()
 {
@@ -198,17 +225,25 @@ static void parseArgs(int argc, char **argv)
 int main(int argc, char **argv)
 {
 #ifdef PS1_BUILD
-    /* Initialize PS1 subsystems BEFORE any printf calls */
+    /* Initialize PS1 subsystems - minimal init here, let subsystems do their own init */
     InitHeap((void*)0x801fff00, 0x00100000);  /* Initialize heap for malloc/printf */
-    ResetGraph(0);  /* Reset GPU (mode 0 = NTSC 320x240) */
-    InitGeom();     /* Initialize GTE (geometry engine) */
-    CdInit();       /* Initialize CD-ROM */
 
-    printf("Johnny Reborn - PS1 Port\n");
-    printf("Initializing...\n");
+    /* DON'T call CdInit() when booting from CD-ROM! */
+    /* The BIOS already initialized it for us, calling CdInit() again crashes! */
+
+    /* VISUAL DEBUG: Since printf doesn't appear in DuckStation TTY,
+     * we'll use screen colors to show progress:
+     * - RED screen = Reached main()
+     * - GREEN screen = Passed graphics init
+     * - BLUE screen = Passed resource parsing
+     * - PURPLE screen = Starting main loop
+     */
 
     /* Enable debug mode on PS1 to see what's happening */
     debugMode = 1;
+
+    /* VISUAL DEBUG #1: RED screen = We reached main()! */
+    showDebugScreen(255, 0, 0);
 
     /* For PS1, default to playing a single TTM for testing */
     /* This allows visual regression testing against the SDL version */
@@ -217,7 +252,6 @@ int main(int argc, char **argv)
         argc = 3;
         static char *test_argv[] = {"jcreborn", "ttm", "SAILING"};
         argv = test_argv;
-        printf("PS1 Test Mode: Will play SAILING.TTM animation\n");
     }
 #endif
 
@@ -228,22 +262,25 @@ int main(int argc, char **argv)
 
 #ifdef PS1_BUILD
     /* Initialize CD-ROM subsystem for PS1 */
-    printf("Initializing CD-ROM...\n");
     if (cdromInit() < 0) {
-        printf("ERROR: Failed to initialize CD-ROM\n");
-        while(1);  /* Hang so we can see the error */
+        /* If CD-ROM fails, show YELLOW screen and hang */
+        showDebugScreen(255, 255, 0);
+        while(1);
     }
-    printf("CD-ROM initialized successfully\n");
+
+    /* VISUAL DEBUG #2: GREEN screen = CD-ROM initialized */
+    showDebugScreen(0, 255, 0);
 #endif
 
-    printf("Parsing resource files...\n");
     parseResourceFiles("RESOURCE.MAP");
-    printf("Resource files parsed successfully\n");
 
     /* Initialize LRU cache for memory management */
-    printf("Initializing LRU cache...\n");
     initLRUCache();
-    printf("LRU cache initialized\n");
+
+#ifdef PS1_BUILD
+    /* VISUAL DEBUG #3: BLUE screen = Resources parsed */
+    showDebugScreen(0, 0, 255);
+#endif
 
     if (argPlayAll) {
         printf("Initializing graphics...\n");
@@ -275,12 +312,32 @@ int main(int argc, char **argv)
     }
 
     else if (argTtm) {
+#ifdef PS1_BUILD
+        /* VISUAL DEBUG #4: PURPLE screen = About to init graphics */
+        showDebugScreen(128, 0, 128);
+#endif
         graphicsInit();
+
+#ifdef PS1_BUILD
+        /* PS1: Simple render test - bypass TTM logic for now */
+        printf("PS1: Starting simple render test (300 frames)...\n");
+
+        int frame_count = 0;
+        while (frame_count < 300) {  /* Run for 5 seconds at 60fps */
+            grRefreshDisplay();
+
+            frame_count++;
+            if ((frame_count % 60) == 0) {
+                printf("Frame %d\n", frame_count);
+            }
+        }
+        printf("PS1: Render test complete\n");
+#else
         soundInit();
-
         adsPlaySingleTtm(args[0]);
-
         soundEnd();
+#endif
+
         graphicsEnd();
     }
 

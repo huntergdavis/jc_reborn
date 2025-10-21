@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iso_project image_name="ps1_minimal.bin" cue_sheet="ps1_minimal.cue">
+    <track type="data">
+        <identifiers
+            system         ="PLAYSTATION"
+            application    ="PLAYSTATION"
+            volume         ="PS1MINIMAL"
+            volume_set     ="PS1MINIMAL"
+            publisher      ="HOMEBREW"
+            data_preparer  ="MKPSXISO"
+        />
+        <directory_tree>
+            <file name="SYSTEM.CNF" type="data" source="SYSTEM_MINIMAL.CNF"/>
+            <file name="PS1_MIN.EXE" type="data" source="build-minimal/ps1_minimal.exe"/>
+        </directory_tree>
+    </track>
+</iso_project>

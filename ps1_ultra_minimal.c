@@ -30,8 +30,8 @@ int main(void)
     SetDefDispEnv(&disp, 0, 0, SCREEN_XRES, SCREEN_YRES);
     SetDefDrawEnv(&draw, 0, 0, SCREEN_XRES, SCREEN_YRES);
 
-    /* Clear background to blue (v10 - SQUARE ONLY) */
-    setRGB0(&draw, 0, 0, 128);
+    /* Clear background to dark green (v12 - FINAL DEMO) */
+    setRGB0(&draw, 0, 64, 32);
     draw.isbg = 1;  /* Enable background clear */
 
     PutDispEnv(&disp);
@@ -54,12 +54,11 @@ int main(void)
         ClearOTagR(ot, OTLEN);
         nextpri = primbuff;
 
-        /* ONE YELLOW SQUARE ONLY (2 triangles) */
-
+        /* LEFT: YELLOW SQUARE (2 triangles) */
         /* Square top-left triangle */
         POLY_F3 *sq1 = (POLY_F3*)nextpri;
         setPolyF3(sq1);
-        setXY3(sq1, 220, 180, 420, 180, 220, 320);  /* TL, TR, BL */
+        setXY3(sq1, 80, 180, 240, 180, 80, 320);  /* TL, TR, BL */
         setRGB0(sq1, 255, 255, 0);  /* Yellow */
         addPrim(ot, sq1);
         nextpri += sizeof(POLY_F3);
@@ -67,9 +66,17 @@ int main(void)
         /* Square bottom-right triangle */
         POLY_F3 *sq2 = (POLY_F3*)nextpri;
         setPolyF3(sq2);
-        setXY3(sq2, 420, 180, 420, 320, 220, 320);  /* TR, BR, BL */
+        setXY3(sq2, 240, 180, 240, 320, 80, 320);  /* TR, BR, BL */
         setRGB0(sq2, 255, 255, 0);  /* Yellow */
         addPrim(ot, sq2);
+        nextpri += sizeof(POLY_F3);
+
+        /* RIGHT: RED TRIANGLE */
+        POLY_F3 *tri1 = (POLY_F3*)nextpri;
+        setPolyF3(tri1);
+        setXY3(tri1, 480, 180, 380, 320, 580, 320);
+        setRGB0(tri1, 255, 0, 0);  /* Red */
+        addPrim(ot, tri1);
         nextpri += sizeof(POLY_F3);
 
         /* CRITICAL: Call PutDrawEnv BEFORE DrawOTag */

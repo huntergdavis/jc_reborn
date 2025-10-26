@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iso_project image_name="ps1_ultra.bin" cue_sheet="ps1_ultra.cue">
+    <track type="data">
+        <identifiers
+            system="PLAYSTATION"
+            application="PLAYSTATION"
+            volume="PS1ULTRA"
+            publisher="HOMEBREW"
+            data_preparer="MKPSXISO"
+        />
+        <directory_tree>
+            <file name="SYSTEM.CNF" type="data" source="SYSTEM_ULTRA.CNF"/>
+            <file name="ULTRA.EXE" type="data" source="build-ultra/ps1_ultra.exe"/>
+        </directory_tree>
+    </track>
+</iso_project>

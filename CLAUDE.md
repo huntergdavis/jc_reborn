@@ -20,12 +20,16 @@ The project uses Make with platform-specific Makefiles:
 
 The build requires SDL2 installed via system package manager or Homebrew. All Makefiles compile C99 with `-Wall -Wpedantic`.
 
-## Build and Run Instructions (macOS)
+## Build and Run Instructions
+
+### macOS / Linux (SDL2)
 
 **Standard workflow**:
 ```bash
 # 1. Build the executable
-make
+make  # macOS (uses default Makefile)
+# OR
+make -f Makefile.linux  # Linux
 
 # 2. Copy executable to jc_resources directory (which contains RESOURCE.MAP, RESOURCE.001, and sound files)
 cp jc_reborn jc_resources/
@@ -37,7 +41,45 @@ cd jc_resources
 
 **Note**: The executable must be run from the `jc_resources` directory because it needs access to the original Sierra data files (`RESOURCE.MAP` and `RESOURCE.001`) and optional sound files (`sound0.wav` through `sound24.wav`). These files are not included in the repository and must be obtained separately (see README.md for details).
 
+### PlayStation 1 (PS1 Branch)
+
+**Current branch**: `ps1` (based on `4mb2025` memory-optimized branch)
+
+**Quick build and test**:
+```bash
+# Build using Docker container
+docker run --rm --platform linux/amd64 \
+  -v $(pwd):/project \
+  jc-reborn-ps1-dev:amd64 \
+  bash -c "cd /project/build-ps1 && make clean && make"
+
+# Create CD image
+docker run --rm --platform linux/amd64 \
+  -v $(pwd):/project \
+  jc-reborn-ps1-dev:amd64 \
+  bash -c "cd /project && mkpsxiso cd_layout.xml"
+
+# Test in DuckStation emulator
+# Load jcreborn.cue in DuckStation
+```
+
+**PS1-specific files**:
+- `graphics_ps1.c/h` - PSn00bSDK GPU implementation (640x480 interlaced)
+- `sound_ps1.c/h` - SPU audio implementation
+- `events_ps1.c/h` - PSX controller input
+- `cdrom_ps1.c/h` - CD-ROM file I/O (does NOT call CdInit() - BIOS already initialized)
+- `ps1_stubs.c` - Missing libc functions
+- `CMakeLists.ps1.txt` - PS1 build configuration
+
+**Important PS1 technical notes**:
+- Do NOT call `CdInit()` when booting from CD-ROM (causes crash)
+- printf() does not output to DuckStation TTY - use visual debugging (colored screens)
+- BSS size reduced from 166KB to 38KB by malloc'ing large buffers
+- See `PS1_DEVELOPMENT_GUIDE.md` for detailed PS1 port documentation
+
 ## Running the Engine
+
+### Normal Execution
 
 Basic execution: `./jc_reborn` (runs fullscreen story mode)
 
@@ -59,6 +101,23 @@ Options can be combined: `jc_reborn window nosound debug hotkeys`
 - Space: pause/unpause
 - Return: advance one frame when paused
 - M: toggle max speed
+
+### Resource Analysis and Extraction
+
+**Extract and analyze resources**:
+```bash
+# Build resource extraction tools
+make -f Makefile.linux  # or Makefile.osx
+
+# Extract all resources from RESOURCE.001
+cd jc_resources
+./extract_resources
+
+# Analyze resource structure and statistics
+./analyze_resources
+```
+
+These utilities are helpful for understanding the Sierra ScreenAntics format and debugging resource-related issues.
 
 ## Architecture
 
@@ -118,12 +177,30 @@ Run `make test-memory` to see detailed memory analysis.
 - `struct TAdsScene`: Scene definition with slot/tag/repeat count
 - Resource structs (`TAdsResource`, `TBmpResource`, `TScrResource`, `TTtmResource`): Parsed resource headers with compression metadata
 
-## Platform-Specific Notes
+## Branch Structure and Platform Ports
 
-- This is the main development branch; other platform ports live in separate branches
-- For low-memory ports (Dreamcast, embedded), check the memory-lite refactor approach
-- The closed_captions branch contains script files for accessibility features
-- Pre-rendered frames for InkPlate/photo frame ports are in `rawframes` directory (20K files on the InkPlate branch)
+**Main branches**:
+- `main` - Primary development (SDL2, desktop platforms)
+- `ps1` - PlayStation 1 port (active development, based on 4mb2025)
+- `4mb2025` - Memory-optimized version (350KB usage, LRU caching)
+
+**Other platform ports** (separate branches):
+- `dreamcast` - Sega Dreamcast port
+- `lowmem` / `lowmemdc` - Low-memory embedded systems
+- `SDL1.2` / `SDL_1.2_backport` - SDL 1.2 for RetroFW devices
+- `inkplate` - InkPlate e-paper displays (20K pre-rendered frames in `rawframes`)
+- `bash` - Text-only version
+- `closed_captions` - Accessibility features with scene descriptions
+- `emscripten` - Web/browser port (incomplete)
+
+**PS1 port specifics** (current branch):
+- Built with PSn00bSDK 0.24 and mipsel-none-elf-gcc
+- Dockerized build environment for Linux/macOS
+- Visual debugging system (colored screens) since printf() doesn't work
+- Memory: 350KB peak usage fits easily in PS1's 2MB RAM
+- Resolution: Native 640x480 interlaced (matches engine's design)
+- Testing: DuckStation emulator recommended
+- See `PS1_DEVELOPMENT_GUIDE.md` for complete PS1 workflow
 
 ## Testing
 
@@ -137,9 +214,31 @@ make test
 **Run specific test suites**:
 ```bash
 cd tests
-make test-utils      # Test utility functions
-make test-calcpath   # Test pathfinding algorithm
-make test-resource   # Test resource loading (requires RESOURCE files)
+make test-utils              # Test utility functions
+make test-calcpath           # Test pathfinding algorithm
+make test-resource           # Test resource loading (requires RESOURCE files)
+make test-uncompress         # Test RLE/LZW decompression
+make test-config             # Test configuration file I/O
+make test-memory             # Memory profiling and analysis
+```
+
+**Memory optimization tests**:
+```bash
+cd tests
+make test-disk-streaming     # Disk streaming optimization
+make test-bmp-optimization   # BMP data freeing
+make test-scr-optimization   # SCR data freeing
+make test-lru-cache          # LRU cache with memory budget
+```
+
+**Visual regression tests** (requires RESOURCE files):
+```bash
+cd tests
+# Capture reference frames from all scenes
+./capture_all_reference_frames.sh
+
+# Run visual regression tests
+make test-visual-regression
 ```
 
 **Test coverage** (46 passing tests):
@@ -160,10 +259,37 @@ Tests are designed to:
 
 ## Development Workflow
 
+### General Development (main branch)
+
 When modifying the engine:
 1. **Run tests before and after changes**: `make test` to catch regressions
 2. Changes to resource loading affect `resource.c/h` and require testing with RESOURCE.001
 3. TTM instruction changes require understanding the bytecode format (see `ttm.c` opcode handlers)
 4. Graphics changes should maintain the 640x480 screen resolution and VGA palette constraints
-5. Memory-constrained ports should test against the 4MB budget limit
+5. Memory-constrained ports should test against the 4MB budget limit (set via `JC_MEM_BUDGET_MB`)
 6. **Add tests for new features**: Unit tests for algorithms, integration tests for workflows
+
+### PS1 Development (ps1 branch)
+
+**Critical PS1-specific rules**:
+1. **NEVER call `CdInit()`** - BIOS already initializes CD-ROM; calling it causes crashes
+2. **Use visual debugging** - printf() doesn't output to DuckStation TTY console
+3. **Minimize BSS** - Use malloc() for large buffers instead of static arrays
+4. **Test frequently in DuckStation** - Emulator behavior differs from other platforms
+5. **Check build artifacts**: Verify .exe size and BSS size don't exceed ~100KB combined
+
+**PS1 debugging techniques**:
+- Colored screen flashes (see graphics_ps1.c:fillScreen())
+- RED = main() reached
+- GREEN = CD-ROM initialized
+- BLUE = Resources parsed
+- YELLOW = Error state
+- Build minimal test first (`ps1_minimal_main.c`) to verify toolchain
+
+**Common PS1 pitfalls**:
+- Large executables may not boot (pre-main crash)
+- CD-ROM reads require proper sector alignment
+- DuckStation may cache old CD images (delete and recreate .bin/.cue)
+- Memory layout differences (heap vs stack)
+
+See `PS1_DEVELOPMENT_GUIDE.md`, `PS1_TESTING_SESSION_*.md` for detailed workflows.

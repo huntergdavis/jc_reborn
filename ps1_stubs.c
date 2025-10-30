@@ -33,6 +33,7 @@ typedef struct _FILE FILE;
 #define stdout ((FILE*)1)
 
 /* Include CD-ROM interface for real file I/O */
+#include "mytypes.h"  /* For uint32, uint8 types */
 #include "cdrom_ps1.h"
 
 /* ============================================================================
@@ -100,8 +101,18 @@ long ftell(FILE *stream) {
 }
 
 int fgetc(FILE *f) {
-    /* Return EOF */
-    return -1;
+    /* Don't read from stdout/stderr */
+    if (f == stdout || f == stderr || f == NULL) {
+        return -1;  /* EOF */
+    }
+    /* Convert FILE* back to CD-ROM handle */
+    int handle = (int)(size_t)f - 3;
+    unsigned char byte;
+    int result = cdromRead(handle, &byte, 1);
+    if (result != 1) {
+        return -1;  /* EOF or error */
+    }
+    return (int)byte;
 }
 
 int fflush(FILE *stream) {
@@ -144,8 +155,16 @@ char *fgets(char *s, int size, FILE *stream) {
 }
 
 int feof(FILE *stream) {
-    /* Stub: always EOF */
-    return 1;
+    /* Don't check stdout/stderr */
+    if (stream == stdout || stream == stderr || stream == NULL) {
+        return 1;
+    }
+    /* Convert FILE* back to CD-ROM handle */
+    int handle = (int)(size_t)stream - 3;
+    /* Check if current position equals file size */
+    uint32 pos = cdromTell(handle);
+    uint32 size = cdromGetSize(handle);
+    return (pos >= size) ? 1 : 0;
 }
 
 /* ============================================================================

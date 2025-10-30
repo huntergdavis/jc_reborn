@@ -39,11 +39,6 @@ int cdromInit()
     /* DON'T call CdInit() when booting from CD-ROM! */
     /* The BIOS already initialized it for us. Calling CdInit() crashes! */
 
-    /* DON'T wait for CdSync() - it might hang */
-    /* The CD-ROM is already ready if we booted from it! */
-
-    /* DON'T change CD mode - BIOS set it up correctly for us */
-
     /* Allocate CD sector buffer dynamically to reduce BSS size */
     if (cdSectorBuffer == NULL) {
         cdSectorBuffer = (uint8*)malloc(CD_BUFFER_SIZE);
@@ -65,8 +60,21 @@ int cdromInit()
     cdReadBufferPos = 0;
     cdReadBufferSize = 0;
 
+    /* Set CD-ROM mode for data reading (2048 byte sectors) */
+    uint8 mode = CdlModeSpeed;  /* Normal speed, no XA filter */
+    if (CdControlB(CdlSetmode, &mode, NULL) == 0) {
+        if (debugMode) {
+            printf("CD-ROM: WARNING - Failed to set mode\n");
+        }
+        /* Don't fail - BIOS might have set it already */
+    }
+
+    /* Wait for mode set to complete */
+    int timeout = 1000;
+    while (CdSync(1, NULL) > 0 && timeout-- > 0);
+
     if (debugMode) {
-        printf("CD-ROM: Using BIOS initialization\n");
+        printf("CD-ROM: Initialized (BIOS boot mode)\n");
     }
 
     return 0;
@@ -186,20 +194,46 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
         return -1;
     }
 
-    /* Wait for seek to complete */
-    while (CdSync(1, NULL) > 0);
+    /* Wait for seek to complete (with timeout) */
+    int timeout = 10000;
+    while (CdSync(1, NULL) > 0 && timeout-- > 0);
+
+    if (timeout <= 0) {
+        if (debugMode) {
+            printf("CD-ROM: Seek timeout\n");
+        }
+        return -1;
+    }
 
     /* Read data */
-    CdRead(sectorsToRead, (uint32*)cdSectorBuffer, CdlModeSpeed);
+    if (CdRead(sectorsToRead, (uint32*)cdSectorBuffer, CdlModeSpeed) == 0) {
+        if (debugMode) {
+            printf("CD-ROM: CdRead failed\n");
+        }
+        return -1;
+    }
 
-    /* Wait for read to complete */
-    while (CdSync(1, NULL) > 0);
+    /* Wait for read to complete (with timeout) */
+    timeout = 10000;
+    while (CdSync(1, NULL) > 0 && timeout-- > 0);
+
+    if (timeout <= 0) {
+        if (debugMode) {
+            printf("CD-ROM: Read timeout\n");
+        }
+        return -1;
+    }
 
     /* Copy requested bytes from buffer (accounting for offset within first sector) */
     memcpy(buffer, cdSectorBuffer + offsetInSector, size);
 
     /* Update file position */
     cdFilePos[fileHandle] += size;
+
+    if (debugMode && size > 100) {
+        printf("CD-ROM: Read %u bytes from handle %d at pos %u\n",
+               size, fileHandle, cdFilePos[fileHandle] - size);
+    }
 
     return size;
 }

@@ -270,9 +270,23 @@ int main(int argc, char **argv)
 
     /* VISUAL DEBUG #2: GREEN screen = CD-ROM initialized */
     showDebugScreen(0, 255, 0);
+
+    /* VISUAL DEBUG #2.5: Test file opening */
+    FILE *testFile = fopen("RESOURCE.MAP", "rb");
+    if (testFile == NULL) {
+        showDebugScreen(255, 0, 0);  /* RED = file open failed */
+        while(1);
+    }
+    fclose(testFile);
+    showDebugScreen(0, 255, 255);  /* CYAN = file opened successfully */
 #endif
 
     parseResourceFiles("RESOURCE.MAP");
+
+#ifdef PS1_BUILD
+    /* VISUAL DEBUG #2.6: MAGENTA screen = parseResourceFiles returned */
+    showDebugScreen(255, 0, 255);
+#endif
 
     /* Initialize LRU cache for memory management */
     initLRUCache();

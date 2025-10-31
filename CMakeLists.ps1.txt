@@ -43,6 +43,7 @@ set(SOURCES
     sound_ps1.c
     events_ps1.c
     cdrom_ps1.c
+    ps1_debug.c
     # LibC stubs for missing functions
     ps1_stubs.c
 )
@@ -66,14 +67,8 @@ target_link_libraries(jcreborn PRIVATE
     c
 )
 
-# Generate CD image using mkpsxiso
-# Run from project root so paths in cd_layout.xml work correctly
-add_custom_command(
-    TARGET jcreborn POST_BUILD
-    COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && mkpsxiso cd_layout.xml
-    COMMENT "Creating CD image..."
-    VERBATIM
-)
+# CD image creation is now handled by make-cd-image.sh script
+# (POST_BUILD mkpsxiso was causing hangs when trying to overwrite existing files)
 
 # Install target
 install(TARGETS jcreborn)

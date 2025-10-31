@@ -6,6 +6,10 @@ set -e  # Exit on error
 
 cd "$(dirname "$0")"  # Change to script directory
 
+# Remove old CD image files to prevent mkpsxiso hang
+echo "=== Removing old CD image files ==="
+rm -f jcreborn.bin jcreborn.cue
+
 echo "=== Creating PS1 CD image with mkpsxiso ==="
 docker run --rm --platform linux/amd64 \
     -v "$PWD":/project \

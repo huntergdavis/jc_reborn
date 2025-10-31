@@ -11,12 +11,28 @@
 
 #include <psxcd.h>
 #include <psxapi.h>
+#include <psxgpu.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "mytypes.h"
 #include "cdrom_ps1.h"
 #include "utils.h"
+#include "ps1_debug.h"
+
+/* Visual debug helper for CD-ROM errors */
+static void showCDError(int r, int g, int b) {
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, r, g, b);
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    while(1);  /* Hang with error color */
+}
 
 /* CD file handle structure */
 #define MAX_CD_FILES 8
@@ -43,9 +59,14 @@ int cdromInit()
     if (cdSectorBuffer == NULL) {
         cdSectorBuffer = (uint8*)malloc(CD_BUFFER_SIZE);
         if (!cdSectorBuffer) {
-            if (debugMode) {
-                printf("CD-ROM: ERROR - Failed to allocate sector buffer\n");
-            }
+            ps1DebugInit();
+            ps1DebugClear();
+            ps1DebugPrint("CD-ROM Init Failed");
+            ps1DebugPrint("");
+            ps1DebugPrint("Failed to allocate sector buffer");
+            ps1DebugPrint("Size needed: %d bytes", CD_BUFFER_SIZE);
+            ps1DebugFlush();
+            ps1DebugWait();
             return -1;
         }
     }
@@ -60,18 +81,12 @@ int cdromInit()
     cdReadBufferPos = 0;
     cdReadBufferSize = 0;
 
-    /* Set CD-ROM mode for data reading (2048 byte sectors) */
-    uint8 mode = CdlModeSpeed;  /* Normal speed, no XA filter */
-    if (CdControlB(CdlSetmode, &mode, NULL) == 0) {
-        if (debugMode) {
-            printf("CD-ROM: WARNING - Failed to set mode\n");
-        }
-        /* Don't fail - BIOS might have set it already */
-    }
+    /* DON'T set CD-ROM mode when booting from CD-ROM! */
+    /* The BIOS already configured it for us. Trying to change it will fail. */
+    /* The CD-ROM is already in the correct mode for reading data (2048 byte sectors) */
 
-    /* Wait for mode set to complete */
-    int timeout = 1000;
-    while (CdSync(1, NULL) > 0 && timeout-- > 0);
+    /* DEBUG: Silent file search test - just verify CdSearchFile works */
+    /* (Visual debugging moved to main() after graphics init) */
 
     if (debugMode) {
         printf("CD-ROM: Initialized (BIOS boot mode)\n");
@@ -104,7 +119,7 @@ int cdromOpen(const char *filename)
         if (debugMode) {
             printf("CD-ROM: No free file slots\n");
         }
-        return -1;
+        showCDError(128, 0, 0);  /* DARK RED = No free slots */
     }
 
     /* Convert filename to uppercase (CD-ROM standard) */
@@ -122,20 +137,32 @@ int cdromOpen(const char *filename)
     }
     upperName[i] = '\0';
 
-    /* Add CD-ROM path prefix if not present */
+    /* CD-ROM path - ISO 9660 format with version number */
+    /* Try without leading backslash first, then with backslash if that fails */
     char cdPath[256];
-    if (upperName[0] != '\\') {
-        snprintf(cdPath, sizeof(cdPath), "\\%s", upperName);
-    } else {
-        snprintf(cdPath, sizeof(cdPath), "%s", upperName);
-    }
+    snprintf(cdPath, sizeof(cdPath), "%s;1", upperName);
 
     /* Search for file on CD */
     if (!CdSearchFile(&cdFiles[slot], cdPath)) {
-        if (debugMode) {
-            printf("CD-ROM: File not found: %s\n", cdPath);
-        }
-        return -1;
+        /* Visual debug: show detailed error */
+        ps1DebugInit();
+        ps1DebugClear();
+        ps1DebugPrint("CD-ROM File Not Found");
+        ps1DebugPrint("");
+        ps1DebugPrint("Original filename: %s", filename);
+        ps1DebugPrint("Uppercase: %s", upperName);
+        ps1DebugPrint("CD path tried: %s", cdPath);
+        ps1DebugPrint("");
+        ps1DebugPrint("CdSearchFile() returned NULL");
+        ps1DebugPrint("");
+        ps1DebugPrint("Possible causes:");
+        ps1DebugPrint("- File not on CD image");
+        ps1DebugPrint("- Wrong path format");
+        ps1DebugPrint("- CD not initialized");
+        ps1DebugFlush();
+        ps1DebugWait();
+
+        showCDError(255, 0, 128);  /* PINK = CdSearchFile failed */
     }
 
     cdFileInUse[slot] = 1;
@@ -199,18 +226,12 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
     while (CdSync(1, NULL) > 0 && timeout-- > 0);
 
     if (timeout <= 0) {
-        if (debugMode) {
-            printf("CD-ROM: Seek timeout\n");
-        }
-        return -1;
+        showCDError(255, 255, 0);  /* YELLOW = Seek timeout */
     }
 
     /* Read data */
     if (CdRead(sectorsToRead, (uint32*)cdSectorBuffer, CdlModeSpeed) == 0) {
-        if (debugMode) {
-            printf("CD-ROM: CdRead failed\n");
-        }
-        return -1;
+        showCDError(255, 128, 0);  /* ORANGE = CdRead failed */
     }
 
     /* Wait for read to complete (with timeout) */
@@ -218,10 +239,7 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
     while (CdSync(1, NULL) > 0 && timeout-- > 0);
 
     if (timeout <= 0) {
-        if (debugMode) {
-            printf("CD-ROM: Read timeout\n");
-        }
-        return -1;
+        showCDError(255, 255, 255);  /* WHITE = Read completion timeout */
     }
 
     /* Copy requested bytes from buffer (accounting for offset within first sector) */
@@ -229,11 +247,6 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
 
     /* Update file position */
     cdFilePos[fileHandle] += size;
-
-    if (debugMode && size > 100) {
-        printf("CD-ROM: Read %u bytes from handle %d at pos %u\n",
-               size, fileHandle, cdFilePos[fileHandle] - size);
-    }
 
     return size;
 }

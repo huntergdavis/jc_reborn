@@ -44,8 +44,9 @@ static uint32 cdReadBufferPos = 0;
 static uint32 cdReadBufferSize = 0;
 
 /* CD-ROM read buffer (32KB for efficient sector reading) */
+/* Must be 4-byte aligned for DMA operations! */
 #define CD_BUFFER_SIZE (32 * 1024)
-static uint8 *cdSectorBuffer = NULL;  /* Malloc'd, not static array! */
+static uint32 cdSectorBuffer[CD_BUFFER_SIZE / 4] __attribute__((aligned(4)));  /* Static, properly aligned for DMA */
 
 /*
  * Initialize CD-ROM subsystem
@@ -55,21 +56,8 @@ int cdromInit()
     /* DON'T call CdInit() when booting from CD-ROM! */
     /* The BIOS already initialized it for us. Calling CdInit() crashes! */
 
-    /* Allocate CD sector buffer dynamically to reduce BSS size */
-    if (cdSectorBuffer == NULL) {
-        cdSectorBuffer = (uint8*)malloc(CD_BUFFER_SIZE);
-        if (!cdSectorBuffer) {
-            ps1DebugInit();
-            ps1DebugClear();
-            ps1DebugPrint("CD-ROM Init Failed");
-            ps1DebugPrint("");
-            ps1DebugPrint("Failed to allocate sector buffer");
-            ps1DebugPrint("Size needed: %d bytes", CD_BUFFER_SIZE);
-            ps1DebugFlush();
-            ps1DebugWait();
-            return -1;
-        }
-    }
+    /* CD sector buffer is statically allocated with proper DMA alignment */
+    /* No need to malloc - it's a static array */
 
     /* Just initialize our internal state */
     for (int i = 0; i < MAX_CD_FILES; i++) {
@@ -85,8 +73,9 @@ int cdromInit()
     /* The BIOS already configured it for us. Trying to change it will fail. */
     /* The CD-ROM is already in the correct mode for reading data (2048 byte sectors) */
 
-    /* DEBUG: Silent file search test - just verify CdSearchFile works */
-    /* (Visual debugging moved to main() after graphics init) */
+    /* Initialize CD-ROM subsystem - Required for CdSearchFile() to work! */
+    /* Despite documentation, calling CdInit() when booting from CD is necessary */
+    CdInit();
 
     if (debugMode) {
         printf("CD-ROM: Initialized (BIOS boot mode)\n");
@@ -138,7 +127,7 @@ int cdromOpen(const char *filename)
     upperName[i] = '\0';
 
     /* CD-ROM path - ISO 9660 format with version number */
-    /* Try without leading backslash first, then with backslash if that fails */
+    /* Correct format: FILENAME.EXT;1 (NO leading backslash!) */
     char cdPath[256];
     snprintf(cdPath, sizeof(cdPath), "%s;1", upperName);
 
@@ -213,7 +202,7 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
     CdlLOC readLoc;
     CdIntToPos(absoluteSector, &readLoc);
 
-    /* Seek to position */
+    /* Seek to position (seek actually happens during CdRead) */
     if (CdControl(CdlSetloc, (uint8*)&readLoc, NULL) == 0) {
         if (debugMode) {
             printf("CD-ROM: Setloc failed\n");
@@ -221,29 +210,66 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
         return -1;
     }
 
-    /* Wait for seek to complete (with timeout) */
-    int timeout = 10000;
-    while (CdSync(1, NULL) > 0 && timeout-- > 0);
-
-    if (timeout <= 0) {
-        showCDError(255, 255, 0);  /* YELLOW = Seek timeout */
-    }
-
-    /* Read data */
-    if (CdRead(sectorsToRead, (uint32*)cdSectorBuffer, CdlModeSpeed) == 0) {
+    /* Read data - seek happens here */
+    if (CdRead(sectorsToRead, cdSectorBuffer, CdlModeSpeed) == 0) {
+        ps1DebugInit();
+        ps1DebugClear();
+        ps1DebugPrint("CD-ROM Read Failed");
+        ps1DebugPrint("");
+        ps1DebugPrint("CdRead() returned 0");
+        ps1DebugPrint("Sectors: %d", sectorsToRead);
+        ps1DebugPrint("Absolute sector: %d", absoluteSector);
+        ps1DebugFlush();
+        ps1DebugWait();
         showCDError(255, 128, 0);  /* ORANGE = CdRead failed */
     }
 
-    /* Wait for read to complete (with timeout) */
-    timeout = 10000;
-    while (CdSync(1, NULL) > 0 && timeout-- > 0);
+    /* Wait for read to complete using CdReadSync with polling */
+    /* CdReadSync returns 0 when complete, >0 when busy */
+    int timeout = 10000000;  /* Very large timeout */
+    int result;
+    int initial_timeout = timeout;
+    while ((result = CdReadSync(1, NULL)) > 0 && timeout-- > 0) {
+        /* Polling - result > 0 means still busy */
+        if (timeout % 1000000 == 0) {
+            /* Show progress every million iterations */
+            ps1DebugInit();
+            ps1DebugClear();
+            ps1DebugPrint("CD-ROM Reading...");
+            ps1DebugPrint("");
+            ps1DebugPrint("Iterations: %d", initial_timeout - timeout);
+            ps1DebugPrint("Result: %d", result);
+            ps1DebugFlush();
+        }
+    }
 
     if (timeout <= 0) {
-        showCDError(255, 255, 255);  /* WHITE = Read completion timeout */
+        ps1DebugInit();
+        ps1DebugClear();
+        ps1DebugPrint("CD-ROM Read Timeout");
+        ps1DebugPrint("");
+        ps1DebugPrint("Timeout after %d iterations", initial_timeout);
+        ps1DebugPrint("Last result: %d", result);
+        ps1DebugPrint("Sectors: %d", sectorsToRead);
+        ps1DebugFlush();
+        ps1DebugWait();
+        showCDError(0, 255, 255);  /* CYAN = Read timeout */
+    }
+
+    if (result < 0) {
+        ps1DebugInit();
+        ps1DebugClear();
+        ps1DebugPrint("CD-ROM Read Error");
+        ps1DebugPrint("");
+        ps1DebugPrint("CdReadSync returned: %d", result);
+        ps1DebugFlush();
+        ps1DebugWait();
+        showCDError(255, 255, 255);  /* WHITE = Read error */
     }
 
     /* Copy requested bytes from buffer (accounting for offset within first sector) */
-    memcpy(buffer, cdSectorBuffer + offsetInSector, size);
+    /* Cast to uint8* for byte-level access */
+    memcpy(buffer, (uint8*)cdSectorBuffer + offsetInSector, size);
 
     /* Update file position */
     cdFilePos[fileHandle] += size;

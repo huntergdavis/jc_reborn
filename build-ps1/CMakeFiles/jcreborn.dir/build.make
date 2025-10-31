@@ -293,10 +293,38 @@ CMakeFiles/jcreborn.dir/events_ps1.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/jcreborn.dir/events_ps1.c.s"
 	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /project/events_ps1.c -o CMakeFiles/jcreborn.dir/events_ps1.c.s
 
+CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj: CMakeFiles/jcreborn.dir/flags.make
+CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj: ../cdrom_ps1.c
+CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj: CMakeFiles/jcreborn.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build-ps1/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building C object CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj"
+	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj -MF CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj.d -o CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj -c /project/cdrom_ps1.c
+
+CMakeFiles/jcreborn.dir/cdrom_ps1.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/jcreborn.dir/cdrom_ps1.c.i"
+	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /project/cdrom_ps1.c > CMakeFiles/jcreborn.dir/cdrom_ps1.c.i
+
+CMakeFiles/jcreborn.dir/cdrom_ps1.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/jcreborn.dir/cdrom_ps1.c.s"
+	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /project/cdrom_ps1.c -o CMakeFiles/jcreborn.dir/cdrom_ps1.c.s
+
+CMakeFiles/jcreborn.dir/ps1_debug.c.obj: CMakeFiles/jcreborn.dir/flags.make
+CMakeFiles/jcreborn.dir/ps1_debug.c.obj: ../ps1_debug.c
+CMakeFiles/jcreborn.dir/ps1_debug.c.obj: CMakeFiles/jcreborn.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build-ps1/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Building C object CMakeFiles/jcreborn.dir/ps1_debug.c.obj"
+	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/jcreborn.dir/ps1_debug.c.obj -MF CMakeFiles/jcreborn.dir/ps1_debug.c.obj.d -o CMakeFiles/jcreborn.dir/ps1_debug.c.obj -c /project/ps1_debug.c
+
+CMakeFiles/jcreborn.dir/ps1_debug.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/jcreborn.dir/ps1_debug.c.i"
+	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /project/ps1_debug.c > CMakeFiles/jcreborn.dir/ps1_debug.c.i
+
+CMakeFiles/jcreborn.dir/ps1_debug.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/jcreborn.dir/ps1_debug.c.s"
+	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /project/ps1_debug.c -o CMakeFiles/jcreborn.dir/ps1_debug.c.s
+
 CMakeFiles/jcreborn.dir/ps1_stubs.c.obj: CMakeFiles/jcreborn.dir/flags.make
 CMakeFiles/jcreborn.dir/ps1_stubs.c.obj: ../ps1_stubs.c
 CMakeFiles/jcreborn.dir/ps1_stubs.c.obj: CMakeFiles/jcreborn.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build-ps1/CMakeFiles --progress-num=$(CMAKE_PROGRESS_17) "Building C object CMakeFiles/jcreborn.dir/ps1_stubs.c.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/project/build-ps1/CMakeFiles --progress-num=$(CMAKE_PROGRESS_19) "Building C object CMakeFiles/jcreborn.dir/ps1_stubs.c.obj"
 	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/jcreborn.dir/ps1_stubs.c.obj -MF CMakeFiles/jcreborn.dir/ps1_stubs.c.obj.d -o CMakeFiles/jcreborn.dir/ps1_stubs.c.obj -c /project/ps1_stubs.c
 
 CMakeFiles/jcreborn.dir/ps1_stubs.c.i: cmake_force
@@ -325,6 +353,8 @@ jcreborn_OBJECTS = \
 "CMakeFiles/jcreborn.dir/graphics_ps1.c.obj" \
 "CMakeFiles/jcreborn.dir/sound_ps1.c.obj" \
 "CMakeFiles/jcreborn.dir/events_ps1.c.obj" \
+"CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj" \
+"CMakeFiles/jcreborn.dir/ps1_debug.c.obj" \
 "CMakeFiles/jcreborn.dir/ps1_stubs.c.obj"
 
 # External object files for target jcreborn
@@ -346,6 +376,8 @@ jcreborn.elf: CMakeFiles/jcreborn.dir/config.c.obj
 jcreborn.elf: CMakeFiles/jcreborn.dir/graphics_ps1.c.obj
 jcreborn.elf: CMakeFiles/jcreborn.dir/sound_ps1.c.obj
 jcreborn.elf: CMakeFiles/jcreborn.dir/events_ps1.c.obj
+jcreborn.elf: CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj
+jcreborn.elf: CMakeFiles/jcreborn.dir/ps1_debug.c.obj
 jcreborn.elf: CMakeFiles/jcreborn.dir/ps1_stubs.c.obj
 jcreborn.elf: CMakeFiles/jcreborn.dir/build.make
 jcreborn.elf: /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/release/libpsxgpu_exe_gprel.a
@@ -360,7 +392,7 @@ jcreborn.elf: /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/release/libsmd_e
 jcreborn.elf: /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/release/liblzp_exe_gprel.a
 jcreborn.elf: /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/release/libc_exe_gprel.a
 jcreborn.elf: CMakeFiles/jcreborn.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/project/build-ps1/CMakeFiles --progress-num=$(CMAKE_PROGRESS_18) "Linking C executable jcreborn.elf"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/project/build-ps1/CMakeFiles --progress-num=$(CMAKE_PROGRESS_20) "Linking C executable jcreborn.elf"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/jcreborn.dir/link.txt --verbose=$(VERBOSE)
 	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/elf2x -q /project/build-ps1/jcreborn.elf /project/build-ps1/jcreborn.exe
 	/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-nm -f posix -l -n /project/build-ps1/jcreborn.elf >/project/build-ps1/jcreborn.map

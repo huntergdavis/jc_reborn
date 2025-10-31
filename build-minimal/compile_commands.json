@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/project/build-minimal",
+  "command": "/opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-gcc -DNDEBUG=1 -DPSN00BSDK=1 -I/opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b  -DPS1_BUILD -ffreestanding -g -Wa,--strip-local-absolute -ffreestanding -fno-builtin -nostdlib -fdata-sections -ffunction-sections -fsigned-char -fno-strict-overflow -fdiagnostics-color=always -msoft-float -march=r3000 -mtune=r3000 -mabi=32 -mno-mt -mno-llsc -O2 -G8 -fno-pic -mno-abicalls -mgpopt -mno-extern-sdata -std=gnu99 -o CMakeFiles/ps1_minimal.dir/ps1_minimal_main.c.obj -c /project/build-minimal/ps1_minimal_main.c",
+  "file": "/project/build-minimal/ps1_minimal_main.c"
+}
+]

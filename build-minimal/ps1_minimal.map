@@ -1,0 +1,95 @@
+__text_start T ffffffff80010000 	/project/build-minimal/ps1_minimal_main.c:62
+main T ffffffff80010000 2ec	/project/build-minimal/ps1_minimal_main.c:57
+_vblank_handler t ffffffff800102ec 40	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:40
+_process_drawop t ffffffff8001032c bc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:47
+_gpu_irq_handler t ffffffff800103e8 4c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:68
+_gpu_dma_handler t ffffffff80010434 40	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:75
+_default_vsync_halt t ffffffff80010474 70	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:131
+ResetGraph T ffffffff800104e4 190	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:82
+VSync T ffffffff80010674 124	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:143
+SetDrawOpType T ffffffff80010798 10	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:195
+EnqueueDrawOp T ffffffff800107a8 134	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:199
+DrawSync T ffffffff800108dc fc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:239
+_send_linked_list T ffffffff800109d8 64	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:15
+DrawOTag T ffffffff80010a3c 68	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:43
+ClearOTagR T ffffffff80010aa4 98	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:120
+_build_drawenv_ot t ffffffff80010b3c 228	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:37
+SetDefDrawEnv T ffffffff80010d64 b8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:81
+DrawOTagEnv T ffffffff80010e1c 78	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:107
+PutDrawEnv T ffffffff80010e94 5c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:129
+SetDefDispEnv T ffffffff80010ef0 90	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:149
+PutDispEnv T ffffffff80010f80 218	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:169
+SetVideoMode T ffffffff80011198 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:259
+SetDispMask T ffffffff800111ec 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:276
+_global_dma_handler t ffffffff80011218 e8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:79
+_global_isr t ffffffff80011300 ec	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:57
+InterruptCallback T ffffffff800113ec c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:103
+DMACallback T ffffffff800114b4 13c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:125
+SetDMAPriority T ffffffff800115f0 ac	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:160
+RestartCallback T ffffffff8001169c c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:203
+ResetCallback T ffffffff80011764 d8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:183
+EnterCriticalSection T ffffffff8001183c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/_syscalls.s:13
+ExitCriticalSection T ffffffff8001184c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/_syscalls.s:24
+_96_remove T ffffffff8001185c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/drivers.s:31
+printf T ffffffff80011868 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/stdio.s:119
+ReturnFromException T ffffffff80011874 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:265
+HookEntryInt T ffffffff80011880 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:281
+ChangeClearPAD T ffffffff8001188c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:313
+ChangeClearRCnt T ffffffff80011898 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:355
+_start W ffffffff800118a4 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/_start.s:16
+InitHeap W ffffffff800118b4 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:40
+_start_inner T ffffffff800118e0 128	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/start.c:73
+__func__.0 r ffffffff80011bec e
+__func__.2 r ffffffff80011c34 b
+__func__.11 r ffffffff80011c40 9
+__func__.1 r ffffffff80011c78 b
+__func__.2 r ffffffff80011c84 e
+__func__.4 r ffffffff80011c94 b
+__func__.6 r ffffffff80011ca0 c
+__func__.7 r ffffffff80011cac e
+__func__.1 r ffffffff80011d30 f
+__func__.3 r ffffffff80011d40 c
+__func__.5 r ffffffff80011d4c 12
+_isr_jmp_buf r ffffffff80011d60 30
+__CTOR_LIST__ D ffffffff80011db0 
+__CTOR_END__ D ffffffff80011db8 
+__DTOR_LIST__ D ffffffff80011dc0 
+__DTOR_END__ D ffffffff80011dc8 
+_vsync_halt_func d ffffffff80011dc8 4
+__bss_start B ffffffff80011dcc 
+nextpri B ffffffff80011dcc 4
+db_active B ffffffff80011dd0 4
+_last_hblank b ffffffff80011dd4 2
+_last_vblank b ffffffff80011dd8 4
+_vblank_counter b ffffffff80011ddc 4
+_drawop_type b ffffffff80011de0 1
+_queue_length b ffffffff80011de1 1
+_queue_tail b ffffffff80011de2 1
+_queue_head b ffffffff80011de3 1
+_drawsync_callback b ffffffff80011de4 4
+_vsync_callback b ffffffff80011de8 4
+_gpu_video_mode B ffffffff80011dec 4
+_isr_installed b ffffffff80011df0 4
+_saved_dma_dicr b ffffffff80011df4 4
+_saved_dma_dpcr b ffffffff80011df8 4
+_saved_irq_mask b ffffffff80011dfc 2
+_num_dma_handlers b ffffffff80011e00 4
+_alloc_tail b ffffffff80011e04 4
+_alloc_head b ffffffff80011e08 4
+_alloc_start b ffffffff80011e0c 4
+_heap_alloc_max b ffffffff80011e10 4
+_heap_alloc b ffffffff80011e14 4
+_heap_limit b ffffffff80011e18 4
+_heap_end b ffffffff80011e1c 4
+_heap_start b ffffffff80011e20 4
+__argv B ffffffff80011e24 4
+__argc B ffffffff80011e28 4
+pribuff B ffffffff80011e2c 10000
+_gp d ffffffff80019dc0 
+ot B ffffffff80021e2c 40
+db B ffffffff80021e6c a8
+_draw_queue b ffffffff80021f14 100
+_isr_stack b ffffffff80022014 1000
+_dma_handlers b ffffffff80023014 1c
+_irq_handlers b ffffffff80023030 2c
+_end B ffffffff8002305c 

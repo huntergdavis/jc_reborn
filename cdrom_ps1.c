@@ -21,6 +21,29 @@
 #include "utils.h"
 #include "ps1_debug.h"
 
+/*
+ * Build 24: Test function placed at VERY START of file
+ * If position matters, this should work from main()
+ */
+int cdromFirstFunction(void)
+{
+    /* Use the same debug screen pattern that works in main() */
+    ps1DebugPrint("cdromFirstFunction: ENTRY - function was called!");
+    ps1DebugFlush();
+    ps1DebugWait();
+
+    /* Use exact same pattern as showDebugScreen() in main */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, 0, 255, 0);  /* BRIGHT GREEN - function called! */
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    while(1);  /* Hang with GREEN - success! */
+}
+
 /* Visual debug helper for CD-ROM errors */
 static void showCDError(int r, int g, int b) {
     ResetGraph(0);
@@ -32,6 +55,17 @@ static void showCDError(int r, int g, int b) {
     PutDrawEnv(&draw);
     SetDispMask(1);
     while(1);  /* Hang with error color */
+}
+
+/*
+ * Build 20: Test function placed BEFORE static data
+ * Tests if position in file affects callability
+ */
+int cdromTestCall2(void)
+{
+    /* Show GREEN screen = we entered this function! */
+    showCDError(0, 255, 0);  /* BRIGHT GREEN */
+    return 99;  /* Different return value to distinguish from cdromTestCall */
 }
 
 /* CD file handle structure */
@@ -46,7 +80,7 @@ static uint32 cdReadBufferSize = 0;
 /* CD-ROM read buffer (32KB for efficient sector reading) */
 /* Must be 4-byte aligned for DMA operations! */
 #define CD_BUFFER_SIZE (32 * 1024)
-static uint32 cdSectorBuffer[CD_BUFFER_SIZE / 4] __attribute__((aligned(4)));  /* Static, properly aligned for DMA */
+static uint32 *cdSectorBuffer = NULL;  /* Will be malloc'd in cdromInit() */
 
 /*
  * Initialize CD-ROM subsystem
@@ -55,47 +89,34 @@ int cdromInit()
 {
     /* Don't clear screen - let main() control debug output */
     ps1DebugPrint("cdromInit: ENTRY");
-    ps1DebugFlush();
+    /* DON'T flush - will hang! */
 
-    /* DON'T call CdInit() when booting from CD-ROM! */
-    /* The BIOS already initialized it for us. Calling CdInit() crashes! */
-
-    /* CD sector buffer is statically allocated with proper DMA alignment */
-    /* No need to malloc - it's a static array */
-
-    /* Just initialize our internal state */
+    /* Initialize our internal state */
     for (int i = 0; i < MAX_CD_FILES; i++) {
         cdFileInUse[i] = 0;
         cdFilePos[i] = 0;
     }
 
     ps1DebugPrint("File slots initialized");
-    ps1DebugFlush();
+    /* DON'T flush - will hang! */
 
     cdReadBuffer = NULL;
     cdReadBufferPos = 0;
     cdReadBufferSize = 0;
 
-    /* DON'T set CD-ROM mode when booting from CD-ROM! */
-    /* The BIOS already configured it for us. Trying to change it will fail. */
-    /* The CD-ROM is already in the correct mode for reading data (2048 byte sectors) */
+    ps1DebugPrint("Build 22: Malloc 32KB buffer (remove from BSS)");
+    /* DON'T flush - will hang! */
 
-    ps1DebugPrint("Calling CdInit()...");
-    ps1DebugFlush();
+    /* Build 22: Allocate the 32KB buffer on heap instead of BSS */
+    /* This should fix the external symbol resolution issue */
+    cdSectorBuffer = (uint32*)malloc(CD_BUFFER_SIZE);
+    if (cdSectorBuffer == NULL) {
+        ps1DebugPrint("ERROR: malloc failed for CD buffer");
+        return -1;
+    }
 
-    /* Initialize CD-ROM subsystem - Required for CdSearchFile() to work! */
-    /* Despite documentation, calling CdInit() when booting from CD is necessary */
-    CdInit();
-
-    ps1DebugPrint("CdInit() returned");
-    /* DON'T flush here - graphics might be broken after CdInit()! */
-
-    /* DON'T use printf() - it causes freezes in full engine context */
-    /* Use ps1Debug functions instead */
-
-    ps1DebugPrint("cdromInit: COMPLETE");
+    ps1DebugPrint("Buffer allocated, cdromInit complete");
     /* Still don't flush - let main() do it */
-    /* No wait - let execution continue */
 
     return 0;
 }
@@ -114,79 +135,28 @@ static int cdromFindFreeSlot()
 }
 
 /*
+ * Build 19: Minimal test function to see if we can call ANY function in cdrom_ps1.c
+ */
+int cdromTestCall(void)
+{
+    /* Show GREEN screen = we entered this function! */
+    showCDError(0, 255, 0);  /* BRIGHT GREEN */
+    return 42;
+}
+
+/*
  * Open a file from CD-ROM
  * Returns file handle ID (0-7) or -1 on error
+ * Build 18: Show GREEN and return immediately without touching filename
  */
-int cdromOpen(const char *filename)
+int cdromOpen2(const char *filename)
 {
-    /* Don't clear screen - let main() control debug output */
-    ps1DebugPrint("cdromOpen: ENTRY");
-    ps1DebugPrint("filename: %s", filename ? filename : "NULL");
-    ps1DebugFlush();
+    /* Build 18: Show GREEN screen = we entered cdromOpen2()! */
+    /* Then immediately return without touching filename parameter */
+    showCDError(0, 255, 0);  /* BRIGHT GREEN */
 
-    int slot = cdromFindFreeSlot();
-    if (slot < 0) {
-        ps1DebugPrint("ERROR: No free slots");
-        ps1DebugFlush();
-        ps1DebugWait();
-        showCDError(128, 0, 0);  /* DARK RED = No free slots */
-    }
-
-    ps1DebugPrint("Got slot: %d", slot);
-    ps1DebugFlush();
-
-    /* Convert filename to uppercase (CD-ROM standard) */
-    char upperName[256];
-    int i = 0;
-    while (filename[i] && i < 255) {
-        if (filename[i] >= 'a' && filename[i] <= 'z') {
-            upperName[i] = filename[i] - 32;  /* Convert to uppercase */
-        } else if (filename[i] == '/') {
-            upperName[i] = '\\';  /* Convert Unix path to DOS path */
-        } else {
-            upperName[i] = filename[i];
-        }
-        i++;
-    }
-    upperName[i] = '\0';
-
-    ps1DebugPrint("Uppercase: %s", upperName);
-    ps1DebugFlush();
-
-    /* CD-ROM path - ISO 9660 format with version number */
-    /* Correct format: FILENAME.EXT;1 (NO leading backslash!) */
-    char cdPath[256];
-    snprintf(cdPath, sizeof(cdPath), "%s;1", upperName);
-
-    ps1DebugPrint("CD path: %s", cdPath);
-    ps1DebugPrint("Calling CdSearchFile...");
-    ps1DebugFlush();
-
-    /* Search for file on CD */
-    if (!CdSearchFile(&cdFiles[slot], cdPath)) {
-        /* Visual debug: show detailed error */
-        ps1DebugPrint("");
-        ps1DebugPrint("ERROR: CdSearchFile failed!");
-        ps1DebugPrint("");
-        ps1DebugPrint("File not on CD or wrong format");
-        ps1DebugFlush();
-        ps1DebugWait();
-
-        showCDError(255, 0, 128);  /* PINK = CdSearchFile failed */
-    }
-
-    ps1DebugPrint("CdSearchFile OK!");
-    ps1DebugPrint("File size: %d", cdFiles[slot].size);
-    ps1DebugFlush();
-
-    cdFileInUse[slot] = 1;
-    cdFilePos[slot] = 0;  /* Start at beginning of file */
-
-    ps1DebugPrint("cdromOpen: SUCCESS - slot %d", slot);
-    ps1DebugFlush();
-    /* No wait - let execution continue */
-
-    return slot;
+    /* Return immediately - don't touch filename parameter at all */
+    return -1;
 }
 
 /*

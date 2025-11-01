@@ -20,8 +20,9 @@ project(
 set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
-# Compiler flags matching the original project
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wpedantic -DPS1_BUILD -ffreestanding")
+# Compiler flags - removed -Wpedantic due to PSn00bSDK hardware-specific code
+# PSn00bSDK uses large enums and anonymous structs which violate strict C99
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -DPS1_BUILD -ffreestanding")
 
 # Source files - using PS1-specific implementations for graphics/sound/events
 set(SOURCES

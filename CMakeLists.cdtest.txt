@@ -1,0 +1,43 @@
+cmake_minimum_required(VERSION 3.21)
+
+# Minimal CD-ROM test for PS1
+# This is a stripped-down test to isolate CD-ROM issues
+
+if(NOT DEFINED ENV{PSN00BSDK})
+	message(FATAL_ERROR "PSN00BSDK environment variable must be set")
+endif()
+
+# PSn00bSDK toolchain
+set(CMAKE_TOOLCHAIN_FILE "$ENV{PSN00BSDK}/lib/cmake/psn00bsdk/sdk.cmake" CACHE PATH "Path to PSn00bSDK toolchain")
+
+# Project name
+project(
+	jcreborn_cdtest
+	LANGUAGES    C CXX ASM
+	VERSION      1.0.0
+	DESCRIPTION  "Johnny Castaway PS1 CD Test"
+)
+
+# Minimal source files - just the CD test
+set(SOURCES
+	ps1_cdtest_main.c
+	cdrom_ps1.c
+	ps1_debug.c
+	ps1_stubs.c
+	utils.c
+)
+
+# Executable
+psn00bsdk_add_executable(jcreborn_cdtest GPTYPE 1 ${SOURCES})
+
+# Link libraries
+target_link_libraries(jcreborn_cdtest PRIVATE psxgpu psxgte psxspu psxcd psxapi psxetc psxsio c gcc m)
+
+# Include directories
+target_include_directories(jcreborn_cdtest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Compiler flags
+target_compile_options(jcreborn_cdtest PRIVATE -O2 -g -Wall)
+
+# Convert to PS-EXE format
+psn00bsdk_target_incbin(jcreborn_cdtest PRIVATE system.cnf "SYSTEM.CNF;1")

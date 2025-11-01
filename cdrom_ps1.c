@@ -53,6 +53,10 @@ static uint32 cdSectorBuffer[CD_BUFFER_SIZE / 4] __attribute__((aligned(4)));  /
  */
 int cdromInit()
 {
+    /* Don't clear screen - let main() control debug output */
+    ps1DebugPrint("cdromInit: ENTRY");
+    ps1DebugFlush();
+
     /* DON'T call CdInit() when booting from CD-ROM! */
     /* The BIOS already initialized it for us. Calling CdInit() crashes! */
 
@@ -65,6 +69,9 @@ int cdromInit()
         cdFilePos[i] = 0;
     }
 
+    ps1DebugPrint("File slots initialized");
+    ps1DebugFlush();
+
     cdReadBuffer = NULL;
     cdReadBufferPos = 0;
     cdReadBufferSize = 0;
@@ -73,13 +80,22 @@ int cdromInit()
     /* The BIOS already configured it for us. Trying to change it will fail. */
     /* The CD-ROM is already in the correct mode for reading data (2048 byte sectors) */
 
+    ps1DebugPrint("Calling CdInit()...");
+    ps1DebugFlush();
+
     /* Initialize CD-ROM subsystem - Required for CdSearchFile() to work! */
     /* Despite documentation, calling CdInit() when booting from CD is necessary */
     CdInit();
 
-    if (debugMode) {
-        printf("CD-ROM: Initialized (BIOS boot mode)\n");
-    }
+    ps1DebugPrint("CdInit() returned");
+    ps1DebugFlush();
+
+    /* DON'T use printf() - it causes freezes in full engine context */
+    /* Use ps1Debug functions instead */
+
+    ps1DebugPrint("cdromInit: COMPLETE");
+    ps1DebugFlush();
+    /* No wait - let execution continue */
 
     return 0;
 }
@@ -103,13 +119,21 @@ static int cdromFindFreeSlot()
  */
 int cdromOpen(const char *filename)
 {
+    /* Don't clear screen - let main() control debug output */
+    ps1DebugPrint("cdromOpen: ENTRY");
+    ps1DebugPrint("filename: %s", filename ? filename : "NULL");
+    ps1DebugFlush();
+
     int slot = cdromFindFreeSlot();
     if (slot < 0) {
-        if (debugMode) {
-            printf("CD-ROM: No free file slots\n");
-        }
+        ps1DebugPrint("ERROR: No free slots");
+        ps1DebugFlush();
+        ps1DebugWait();
         showCDError(128, 0, 0);  /* DARK RED = No free slots */
     }
+
+    ps1DebugPrint("Got slot: %d", slot);
+    ps1DebugFlush();
 
     /* Convert filename to uppercase (CD-ROM standard) */
     char upperName[256];
@@ -126,41 +150,41 @@ int cdromOpen(const char *filename)
     }
     upperName[i] = '\0';
 
+    ps1DebugPrint("Uppercase: %s", upperName);
+    ps1DebugFlush();
+
     /* CD-ROM path - ISO 9660 format with version number */
     /* Correct format: FILENAME.EXT;1 (NO leading backslash!) */
     char cdPath[256];
     snprintf(cdPath, sizeof(cdPath), "%s;1", upperName);
 
+    ps1DebugPrint("CD path: %s", cdPath);
+    ps1DebugPrint("Calling CdSearchFile...");
+    ps1DebugFlush();
+
     /* Search for file on CD */
     if (!CdSearchFile(&cdFiles[slot], cdPath)) {
         /* Visual debug: show detailed error */
-        ps1DebugInit();
-        ps1DebugClear();
-        ps1DebugPrint("CD-ROM File Not Found");
         ps1DebugPrint("");
-        ps1DebugPrint("Original filename: %s", filename);
-        ps1DebugPrint("Uppercase: %s", upperName);
-        ps1DebugPrint("CD path tried: %s", cdPath);
+        ps1DebugPrint("ERROR: CdSearchFile failed!");
         ps1DebugPrint("");
-        ps1DebugPrint("CdSearchFile() returned NULL");
-        ps1DebugPrint("");
-        ps1DebugPrint("Possible causes:");
-        ps1DebugPrint("- File not on CD image");
-        ps1DebugPrint("- Wrong path format");
-        ps1DebugPrint("- CD not initialized");
+        ps1DebugPrint("File not on CD or wrong format");
         ps1DebugFlush();
         ps1DebugWait();
 
         showCDError(255, 0, 128);  /* PINK = CdSearchFile failed */
     }
 
+    ps1DebugPrint("CdSearchFile OK!");
+    ps1DebugPrint("File size: %d", cdFiles[slot].size);
+    ps1DebugFlush();
+
     cdFileInUse[slot] = 1;
     cdFilePos[slot] = 0;  /* Start at beginning of file */
 
-    if (debugMode) {
-        printf("CD-ROM: Opened %s (slot %d, size %d)\n",
-               cdPath, slot, cdFiles[slot].size);
-    }
+    ps1DebugPrint("cdromOpen: SUCCESS - slot %d", slot);
+    ps1DebugFlush();
+    /* No wait - let execution continue */
 
     return slot;
 }
@@ -205,7 +229,6 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
     /* Seek to position (seek actually happens during CdRead) */
     if (CdControl(CdlSetloc, (uint8*)&readLoc, NULL) == 0) {
         if (debugMode) {
-            printf("CD-ROM: Setloc failed\n");
         }
         return -1;
     }
@@ -340,7 +363,6 @@ int cdromClose(int fileHandle)
     cdFileInUse[fileHandle] = 0;
 
     if (debugMode) {
-        printf("CD-ROM: Closed file handle %d\n", fileHandle);
     }
 
     return 0;

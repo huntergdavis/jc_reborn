@@ -262,22 +262,50 @@ int main(int argc, char **argv)
 
 #ifdef PS1_BUILD
     /* Initialize CD-ROM subsystem for PS1 */
+    ps1DebugInit();
+    ps1DebugClear();
+    ps1DebugPrint("main: Before cdromInit()");
+    ps1DebugFlush();
+
     if (cdromInit() < 0) {
         /* If CD-ROM fails, show YELLOW screen and hang */
+        ps1DebugPrint("ERROR: cdromInit failed");
+        ps1DebugFlush();
+        ps1DebugWait();
         showDebugScreen(255, 255, 0);
         while(1);
     }
 
-    /* VISUAL DEBUG #2: GREEN screen = CD-ROM initialized */
-    showDebugScreen(0, 255, 0);
+    ps1DebugPrint("main: After cdromInit()");
+    ps1DebugPrint("main: About to call fopen()");
+    ps1DebugFlush();
+
+    /* NO DELAYS - test immediately after cdromInit() like minimal test does */
 
     /* VISUAL DEBUG #2.5: Test file opening */
     FILE *testFile = fopen("RESOURCE.MAP", "rb");
+
+    ps1DebugPrint("main: fopen() returned");
+    ps1DebugFlush();
+
     if (testFile == NULL) {
+        ps1DebugPrint("ERROR: fopen returned NULL");
+        ps1DebugFlush();
+        ps1DebugWait();
         showDebugScreen(255, 0, 0);  /* RED = file open failed */
         while(1);
     }
+
+    ps1DebugPrint("main: File opened successfully");
+    ps1DebugFlush();
+
     fclose(testFile);
+
+    ps1DebugPrint("main: File closed");
+    ps1DebugPrint("main: CD test complete!");
+    ps1DebugFlush();
+    ps1DebugWait();
+
     showDebugScreen(0, 255, 255);  /* CYAN = file opened successfully */
 #endif
 

@@ -25,10 +25,13 @@
 #ifdef PS1_BUILD
 #include <sys/types.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>  /* Provides exit(), atoi(), malloc(), etc. */
 #include <string.h>
 #define stderr ((FILE*)2)  /* PSn00bSDK doesn't define stderr */
 #define fprintf(stream, ...) printf(__VA_ARGS__)  /* Redirect to printf */
+/* Declare functions implemented in ps1_stubs.c */
+void exit(int status);
+int atoi(const char *str);
 #else
 /* Standard SDL build */
 #include <stdlib.h>
@@ -50,6 +53,7 @@
 #include "events_ps1.h"
 #include "sound_ps1.h"
 #include "cdrom_ps1.h"
+#include "ps1_debug.h"
 #else
 #include "graphics.h"
 #include "events.h"
@@ -75,9 +79,6 @@ static int  numArgs  = 0;
 /* Visual debug helper - shows colored screen for 2 seconds */
 static void showDebugScreen(int r, int g, int b)
 {
-    #include <psxgpu.h>
-    #include <psxapi.h>
-
     /* Reset GPU to clean state */
     ResetGraph(0);
     SetVideoMode(MODE_NTSC);
@@ -277,36 +278,18 @@ int main(int argc, char **argv)
     }
 
     ps1DebugPrint("main: After cdromInit()");
-    ps1DebugPrint("main: About to call fopen()");
-    ps1DebugFlush();
+    ps1DebugPrint("main: Build 24: Test POSITION in file");
+    ps1DebugPrint("");
+    ps1DebugPrint("cdromFirstFunction() is at VERY START of file");
+    ps1DebugPrint("If position matters, this should work");
+    ps1DebugFlush();  /* Last debug flush */
 
-    /* NO DELAYS - test immediately after cdromInit() like minimal test does */
+    /* Build 24: Call function at VERY START of cdrom_ps1.c */
+    /* If position in file matters, this should show GREEN and hang */
+    cdromFirstFunction();
 
-    /* VISUAL DEBUG #2.5: Test file opening */
-    FILE *testFile = fopen("RESOURCE.MAP", "rb");
-
-    ps1DebugPrint("main: fopen() returned");
-    ps1DebugFlush();
-
-    if (testFile == NULL) {
-        ps1DebugPrint("ERROR: fopen returned NULL");
-        ps1DebugFlush();
-        ps1DebugWait();
-        showDebugScreen(255, 0, 0);  /* RED = file open failed */
-        while(1);
-    }
-
-    ps1DebugPrint("main: File opened successfully");
-    ps1DebugFlush();
-
-    fclose(testFile);
-
-    ps1DebugPrint("main: File closed");
-    ps1DebugPrint("main: CD test complete!");
-    ps1DebugFlush();
-    ps1DebugWait();
-
-    showDebugScreen(0, 255, 255);  /* CYAN = file opened successfully */
+    /* Should never reach here */
+    showDebugScreen(255, 0, 0);  /* RED = Error, should not reach here */
 #endif
 
     parseResourceFiles("RESOURCE.MAP");

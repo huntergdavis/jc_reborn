@@ -88,13 +88,13 @@ int cdromInit()
     CdInit();
 
     ps1DebugPrint("CdInit() returned");
-    ps1DebugFlush();
+    /* DON'T flush here - graphics might be broken after CdInit()! */
 
     /* DON'T use printf() - it causes freezes in full engine context */
     /* Use ps1Debug functions instead */
 
     ps1DebugPrint("cdromInit: COMPLETE");
-    ps1DebugFlush();
+    /* Still don't flush - let main() do it */
     /* No wait - let execution continue */
 
     return 0;
@@ -228,8 +228,15 @@ int cdromRead(int fileHandle, void *buffer, uint32 size)
 
     /* Seek to position (seek actually happens during CdRead) */
     if (CdControl(CdlSetloc, (uint8*)&readLoc, NULL) == 0) {
-        if (debugMode) {
-        }
+        ps1DebugInit();
+        ps1DebugClear();
+        ps1DebugPrint("CD-ROM Seek Failed");
+        ps1DebugPrint("");
+        ps1DebugPrint("CdControl(CdlSetloc) returned 0");
+        ps1DebugPrint("Absolute sector: %d", absoluteSector);
+        ps1DebugFlush();
+        ps1DebugWait();
+        showCDError(255, 64, 0);  /* ORANGE-RED = Seek failed */
         return -1;
     }
 
@@ -361,9 +368,6 @@ int cdromClose(int fileHandle)
     }
 
     cdFileInUse[fileHandle] = 0;
-
-    if (debugMode) {
-    }
 
     return 0;
 }

@@ -23,9 +23,9 @@
 /* Font stream ID */
 static int fontID = -1;
 
-/* Screen dimensions */
-#define SCREEN_WIDTH 320
-#define SCREEN_HEIGHT 240
+/* Screen dimensions - 640x480 interlaced high res mode */
+#define SCREEN_WIDTH 640
+#define SCREEN_HEIGHT 480
 
 /* Text buffer for accumulating debug messages */
 #define MAX_DEBUG_LINES 20
@@ -33,20 +33,30 @@ static int fontID = -1;
 static char debugLines[MAX_DEBUG_LINES][MAX_LINE_LENGTH];
 static int numDebugLines = 0;
 
-/* Background color for debug screen */
-static int bgR = 0, bgG = 0, bgB = 64;  /* Dark blue */
+/* Background color for debug screen - CHANGE THIS EACH BUILD! */
+/* Build 7: Dark magenta/pink */
+static int bgR = 48, bgG = 0, bgB = 32;  /* Dark magenta */
 
 /*
  * Initialize visual debugging system
  */
 void ps1DebugInit(void)
 {
+    /* Reset GPU and set video mode (do this ONCE at startup) */
+    /* Use 640x480 interlaced high res mode */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    SetDispMask(DISP_INTERLACE);
+
     /* Load built-in PSX BIOS font (8x8 characters) */
     FntLoad(960, 0);
 
     /* Create font stream at top-left of screen */
     /* FntOpen(x, y, width, height, clear_background, max_chars) */
     fontID = FntOpen(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, 0, 512);
+
+    /* Enable display */
+    SetDispMask(1);
 
     /* Clear debug buffer */
     ps1DebugClear();
@@ -85,17 +95,12 @@ void ps1DebugPrint(const char *fmt, ...)
  */
 void ps1DebugFlush(void)
 {
-    /* Set up simple display environment */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-
+    /* Set up draw environment with background color */
     DRAWENV draw;
     SetDefDrawEnv(&draw, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     setRGB0(&draw, bgR, bgG, bgB);
     draw.isbg = 1;  /* Enable background clear */
     PutDrawEnv(&draw);
-
-    SetDispMask(1);
 
     /* Print all accumulated debug lines */
     for (int i = 0; i < numDebugLines; i++) {
@@ -105,8 +110,8 @@ void ps1DebugFlush(void)
     /* Flush font buffer to VRAM */
     FntFlush(fontID);
 
-    /* Wait for rendering to complete */
-    DrawSync(0);
+    /* DON'T use DrawSync or VSync - they can hang after CdInit()! */
+    /* The GPU will render when it's ready */
 }
 
 /*

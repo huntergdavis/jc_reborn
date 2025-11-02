@@ -47,7 +47,7 @@ typedef struct _FILE FILE;
 
 FILE *fopen(const char *pathname, const char *mode) {
     /* Open file from CD-ROM */
-    int handle = cdromOpen(pathname);
+    int handle = cdromOpen2(pathname);
     if (handle < 0) {
         return NULL;
     }

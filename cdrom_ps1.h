@@ -15,16 +15,31 @@
 #include "mytypes.h"
 
 /*
+ * Build 24: Test function at very start of cdrom_ps1.c
+ */
+int cdromFirstFunction(void);
+
+/*
  * Initialize CD-ROM subsystem
  * Returns 0 on success, -1 on error
  */
 int cdromInit(void);
 
 /*
+ * Build 19: Test function to see if we can call functions in cdrom_ps1.c
+ */
+int cdromTestCall(void);
+
+/*
+ * Build 20: Test function placed BEFORE static data
+ */
+int cdromTestCall2(void);
+
+/*
  * Open a file from CD-ROM
  * Returns file handle ID (0-7) or -1 on error
  */
-int cdromOpen(const char *filename);
+int cdromOpen2(const char *filename);
 
 /*
  * Read data from CD file

@@ -288,13 +288,13 @@ int main(int argc, char **argv)
     /* Call function and check return value using only visual indicators */
     int result = cdromFirstFunction();
 
-    /* Test return value - should be 42 if function worked */
-    if (result == 42) {
-        showDebugScreen(0, 255, 0);  /* BRIGHT GREEN = CD-ROM FUNCTIONS WORK! */
-    } else if (result == 0) {
-        showDebugScreen(0, 0, 255);  /* BLUE = Function returned 0 */
+    /* Test return value - SIMPLEST file search test */
+    if (result == 47) {
+        showDebugScreen(0, 255, 255);  /* CYAN = File found! */
+    } else if (result == 42) {
+        showDebugScreen(255, 255, 0);  /* YELLOW = File not found */
     } else {
-        showDebugScreen(255, 0, 0);  /* RED = Wrong return value */
+        showDebugScreen(255, 0, 0);    /* RED = Wrong return value */
     }
 #endif
 

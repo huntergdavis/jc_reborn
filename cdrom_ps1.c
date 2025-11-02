@@ -28,8 +28,21 @@
 int cdromFirstFunction(void)
 {
     /* NO DEBUG CALLS - they hang after CdInit()! */
-    /* Just return success value to prove function works */
-    return 42;  /* SUCCESS! */
+    /* Test file search + opening */
+    CdlFILE file;
+
+    /* Wait for CD to be ready - PSX CD needs time to initialize */
+    /* Simple delay loop - wait ~1 second */
+    for (int i = 0; i < 1000000; i++) {
+        /* Busy wait */
+    }
+
+    /* Test with RESOURCE.MAP after delay */
+    if (CdSearchFile(&file, "RESOURCE.MAP") != NULL) {
+        return 47;  /* File found! */
+    }
+
+    return 42;  /* File not found */
 }
 
 /* Visual debug helper for CD-ROM errors */

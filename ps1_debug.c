@@ -34,8 +34,8 @@ static char debugLines[MAX_DEBUG_LINES][MAX_LINE_LENGTH];
 static int numDebugLines = 0;
 
 /* Background color for debug screen - CHANGE THIS EACH BUILD! */
-/* Build 7: Dark magenta/pink */
-static int bgR = 48, bgG = 0, bgB = 32;  /* Dark magenta */
+/* Build 24: Light green */
+static int bgR = 220, bgG = 255, bgB = 220;  /* Light green */
 
 /*
  * Initialize visual debugging system

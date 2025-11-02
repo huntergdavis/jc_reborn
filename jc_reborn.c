@@ -277,22 +277,33 @@ int main(int argc, char **argv)
         while(1);
     }
 
-    ps1DebugPrint("main: After cdromInit()");
-    ps1DebugPrint("main: Build 24: Test POSITION in file");
-    ps1DebugPrint("");
-    ps1DebugPrint("cdromFirstFunction() is at VERY START of file");
-    ps1DebugPrint("If position matters, this should work");
-    /* DON'T FLUSH - causes hang after CdInit()! */
+    ps1DebugPrint("main: cdromInit() completed successfully");
+    ps1DebugFlush();
 
-    /* Build 26: Test CD-ROM functions WITHOUT debug flush */
+    ps1DebugPrint("main: Build 28: Test MINIMAL file search");
+    ps1DebugPrint("main: About to call cdromFirstFunction()");
+    ps1DebugFlush();
+
+    /* Build 28: Test with more debug output and safer approach */
     /* Call function and check return value using only visual indicators */
     int result = cdromFirstFunction();
 
-    /* Test return value - SIMPLEST file search test */
+    ps1DebugPrint("main: cdromFirstFunction() returned %d", result);
+    ps1DebugFlush();
+
+    /* Test return value - different colors for different file types found */
     if (result == 47) {
-        showDebugScreen(0, 255, 255);  /* CYAN = File found! */
+        showDebugScreen(0, 255, 255);  /* CYAN = RESOURCE.MAP found! */
+    } else if (result == 48) {
+        showDebugScreen(0, 255, 0);    /* GREEN = \\RESOURCE.MAP found! */
+    } else if (result == 49) {
+        showDebugScreen(0, 0, 255);    /* BLUE = resource.map (lowercase) found! */
+    } else if (result == 50) {
+        showDebugScreen(255, 0, 255);  /* MAGENTA = JCREBORN.EXE found! */
+    } else if (result == 51) {
+        showDebugScreen(255, 128, 0);  /* ORANGE = SYSTEM.CNF found! */
     } else if (result == 42) {
-        showDebugScreen(255, 255, 0);  /* YELLOW = File not found */
+        showDebugScreen(255, 255, 0);  /* YELLOW = No files found at all */
     } else {
         showDebugScreen(255, 0, 0);    /* RED = Wrong return value */
     }

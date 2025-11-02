@@ -22,14 +22,16 @@
 #include "ps1_debug.h"
 
 /*
- * Build 24: Test function placed at VERY START of file
- * If position matters, this should work from main()
+ * Build 28: Test different file path formats with debug output
+ * Use ps1DebugPrint since we know it works now
  */
 int cdromFirstFunction(void)
 {
-    /* NO DEBUG CALLS - they hang after CdInit()! */
     /* Test file search + opening */
     CdlFILE file;
+
+    ps1DebugPrint("cdromFirstFunction: ENTRY");
+    ps1DebugFlush();
 
     /* Wait for CD to be ready - PSX CD needs time to initialize */
     /* Simple delay loop - wait ~1 second */
@@ -37,12 +39,46 @@ int cdromFirstFunction(void)
         /* Busy wait */
     }
 
-    /* Test with RESOURCE.MAP after delay */
-    if (CdSearchFile(&file, "RESOURCE.MAP") != NULL) {
-        return 47;  /* File found! */
+    ps1DebugPrint("cdromFirstFunction: After wait loop");
+    ps1DebugFlush();
+
+    /* Test variations of the filename */
+    /* Return different values to distinguish which one worked */
+
+    ps1DebugPrint("cdromFirstFunction: Testing SYSTEM.CNF first");
+    ps1DebugFlush();
+
+    /* Test 1: SYSTEM.CNF (system file) - should definitely exist */
+    if (CdSearchFile(&file, "SYSTEM.CNF") != NULL) {
+        ps1DebugPrint("cdromFirstFunction: SYSTEM.CNF found!");
+        ps1DebugFlush();
+        return 51;  /* Found system file */
     }
 
-    return 42;  /* File not found */
+    ps1DebugPrint("cdromFirstFunction: SYSTEM.CNF not found, testing JCREBORN.EXE");
+    ps1DebugFlush();
+
+    /* Test 2: JCREBORN.EXE (our own executable) */
+    if (CdSearchFile(&file, "JCREBORN.EXE") != NULL) {
+        ps1DebugPrint("cdromFirstFunction: JCREBORN.EXE found!");
+        ps1DebugFlush();
+        return 50;  /* Found our own exe file */
+    }
+
+    ps1DebugPrint("cdromFirstFunction: JCREBORN.EXE not found, testing RESOURCE.MAP");
+    ps1DebugFlush();
+
+    /* Test 3: RESOURCE.MAP (original) */
+    if (CdSearchFile(&file, "RESOURCE.MAP") != NULL) {
+        ps1DebugPrint("cdromFirstFunction: RESOURCE.MAP found!");
+        ps1DebugFlush();
+        return 47;  /* File found with uppercase */
+    }
+
+    ps1DebugPrint("cdromFirstFunction: No files found at all");
+    ps1DebugFlush();
+
+    return 42;  /* No files found at all */
 }
 
 /* Visual debug helper for CD-ROM errors */
@@ -78,19 +114,18 @@ static uint8 *cdReadBuffer = NULL;
 static uint32 cdReadBufferPos = 0;
 static uint32 cdReadBufferSize = 0;
 
-/* CD-ROM read buffer (32KB for efficient sector reading) */
+/* CD-ROM read buffer (1KB static buffer - minimal size for testing) */
 /* Must be 4-byte aligned for DMA operations! */
-#define CD_BUFFER_SIZE (32 * 1024)
-static uint32 *cdSectorBuffer = NULL;  /* Will be malloc'd in cdromInit() */
+#define CD_BUFFER_SIZE (1 * 1024)
+static uint32 cdSectorBuffer[CD_BUFFER_SIZE / sizeof(uint32)];  /* Static buffer - no malloc needed */
 
 /*
  * Initialize CD-ROM subsystem
  */
 int cdromInit()
 {
-    /* Don't clear screen - let main() control debug output */
     ps1DebugPrint("cdromInit: ENTRY");
-    /* DON'T flush - will hang! */
+    ps1DebugFlush();
 
     /* Initialize our internal state */
     for (int i = 0; i < MAX_CD_FILES; i++) {
@@ -98,26 +133,22 @@ int cdromInit()
         cdFilePos[i] = 0;
     }
 
-    ps1DebugPrint("File slots initialized");
-    /* DON'T flush - will hang! */
+    ps1DebugPrint("cdromInit: File slots initialized");
+    ps1DebugFlush();
 
     cdReadBuffer = NULL;
     cdReadBufferPos = 0;
     cdReadBufferSize = 0;
 
-    ps1DebugPrint("Build 22: Malloc 32KB buffer (remove from BSS)");
-    /* DON'T flush - will hang! */
+    ps1DebugPrint("cdromInit: Using static 1KB buffer (no malloc)");
+    ps1DebugFlush();
 
-    /* Build 22: Allocate the 32KB buffer on heap instead of BSS */
-    /* This should fix the external symbol resolution issue */
-    cdSectorBuffer = (uint32*)malloc(CD_BUFFER_SIZE);
-    if (cdSectorBuffer == NULL) {
-        ps1DebugPrint("ERROR: malloc failed for CD buffer");
-        return -1;
-    }
+    /* Build 31: Use minimal 1KB static buffer to avoid BSS issues */
+    /* cdSectorBuffer is now a static array, no allocation needed */
 
-    ps1DebugPrint("Buffer allocated, cdromInit complete");
-    /* Still don't flush - let main() do it */
+    ps1DebugPrint("cdromInit: Static buffer ready");
+    ps1DebugPrint("cdromInit: COMPLETE - returning 0");
+    ps1DebugFlush();
 
     return 0;
 }
@@ -148,16 +179,38 @@ int cdromTestCall(void)
 /*
  * Open a file from CD-ROM
  * Returns file handle ID (0-7) or -1 on error
- * Build 18: Show GREEN and return immediately without touching filename
  */
 int cdromOpen2(const char *filename)
 {
-    /* Build 18: Show GREEN screen = we entered cdromOpen2()! */
-    /* Then immediately return without touching filename parameter */
-    showCDError(0, 255, 0);  /* BRIGHT GREEN */
+    ps1DebugPrint("cdromOpen2: Opening file %s", filename);
 
-    /* Return immediately - don't touch filename parameter at all */
-    return -1;
+    /* Find a free file slot */
+    int slot = cdromFindFreeSlot();
+    if (slot < 0) {
+        ps1DebugPrint("cdromOpen2: No free file slots");
+        return -1;
+    }
+
+    /* Wait for CD to be ready */
+    for (int i = 0; i < 1000000; i++) {
+        /* Busy wait */
+    }
+
+    /* Search for the file on CD-ROM */
+    CdlFILE *file = &cdFiles[slot];
+    if (CdSearchFile(file, filename) == NULL) {
+        ps1DebugPrint("cdromOpen2: File not found: %s", filename);
+        return -1;
+    }
+
+    /* Mark slot as in use */
+    cdFileInUse[slot] = 1;
+    cdFilePos[slot] = 0;  /* Start at beginning of file */
+
+    ps1DebugPrint("cdromOpen2: File opened successfully");
+    ps1DebugPrint("cdromOpen2: Slot %d, Size %d bytes", slot, file->size);
+
+    return slot;
 }
 
 /*

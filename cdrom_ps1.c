@@ -27,21 +27,9 @@
  */
 int cdromFirstFunction(void)
 {
-    /* Use the same debug screen pattern that works in main() */
-    ps1DebugPrint("cdromFirstFunction: ENTRY - function was called!");
-    ps1DebugFlush();
-    ps1DebugWait();
-
-    /* Use exact same pattern as showDebugScreen() in main */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, 0, 255, 0);  /* BRIGHT GREEN - function called! */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    while(1);  /* Hang with GREEN - success! */
+    /* NO DEBUG CALLS - they hang after CdInit()! */
+    /* Just return success value to prove function works */
+    return 42;  /* SUCCESS! */
 }
 
 /* Visual debug helper for CD-ROM errors */

@@ -282,14 +282,20 @@ int main(int argc, char **argv)
     ps1DebugPrint("");
     ps1DebugPrint("cdromFirstFunction() is at VERY START of file");
     ps1DebugPrint("If position matters, this should work");
-    ps1DebugFlush();  /* Last debug flush */
+    /* DON'T FLUSH - causes hang after CdInit()! */
 
-    /* Build 24: Call function at VERY START of cdrom_ps1.c */
-    /* If position in file matters, this should show GREEN and hang */
-    cdromFirstFunction();
+    /* Build 26: Test CD-ROM functions WITHOUT debug flush */
+    /* Call function and check return value using only visual indicators */
+    int result = cdromFirstFunction();
 
-    /* Should never reach here */
-    showDebugScreen(255, 0, 0);  /* RED = Error, should not reach here */
+    /* Test return value - should be 42 if function worked */
+    if (result == 42) {
+        showDebugScreen(0, 255, 0);  /* BRIGHT GREEN = CD-ROM FUNCTIONS WORK! */
+    } else if (result == 0) {
+        showDebugScreen(0, 0, 255);  /* BLUE = Function returned 0 */
+    } else {
+        showDebugScreen(255, 0, 0);  /* RED = Wrong return value */
+    }
 #endif
 
     parseResourceFiles("RESOURCE.MAP");

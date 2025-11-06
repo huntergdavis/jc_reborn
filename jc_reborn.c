@@ -288,54 +288,40 @@ int main(int argc, char **argv)
         /* Busy wait */
     }
 
-    /* Test PS1 resource loading with real resource parsing */
-    parseResourceFiles("RESOURCE.MAP");
-
-    int result = 90;  /* Success result for testing */
-
-    /* CYAN = CD-ROM function completed, show result via color */
+    /* YELLOW = About to call parseResourceFiles */
     {
         ResetGraph(0);
         SetVideoMode(MODE_NTSC);
         DRAWENV draw;
         SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 255, 255, 0);  /* YELLOW = About to call parseResourceFiles */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 120; i++) VSync(0);
+    }
 
-        /* Show result for PS1 resource loading test */
-        if (result == 90) {
-            /* PS1 resource loading test completed */
-            /* The actual result is shown by ps1TestResourceLoading() itself */
-            /* GREEN = Resource loading test completed successfully */
-            setRGB0(&draw, 0, 255, 0);
-        } else {
-            setRGB0(&draw, 255, 128, 0);  /* ORANGE = Unexpected result */
-        }
+    /* Test PS1 resource loading with real resource parsing */
+    parseResourceFiles("RESOURCE.MAP");
 
+    /* WHITE = parseResourceFiles() completed successfully */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 255, 255, 255);  /* WHITE = parseResourceFiles completed */
         draw.isbg = 1;
         PutDrawEnv(&draw);
         SetDispMask(1);
 
-        /* Hold result screen longer to see it clearly */
-        for (int i = 0; i < 300; i++) {
+        /* Hold WHITE screen to confirm parseResourceFiles() completion */
+        for (int i = 0; i < 600; i++) {
             VSync(0);
         }
     }
 
-    /* Test return value - different colors for different file types found */
-    if (result == 47) {
-        showDebugScreen(0, 255, 255);  /* CYAN = RESOURCE.MAP found! */
-    } else if (result == 48) {
-        showDebugScreen(0, 255, 0);    /* GREEN = \\RESOURCE.MAP found! */
-    } else if (result == 49) {
-        showDebugScreen(0, 0, 255);    /* BLUE = resource.map (lowercase) found! */
-    } else if (result == 50) {
-        showDebugScreen(255, 0, 255);  /* MAGENTA = JCREBORN.EXE found! */
-    } else if (result == 51) {
-        showDebugScreen(255, 128, 0);  /* ORANGE = SYSTEM.CNF found! */
-    } else if (result == 42) {
-        showDebugScreen(255, 255, 0);  /* YELLOW = No files found at all */
-    } else {
-        showDebugScreen(255, 0, 0);    /* RED = Wrong return value */
-    }
+    /* End test - resource loading completed */
 #endif
 
     parseResourceFiles("RESOURCE.MAP");

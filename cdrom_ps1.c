@@ -25,13 +25,77 @@
  * Build 28: Test different file path formats with debug output
  * Use ps1DebugPrint since we know it works now
  */
+/* Simple test function to check if function calls work */
+int simpleTestFunction(void)
+{
+    /* Simple color test */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, 255, 0, 128);  /* PINK = Simple function works! */
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 120; i++) {
+        VSync(0);
+    }
+    return 99;
+}
+
+/* Visual checkpoint helper for this function */
+static void checkpoint(int r, int g, int b) {
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, r, g, b);
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    /* Wait 1 second to see the color */
+    for (int i = 0; i < 60; i++) {
+        VSync(0);
+    }
+}
+
+/* Pure CD-ROM test - NO GRAPHICS to avoid corruption */
+int cdromTestPure(void)
+{
+    /* Test file search without any graphics calls */
+    CdlFILE file;
+
+    /* Wait for CD to be ready - PSX CD needs time to initialize */
+    for (int i = 0; i < 1000000; i++) {
+        /* Busy wait */
+    }
+
+    /* Test 1: SYSTEM.CNF (system file) - should definitely exist */
+    if (CdSearchFile(&file, "SYSTEM.CNF") != NULL) {
+        return 51;  /* Found system file */
+    }
+
+    /* Test 2: JCREBORN.EXE (our own executable) */
+    if (CdSearchFile(&file, "JCREBORN.EXE") != NULL) {
+        return 50;  /* Found our own exe file */
+    }
+
+    /* Test 3: RESOURCE.MAP (original) */
+    if (CdSearchFile(&file, "RESOURCE.MAP") != NULL) {
+        return 47;  /* File found with uppercase */
+    }
+
+    return 42;  /* No files found at all */
+}
+
 int cdromFirstFunction(void)
 {
+    checkpoint(255, 0, 255);    /* MAGENTA = Function entry - FIRST THING */
+
     /* Test file search + opening */
     CdlFILE file;
 
-    ps1DebugPrint("cdromFirstFunction: ENTRY");
-    ps1DebugFlush();
+    checkpoint(0, 255, 255);    /* CYAN = After CdlFILE declaration */
 
     /* Wait for CD to be ready - PSX CD needs time to initialize */
     /* Simple delay loop - wait ~1 second */
@@ -39,45 +103,31 @@ int cdromFirstFunction(void)
         /* Busy wait */
     }
 
-    ps1DebugPrint("cdromFirstFunction: After wait loop");
-    ps1DebugFlush();
-
-    /* Test variations of the filename */
-    /* Return different values to distinguish which one worked */
-
-    ps1DebugPrint("cdromFirstFunction: Testing SYSTEM.CNF first");
-    ps1DebugFlush();
+    checkpoint(0, 255, 255);    /* CYAN = After wait loop */
 
     /* Test 1: SYSTEM.CNF (system file) - should definitely exist */
+    checkpoint(255, 255, 0);    /* YELLOW = About to test SYSTEM.CNF */
+
     if (CdSearchFile(&file, "SYSTEM.CNF") != NULL) {
-        ps1DebugPrint("cdromFirstFunction: SYSTEM.CNF found!");
-        ps1DebugFlush();
+        checkpoint(255, 128, 0);  /* ORANGE = SYSTEM.CNF found! */
         return 51;  /* Found system file */
     }
 
-    ps1DebugPrint("cdromFirstFunction: SYSTEM.CNF not found, testing JCREBORN.EXE");
-    ps1DebugFlush();
+    checkpoint(255, 0, 0);      /* RED = SYSTEM.CNF not found */
 
     /* Test 2: JCREBORN.EXE (our own executable) */
     if (CdSearchFile(&file, "JCREBORN.EXE") != NULL) {
-        ps1DebugPrint("cdromFirstFunction: JCREBORN.EXE found!");
-        ps1DebugFlush();
+        checkpoint(0, 255, 0);    /* GREEN = JCREBORN.EXE found! */
         return 50;  /* Found our own exe file */
     }
 
-    ps1DebugPrint("cdromFirstFunction: JCREBORN.EXE not found, testing RESOURCE.MAP");
-    ps1DebugFlush();
-
     /* Test 3: RESOURCE.MAP (original) */
     if (CdSearchFile(&file, "RESOURCE.MAP") != NULL) {
-        ps1DebugPrint("cdromFirstFunction: RESOURCE.MAP found!");
-        ps1DebugFlush();
+        checkpoint(0, 0, 255);    /* BLUE = RESOURCE.MAP found! */
         return 47;  /* File found with uppercase */
     }
 
-    ps1DebugPrint("cdromFirstFunction: No files found at all");
-    ps1DebugFlush();
-
+    checkpoint(128, 128, 128);  /* GRAY = No files found at all */
     return 42;  /* No files found at all */
 }
 
@@ -124,31 +174,18 @@ static uint32 cdSectorBuffer[CD_BUFFER_SIZE / sizeof(uint32)];  /* Static buffer
  */
 int cdromInit()
 {
-    ps1DebugPrint("cdromInit: ENTRY");
-    ps1DebugFlush();
-
     /* Initialize our internal state */
     for (int i = 0; i < MAX_CD_FILES; i++) {
         cdFileInUse[i] = 0;
         cdFilePos[i] = 0;
     }
 
-    ps1DebugPrint("cdromInit: File slots initialized");
-    ps1DebugFlush();
-
     cdReadBuffer = NULL;
     cdReadBufferPos = 0;
     cdReadBufferSize = 0;
 
-    ps1DebugPrint("cdromInit: Using static 1KB buffer (no malloc)");
-    ps1DebugFlush();
-
     /* Build 31: Use minimal 1KB static buffer to avoid BSS issues */
     /* cdSectorBuffer is now a static array, no allocation needed */
-
-    ps1DebugPrint("cdromInit: Static buffer ready");
-    ps1DebugPrint("cdromInit: COMPLETE - returning 0");
-    ps1DebugFlush();
 
     return 0;
 }

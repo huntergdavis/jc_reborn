@@ -280,16 +280,47 @@ int main(int argc, char **argv)
     ps1DebugPrint("main: cdromInit() completed successfully");
     ps1DebugFlush();
 
-    ps1DebugPrint("main: Build 28: Test MINIMAL file search");
-    ps1DebugPrint("main: About to call cdromFirstFunction()");
-    ps1DebugFlush();
+    /* Build 34: Skip all intermediate checkpoints - test CD-ROM directly */
+    /* GPU is unstable after cdromInit, minimize graphics calls */
 
-    /* Build 28: Test with more debug output and safer approach */
-    /* Call function and check return value using only visual indicators */
-    int result = cdromFirstFunction();
+    /* Simple delay to ensure timing */
+    for (int i = 0; i < 5000000; i++) {
+        /* Busy wait */
+    }
 
-    ps1DebugPrint("main: cdromFirstFunction() returned %d", result);
-    ps1DebugFlush();
+    /* Direct CD-ROM file search test - pure function with no graphics */
+    extern int cdromTestPure(void);
+    int result = cdromTestPure();
+
+    /* CYAN = CD-ROM function completed, show result via color */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+
+        /* Show result based on return value */
+        if (result == 51) {
+            setRGB0(&draw, 255, 128, 0);  /* ORANGE = SYSTEM.CNF found! */
+        } else if (result == 50) {
+            setRGB0(&draw, 255, 0, 255);  /* MAGENTA = JCREBORN.EXE found! */
+        } else if (result == 47) {
+            setRGB0(&draw, 0, 255, 255);  /* CYAN = RESOURCE.MAP found! */
+        } else if (result == 42) {
+            setRGB0(&draw, 255, 255, 0);  /* YELLOW = No files found */
+        } else {
+            setRGB0(&draw, 255, 0, 0);    /* RED = Error/unexpected result */
+        }
+
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+
+        /* Hold result screen longer to see it clearly */
+        for (int i = 0; i < 300; i++) {
+            VSync(0);
+        }
+    }
 
     /* Test return value - different colors for different file types found */
     if (result == 47) {

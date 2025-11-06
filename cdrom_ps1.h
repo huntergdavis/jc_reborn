@@ -102,4 +102,7 @@ uint32 ps1_readUint32(PS1File *f);
 char *ps1_getString(PS1File *f, int maxlen);
 uint8 *ps1_readUint8Block(PS1File *f, int len);
 
+/* PS1-specific resource parsing functions */
+struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName);
+
 #endif /* CDROM_PS1_H */

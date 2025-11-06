@@ -20,6 +20,7 @@
 #include "cdrom_ps1.h"
 #include "utils.h"
 #include "ps1_debug.h"
+#include "resource.h"
 
 /* PS1 CD-ROM sector size */
 #define CD_SECTOR_SIZE 2048
@@ -718,6 +719,108 @@ uint8* ps1_readUint8Block(PS1File *f, int len) {
         return NULL;
     }
     return block;
+}
+
+/* ============================================================================
+ * PS1 Resource Parsing Functions
+ * Provides PS1 versions of resource parsing using PS1File* instead of FILE*
+ * ============================================================================ */
+
+struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
+{
+    struct TScrResource *scrResource;
+    uint8 *buffer;
+
+    scrResource = malloc(sizeof(struct TScrResource));  /* Use malloc instead of safe_malloc */
+    scrResource->resName = malloc(strlen(resName) + 1);
+    strcpy(scrResource->resName, resName);
+
+    /* Visual checkpoint: MAGENTA = Starting SCR parsing */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, 255, 0, 255);  /* MAGENTA = SCR parsing */
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 60; i++) VSync(0);
+
+    /* Read "SCR:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (memcmp(buffer, "SCR:", 4)) {
+        /* RED = Invalid SCR header */
+        setRGB0(&draw, 255, 0, 0);
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 300; i++) VSync(0);
+        free(buffer);
+        free(scrResource->resName);
+        free(scrResource);
+        return NULL;
+    }
+    free(buffer);
+
+    /* Read totalSize and flags */
+    scrResource->totalSize = ps1_readUint16(f);
+    scrResource->flags = ps1_readUint16(f);
+
+    /* Read "DIM:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (memcmp(buffer, "DIM:", 4)) {
+        /* RED = Invalid DIM header */
+        setRGB0(&draw, 255, 0, 0);
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 300; i++) VSync(0);
+        free(buffer);
+        free(scrResource->resName);
+        free(scrResource);
+        return NULL;
+    }
+    free(buffer);
+
+    /* Read dimensions */
+    scrResource->dimSize = ps1_readUint32(f);
+    scrResource->width = ps1_readUint16(f);
+    scrResource->height = ps1_readUint16(f);
+
+    /* Read "BIN:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (memcmp(buffer, "BIN:", 4)) {
+        /* RED = Invalid BIN header */
+        setRGB0(&draw, 255, 0, 0);
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 300; i++) VSync(0);
+        free(buffer);
+        free(scrResource->resName);
+        free(scrResource);
+        return NULL;
+    }
+    free(buffer);
+
+    /* Read compression info */
+    scrResource->compressedSize = ps1_readUint32(f) - 5; // discard size of compressionmethod+uncompressedsize
+    scrResource->compressionMethod = ps1_readUint8(f);
+    scrResource->uncompressedSize = ps1_readUint32(f);
+
+    /* For now, skip decompression and just store NULL */
+    scrResource->uncompressedData = NULL;
+    scrResource->lastUsedTick = 0;
+    scrResource->pinCount = 0;
+
+    /* CYAN = SCR parsing completed successfully! */
+    setRGB0(&draw, 0, 255, 255);
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 120; i++) VSync(0);
+
+    return scrResource;
 }
 
 void ps1TestResourceLoading(void)

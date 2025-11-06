@@ -585,10 +585,13 @@ static void parseResourceFile(char * filename)
             if (debugMode) printf("PAL ");
         }
         else if (!strcmp(resType, ".SCR")) {
-            // scrResources[numScrResources] = parseScrResource(f);
-            // scrResources[numScrResources]->resName = resName;
-            // numScrResources++;
-            if (debugMode) printf("SCR ");
+            scrResources[numScrResources] = ps1_parseScrResource(f, resName);
+            if (scrResources[numScrResources] != NULL) {
+                numScrResources++;
+                if (debugMode) printf("SCR-OK ");
+            } else {
+                if (debugMode) printf("SCR-FAIL ");
+            }
         }
         else if (!strcmp(resType, ".TTM")) {
             // ttmResources[numTtmResources] = parseTtmResource(f);

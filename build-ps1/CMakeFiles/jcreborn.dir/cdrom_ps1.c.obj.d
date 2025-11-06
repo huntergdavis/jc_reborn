@@ -13,4 +13,5 @@ CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj: /project/cdrom_ps1.c \
  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h \
  /project/mytypes.h /project/cdrom_ps1.h /project/utils.h \
  /project/ps1_debug.h \
- /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/sys/types.h
+ /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/sys/types.h \
+ /project/resource.h

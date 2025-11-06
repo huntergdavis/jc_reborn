@@ -1,0 +1,8 @@
+=== Building PS1 executable ===
+Consolidate compiler generated dependencies of target jcreborn
+[  5%] Building C object CMakeFiles/jcreborn.dir/jc_reborn.c.obj
+[ 10%] Linking C executable jcreborn.elf
+[100%] Built target jcreborn
+
+=== Build complete ===
+-rw-r--r-- 1 root root 82K Nov  1 16:45 build-ps1/jcreborn.exe

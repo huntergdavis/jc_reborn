@@ -556,58 +556,55 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
         return NULL;  /* No free slots */
     }
 
-    /* Search for file on CD-ROM - test multiple variants */
-    CdlFILE *result = CdSearchFile(&file->cdfile, filename);
+    /* Test multiple filename formats for ISO9660 */
+    CdlFILE *result = NULL;
+    char actualFilename[32] = "";
+
+    /* Try different filename formats */
+    const char* testNames[] = {
+        "RESOURCE.MAP",      /* Standard uppercase */
+        "RESOURCE.MAP;1",    /* With version number */
+        "resource.map",      /* Lowercase */
+        "resource.map;1"     /* Lowercase with version */
+    };
+
+    for (int i = 0; i < 4 && result == NULL; i++) {
+        result = CdSearchFile(&file->cdfile, testNames[i]);
+        if (result != NULL) {
+            strncpy(actualFilename, testNames[i], sizeof(actualFilename) - 1);
+            break;
+        }
+    }
+
+    /* Visual result with color coding for which format worked */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+
+    if (result != NULL) {
+        /* Different greens for different formats that worked */
+        if (strcmp(actualFilename, "RESOURCE.MAP") == 0) {
+            setRGB0(&draw, 0, 255, 0);      /* Bright GREEN = RESOURCE.MAP */
+        } else if (strcmp(actualFilename, "RESOURCE.MAP;1") == 0) {
+            setRGB0(&draw, 0, 200, 0);      /* Dark GREEN = RESOURCE.MAP;1 */
+        } else if (strcmp(actualFilename, "resource.map") == 0) {
+            setRGB0(&draw, 0, 255, 100);    /* GREEN-CYAN = resource.map */
+        } else {
+            setRGB0(&draw, 0, 200, 100);    /* DARK GREEN-CYAN = resource.map;1 */
+        }
+        strncpy(file->filename, actualFilename, sizeof(file->filename) - 1);
+    } else {
+        setRGB0(&draw, 255, 0, 0);  /* RED = No format worked */
+    }
+
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 180; i++) VSync(0);
 
     if (result == NULL) {
-        /* Visual debug: Try different filename variants */
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-
-        /* Try lowercase version */
-        result = CdSearchFile(&file->cdfile, "resource.map");
-        if (result != NULL) {
-            setRGB0(&draw, 255, 255, 0);  /* YELLOW = found resource.map (lowercase) */
-            draw.isbg = 1;
-            PutDrawEnv(&draw);
-            SetDispMask(1);
-            for (int i = 0; i < 120; i++) VSync(0);
-            /* Use lowercase version */
-            strncpy(file->filename, "resource.map", sizeof(file->filename) - 1);
-        } else {
-            /* Try with leading slash */
-            result = CdSearchFile(&file->cdfile, "\\RESOURCE.MAP");
-            if (result != NULL) {
-                setRGB0(&draw, 0, 255, 255);  /* CYAN = found \\RESOURCE.MAP */
-                draw.isbg = 1;
-                PutDrawEnv(&draw);
-                SetDispMask(1);
-                for (int i = 0; i < 120; i++) VSync(0);
-                strncpy(file->filename, "\\RESOURCE.MAP", sizeof(file->filename) - 1);
-            } else {
-                /* File really not found */
-                setRGB0(&draw, 255, 0, 0);  /* RED = File not found at all */
-                draw.isbg = 1;
-                PutDrawEnv(&draw);
-                SetDispMask(1);
-                for (int i = 0; i < 300; i++) VSync(0);
-                return NULL;
-            }
-        }
-    } else {
-        /* Found with original filename */
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 0, 255, 0);  /* GREEN = Found with original name */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 60; i++) VSync(0);
-        strncpy(file->filename, filename, sizeof(file->filename) - 1);
+        return NULL;
     }
 
     /* Initialize file structure */

@@ -1,0 +1,18 @@
+=== Removing old CD image files ===
+=== Creating PS1 CD image with mkpsxiso ===
+MKPSXISO 2.03 - PlayStation ISO Image Maker
+2017-2022 Meido-Tek Productions (John "Lameguy" Wilbert Villamor/Lameguy64)
+2021-2022 Silent, Chromaryu, G4Vi, and spicyjpeg
+
+Building ISO Image: jcreborn.bin + jcreborn.cue
+Scanning tracks...
+
+  Track #1 data:
+    Identifiers:
+      System       : PLAYSTATION
+      Application  : JOHNNY_REBORN
+      Volume       : JOHNNY_REBORN
+      Publisher    : OPEN_SOURCE
+
+    Parsing directory tree...
+      ERROR: File not found: /project/build-ps1/jcreborn.exe

@@ -57,7 +57,8 @@ CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj: ../cdrom_ps1.c \
   ../cdrom_ps1.h \
   ../utils.h \
   ../ps1_debug.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/sys/types.h
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/sys/types.h \
+  ../resource.h
 
 CMakeFiles/jcreborn.dir/config.c.obj: ../config.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdlib.h \
@@ -143,12 +144,10 @@ CMakeFiles/jcreborn.dir/jc_reborn.c.obj: ../jc_reborn.c \
   ../events_ps1.h \
   ../sound_ps1.h \
   ../cdrom_ps1.h \
+  ../ps1_debug.h \
   ../ttm.h \
   ../ads.h \
-  ../story.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxapi.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/setjmp.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/hwregs_c.h
+  ../story.h
 
 CMakeFiles/jcreborn.dir/ps1_debug.c.obj: ../ps1_debug.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/sys/types.h \
@@ -171,7 +170,8 @@ CMakeFiles/jcreborn.dir/ps1_stubs.c.obj: ../ps1_stubs.c \
   ../mytypes.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint-gcc.h \
-  ../cdrom_ps1.h
+  ../cdrom_ps1.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h
 
 CMakeFiles/jcreborn.dir/resource.c.obj: ../resource.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
@@ -182,7 +182,11 @@ CMakeFiles/jcreborn.dir/resource.c.obj: ../resource.c \
   ../utils.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h \
   ../resource.h \
-  ../uncompress.h
+  ../uncompress.h \
+  ../cdrom_ps1.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgpu.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgte.h
 
 CMakeFiles/jcreborn.dir/sound_ps1.c.obj: ../sound_ps1.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxspu.h \

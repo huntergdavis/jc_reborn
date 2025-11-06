@@ -1,0 +1,37 @@
+=== Removing old CD image files ===
+=== Creating PS1 CD image with mkpsxiso ===
+MKPSXISO 2.03 - PlayStation ISO Image Maker
+2017-2022 Meido-Tek Productions (John "Lameguy" Wilbert Villamor/Lameguy64)
+2021-2022 Silent, Chromaryu, G4Vi, and spicyjpeg
+
+Building ISO Image: jcreborn.bin + jcreborn.cue
+Scanning tracks...
+
+  Track #1 data:
+    Identifiers:
+      System       : PLAYSTATION
+      Application  : JOHNNY_REBORN
+      Volume       : JOHNNY_REBORN
+      Publisher    : OPEN_SOURCE
+
+    Parsing directory tree...
+      Files Total: 4
+      Directories: 0
+      Total file system size: 1507632 bytes (641 sectors)
+
+Writing ISO
+    Writing files...
+      Packing /project/SYSTEM.CNF... Done.
+      Packing /project/build-ps1/jcreborn.exe... Done.
+      Packing /project/jc_resources/RESOURCE.MAP... Done.
+      Packing /project/jc_resources/RESOURCE.001... Done.
+
+    Writing CDDA tracks...
+
+    Writing directories... Ok.
+ISO image generated successfully.
+Total image size: 1507632 bytes (641 sectors)
+
+=== CD image created ===
+-rw-r--r-- 1 root root 1.5M Nov  1 16:47 jcreborn.bin
+-rw-r--r-- 1 root root   71 Nov  1 16:47 jcreborn.cue

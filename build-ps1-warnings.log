@@ -1,0 +1,21 @@
+=== Building PS1 executable ===
+Consolidate compiler generated dependencies of target jcreborn
+[  5%] Building C object CMakeFiles/jcreborn.dir/jc_reborn.c.obj
+[01m[K/project/jc_reborn.c:[m[K In function '[01m[Kusage[m[K':
+[01m[K/project/jc_reborn.c:128:9:[m[K [01;35m[Kwarning: [m[Kimplicit declaration of function '[01m[Kexit[m[K' [[01;35m[K-Wimplicit-function-declaration[m[K]
+  128 |         [01;35m[Kexit[m[K(1);
+      |         [01;35m[K^~~~[m[K
+[01m[K/project/jc_reborn.c:63:1:[m[K [01;36m[Knote: [m[K'[01m[Kexit[m[K' is defined in header '[01m[K<stdlib.h>[m[K'; did you forget to '[01m[K#include <stdlib.h>[m[K'?
+   62 | #include "story.h"
+  +++ |+[32m[K#include <stdlib.h>[m[K
+   63 | 
+[01m[K/project/jc_reborn.c:[m[K In function '[01m[KparseArgs[m[K':
+[01m[K/project/jc_reborn.c:191:44:[m[K [01;35m[Kwarning: [m[Kimplicit declaration of function '[01m[Katoi[m[K'; did you mean '[01m[Kbtoi[m[K'? [[01;35m[K-Wimplicit-function-declaration[m[K]
+  191 |                     grCaptureFrameNumber = [01;35m[Katoi[m[K(argv[++i]);
+      |                                            [01;35m[K^~~~[m[K
+      |                                            [32m[Kbtoi[m[K
+[ 10%] Linking C executable jcreborn.elf
+[100%] Built target jcreborn
+
+=== Build complete ===
+-rw-r--r-- 1 root root 82K Nov  1 16:44 build-ps1/jcreborn.exe

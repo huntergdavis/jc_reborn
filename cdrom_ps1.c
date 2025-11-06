@@ -567,8 +567,17 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
     SetDispMask(1);
     for (int i = 0; i < 20; i++) VSync(0);  /* Short wait */
 
-    /* Simplified: just try RESOURCE.MAP */
-    CdlFILE *result = CdSearchFile(&file->cdfile, "RESOURCE.MAP");
+    /* Initialize CdlFILE structure properly */
+    memset(&file->cdfile, 0, sizeof(CdlFILE));
+
+    /* Wait for CD-ROM to be ready - critical for CdSearchFile */
+    /* Simple delay to allow CD-ROM initialization */
+    for (int i = 0; i < 300000; i++) {
+        /* Busy wait - allow CD to be ready */
+    }
+
+    /* Test with system file that definitely exists */
+    CdlFILE *result = CdSearchFile(&file->cdfile, "SYSTEM.CNF");
 
     /* CHECKPOINT: Show result of CdSearchFile immediately */
     ResetGraph(0);

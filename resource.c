@@ -54,6 +54,10 @@ extern void free(void *ptr);
 #include "resource.h"
 #include "uncompress.h"
 
+#ifdef PS1_BUILD
+#include "cdrom_ps1.h"
+#endif /* PS1_BUILD */
+
 #define MAX_ADS_RESOURCES 100
 #define MAX_BMP_RESOURCES 200
 #define MAX_PAL_RESOURCES 1

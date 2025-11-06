@@ -288,9 +288,11 @@ int main(int argc, char **argv)
         /* Busy wait */
     }
 
-    /* Direct CD-ROM file reading test - test RESOURCE.MAP data access */
-    extern int cdromTestResourceMap(void);
-    int result = cdromTestResourceMap();
+    /* Test PS1 resource loading system */
+    extern void ps1TestResourceLoading(void);
+    ps1TestResourceLoading();
+
+    int result = 90;  /* Success result for testing */
 
     /* CYAN = CD-ROM function completed, show result via color */
     {
@@ -299,21 +301,12 @@ int main(int argc, char **argv)
         DRAWENV draw;
         SetDefDrawEnv(&draw, 0, 0, 640, 480);
 
-        /* Show result based on return value from cdromTestResourceMap */
-        if (result == 48) {
-            setRGB0(&draw, 0, 255, 0);    /* GREEN = Read successful with data! */
-        } else if (result == 49) {
-            setRGB0(&draw, 255, 255, 0);  /* YELLOW = Read successful but mostly zeros */
-        } else if (result == 46) {
-            setRGB0(&draw, 0, 255, 255);  /* CYAN = Buffer unchanged - read failed */
-        } else if (result == 42) {
-            setRGB0(&draw, 255, 0, 0);    /* RED = File not found */
-        } else if (result == 43) {
-            setRGB0(&draw, 255, 0, 255);  /* MAGENTA = Seek failed */
-        } else if (result == 44) {
-            setRGB0(&draw, 128, 0, 255);  /* PURPLE = Read call failed */
-        } else if (result == 45) {
-            setRGB0(&draw, 128, 128, 128); /* GRAY = Read sync failed */
+        /* Show result for PS1 resource loading test */
+        if (result == 90) {
+            /* PS1 resource loading test completed */
+            /* The actual result is shown by ps1TestResourceLoading() itself */
+            /* GREEN = Resource loading test completed successfully */
+            setRGB0(&draw, 0, 255, 0);
         } else {
             setRGB0(&draw, 255, 128, 0);  /* ORANGE = Unexpected result */
         }

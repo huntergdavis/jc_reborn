@@ -72,4 +72,27 @@ int cdromClose(int fileHandle);
  */
 uint32 cdromGetSize(int fileHandle);
 
+/*
+ * PS1 File I/O wrapper functions for resource loading
+ * These provide FILE*-like interface using CD-ROM access
+ */
+
+#include <psxcd.h>
+
+typedef struct {
+    CdlFILE cdfile;
+    long currentPos;
+    int isOpen;
+    char filename[32];
+} PS1File;
+
+PS1File* ps1_fopen(const char* filename, const char* mode);
+size_t ps1_fread(void* ptr, size_t size, size_t nmemb, PS1File* file);
+int ps1_fseek(PS1File* file, long offset, int whence);
+long ps1_ftell(PS1File* file);
+int ps1_fclose(PS1File* file);
+
+/* PS1 Resource Loading Test */
+void ps1TestResourceLoading(void);
+
 #endif /* CDROM_PS1_H */

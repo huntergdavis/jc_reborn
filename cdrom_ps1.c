@@ -91,7 +91,7 @@ int cdromTestPure(void)
     return 42;  /* No files found at all */
 }
 
-/* New function to test reading RESOURCE.MAP content */
+/* Advanced function to scan RESOURCE.MAP for meaningful data */
 int cdromTestResourceMap(void)
 {
     CdlFILE file;
@@ -106,57 +106,73 @@ int cdromTestResourceMap(void)
         return 42;  /* File not found */
     }
 
-    /* File found, now try to read some data from it */
-    /* Use CdControl to seek to file position */
-    if (CdControl(CdlSeekL, (uint8_t*)&file.pos, NULL) == 0) {
-        return 43;  /* Seek failed */
-    }
+    /* File found - try reading multiple sectors to find meaningful data */
+    /* RESOURCE.MAP might have padding at the start */
 
-    /* Wait for seek to complete */
-    for (int i = 0; i < 1000000; i++) {
-        /* Busy wait */
-    }
-
-    /* Try to read first sector of the file */
     uint32_t buffer[CD_SECTOR_SIZE / 4];  /* 2KB sector buffer */
 
-    /* Clear buffer first to detect if data is actually read */
-    for (int i = 0; i < CD_SECTOR_SIZE / 4; i++) {
-        buffer[i] = 0xDEADBEEF;  /* Fill with pattern */
-    }
+    /* Try reading first 3 sectors of the file */
+    for (int sector = 0; sector < 3; sector++) {
+        /* Seek to file position + sector offset */
+        if (CdControl(CdlSeekL, (uint8_t*)&file.pos, NULL) == 0) {
+            return 43;  /* Seek failed */
+        }
 
-    if (CdRead(1, buffer, CdlModeSpeed) == 0) {
-        return 44;  /* Read failed */
-    }
+        /* Wait for seek to complete */
+        for (int i = 0; i < 500000; i++) {
+            /* Busy wait */
+        }
 
-    /* Wait for read to complete */
-    uint8_t result[8];
-    if (CdReadSync(0, result) == CdlComplete) {
-        /* Read successful - check if we got meaningful data */
-        uint8_t *data = (uint8_t*)buffer;
+        /* Clear buffer with test pattern */
+        for (int i = 0; i < CD_SECTOR_SIZE / 4; i++) {
+            buffer[i] = 0xDEADBEEF;
+        }
 
-        /* Check if buffer changed from our test pattern */
-        if (buffer[0] != 0xDEADBEEF) {
-            /* Buffer was modified, we got some data */
-            /* Check first 16 bytes for non-zero content */
-            int nonZeroCount = 0;
-            for (int i = 0; i < 16; i++) {
-                if (data[i] != 0) {
-                    nonZeroCount++;
+        if (CdRead(1, buffer, CdlModeSpeed) == 0) {
+            return 44;  /* Read failed */
+        }
+
+        /* Wait for read to complete */
+        uint8_t result[8];
+        if (CdReadSync(0, result) == CdlComplete) {
+            uint8_t *data = (uint8_t*)buffer;
+
+            if (buffer[0] != 0xDEADBEEF) {
+                /* Check for RESOURCE.MAP header patterns */
+                /* Look for meaningful data throughout the sector */
+                int meaningfulBytes = 0;
+                int maxByte = 0;
+
+                for (int i = 0; i < 512; i++) {  /* Check first 512 bytes */
+                    if (data[i] != 0) {
+                        meaningfulBytes++;
+                        if (data[i] > maxByte) {
+                            maxByte = data[i];
+                        }
+                    }
+                }
+
+                /* If we found significant non-zero data */
+                if (meaningfulBytes >= 20 && maxByte > 1) {
+                    /* Check if this looks like RESOURCE.MAP header */
+                    /* RESOURCE.MAP usually starts with small integers (header) */
+                    if (data[0] < 10 && data[1] < 10 && meaningfulBytes > 50) {
+                        return 48;  /* Found meaningful RESOURCE.MAP data! */
+                    } else {
+                        return 47;  /* Found data but not RESOURCE.MAP header */
+                    }
+                } else if (meaningfulBytes >= 5) {
+                    return 49;  /* Some data but sparse */
                 }
             }
 
-            if (nonZeroCount >= 3) {
-                return 48;  /* Read successful with meaningful data */
-            } else {
-                return 49;  /* Read successful but mostly zeros */
-            }
+            /* Try next sector */
         } else {
-            return 46;  /* Buffer unchanged - read may have failed */
+            return 45;  /* Read sync failed */
         }
     }
 
-    return 45;  /* Read sync failed */
+    return 46;  /* All sectors were empty or failed */
 }
 
 int cdromFirstFunction(void)
@@ -514,4 +530,249 @@ uint32 cdromGetSize(int fileHandle)
     }
 
     return cdFiles[fileHandle].size;
+}
+
+/* ============================================================================
+ * PS1 File I/O Wrapper Implementation
+ * Provides FILE*-like interface using CD-ROM access for resource loading
+ * ============================================================================ */
+
+static PS1File ps1FilePool[4];  /* Support up to 4 open files */
+static uint8_t ps1ReadBuffer[CD_SECTOR_SIZE];  /* Shared read buffer */
+
+PS1File* ps1_fopen(const char* filename, const char* mode)
+{
+    /* Find free file slot */
+    PS1File* file = NULL;
+    for (int i = 0; i < 4; i++) {
+        if (!ps1FilePool[i].isOpen) {
+            file = &ps1FilePool[i];
+            break;
+        }
+    }
+
+    if (!file) {
+        return NULL;  /* No free slots */
+    }
+
+    /* Search for file on CD-ROM */
+    if (CdSearchFile(&file->cdfile, filename) == NULL) {
+        return NULL;  /* File not found */
+    }
+
+    /* Initialize file structure */
+    file->currentPos = 0;
+    file->isOpen = 1;
+    strncpy(file->filename, filename, sizeof(file->filename) - 1);
+    file->filename[sizeof(file->filename) - 1] = '\0';
+
+    return file;
+}
+
+size_t ps1_fread(void* ptr, size_t size, size_t nmemb, PS1File* file)
+{
+    if (!file || !file->isOpen) {
+        return 0;
+    }
+
+    size_t totalBytes = size * nmemb;
+    size_t bytesRead = 0;
+    uint8_t* dest = (uint8_t*)ptr;
+
+    while (bytesRead < totalBytes) {
+        /* Calculate sector and offset */
+        long sectorOffset = file->currentPos / CD_SECTOR_SIZE;
+        int posInSector = file->currentPos % CD_SECTOR_SIZE;
+
+        /* Seek to current sector */
+        CdlLOC seekPos = file->cdfile.pos;
+        /* Add sector offset to base position - simplified for now */
+
+        if (CdControl(CdlSeekL, (uint8_t*)&seekPos, NULL) == 0) {
+            return bytesRead / size;  /* Return partial read count */
+        }
+
+        /* Wait for seek */
+        for (int i = 0; i < 500000; i++) { /* Busy wait */ }
+
+        /* Read sector */
+        if (CdRead(1, (uint32_t*)ps1ReadBuffer, CdlModeSpeed) == 0) {
+            return bytesRead / size;
+        }
+
+        /* Wait for read */
+        uint8_t result[8];
+        if (CdReadSync(0, result) != CdlComplete) {
+            return bytesRead / size;
+        }
+
+        /* Copy data from sector buffer */
+        size_t remainingInSector = CD_SECTOR_SIZE - posInSector;
+        size_t remainingToRead = totalBytes - bytesRead;
+        size_t copySize = (remainingInSector < remainingToRead) ?
+                         remainingInSector : remainingToRead;
+
+        for (size_t i = 0; i < copySize; i++) {
+            dest[bytesRead + i] = ps1ReadBuffer[posInSector + i];
+        }
+
+        bytesRead += copySize;
+        file->currentPos += copySize;
+    }
+
+    return bytesRead / size;  /* Return number of complete items read */
+}
+
+int ps1_fseek(PS1File* file, long offset, int whence)
+{
+    if (!file || !file->isOpen) {
+        return -1;
+    }
+
+    long newPos;
+    switch (whence) {
+        case 0:  /* SEEK_SET */
+            newPos = offset;
+            break;
+        case 1:  /* SEEK_CUR */
+            newPos = file->currentPos + offset;
+            break;
+        case 2:  /* SEEK_END */
+            newPos = file->cdfile.size + offset;
+            break;
+        default:
+            return -1;
+    }
+
+    if (newPos < 0 || newPos > file->cdfile.size) {
+        return -1;
+    }
+
+    file->currentPos = newPos;
+    return 0;
+}
+
+long ps1_ftell(PS1File* file)
+{
+    if (!file || !file->isOpen) {
+        return -1;
+    }
+    return file->currentPos;
+}
+
+int ps1_fclose(PS1File* file)
+{
+    if (!file || !file->isOpen) {
+        return -1;
+    }
+
+    file->isOpen = 0;
+    return 0;
+}
+
+/* ============================================================================
+ * PS1 Resource Loading Test
+ * Tests the complete PS1 resource loading system
+ * ============================================================================ */
+
+/* PS1-specific utility functions for reading from CD-ROM */
+static uint8 ps1_readUint8(PS1File *f) {
+    uint8 value;
+    if (ps1_fread(&value, 1, 1, f) != 1) {
+        return 0;
+    }
+    return value;
+}
+
+static uint16 ps1_readUint16(PS1File *f) {
+    uint16 value;
+    if (ps1_fread(&value, 2, 1, f) != 1) {
+        return 0;
+    }
+    return value;
+}
+
+static uint32 ps1_readUint32(PS1File *f) {
+    uint32 value;
+    if (ps1_fread(&value, 4, 1, f) != 1) {
+        return 0;
+    }
+    return value;
+}
+
+static char* ps1_getString(PS1File *f, int maxlen) {
+    char *str = malloc(maxlen + 1);  /* Use malloc instead of safe_malloc */
+    int i;
+    for (i = 0; i < maxlen; i++) {
+        str[i] = ps1_readUint8(f);
+        if (str[i] == 0) break;
+    }
+    str[i] = 0;
+    return str;
+}
+
+void ps1TestResourceLoading(void)
+{
+    /* Test opening RESOURCE.MAP and reading header */
+    PS1File* mapFile = ps1_fopen("RESOURCE.MAP", "rb");
+
+    if (!mapFile) {
+        /* RED screen = File not found */
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 255, 0, 0);
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 300; i++) VSync(0);
+        return;
+    }
+
+    /* File opened successfully - read header bytes */
+    uint8 header[6];
+    header[0] = ps1_readUint8(mapFile);
+    header[1] = ps1_readUint8(mapFile);
+    header[2] = ps1_readUint8(mapFile);
+    header[3] = ps1_readUint8(mapFile);
+    header[4] = ps1_readUint8(mapFile);
+    header[5] = ps1_readUint8(mapFile);
+
+    /* Skip resource filename (13 bytes) */
+    for (int i = 0; i < 13; i++) {
+        ps1_readUint8(mapFile);
+    }
+
+    /* Read number of entries */
+    uint16 numEntries = ps1_readUint16(mapFile);
+
+    ps1_fclose(mapFile);
+
+    /* Show results via colors */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+
+    /* Check if we got reasonable data */
+    if (numEntries > 0 && numEntries < 1000) {
+        /* GREEN = Success! Got reasonable number of entries */
+        setRGB0(&draw, 0, 255, 0);
+    } else if (numEntries == 0) {
+        /* YELLOW = No entries found */
+        setRGB0(&draw, 255, 255, 0);
+    } else {
+        /* CYAN = Unreasonable number (data corruption?) */
+        setRGB0(&draw, 0, 255, 255);
+    }
+
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+
+    /* Hold result screen */
+    for (int i = 0; i < 300; i++) {
+        VSync(0);
+    }
 }

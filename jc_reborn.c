@@ -288,9 +288,9 @@ int main(int argc, char **argv)
         /* Busy wait */
     }
 
-    /* Direct CD-ROM file search test - pure function with no graphics */
-    extern int cdromTestPure(void);
-    int result = cdromTestPure();
+    /* Direct CD-ROM file reading test - test RESOURCE.MAP data access */
+    extern int cdromTestResourceMap(void);
+    int result = cdromTestResourceMap();
 
     /* CYAN = CD-ROM function completed, show result via color */
     {
@@ -299,17 +299,23 @@ int main(int argc, char **argv)
         DRAWENV draw;
         SetDefDrawEnv(&draw, 0, 0, 640, 480);
 
-        /* Show result based on return value */
-        if (result == 51) {
-            setRGB0(&draw, 255, 128, 0);  /* ORANGE = SYSTEM.CNF found! */
-        } else if (result == 50) {
-            setRGB0(&draw, 255, 0, 255);  /* MAGENTA = JCREBORN.EXE found! */
-        } else if (result == 47) {
-            setRGB0(&draw, 0, 255, 255);  /* CYAN = RESOURCE.MAP found! */
+        /* Show result based on return value from cdromTestResourceMap */
+        if (result == 48) {
+            setRGB0(&draw, 0, 255, 0);    /* GREEN = Read successful with data! */
+        } else if (result == 49) {
+            setRGB0(&draw, 255, 255, 0);  /* YELLOW = Read successful but mostly zeros */
+        } else if (result == 46) {
+            setRGB0(&draw, 0, 255, 255);  /* CYAN = Buffer unchanged - read failed */
         } else if (result == 42) {
-            setRGB0(&draw, 255, 255, 0);  /* YELLOW = No files found */
+            setRGB0(&draw, 255, 0, 0);    /* RED = File not found */
+        } else if (result == 43) {
+            setRGB0(&draw, 255, 0, 255);  /* MAGENTA = Seek failed */
+        } else if (result == 44) {
+            setRGB0(&draw, 128, 0, 255);  /* PURPLE = Read call failed */
+        } else if (result == 45) {
+            setRGB0(&draw, 128, 128, 128); /* GRAY = Read sync failed */
         } else {
-            setRGB0(&draw, 255, 0, 0);    /* RED = Error/unexpected result */
+            setRGB0(&draw, 255, 128, 0);  /* ORANGE = Unexpected result */
         }
 
         draw.isbg = 1;

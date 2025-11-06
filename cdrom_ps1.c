@@ -21,6 +21,9 @@
 #include "utils.h"
 #include "ps1_debug.h"
 
+/* PS1 CD-ROM sector size */
+#define CD_SECTOR_SIZE 2048
+
 /*
  * Build 28: Test different file path formats with debug output
  * Use ps1DebugPrint since we know it works now
@@ -86,6 +89,74 @@ int cdromTestPure(void)
     }
 
     return 42;  /* No files found at all */
+}
+
+/* New function to test reading RESOURCE.MAP content */
+int cdromTestResourceMap(void)
+{
+    CdlFILE file;
+
+    /* Wait for CD to be ready */
+    for (int i = 0; i < 1000000; i++) {
+        /* Busy wait */
+    }
+
+    /* Find RESOURCE.MAP file */
+    if (CdSearchFile(&file, "RESOURCE.MAP") == NULL) {
+        return 42;  /* File not found */
+    }
+
+    /* File found, now try to read some data from it */
+    /* Use CdControl to seek to file position */
+    if (CdControl(CdlSeekL, (uint8_t*)&file.pos, NULL) == 0) {
+        return 43;  /* Seek failed */
+    }
+
+    /* Wait for seek to complete */
+    for (int i = 0; i < 1000000; i++) {
+        /* Busy wait */
+    }
+
+    /* Try to read first sector of the file */
+    uint32_t buffer[CD_SECTOR_SIZE / 4];  /* 2KB sector buffer */
+
+    /* Clear buffer first to detect if data is actually read */
+    for (int i = 0; i < CD_SECTOR_SIZE / 4; i++) {
+        buffer[i] = 0xDEADBEEF;  /* Fill with pattern */
+    }
+
+    if (CdRead(1, buffer, CdlModeSpeed) == 0) {
+        return 44;  /* Read failed */
+    }
+
+    /* Wait for read to complete */
+    uint8_t result[8];
+    if (CdReadSync(0, result) == CdlComplete) {
+        /* Read successful - check if we got meaningful data */
+        uint8_t *data = (uint8_t*)buffer;
+
+        /* Check if buffer changed from our test pattern */
+        if (buffer[0] != 0xDEADBEEF) {
+            /* Buffer was modified, we got some data */
+            /* Check first 16 bytes for non-zero content */
+            int nonZeroCount = 0;
+            for (int i = 0; i < 16; i++) {
+                if (data[i] != 0) {
+                    nonZeroCount++;
+                }
+            }
+
+            if (nonZeroCount >= 3) {
+                return 48;  /* Read successful with meaningful data */
+            } else {
+                return 49;  /* Read successful but mostly zeros */
+            }
+        } else {
+            return 46;  /* Buffer unchanged - read may have failed */
+        }
+    }
+
+    return 45;  /* Read sync failed */
 }
 
 int cdromFirstFunction(void)

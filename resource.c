@@ -421,6 +421,42 @@ static struct TTtmResource *parseTtmResource(FILE *f)
 
 static void parseMapFile(char *fileName)
 {
+#ifdef PS1_BUILD
+    PS1File *f_map;
+
+    if (debugMode)
+        printf("Opening map file: %s\n", fileName);
+
+    f_map = ps1_fopen(fileName,"rb");
+
+    if (f_map == NULL) {
+        printf("ERROR: Cannot open map file: %s\n", fileName);
+        fatalError("Resources map file not found: %s\n", fileName);
+    }
+
+    if (debugMode)
+        printf("Map file opened successfully\n");
+
+    mapFile.unknown1 = ps1_readUint8(f_map);   // first 5 uint8s unknown
+    mapFile.unknown2 = ps1_readUint8(f_map);
+    mapFile.unknown3 = ps1_readUint8(f_map);
+    mapFile.unknown4 = ps1_readUint8(f_map);   // ? number of resources files available in this index
+    mapFile.unknown5 = ps1_readUint8(f_map);
+    mapFile.unknown6 = ps1_readUint8(f_map);
+
+    mapFile.resFileName = (char *) ps1_getString(f_map,13);
+
+    mapFile.numEntries = ps1_readUint16(f_map);
+
+    mapFile.Entries = safe_malloc(mapFile.numEntries * sizeof(struct TMapFileEntry));
+
+    for (int i=0; i<mapFile.numEntries; i++) {
+        mapFile.Entries[i].length = ps1_readUint32(f_map);
+        mapFile.Entries[i].offset = ps1_readUint32(f_map);
+    }
+
+    ps1_fclose(f_map);
+#else
     FILE *f_map; // , *f_res;  // TODO
 
     if (debugMode)
@@ -455,11 +491,20 @@ static void parseMapFile(char *fileName)
     }
 
     fclose(f_map);
+#endif
 }
 
 
 static void parseResourceFile(char * filename)
 {
+#ifdef PS1_BUILD
+    /* For now, just test parseMapFile() integration on PS1 */
+    /* TODO: Implement full parseResourceFile() with PS1File* */
+    if (debugMode) {
+        printf("PS1: parseResourceFile() called, but skipping for now\n");
+    }
+    return;
+#endif
     FILE *f;
 
     f = fopen(mapFile.resFileName,"rb");

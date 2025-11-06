@@ -676,7 +676,7 @@ int ps1_fclose(PS1File* file)
  * ============================================================================ */
 
 /* PS1-specific utility functions for reading from CD-ROM */
-static uint8 ps1_readUint8(PS1File *f) {
+uint8 ps1_readUint8(PS1File *f) {
     uint8 value;
     if (ps1_fread(&value, 1, 1, f) != 1) {
         return 0;
@@ -684,7 +684,7 @@ static uint8 ps1_readUint8(PS1File *f) {
     return value;
 }
 
-static uint16 ps1_readUint16(PS1File *f) {
+uint16 ps1_readUint16(PS1File *f) {
     uint16 value;
     if (ps1_fread(&value, 2, 1, f) != 1) {
         return 0;
@@ -692,7 +692,7 @@ static uint16 ps1_readUint16(PS1File *f) {
     return value;
 }
 
-static uint32 ps1_readUint32(PS1File *f) {
+uint32 ps1_readUint32(PS1File *f) {
     uint32 value;
     if (ps1_fread(&value, 4, 1, f) != 1) {
         return 0;
@@ -700,7 +700,7 @@ static uint32 ps1_readUint32(PS1File *f) {
     return value;
 }
 
-static char* ps1_getString(PS1File *f, int maxlen) {
+char* ps1_getString(PS1File *f, int maxlen) {
     char *str = malloc(maxlen + 1);  /* Use malloc instead of safe_malloc */
     int i;
     for (i = 0; i < maxlen; i++) {
@@ -709,6 +709,15 @@ static char* ps1_getString(PS1File *f, int maxlen) {
     }
     str[i] = 0;
     return str;
+}
+
+uint8* ps1_readUint8Block(PS1File *f, int len) {
+    uint8 *block = malloc(len);  /* Use malloc instead of safe_malloc */
+    if (ps1_fread(block, 1, len, f) != (size_t)len) {
+        free(block);
+        return NULL;
+    }
+    return block;
 }
 
 void ps1TestResourceLoading(void)

@@ -288,9 +288,8 @@ int main(int argc, char **argv)
         /* Busy wait */
     }
 
-    /* Test PS1 resource loading system */
-    extern void ps1TestResourceLoading(void);
-    ps1TestResourceLoading();
+    /* Test PS1 resource loading with real resource parsing */
+    parseResourceFiles("RESOURCE.MAP");
 
     int result = 90;  /* Success result for testing */
 

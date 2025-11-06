@@ -95,4 +95,11 @@ int ps1_fclose(PS1File* file);
 /* PS1 Resource Loading Test */
 void ps1TestResourceLoading(void);
 
+/* PS1-specific utility functions for resource parsing */
+uint8 ps1_readUint8(PS1File *f);
+uint16 ps1_readUint16(PS1File *f);
+uint32 ps1_readUint32(PS1File *f);
+char *ps1_getString(PS1File *f, int maxlen);
+uint8 *ps1_readUint8Block(PS1File *f, int len);
+
 #endif /* CDROM_PS1_H */

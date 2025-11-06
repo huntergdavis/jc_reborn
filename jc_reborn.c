@@ -331,12 +331,29 @@ int main(int argc, char **argv)
     showDebugScreen(255, 0, 255);
 #endif
 
+#ifdef PS1_BUILD
+    /* VISUAL DEBUG #2.9: ORANGE screen = About to init LRU cache */
+    showDebugScreen(255, 165, 0);
+#endif
+
     /* Initialize LRU cache for memory management */
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* VISUAL DEBUG #3: BLUE screen = Resources parsed */
-    showDebugScreen(0, 0, 255);
+    /* VISUAL DIAGNOSTIC: Show which arguments are set */
+    if (argPlayAll) {
+        showDebugScreen(255, 255, 255);  /* WHITE = argPlayAll */
+    } else if (argTtm) {
+        showDebugScreen(255, 255, 0);    /* YELLOW = argTtm */
+    } else if (argDump) {
+        showDebugScreen(255, 165, 0);    /* ORANGE = argDump */
+    } else if (argBench) {
+        showDebugScreen(255, 192, 203);  /* PINK = argBench */
+    } else if (argAds) {
+        showDebugScreen(128, 0, 128);    /* PURPLE = argAds */
+    } else {
+        showDebugScreen(255, 0, 0);      /* RED = No arguments set! */
+    }
 #endif
 
     if (argPlayAll) {
@@ -359,10 +376,18 @@ int main(int argc, char **argv)
     }
 
     else if (argDump) {
+#ifdef PS1_BUILD
+        /* VISUAL DEBUG: ORANGE screen = argDump path */
+        showDebugScreen(255, 165, 0);
+#endif
         dumpAllResources();
     }
 
     else if (argBench) {
+#ifdef PS1_BUILD
+        /* VISUAL DEBUG: PINK screen = argBench path */
+        showDebugScreen(255, 192, 203);
+#endif
         graphicsInit();
         adsPlayBench();
         graphicsEnd();
@@ -370,8 +395,8 @@ int main(int argc, char **argv)
 
     else if (argTtm) {
 #ifdef PS1_BUILD
-        /* VISUAL DEBUG #4: PURPLE screen = About to init graphics */
-        showDebugScreen(128, 0, 128);
+        /* VISUAL DEBUG: YELLOW screen = Reached TTM section */
+        showDebugScreen(255, 255, 0);
 #endif
         graphicsInit();
 

@@ -556,55 +556,39 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
         return NULL;  /* No free slots */
     }
 
-    /* Test multiple filename formats for ISO9660 */
-    CdlFILE *result = NULL;
-    char actualFilename[32] = "";
-
-    /* Try different filename formats */
-    const char* testNames[] = {
-        "RESOURCE.MAP",      /* Standard uppercase */
-        "RESOURCE.MAP;1",    /* With version number */
-        "resource.map",      /* Lowercase */
-        "resource.map;1"     /* Lowercase with version */
-    };
-
-    for (int i = 0; i < 4 && result == NULL; i++) {
-        result = CdSearchFile(&file->cdfile, testNames[i]);
-        if (result != NULL) {
-            strncpy(actualFilename, testNames[i], sizeof(actualFilename) - 1);
-            break;
-        }
-    }
-
-    /* Visual result with color coding for which format worked */
+    /* CHECKPOINT: MAGENTA = About to start CdSearchFile loop */
     ResetGraph(0);
     SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    DRAWENV tempDraw;
+    SetDefDrawEnv(&tempDraw, 0, 0, 640, 480);
+    setRGB0(&tempDraw, 255, 0, 255);  /* MAGENTA = About to search files */
+    tempDraw.isbg = 1;
+    PutDrawEnv(&tempDraw);
+    SetDispMask(1);
+    for (int i = 0; i < 20; i++) VSync(0);  /* Short wait */
+
+    /* Simplified: just try RESOURCE.MAP */
+    CdlFILE *result = CdSearchFile(&file->cdfile, "RESOURCE.MAP");
+
+    /* CHECKPOINT: Show result of CdSearchFile immediately */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV resultDraw;
+    SetDefDrawEnv(&resultDraw, 0, 0, 640, 480);
 
     if (result != NULL) {
-        /* Different greens for different formats that worked */
-        if (strcmp(actualFilename, "RESOURCE.MAP") == 0) {
-            setRGB0(&draw, 0, 255, 0);      /* Bright GREEN = RESOURCE.MAP */
-        } else if (strcmp(actualFilename, "RESOURCE.MAP;1") == 0) {
-            setRGB0(&draw, 0, 200, 0);      /* Dark GREEN = RESOURCE.MAP;1 */
-        } else if (strcmp(actualFilename, "resource.map") == 0) {
-            setRGB0(&draw, 0, 255, 100);    /* GREEN-CYAN = resource.map */
-        } else {
-            setRGB0(&draw, 0, 200, 100);    /* DARK GREEN-CYAN = resource.map;1 */
-        }
-        strncpy(file->filename, actualFilename, sizeof(file->filename) - 1);
+        setRGB0(&resultDraw, 255, 255, 0);  /* YELLOW = CdSearchFile succeeded */
     } else {
-        setRGB0(&draw, 255, 0, 0);  /* RED = No format worked */
+        setRGB0(&resultDraw, 255, 0, 0);    /* RED = CdSearchFile failed */
     }
 
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
+    resultDraw.isbg = 1;
+    PutDrawEnv(&resultDraw);
     SetDispMask(1);
-    for (int i = 0; i < 180; i++) VSync(0);
+    for (int i = 0; i < 30; i++) VSync(0);
 
     if (result == NULL) {
-        return NULL;
+        return NULL;  /* CdSearchFile failed */
     }
 
     /* Initialize file structure */

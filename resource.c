@@ -56,6 +56,8 @@ extern void free(void *ptr);
 
 #ifdef PS1_BUILD
 #include "cdrom_ps1.h"
+#include <psxgpu.h>
+#include <psxgte.h>
 #endif /* PS1_BUILD */
 
 #define MAX_ADS_RESOURCES 100
@@ -424,8 +426,10 @@ static void parseMapFile(char *fileName)
 #ifdef PS1_BUILD
     PS1File *f_map;
 
-    if (debugMode)
-        printf("Opening map file: %s\n", fileName);
+    if (debugMode) {
+        printf("PS1: parseMapFile() called with: %s\n", fileName);
+        fflush(stdout);
+    }
 
     f_map = ps1_fopen(fileName,"rb");
 
@@ -456,6 +460,11 @@ static void parseMapFile(char *fileName)
     }
 
     ps1_fclose(f_map);
+
+    if (debugMode) {
+        printf("PS1: parseMapFile() completed successfully\n");
+        fflush(stdout);
+    }
 #else
     FILE *f_map; // , *f_res;  // TODO
 
@@ -498,13 +507,117 @@ static void parseMapFile(char *fileName)
 static void parseResourceFile(char * filename)
 {
 #ifdef PS1_BUILD
-    /* For now, just test parseMapFile() integration on PS1 */
-    /* TODO: Implement full parseResourceFile() with PS1File* */
+    PS1File *f;
+
     if (debugMode) {
-        printf("PS1: parseResourceFile() called, but skipping for now\n");
+        printf("PS1: parseResourceFile() called for: %s\n", mapFile.resFileName);
+        fflush(stdout);
     }
-    return;
-#endif
+
+    /* Visual checkpoint: CYAN = Starting parseResourceFile */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, 0, 255, 255);  /* CYAN = parseResourceFile entry */
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 120; i++) VSync(0);
+
+    f = ps1_fopen(mapFile.resFileName,"rb");
+
+    if (f == NULL) {
+        /* RED = Resource file not found */
+        setRGB0(&draw, 255, 0, 0);
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 300; i++) VSync(0);
+        fatalError("Main resources file not found: %s\n", mapFile.resFileName);
+    }
+
+    /* BLUE = Resource file opened successfully */
+    setRGB0(&draw, 0, 0, 255);
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 120; i++) VSync(0);
+
+    if (debugMode) {
+        printf("Loading resources ");
+        fflush (stdout);
+    }
+
+    for (int i=0; i < mapFile.numEntries; i++) {
+
+        ps1_fseek(f, mapFile.Entries[i].offset, SEEK_SET);
+
+        mapFile.Entries[i].resName = (char *) ps1_readUint8Block(f,13);
+        mapFile.Entries[i].resSize = ps1_readUint32(f);
+
+        char *resName = mapFile.Entries[i].resName;
+        char *resType = resName + strlen(resName) - 4;  // get the extension .BMP .ADS etc.
+
+        if (debugMode) {
+             putchar('.');
+             fflush(stdout);
+        }
+
+        /* For PS1, temporarily skip resource parsing to test file access */
+        /* TODO: Implement PS1 versions of parseAdsResource, parseBmpResource, etc. */
+        if (!strcmp(resType, ".ADS")) {
+            // adsResources[numAdsResources] = parseAdsResource(f);
+            // adsResources[numAdsResources]->resName = resName;
+            // numAdsResources++;
+            if (debugMode) printf("ADS ");
+        }
+        else if (!strcmp(resType, ".BMP")) {
+            // bmpResources[numBmpResources] = parseBmpResource(f);
+            // bmpResources[numBmpResources]->resName = resName;
+            // numBmpResources++;
+            if (debugMode) printf("BMP ");
+        }
+        else if (!strcmp(resType, ".PAL")) {
+            // palResources[numPalResources] = parsePalResource(f);
+            // palResources[numPalResources]->resName = resName;
+            // numPalResources++;
+            if (debugMode) printf("PAL ");
+        }
+        else if (!strcmp(resType, ".SCR")) {
+            // scrResources[numScrResources] = parseScrResource(f);
+            // scrResources[numScrResources]->resName = resName;
+            // numScrResources++;
+            if (debugMode) printf("SCR ");
+        }
+        else if (!strcmp(resType, ".TTM")) {
+            // ttmResources[numTtmResources] = parseTtmResource(f);
+            // ttmResources[numTtmResources]->resName = resName;
+            // numTtmResources++;
+            if (debugMode) printf("TTM ");
+        }
+    }
+
+    ps1_fclose(f);
+
+    /* MAGENTA = Resource parsing loop completed */
+    setRGB0(&draw, 255, 0, 255);
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 120; i++) VSync(0);
+
+    if (debugMode) {
+        printf("\nPS1: Resource file parsing completed (resource parsing temporarily disabled)\n");
+    }
+
+    /* GREEN = parseResourceFile completed successfully */
+    setRGB0(&draw, 0, 255, 0);
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int i = 0; i < 180; i++) VSync(0);
+#else
     FILE *f;
 
     f = fopen(mapFile.resFileName,"rb");
@@ -566,13 +679,32 @@ static void parseResourceFile(char * filename)
 
     if (debugMode)
         putchar('\n');
+#endif
 }
 
 
 void parseResourceFiles(char * filename)
 {
+#ifdef PS1_BUILD
+    if (debugMode) {
+        printf("PS1: parseResourceFiles() called with: %s\n", filename);
+        fflush(stdout);
+    }
+#endif
     parseMapFile(filename);
+#ifdef PS1_BUILD
+    if (debugMode) {
+        printf("PS1: parseMapFile() completed, calling parseResourceFile()...\n");
+        fflush(stdout);
+    }
+#endif
     parseResourceFile(filename);
+#ifdef PS1_BUILD
+    if (debugMode) {
+        printf("PS1: parseResourceFile() completed\n");
+        fflush(stdout);
+    }
+#endif
 }
 
 

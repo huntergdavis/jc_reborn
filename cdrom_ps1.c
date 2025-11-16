@@ -543,6 +543,19 @@ static uint8_t ps1ReadBuffer[CD_SECTOR_SIZE];  /* Shared read buffer */
 
 PS1File* ps1_fopen(const char* filename, const char* mode)
 {
+    /* PURPLE checkpoint = Entered ps1_fopen */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 128, 0, 128);  /* PURPLE = Inside ps1_fopen */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 60; i++) VSync(0);
+    }
+
     /* Find free file slot */
     PS1File* file = NULL;
     for (int i = 0; i < 4; i++) {
@@ -556,47 +569,25 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
         return NULL;  /* No free slots */
     }
 
-    /* CHECKPOINT: MAGENTA = About to start CdSearchFile loop */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV tempDraw;
-    SetDefDrawEnv(&tempDraw, 0, 0, 640, 480);
-    setRGB0(&tempDraw, 255, 0, 255);  /* MAGENTA = About to search files */
-    tempDraw.isbg = 1;
-    PutDrawEnv(&tempDraw);
-    SetDispMask(1);
-    for (int i = 0; i < 20; i++) VSync(0);  /* Short wait */
-
-    /* IMPLEMENT REAL FILE READING - Skip CdSearchFile completely */
-    /* Based on mkpsxiso output, RESOURCE.MAP starts around sector 17-18 */
-
-    /* Fake success and store sector info for RESOURCE.MAP */
-    file->cdfile.pos.minute = 0;
-    file->cdfile.pos.second = 0;
-    file->cdfile.pos.sector = 17;  /* RESOURCE.MAP location (estimated) */
-    file->cdfile.size = 4096;      /* Reasonable size for map file */
-
-    /* SUCCESS! We have a working file handle */
-    CdlFILE *result = &file->cdfile;
-
-    /* CHECKPOINT: Show result of CdSearchFile immediately */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV resultDraw;
-    SetDefDrawEnv(&resultDraw, 0, 0, 640, 480);
-
-    if (result != NULL) {
-        setRGB0(&resultDraw, 255, 255, 0);  /* YELLOW = CdSearchFile succeeded */
-    } else {
-        setRGB0(&resultDraw, 255, 0, 0);    /* RED = CdSearchFile failed */
+    /* Wait for CD to be ready - PSX CD needs time to initialize */
+    for (int i = 0; i < 1000000; i++) {
+        /* Busy wait */
     }
 
-    resultDraw.isbg = 1;
-    PutDrawEnv(&resultDraw);
-    SetDispMask(1);
-    for (int i = 0; i < 30; i++) VSync(0);
+    /* Use CdSearchFile to find the actual file on CD-ROM */
+    CdlFILE *result = CdSearchFile(&file->cdfile, filename);
 
     if (result == NULL) {
+        /* File not found - show RED screen for 1 second */
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 255, 0, 0);  /* RED = File not found */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 60; i++) VSync(0);
         return NULL;  /* CdSearchFile failed */
     }
 
@@ -606,61 +597,151 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
     strncpy(file->filename, filename, sizeof(file->filename) - 1);
     file->filename[sizeof(file->filename) - 1] = '\0';
 
+    /* Preload entire file into buffer to avoid CD-ROM calls during parsing */
+    file->bufferSize = file->cdfile.size;
+    file->buffer = (uint8_t*)malloc(file->bufferSize);
+
+    if (!file->buffer) {
+        return NULL;  /* Malloc failed */
+    }
+
+    /* ORANGE checkpoint = About to read from CD-ROM */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 255, 165, 0);  /* ORANGE = About to CD read */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 60; i++) VSync(0);
+    }
+
+    /* Read entire file into buffer using PSn00bSDK CD-ROM API */
+    int numSectors = (file->bufferSize + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
+
+    /* Position CD head at file location first */
+    CdControl(CdlSetloc, (uint8_t*)&file->cdfile.pos, NULL);
+
+    /* CRITICAL: Wait for CdControl to complete before reading! */
+    while (CdControlB(CdlNop, NULL, NULL) == 0) {
+        /* Busy-wait for seek to complete */
+    }
+
+    /* BROWN checkpoint = After CdControl completes */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 139, 69, 19);  /* BROWN = CdControl done */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 60; i++) VSync(0);
+    }
+
+    /* Use CdRead() not CdReadRetry() - simpler and more reliable */
+    CdRead(numSectors, (uint32_t*)file->buffer, CdlModeSpeed);
+
+    /* LIGHT BLUE checkpoint = After CdReadRetry, before polling */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 173, 216, 230);  /* LIGHT BLUE = CdReadRetry done */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 60; i++) VSync(0);
+    }
+
+    /* CRITICAL FIX: CdReadSync(0, ...) is NON-BLOCKING! Must loop until complete */
+    int sync_result;
+    int timeout = 1000000;  /* Large timeout for polling */
+    while (timeout-- > 0) {
+        sync_result = CdReadSync(0, 0);
+        if (sync_result == 0) {
+            break;  /* Read complete! */
+        }
+        if (sync_result < 0) {
+            /* Error occurred - show WHITE screen */
+            {
+                ResetGraph(0);
+                SetVideoMode(MODE_NTSC);
+                DRAWENV draw;
+                SetDefDrawEnv(&draw, 0, 0, 640, 480);
+                setRGB0(&draw, 255, 255, 255);  /* WHITE = Read error */
+                draw.isbg = 1;
+                PutDrawEnv(&draw);
+                SetDispMask(1);
+                for (int i = 0; i < 120; i++) VSync(0);
+            }
+            free(file->buffer);
+            file->buffer = NULL;
+            return NULL;
+        }
+        /* sync_result > 0 means still busy, keep looping */
+    }
+
+    if (timeout <= 0) {
+        /* Timeout - show YELLOW screen */
+        {
+            ResetGraph(0);
+            SetVideoMode(MODE_NTSC);
+            DRAWENV draw;
+            SetDefDrawEnv(&draw, 0, 0, 640, 480);
+            setRGB0(&draw, 255, 255, 0);  /* YELLOW = Timeout */
+            draw.isbg = 1;
+            PutDrawEnv(&draw);
+            SetDispMask(1);
+            for (int i = 0; i < 120; i++) VSync(0);
+        }
+        free(file->buffer);
+        file->buffer = NULL;
+        return NULL;
+    }
+
+    /* PINK checkpoint = CD read completed successfully! */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 640, 480);
+        setRGB0(&draw, 255, 192, 203);  /* PINK = CD read success */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (int i = 0; i < 120; i++) VSync(0);  /* Hold for 2 seconds */
+    }
+
     return file;
 }
 
 size_t ps1_fread(void* ptr, size_t size, size_t nmemb, PS1File* file)
 {
-    if (!file || !file->isOpen) {
+    if (!file || !file->isOpen || !file->buffer) {
         return 0;
     }
 
     size_t totalBytes = size * nmemb;
-    size_t bytesRead = 0;
     uint8_t* dest = (uint8_t*)ptr;
 
-    while (bytesRead < totalBytes) {
-        /* Calculate sector and offset */
-        long sectorOffset = file->currentPos / CD_SECTOR_SIZE;
-        int posInSector = file->currentPos % CD_SECTOR_SIZE;
-
-        /* Seek to current sector */
-        CdlLOC seekPos = file->cdfile.pos;
-        /* Add sector offset to base position - simplified for now */
-
-        if (CdControl(CdlSeekL, (uint8_t*)&seekPos, NULL) == 0) {
-            return bytesRead / size;  /* Return partial read count */
-        }
-
-        /* Wait for seek */
-        for (int i = 0; i < 500000; i++) { /* Busy wait */ }
-
-        /* Read sector */
-        if (CdRead(1, (uint32_t*)ps1ReadBuffer, CdlModeSpeed) == 0) {
-            return bytesRead / size;
-        }
-
-        /* Wait for read */
-        uint8_t result[8];
-        if (CdReadSync(0, result) != CdlComplete) {
-            return bytesRead / size;
-        }
-
-        /* Copy data from sector buffer */
-        size_t remainingInSector = CD_SECTOR_SIZE - posInSector;
-        size_t remainingToRead = totalBytes - bytesRead;
-        size_t copySize = (remainingInSector < remainingToRead) ?
-                         remainingInSector : remainingToRead;
-
-        for (size_t i = 0; i < copySize; i++) {
-            dest[bytesRead + i] = ps1ReadBuffer[posInSector + i];
-        }
-
-        bytesRead += copySize;
-        file->currentPos += copySize;
+    /* Check if read goes past end of buffer */
+    if (file->currentPos + totalBytes > file->bufferSize) {
+        totalBytes = file->bufferSize - file->currentPos;
+        if (totalBytes == 0) return 0;
     }
 
-    return bytesRead / size;  /* Return number of complete items read */
+    /* Simple memory copy from preloaded buffer - no CD-ROM operations! */
+    for (size_t i = 0; i < totalBytes; i++) {
+        dest[i] = file->buffer[file->currentPos + i];
+    }
+
+    file->currentPos += totalBytes;
+    return totalBytes / size;
 }
 
 int ps1_fseek(PS1File* file, long offset, int whence)
@@ -706,6 +787,12 @@ int ps1_fclose(PS1File* file)
         return -1;
     }
 
+    /* Free preloaded buffer if it exists */
+    if (file->buffer) {
+        free(file->buffer);
+        file->buffer = NULL;
+    }
+
     file->isOpen = 0;
     return 0;
 }
@@ -741,13 +828,42 @@ uint32 ps1_readUint32(PS1File *f) {
 }
 
 char* ps1_getString(PS1File *f, int maxlen) {
+    /* PURPLE = Entered ps1_getString */
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, 128, 0, 128);
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+    for (int j = 0; j < 30; j++) VSync(0);
+
     char *str = malloc(maxlen + 1);  /* Use malloc instead of safe_malloc */
+
+    if (!str) {
+        /* RED = malloc failed */
+        setRGB0(&draw, 255, 0, 0);
+        PutDrawEnv(&draw);
+        for (int j = 0; j < 60; j++) VSync(0);
+        return NULL;
+    }
+
+    /* BLUE = malloc succeeded, about to start loop */
+    setRGB0(&draw, 0, 0, 255);
+    PutDrawEnv(&draw);
+    for (int j = 0; j < 30; j++) VSync(0);
+
     int i;
     for (i = 0; i < maxlen; i++) {
         str[i] = ps1_readUint8(f);
         if (str[i] == 0) break;
     }
     str[i] = 0;
+
+    /* WHITE = getString completed successfully */
+    setRGB0(&draw, 255, 255, 255);
+    PutDrawEnv(&draw);
+    for (int j = 0; j < 60; j++) VSync(0);
+
     return str;
 }
 

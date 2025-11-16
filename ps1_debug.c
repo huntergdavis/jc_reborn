@@ -46,7 +46,6 @@ void ps1DebugInit(void)
     /* Use 640x480 interlaced high res mode */
     ResetGraph(0);
     SetVideoMode(MODE_NTSC);
-    SetDispMask(DISP_INTERLACE);
 
     /* Load built-in PSX BIOS font (8x8 characters) */
     FntLoad(960, 0);

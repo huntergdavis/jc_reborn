@@ -76,7 +76,7 @@ static char *args[3];
 static int  numArgs  = 0;
 
 #ifdef PS1_BUILD
-/* Visual debug helper - shows colored screen for 2 seconds */
+/* Visual debug helper - shows colored screen for ~2 seconds */
 static void showDebugScreen(int r, int g, int b)
 {
     /* Reset GPU to clean state */
@@ -93,9 +93,10 @@ static void showDebugScreen(int r, int g, int b)
     /* Enable display */
     SetDispMask(1);
 
-    /* Wait 2 seconds (120 frames at 60fps) */
-    for (int i = 0; i < 120; i++) {
-        VSync(0);
+    /* Use busy-wait instead of VSync - VSync can hang if GPU not ready */
+    /* Short delay - ~0.5 seconds with busy loop */
+    for (volatile int i = 0; i < 2000000; i++) {
+        /* Busy wait - adjust count as needed */
     }
 }
 #endif
@@ -226,8 +227,99 @@ static void parseArgs(int argc, char **argv)
 int main(int argc, char **argv)
 {
 #ifdef PS1_BUILD
+    /* MINIMAL TEST: Just show colored screens and loop forever */
+    /* This tests if basic PSn00bSDK GPU functions work at all */
+
+    /* RED screen */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    DRAWENV draw;
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    setRGB0(&draw, 255, 0, 0);  /* RED */
+    draw.isbg = 1;
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+
+    /* Busy wait ~1 second */
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* GREEN screen */
+    setRGB0(&draw, 0, 255, 0);  /* GREEN */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* CYAN screen */
+    setRGB0(&draw, 0, 255, 255);  /* CYAN */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* YELLOW screen */
+    setRGB0(&draw, 255, 255, 0);  /* YELLOW */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* WHITE screen - About to test cdromInit() */
+    setRGB0(&draw, 255, 255, 255);  /* WHITE */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* Test cdromInit() */
+    if (cdromInit() < 0) {
+        /* MAGENTA = cdromInit failed */
+        setRGB0(&draw, 255, 0, 255);
+        PutDrawEnv(&draw);
+        while(1);
+    }
+
+    /* BLUE screen = cdromInit succeeded! */
+    setRGB0(&draw, 0, 0, 255);  /* BLUE */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* ORANGE screen = About to call parseResourceFiles() */
+    setRGB0(&draw, 255, 165, 0);  /* ORANGE */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* Try parsing resource files */
+    parseResourceFiles("RESOURCE.MAP");
+
+    /* MAGENTA screen = parseResourceFiles succeeded! */
+    setRGB0(&draw, 255, 0, 255);  /* MAGENTA */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* Initialize LRU cache */
+    initLRUCache();
+
+    /* PINK screen = About to initialize graphics */
+    setRGB0(&draw, 255, 192, 203);  /* PINK */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* Initialize graphics system */
+    graphicsInit();
+
+    /* BROWN screen = Graphics initialized, entering render loop */
+    setRGB0(&draw, 139, 69, 19);  /* BROWN */
+    PutDrawEnv(&draw);
+    for (volatile int i = 0; i < 3000000; i++);
+
+    /* Simple render test - just refresh display for 10 seconds */
+    int test_frames = 0;
+    while (test_frames < 600) {  /* 10 seconds at 60fps */
+        grRefreshDisplay();
+        test_frames++;
+    }
+
+    /* Done - hang on final color */
+    return 0;
+
+    /* DISABLE ALL THE REST OF THE CODE FOR NOW */
+    return 0;
+
     /* Initialize PS1 subsystems - minimal init here, let subsystems do their own init */
-    InitHeap((void*)0x801fff00, 0x00100000);  /* Initialize heap for malloc/printf */
+    /* PSn00bSDK does NOT use InitHeap() - it has its own libc with automatic malloc! */
 
     /* DON'T call CdInit() when booting from CD-ROM! */
     /* The BIOS already initialized it for us, calling CdInit() again crashes! */
@@ -263,22 +355,25 @@ int main(int argc, char **argv)
 
 #ifdef PS1_BUILD
     /* Initialize CD-ROM subsystem for PS1 */
+    /* TEMPORARY: Disable ps1Debug - it hangs in FntLoad/FntOpen */
+    /*
     ps1DebugInit();
     ps1DebugClear();
     ps1DebugPrint("main: Before cdromInit()");
     ps1DebugFlush();
+    */
+
+    /* GREEN screen = About to call cdromInit() */
+    showDebugScreen(0, 255, 0);
 
     if (cdromInit() < 0) {
         /* If CD-ROM fails, show YELLOW screen and hang */
-        ps1DebugPrint("ERROR: cdromInit failed");
-        ps1DebugFlush();
-        ps1DebugWait();
         showDebugScreen(255, 255, 0);
         while(1);
     }
 
-    ps1DebugPrint("main: cdromInit() completed successfully");
-    ps1DebugFlush();
+    /* CYAN screen = cdromInit() completed successfully */
+    showDebugScreen(0, 255, 255);
 
     /* Build 34: Skip all intermediate checkpoints - test CD-ROM directly */
     /* GPU is unstable after cdromInit, minimize graphics calls */

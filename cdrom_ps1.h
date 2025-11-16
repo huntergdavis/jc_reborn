@@ -84,6 +84,8 @@ typedef struct {
     long currentPos;
     int isOpen;
     char filename[32];
+    uint8_t* buffer;      /* Preloaded file buffer */
+    uint32_t bufferSize;  /* Size of preloaded buffer */
 } PS1File;
 
 PS1File* ps1_fopen(const char* filename, const char* mode);

@@ -20,8 +20,8 @@ echo "Screenshot dir: $SCREENSHOT_DIR"
 # Ensure screenshot directory exists
 mkdir -p "$SCREENSHOT_DIR"
 
-# Get timestamp before launch to identify new screenshots
-BEFORE_TIME=$(date +%s)
+# Create marker file to identify screenshots taken after this point
+touch /tmp/.ps1_test_marker_$$
 
 # Kill any existing DuckStation processes
 pkill -f duckstation-qt 2>/dev/null || true
@@ -29,8 +29,9 @@ pkill -f DuckStation 2>/dev/null || true
 sleep 1
 
 echo "=== Launching DuckStation ==="
-# Launch DuckStation in batch mode with fast boot
-flatpak run org.duckstation.DuckStation -batch -fastboot "$CUE_FILE" &
+# Launch DuckStation with fast boot to skip BIOS animation
+# Grant filesystem access to workspace directory
+flatpak run --filesystem="$(dirname "$CUE_FILE")" org.duckstation.DuckStation -fastboot "$CUE_FILE" &
 DUCK_PID=$!
 
 echo "DuckStation PID: $DUCK_PID"
@@ -40,39 +41,29 @@ echo "Waiting ${WAIT_TIME} seconds for test to complete..."
 sleep "$WAIT_TIME"
 
 echo "=== Taking screenshot ==="
-# Check if DuckStation is still running and send F10
+# Check if DuckStation is still running
 if kill -0 "$DUCK_PID" 2>/dev/null; then
-    # Use dotool for universal F10 automation (works on both Wayland and X11)
-    if command -v dotool >/dev/null 2>&1; then
-        echo "Using dotool for F10 screenshot"
-        sg input -c 'echo "key F10" | dotool'
-        echo "Sent F10 via dotool"
-    elif [ "$XDG_SESSION_TYPE" = "wayland" ]; then
-        if command -v ydotool >/dev/null 2>&1; then
-            echo "Using ydotool for Wayland F10 screenshot"
-            ydotool key F10
-        else
-            echo "ERROR: No Wayland automation tool available"
-        fi
+    # Use spectacle to capture fullscreen (works on KDE Wayland)
+    if command -v spectacle >/dev/null 2>&1; then
+        echo "Taking screenshot..."
+        SCREENSHOT_FILE="$SCREENSHOT_DIR/ps1-test-$(date +%Y%m%d-%H%M%S).png"
+        spectacle -b -n -f -o "$SCREENSHOT_FILE"
+        echo "Screenshot saved to: $SCREENSHOT_FILE"
+
+        # Wait to let game continue running after screenshot
+        echo "Letting game run for 5 more seconds..."
+        sleep 5
+
+        # Take second screenshot to see progression
+        SCREENSHOT_FILE2="$SCREENSHOT_DIR/ps1-test-$(date +%Y%m%d-%H%M%S)-final.png"
+        spectacle -b -n -f -o "$SCREENSHOT_FILE2"
+        echo "Final screenshot saved to: $SCREENSHOT_FILE2"
     else
-        # X11 fallback
-        if command -v xdotool >/dev/null 2>&1; then
-            DUCK_WINDOW=$(xdotool search --name "DuckStation" | head -1)
-            if [ -n "$DUCK_WINDOW" ]; then
-                xdotool windowactivate "$DUCK_WINDOW"
-                sleep 0.5
-                xdotool key F10
-                echo "Sent F10 via xdotool"
-            fi
-        else
-            echo "ERROR: xdotool not available for X11 automation"
-        fi
+        echo "ERROR: spectacle not available"
     fi
 
-    # Wait for screenshot to be saved
-    sleep 3
-
     # Kill DuckStation if still running
+    echo "Closing DuckStation..."
     kill "$DUCK_PID" 2>/dev/null || true
     sleep 1
     pkill -f duckstation-qt 2>/dev/null || true
@@ -81,8 +72,8 @@ else
 fi
 
 echo "=== Finding latest screenshot ==="
-# Find the most recent screenshot
-LATEST_SCREENSHOT=$(find "$SCREENSHOT_DIR" -name "jcreborn *.png" -newer <(date -d "@$BEFORE_TIME" +%Y-%m-%d) 2>/dev/null | sort | tail -1)
+# Find the most recent screenshot (both DuckStation and spectacle formats)
+LATEST_SCREENSHOT=$(find "$SCREENSHOT_DIR" -name "*.png" -newer /tmp/.ps1_test_marker_$$ 2>/dev/null | sort | tail -1)
 
 if [ -n "$LATEST_SCREENSHOT" ]; then
     echo "Latest screenshot: $LATEST_SCREENSHOT"

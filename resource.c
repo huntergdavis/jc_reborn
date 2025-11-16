@@ -458,6 +458,12 @@ static void parseMapFile(char *fileName)
     SetDispMask(1);
     for (int i = 0; i < 60; i++) VSync(0);
 
+    /* LIGHT GREEN = About to call ps1_readUint8 for first byte */
+    setRGB0(&draw, 128, 255, 128);
+    PutDrawEnv(&draw);
+    for (int i = 0; i < 30; i++) VSync(0);
+
+    /* Read all header bytes without GPU operations in between */
     mapFile.unknown1 = ps1_readUint8(f_map);   // first 5 uint8s unknown
     mapFile.unknown2 = ps1_readUint8(f_map);
     mapFile.unknown3 = ps1_readUint8(f_map);
@@ -465,9 +471,35 @@ static void parseMapFile(char *fileName)
     mapFile.unknown5 = ps1_readUint8(f_map);
     mapFile.unknown6 = ps1_readUint8(f_map);
 
+    /* CYAN = Read 6 header bytes successfully */
+    setRGB0(&draw, 0, 255, 255);
+    PutDrawEnv(&draw);
+    for (int i = 0; i < 60; i++) VSync(0);
+
+    /* Read filename - this is where it's hanging */
+    /* ORANGE = About to call ps1_getString */
+    setRGB0(&draw, 255, 128, 0);
+    PutDrawEnv(&draw);
+    for (int i = 0; i < 30; i++) VSync(0);
+
     mapFile.resFileName = (char *) ps1_getString(f_map,13);
 
+    /* WHITE = ps1_getString returned! */
+    setRGB0(&draw, 255, 255, 255);
+    PutDrawEnv(&draw);
+    for (int i = 0; i < 60; i++) VSync(0);
+
+    /* MAGENTA = Read filename successfully */
+    setRGB0(&draw, 255, 0, 255);
+    PutDrawEnv(&draw);
+    for (int i = 0; i < 60; i++) VSync(0);
+
     mapFile.numEntries = ps1_readUint16(f_map);
+
+    /* YELLOW = Read numEntries successfully */
+    setRGB0(&draw, 255, 255, 0);
+    PutDrawEnv(&draw);
+    for (int i = 0; i < 60; i++) VSync(0);
 
     mapFile.Entries = safe_malloc(mapFile.numEntries * sizeof(struct TMapFileEntry));
 

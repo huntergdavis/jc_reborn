@@ -12,7 +12,8 @@ if [ ! -f "jcreborn.cue" ]; then
 fi
 
 echo "=== Launching DuckStation with jcreborn.cue ==="
-flatpak run org.duckstation.DuckStation "$PWD/jcreborn.cue" &
+# Grant filesystem access to workspace directory
+flatpak run --filesystem="$PWD" org.duckstation.DuckStation "$PWD/jcreborn.cue" &
 
 echo "DuckStation launched in background"
 exit 0

@@ -51,8 +51,8 @@ if kill -0 "$DUCK_PID" 2>/dev/null; then
         echo "Screenshot saved to: $SCREENSHOT_FILE"
 
         # Wait to let game continue running after screenshot
-        echo "Letting game run for 5 more seconds..."
-        sleep 5
+        echo "Letting game run for 10 more seconds..."
+        sleep 10
 
         # Take second screenshot to see progression
         SCREENSHOT_FILE2="$SCREENSHOT_DIR/ps1-test-$(date +%Y%m%d-%H%M%S)-final.png"

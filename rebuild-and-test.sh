@@ -1,6 +1,7 @@
 #!/bin/bash
 # Full PS1 Rebuild and Test - Complete workflow from source to emulator
-# Usage: ./rebuild-and-test.sh [clean]
+# Usage: ./rebuild-and-test.sh [noclean]
+# By default, ALWAYS does a clean build to ensure fresh code is tested
 
 set -e  # Exit on error
 
@@ -11,11 +12,13 @@ echo "PS1 Full Rebuild and Test Workflow"
 echo "======================================"
 echo ""
 
-# Step 1: Build executable
-if [ "$1" = "clean" ]; then
-    sudo ./build-ps1.sh clean
-else
+# Step 1: Build executable (ALWAYS clean unless "noclean" specified)
+if [ "$1" = "noclean" ]; then
+    echo "=== Incremental build (noclean mode) ==="
     sudo ./build-ps1.sh
+else
+    echo "=== Clean build (default) ==="
+    sudo ./build-ps1.sh clean
 fi
 
 echo ""
@@ -31,8 +34,8 @@ sudo pkill -9 -f "duckstation" 2>/dev/null || true
 sleep 1
 
 # Step 4: Run automated test with screenshot capture
-echo "=== Running automated test (15 second wait) ==="
-./auto-test-ps1.sh 15
+echo "=== Running automated test (30 second wait) ==="
+./auto-test-ps1.sh 30
 
 echo ""
 echo "======================================"

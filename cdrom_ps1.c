@@ -543,19 +543,6 @@ static uint8_t ps1ReadBuffer[CD_SECTOR_SIZE];  /* Shared read buffer */
 
 PS1File* ps1_fopen(const char* filename, const char* mode)
 {
-    /* PURPLE checkpoint = Entered ps1_fopen */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 128, 0, 128);  /* PURPLE = Inside ps1_fopen */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 60; i++) VSync(0);
-    }
-
     /* Find free file slot */
     PS1File* file = NULL;
     for (int i = 0; i < 4; i++) {
@@ -569,25 +556,15 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
         return NULL;  /* No free slots */
     }
 
-    /* Wait for CD to be ready - PSX CD needs time to initialize */
-    for (int i = 0; i < 1000000; i++) {
-        /* Busy wait */
+    /* Wait for CD to be ready - need some frames for CD to be responsive */
+    for (int i = 0; i < 30; i++) {
+        VSync(0);
     }
 
     /* Use CdSearchFile to find the actual file on CD-ROM */
     CdlFILE *result = CdSearchFile(&file->cdfile, filename);
 
     if (result == NULL) {
-        /* File not found - show RED screen for 1 second */
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 255, 0, 0);  /* RED = File not found */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 60; i++) VSync(0);
         return NULL;  /* CdSearchFile failed */
     }
 
@@ -605,116 +582,39 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
         return NULL;  /* Malloc failed */
     }
 
-    /* ORANGE checkpoint = About to read from CD-ROM */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 255, 165, 0);  /* ORANGE = About to CD read */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 60; i++) VSync(0);
-    }
-
     /* Read entire file into buffer using PSn00bSDK CD-ROM API */
     int numSectors = (file->bufferSize + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
 
     /* Position CD head at file location first */
     CdControl(CdlSetloc, (uint8_t*)&file->cdfile.pos, NULL);
 
-    /* CRITICAL: Wait for CdControl to complete before reading! */
-    while (CdControlB(CdlNop, NULL, NULL) == 0) {
-        /* Busy-wait for seek to complete */
+    /* Wait for seek to complete - give it some frames */
+    for (int i = 0; i < 30; i++) {
+        VSync(0);
     }
 
-    /* BROWN checkpoint = After CdControl completes */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 139, 69, 19);  /* BROWN = CdControl done */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 60; i++) VSync(0);
-    }
-
-    /* Use CdRead() not CdReadRetry() - simpler and more reliable */
+    /* Start CD read */
     CdRead(numSectors, (uint32_t*)file->buffer, CdlModeSpeed);
 
-    /* LIGHT BLUE checkpoint = After CdReadRetry, before polling */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 173, 216, 230);  /* LIGHT BLUE = CdReadRetry done */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 60; i++) VSync(0);
-    }
-
-    /* CRITICAL FIX: CdReadSync(0, ...) is NON-BLOCKING! Must loop until complete */
+    /* Wait for read to complete with timeout */
     int sync_result;
-    int timeout = 1000000;  /* Large timeout for polling */
-    while (timeout-- > 0) {
+    int read_timeout = 1000000;
+    while (read_timeout-- > 0) {
         sync_result = CdReadSync(0, 0);
         if (sync_result == 0) {
             break;  /* Read complete! */
         }
         if (sync_result < 0) {
-            /* Error occurred - show WHITE screen */
-            {
-                ResetGraph(0);
-                SetVideoMode(MODE_NTSC);
-                DRAWENV draw;
-                SetDefDrawEnv(&draw, 0, 0, 640, 480);
-                setRGB0(&draw, 255, 255, 255);  /* WHITE = Read error */
-                draw.isbg = 1;
-                PutDrawEnv(&draw);
-                SetDispMask(1);
-                for (int i = 0; i < 120; i++) VSync(0);
-            }
             free(file->buffer);
             file->buffer = NULL;
             return NULL;
         }
-        /* sync_result > 0 means still busy, keep looping */
     }
 
-    if (timeout <= 0) {
-        /* Timeout - show YELLOW screen */
-        {
-            ResetGraph(0);
-            SetVideoMode(MODE_NTSC);
-            DRAWENV draw;
-            SetDefDrawEnv(&draw, 0, 0, 640, 480);
-            setRGB0(&draw, 255, 255, 0);  /* YELLOW = Timeout */
-            draw.isbg = 1;
-            PutDrawEnv(&draw);
-            SetDispMask(1);
-            for (int i = 0; i < 120; i++) VSync(0);
-        }
+    if (read_timeout <= 0) {
         free(file->buffer);
         file->buffer = NULL;
         return NULL;
-    }
-
-    /* PINK checkpoint = CD read completed successfully! */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 255, 192, 203);  /* PINK = CD read success */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 120; i++) VSync(0);  /* Hold for 2 seconds */
     }
 
     return file;

@@ -76,7 +76,7 @@ static char *args[3];
 static int  numArgs  = 0;
 
 #ifdef PS1_BUILD
-/* Visual debug helper - shows colored screen for ~2 seconds */
+/* Visual debug helper - shows colored screen for ~1 second with busy loop */
 static void showDebugScreen(int r, int g, int b)
 {
     /* Reset GPU to clean state */
@@ -85,7 +85,7 @@ static void showDebugScreen(int r, int g, int b)
 
     /* Create simple draw environment */
     DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    SetDefDrawEnv(&draw, 0, 0, 320, 240);  /* Use 320x240 for stability */
     setRGB0(&draw, r, g, b);
     draw.isbg = 1;  /* Enable background clear */
     PutDrawEnv(&draw);
@@ -93,12 +93,13 @@ static void showDebugScreen(int r, int g, int b)
     /* Enable display */
     SetDispMask(1);
 
-    /* Use busy-wait instead of VSync - VSync can hang if GPU not ready */
-    /* Short delay - ~0.5 seconds with busy loop */
-    for (volatile int i = 0; i < 2000000; i++) {
-        /* Busy wait - adjust count as needed */
+    /* Use busy loop - VSync can hang in some situations */
+    /* ~1 second with busy loop (adjust count as needed) */
+    for (volatile int i = 0; i < 5000000; i++) {
+        /* Busy wait */
     }
 }
+
 #endif
 
 static void usage()
@@ -227,228 +228,74 @@ static void parseArgs(int argc, char **argv)
 int main(int argc, char **argv)
 {
 #ifdef PS1_BUILD
-    /* MINIMAL TEST: Just show colored screens and loop forever */
-    /* This tests if basic PSn00bSDK GPU functions work at all */
+    /* TEST: cdromInit + parseResourceFiles */
 
-    /* RED screen */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, 255, 0, 0);  /* RED */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
+    /* 1. CYAN = main() reached */
+    showDebugScreen(0, 255, 255);
 
-    /* Busy wait ~1 second */
-    for (volatile int i = 0; i < 3000000; i++);
+    /* 2. YELLOW = about to cdromInit */
+    showDebugScreen(255, 255, 0);
 
-    /* GREEN screen */
-    setRGB0(&draw, 0, 255, 0);  /* GREEN */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
-
-    /* CYAN screen */
-    setRGB0(&draw, 0, 255, 255);  /* CYAN */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
-
-    /* YELLOW screen */
-    setRGB0(&draw, 255, 255, 0);  /* YELLOW */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
-
-    /* WHITE screen - About to test cdromInit() */
-    setRGB0(&draw, 255, 255, 255);  /* WHITE */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
-
-    /* Test cdromInit() */
+    /* Initialize CD-ROM */
     if (cdromInit() < 0) {
-        /* MAGENTA = cdromInit failed */
-        setRGB0(&draw, 255, 0, 255);
-        PutDrawEnv(&draw);
+        showDebugScreen(255, 0, 255);  /* MAGENTA = error */
         while(1);
     }
 
-    /* BLUE screen = cdromInit succeeded! */
-    setRGB0(&draw, 0, 0, 255);  /* BLUE */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
+    /* 3. GREEN = cdromInit succeeded */
+    showDebugScreen(0, 255, 0);
 
-    /* ORANGE screen = About to call parseResourceFiles() */
-    setRGB0(&draw, 255, 165, 0);  /* ORANGE */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
+    /* 4. BLUE = about to parseResourceFiles */
+    showDebugScreen(0, 0, 255);
 
-    /* Try parsing resource files */
-    parseResourceFiles("RESOURCE.MAP");
-
-    /* MAGENTA screen = parseResourceFiles succeeded! */
-    setRGB0(&draw, 255, 0, 255);  /* MAGENTA */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
-
-    /* Initialize LRU cache */
-    initLRUCache();
-
-    /* PINK screen = About to initialize graphics */
-    setRGB0(&draw, 255, 192, 203);  /* PINK */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
-
-    /* Initialize graphics system */
-    graphicsInit();
-
-    /* BROWN screen = Graphics initialized, entering render loop */
-    setRGB0(&draw, 139, 69, 19);  /* BROWN */
-    PutDrawEnv(&draw);
-    for (volatile int i = 0; i < 3000000; i++);
-
-    /* Simple render test - just refresh display for 10 seconds */
-    int test_frames = 0;
-    while (test_frames < 600) {  /* 10 seconds at 60fps */
-        grRefreshDisplay();
-        test_frames++;
-    }
-
-    /* Done - hang on final color */
-    return 0;
-
-    /* DISABLE ALL THE REST OF THE CODE FOR NOW */
-    return 0;
-
-    /* Initialize PS1 subsystems - minimal init here, let subsystems do their own init */
-    /* PSn00bSDK does NOT use InitHeap() - it has its own libc with automatic malloc! */
-
-    /* DON'T call CdInit() when booting from CD-ROM! */
-    /* The BIOS already initialized it for us, calling CdInit() again crashes! */
-
-    /* VISUAL DEBUG: Since printf doesn't appear in DuckStation TTY,
-     * we'll use screen colors to show progress:
-     * - RED screen = Reached main()
-     * - GREEN screen = Passed graphics init
-     * - BLUE screen = Passed resource parsing
-     * - PURPLE screen = Starting main loop
-     */
-
-    /* Enable debug mode on PS1 to see what's happening */
     debugMode = 1;
 
-    /* VISUAL DEBUG #1: RED screen = We reached main()! */
-    showDebugScreen(255, 0, 0);
-
-    /* For PS1, default to playing a single TTM for testing */
-    /* This allows visual regression testing against the SDL version */
-    if (argc == 1) {
-        /* Default test: play SAILING.TTM which is a simple animation */
-        argc = 3;
-        static char *test_argv[] = {"jcreborn", "ttm", "SAILING"};
-        argv = test_argv;
-    }
-#endif
-
+    /* Skip parseArgs on PS1 - argc/argv not valid */
+    parseResourceFiles("RESOURCE.MAP");
+#else
+    /* Non-PS1: normal flow */
     parseArgs(argc, argv);
 
     if (argDump)
         debugMode = 1;
 
-#ifdef PS1_BUILD
-    /* Initialize CD-ROM subsystem for PS1 */
-    /* TEMPORARY: Disable ps1Debug - it hangs in FntLoad/FntOpen */
-    /*
-    ps1DebugInit();
-    ps1DebugClear();
-    ps1DebugPrint("main: Before cdromInit()");
-    ps1DebugFlush();
-    */
-
-    /* GREEN screen = About to call cdromInit() */
-    showDebugScreen(0, 255, 0);
-
-    if (cdromInit() < 0) {
-        /* If CD-ROM fails, show YELLOW screen and hang */
-        showDebugScreen(255, 255, 0);
-        while(1);
-    }
-
-    /* CYAN screen = cdromInit() completed successfully */
-    showDebugScreen(0, 255, 255);
-
-    /* Build 34: Skip all intermediate checkpoints - test CD-ROM directly */
-    /* GPU is unstable after cdromInit, minimize graphics calls */
-
-    /* Simple delay to ensure timing */
-    for (int i = 0; i < 5000000; i++) {
-        /* Busy wait */
-    }
-
-    /* YELLOW = About to call parseResourceFiles */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 255, 255, 0);  /* YELLOW = About to call parseResourceFiles */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 120; i++) VSync(0);
-    }
-
-    /* Test PS1 resource loading with real resource parsing */
     parseResourceFiles("RESOURCE.MAP");
-
-    /* WHITE = parseResourceFiles() completed successfully */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 255, 255, 255);  /* WHITE = parseResourceFiles completed */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-
-        /* Hold WHITE screen to confirm parseResourceFiles() completion */
-        for (int i = 0; i < 600; i++) {
-            VSync(0);
-        }
-    }
-
-    /* End test - resource loading completed */
-#endif
-
-    parseResourceFiles("RESOURCE.MAP");
-
-#ifdef PS1_BUILD
-    /* VISUAL DEBUG #2.6: MAGENTA screen = parseResourceFiles returned */
-    showDebugScreen(255, 0, 255);
 #endif
 
 #ifdef PS1_BUILD
-    /* VISUAL DEBUG #2.9: ORANGE screen = About to init LRU cache */
-    showDebugScreen(255, 165, 0);
+    /* 5. PURPLE = parseResourceFiles completed successfully */
+    showDebugScreen(128, 0, 255);
 #endif
 
     /* Initialize LRU cache for memory management */
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* VISUAL DIAGNOSTIC: Show which arguments are set */
-    if (argPlayAll) {
-        showDebugScreen(255, 255, 255);  /* WHITE = argPlayAll */
-    } else if (argTtm) {
-        showDebugScreen(255, 255, 0);    /* YELLOW = argTtm */
-    } else if (argDump) {
-        showDebugScreen(255, 165, 0);    /* ORANGE = argDump */
-    } else if (argBench) {
-        showDebugScreen(255, 192, 203);  /* PINK = argBench */
-    } else if (argAds) {
-        showDebugScreen(128, 0, 128);    /* PURPLE = argAds */
-    } else {
-        showDebugScreen(255, 0, 0);      /* RED = No arguments set! */
+    /* 6. WHITE = LRU cache initialized */
+    showDebugScreen(255, 255, 255);
+
+    /* Get resource counts */
+    extern int numScrResources;
+    extern int numBmpResources;
+    extern int numAdsResources;
+    extern int numTtmResources;
+
+    /* 7. TEAL = show total resources parsed (flash white for each 10) */
+    int total = numScrResources + numBmpResources + numAdsResources + numTtmResources;
+    int flashes = (total > 0) ? (total / 10) : 0;
+    if (flashes > 20) flashes = 20;
+
+    showDebugScreen(0, 128, 128);  /* TEAL base */
+    for (int i = 0; i < flashes; i++) {
+        showDebugScreen(255, 255, 255);  /* WHITE flash */
+        showDebugScreen(0, 128, 128);    /* Back to TEAL */
     }
+
+    /* Final BRIGHT GREEN = all done! */
+    showDebugScreen(0, 255, 0);
+    while(1);
+
+    return 0;
 #endif
 
     if (argPlayAll) {

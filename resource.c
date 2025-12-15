@@ -426,80 +426,23 @@ static void parseMapFile(char *fileName)
 #ifdef PS1_BUILD
     PS1File *f_map;
 
-    /* Removed printf calls that hang on PS1 */
-
-    /* BLUE = About to call ps1_fopen */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, 0, 0, 255);  /* BLUE = About to call ps1_fopen */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 60; i++) VSync(0);
-
+    /* Simplified PS1 resource parsing - no debug screens */
     f_map = ps1_fopen(fileName,"rb");
 
     if (f_map == NULL) {
-        /* RED = File open failed */
-        setRGB0(&draw, 255, 0, 0);
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 300; i++) VSync(0);
         fatalError("Resources map file not found: %s\n", fileName);
     }
 
-    /* GREEN = File opened successfully, about to read data */
-    setRGB0(&draw, 0, 255, 0);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 60; i++) VSync(0);
-
-    /* LIGHT GREEN = About to call ps1_readUint8 for first byte */
-    setRGB0(&draw, 128, 255, 128);
-    PutDrawEnv(&draw);
-    for (int i = 0; i < 30; i++) VSync(0);
-
-    /* Read all header bytes without GPU operations in between */
-    mapFile.unknown1 = ps1_readUint8(f_map);   // first 5 uint8s unknown
+    /* Read header bytes */
+    mapFile.unknown1 = ps1_readUint8(f_map);
     mapFile.unknown2 = ps1_readUint8(f_map);
     mapFile.unknown3 = ps1_readUint8(f_map);
-    mapFile.unknown4 = ps1_readUint8(f_map);   // ? number of resources files available in this index
+    mapFile.unknown4 = ps1_readUint8(f_map);
     mapFile.unknown5 = ps1_readUint8(f_map);
     mapFile.unknown6 = ps1_readUint8(f_map);
 
-    /* CYAN = Read 6 header bytes successfully */
-    setRGB0(&draw, 0, 255, 255);
-    PutDrawEnv(&draw);
-    for (int i = 0; i < 60; i++) VSync(0);
-
-    /* Read filename - this is where it's hanging */
-    /* ORANGE = About to call ps1_getString */
-    setRGB0(&draw, 255, 128, 0);
-    PutDrawEnv(&draw);
-    for (int i = 0; i < 30; i++) VSync(0);
-
     mapFile.resFileName = (char *) ps1_getString(f_map,13);
-
-    /* WHITE = ps1_getString returned! */
-    setRGB0(&draw, 255, 255, 255);
-    PutDrawEnv(&draw);
-    for (int i = 0; i < 60; i++) VSync(0);
-
-    /* MAGENTA = Read filename successfully */
-    setRGB0(&draw, 255, 0, 255);
-    PutDrawEnv(&draw);
-    for (int i = 0; i < 60; i++) VSync(0);
-
     mapFile.numEntries = ps1_readUint16(f_map);
-
-    /* YELLOW = Read numEntries successfully */
-    setRGB0(&draw, 255, 255, 0);
-    PutDrawEnv(&draw);
-    for (int i = 0; i < 60; i++) VSync(0);
 
     mapFile.Entries = safe_malloc(mapFile.numEntries * sizeof(struct TMapFileEntry));
 
@@ -509,8 +452,6 @@ static void parseMapFile(char *fileName)
     }
 
     ps1_fclose(f_map);
-
-    /* parseMapFile completed - removed printf that hangs */
 #else
     FILE *f_map; // , *f_res;  // TODO
 
@@ -726,40 +667,24 @@ static void parseResourceFile(char * filename)
 
 void parseResourceFiles(char * filename)
 {
-#ifdef PS1_BUILD
-    /* ORANGE = parseMapFile() starting */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, 255, 128, 0);  /* ORANGE = parseMapFile starting */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 60; i++) VSync(0);
-#endif
-
     parseMapFile(filename);
 
 #ifdef PS1_BUILD
-    /* PURPLE = parseMapFile() completed, parseResourceFile() starting */
-    setRGB0(&draw, 128, 0, 128);  /* PURPLE = parseMapFile completed */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 60; i++) VSync(0);
+    /* ORANGE = parseMapFile completed, about to parseResourceFile */
+    {
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
+        DRAWENV draw;
+        SetDefDrawEnv(&draw, 0, 0, 320, 240);
+        setRGB0(&draw, 255, 165, 0);  /* ORANGE */
+        draw.isbg = 1;
+        PutDrawEnv(&draw);
+        SetDispMask(1);
+        for (volatile int i = 0; i < 3000000; i++);  /* ~1 sec busy wait */
+    }
 #endif
 
     parseResourceFile(filename);
-
-#ifdef PS1_BUILD
-    /* CYAN = parseResourceFile() completed */
-    setRGB0(&draw, 0, 255, 255);  /* CYAN = parseResourceFile completed */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 120; i++) VSync(0);
-#endif
 }
 
 

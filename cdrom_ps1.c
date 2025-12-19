@@ -731,29 +731,8 @@ uint32 ps1_readUint32(PS1File *f) {
 }
 
 char* ps1_getString(PS1File *f, int maxlen) {
-    /* PURPLE = Entered ps1_getString */
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, 128, 0, 128);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int j = 0; j < 30; j++) VSync(0);
-
-    char *str = malloc(maxlen + 1);  /* Use malloc instead of safe_malloc */
-
-    if (!str) {
-        /* RED = malloc failed */
-        setRGB0(&draw, 255, 0, 0);
-        PutDrawEnv(&draw);
-        for (int j = 0; j < 60; j++) VSync(0);
-        return NULL;
-    }
-
-    /* BLUE = malloc succeeded, about to start loop */
-    setRGB0(&draw, 0, 0, 255);
-    PutDrawEnv(&draw);
-    for (int j = 0; j < 30; j++) VSync(0);
+    char *str = malloc(maxlen + 1);
+    if (!str) return NULL;
 
     int i;
     for (i = 0; i < maxlen; i++) {
@@ -761,13 +740,16 @@ char* ps1_getString(PS1File *f, int maxlen) {
         if (str[i] == 0) break;
     }
     str[i] = 0;
-
-    /* WHITE = getString completed successfully */
-    setRGB0(&draw, 255, 255, 255);
-    PutDrawEnv(&draw);
-    for (int j = 0; j < 60; j++) VSync(0);
-
     return str;
+}
+
+uint16* ps1_readUint16Block(PS1File *f, int count) {
+    uint16 *block = malloc(count * sizeof(uint16));
+    if (!block) return NULL;
+    for (int i = 0; i < count; i++) {
+        block[i] = ps1_readUint16(f);
+    }
+    return block;
 }
 
 uint8* ps1_readUint8Block(PS1File *f, int len) {
@@ -784,35 +766,247 @@ uint8* ps1_readUint8Block(PS1File *f, int len) {
  * Provides PS1 versions of resource parsing using PS1File* instead of FILE*
  * ============================================================================ */
 
+struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName)
+{
+    struct TAdsResource *adsResource;
+    uint8 *buffer;
+
+    adsResource = malloc(sizeof(struct TAdsResource));
+    if (!adsResource) return NULL;
+
+    adsResource->resName = malloc(strlen(resName) + 1);
+    strcpy(adsResource->resName, resName);
+
+    /* Read "VER:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "VER:", 4)) {
+        free(buffer);
+        free(adsResource->resName);
+        free(adsResource);
+        return NULL;
+    }
+    free(buffer);
+
+    adsResource->versionSize = ps1_readUint32(f);
+    adsResource->versionString = ps1_readUint8Block(f, 5);
+
+    /* Read "ADS:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "ADS:", 4)) {
+        free(buffer);
+        free(adsResource->versionString);
+        free(adsResource->resName);
+        free(adsResource);
+        return NULL;
+    }
+    free(buffer);
+
+    adsResource->adsUnknown1 = ps1_readUint8(f);
+    adsResource->adsUnknown2 = ps1_readUint8(f);
+    adsResource->adsUnknown3 = ps1_readUint8(f);
+    adsResource->adsUnknown4 = ps1_readUint8(f);
+
+    /* Read "RES:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "RES:", 4)) {
+        free(buffer);
+        free(adsResource->versionString);
+        free(adsResource->resName);
+        free(adsResource);
+        return NULL;
+    }
+    free(buffer);
+
+    adsResource->resSize = ps1_readUint32(f);
+    adsResource->numRes = ps1_readUint16(f);
+
+    adsResource->res = malloc(adsResource->numRes * sizeof(struct TAdsRes));
+    for (int i = 0; i < adsResource->numRes; i++) {
+        adsResource->res[i].id = ps1_readUint16(f);
+        adsResource->res[i].name = ps1_getString(f, 40);
+    }
+
+    /* Read "SCR:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "SCR:", 4)) {
+        free(buffer);
+        /* Clean up already allocated resources */
+        for (int i = 0; i < adsResource->numRes; i++) {
+            free(adsResource->res[i].name);
+        }
+        free(adsResource->res);
+        free(adsResource->versionString);
+        free(adsResource->resName);
+        free(adsResource);
+        return NULL;
+    }
+    free(buffer);
+
+    adsResource->compressedSize = ps1_readUint32(f) - 5;
+    adsResource->compressionMethod = ps1_readUint8(f);
+    adsResource->uncompressedSize = ps1_readUint32(f);
+
+    /* Lazy loading: skip compressed data, will load on demand */
+    adsResource->uncompressedData = NULL;
+    ps1_fseek(f, adsResource->compressedSize, SEEK_CUR);
+
+    /* Read "TAG:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "TAG:", 4)) {
+        free(buffer);
+        for (int i = 0; i < adsResource->numRes; i++) {
+            free(adsResource->res[i].name);
+        }
+        free(adsResource->res);
+        free(adsResource->versionString);
+        free(adsResource->resName);
+        free(adsResource);
+        return NULL;
+    }
+    free(buffer);
+
+    adsResource->tagSize = ps1_readUint32(f);
+    adsResource->numTags = ps1_readUint16(f);
+
+    adsResource->tags = malloc(adsResource->numTags * sizeof(struct TTags));
+    for (int i = 0; i < adsResource->numTags; i++) {
+        adsResource->tags[i].id = ps1_readUint16(f);
+        adsResource->tags[i].description = ps1_getString(f, 40);
+    }
+
+    return adsResource;
+}
+
+struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
+{
+    struct TBmpResource *bmpResource;
+    uint8 *buffer;
+
+    bmpResource = malloc(sizeof(struct TBmpResource));
+    if (!bmpResource) return NULL;
+
+    bmpResource->resName = malloc(strlen(resName) + 1);
+    strcpy(bmpResource->resName, resName);
+
+    /* Read "BMP:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "BMP:", 4)) {
+        free(buffer);
+        free(bmpResource->resName);
+        free(bmpResource);
+        return NULL;
+    }
+    free(buffer);
+
+    bmpResource->width = ps1_readUint16(f);
+    bmpResource->height = ps1_readUint16(f);
+
+    /* Read "INF:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "INF:", 4)) {
+        free(buffer);
+        free(bmpResource->resName);
+        free(bmpResource);
+        return NULL;
+    }
+    free(buffer);
+
+    bmpResource->dataSize = ps1_readUint32(f);
+    bmpResource->numImages = ps1_readUint16(f);
+
+    bmpResource->widths = ps1_readUint16Block(f, bmpResource->numImages);
+    bmpResource->heights = ps1_readUint16Block(f, bmpResource->numImages);
+
+    /* Read "BIN:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "BIN:", 4)) {
+        free(buffer);
+        free(bmpResource->widths);
+        free(bmpResource->heights);
+        free(bmpResource->resName);
+        free(bmpResource);
+        return NULL;
+    }
+    free(buffer);
+
+    bmpResource->compressedSize = ps1_readUint32(f) - 5;
+    bmpResource->compressionMethod = ps1_readUint8(f);
+    bmpResource->uncompressedSize = ps1_readUint32(f);
+
+    /* Lazy loading: skip compressed data for now */
+    bmpResource->uncompressedData = NULL;
+    bmpResource->lastUsedTick = 0;
+    bmpResource->pinCount = 0;
+    ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
+
+    return bmpResource;
+}
+
+struct TPalResource* ps1_parsePalResource(PS1File *f, const char *resName)
+{
+    struct TPalResource *palResource;
+    uint8 *buffer;
+
+    palResource = malloc(sizeof(struct TPalResource));
+    if (!palResource) return NULL;
+
+    palResource->resName = malloc(strlen(resName) + 1);
+    strcpy(palResource->resName, resName);
+
+    /* Read "PAL:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "PAL:", 4)) {
+        free(buffer);
+        free(palResource->resName);
+        free(palResource);
+        return NULL;
+    }
+    free(buffer);
+
+    palResource->size = ps1_readUint16(f);
+    palResource->unknown1 = ps1_readUint8(f);
+    palResource->unknown2 = ps1_readUint8(f);
+
+    /* Read "VGA:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "VGA:", 4)) {
+        free(buffer);
+        free(palResource->resName);
+        free(palResource);
+        return NULL;
+    }
+    free(buffer);
+
+    /* Skip size bytes */
+    ps1_readUint8(f);
+    ps1_readUint8(f);
+    ps1_readUint8(f);
+    ps1_readUint8(f);
+
+    /* Read 256 RGB colors */
+    for (int i = 0; i < 256; i++) {
+        palResource->colors[i].r = ps1_readUint8(f);
+        palResource->colors[i].g = ps1_readUint8(f);
+        palResource->colors[i].b = ps1_readUint8(f);
+    }
+
+    return palResource;
+}
+
 struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
 {
     struct TScrResource *scrResource;
     uint8 *buffer;
 
-    scrResource = malloc(sizeof(struct TScrResource));  /* Use malloc instead of safe_malloc */
+    scrResource = malloc(sizeof(struct TScrResource));
+    if (!scrResource) return NULL;
+
     scrResource->resName = malloc(strlen(resName) + 1);
     strcpy(scrResource->resName, resName);
 
-    /* Visual checkpoint: MAGENTA = Starting SCR parsing */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, 255, 0, 255);  /* MAGENTA = SCR parsing */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 60; i++) VSync(0);
-
     /* Read "SCR:" header */
     buffer = ps1_readUint8Block(f, 4);
-    if (memcmp(buffer, "SCR:", 4)) {
-        /* RED = Invalid SCR header */
-        setRGB0(&draw, 255, 0, 0);
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 300; i++) VSync(0);
+    if (!buffer || memcmp(buffer, "SCR:", 4)) {
         free(buffer);
         free(scrResource->resName);
         free(scrResource);
@@ -820,19 +1014,12 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     }
     free(buffer);
 
-    /* Read totalSize and flags */
     scrResource->totalSize = ps1_readUint16(f);
     scrResource->flags = ps1_readUint16(f);
 
     /* Read "DIM:" header */
     buffer = ps1_readUint8Block(f, 4);
-    if (memcmp(buffer, "DIM:", 4)) {
-        /* RED = Invalid DIM header */
-        setRGB0(&draw, 255, 0, 0);
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 300; i++) VSync(0);
+    if (!buffer || memcmp(buffer, "DIM:", 4)) {
         free(buffer);
         free(scrResource->resName);
         free(scrResource);
@@ -840,20 +1027,13 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     }
     free(buffer);
 
-    /* Read dimensions */
     scrResource->dimSize = ps1_readUint32(f);
     scrResource->width = ps1_readUint16(f);
     scrResource->height = ps1_readUint16(f);
 
     /* Read "BIN:" header */
     buffer = ps1_readUint8Block(f, 4);
-    if (memcmp(buffer, "BIN:", 4)) {
-        /* RED = Invalid BIN header */
-        setRGB0(&draw, 255, 0, 0);
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 300; i++) VSync(0);
+    if (!buffer || memcmp(buffer, "BIN:", 4)) {
         free(buffer);
         free(scrResource->resName);
         free(scrResource);
@@ -861,88 +1041,114 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     }
     free(buffer);
 
-    /* Read compression info */
-    scrResource->compressedSize = ps1_readUint32(f) - 5; // discard size of compressionmethod+uncompressedsize
+    scrResource->compressedSize = ps1_readUint32(f) - 5;
     scrResource->compressionMethod = ps1_readUint8(f);
     scrResource->uncompressedSize = ps1_readUint32(f);
 
-    /* For now, skip decompression and just store NULL */
+    /* Lazy loading: skip compressed data for now */
     scrResource->uncompressedData = NULL;
     scrResource->lastUsedTick = 0;
     scrResource->pinCount = 0;
-
-    /* CYAN = SCR parsing completed successfully! */
-    setRGB0(&draw, 0, 255, 255);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 120; i++) VSync(0);
+    ps1_fseek(f, scrResource->compressedSize, SEEK_CUR);
 
     return scrResource;
 }
 
-void ps1TestResourceLoading(void)
+struct TTtmResource* ps1_parseTtmResource(PS1File *f, const char *resName)
 {
-    /* Test opening RESOURCE.MAP and reading header */
-    PS1File* mapFile = ps1_fopen("RESOURCE.MAP", "rb");
+    struct TTtmResource *ttmResource;
+    uint8 *buffer;
 
-    if (!mapFile) {
-        /* RED screen = File not found */
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 640, 480);
-        setRGB0(&draw, 255, 0, 0);
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 300; i++) VSync(0);
-        return;
+    ttmResource = malloc(sizeof(struct TTtmResource));
+    if (!ttmResource) return NULL;
+
+    ttmResource->resName = malloc(strlen(resName) + 1);
+    strcpy(ttmResource->resName, resName);
+
+    /* Read "VER:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "VER:", 4)) {
+        free(buffer);
+        free(ttmResource->resName);
+        free(ttmResource);
+        return NULL;
+    }
+    free(buffer);
+
+    ttmResource->versionSize = ps1_readUint32(f);
+    ttmResource->versionString = ps1_readUint8Block(f, 5);
+
+    /* Read "PAG:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "PAG:", 4)) {
+        free(buffer);
+        free(ttmResource->versionString);
+        free(ttmResource->resName);
+        free(ttmResource);
+        return NULL;
+    }
+    free(buffer);
+
+    ttmResource->numPages = ps1_readUint32(f);
+    ttmResource->pagUnknown1 = ps1_readUint8(f);
+    ttmResource->pagUnknown2 = ps1_readUint8(f);
+
+    /* Read "TT3:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "TT3:", 4)) {
+        free(buffer);
+        free(ttmResource->versionString);
+        free(ttmResource->resName);
+        free(ttmResource);
+        return NULL;
+    }
+    free(buffer);
+
+    ttmResource->compressedSize = ps1_readUint32(f) - 5;
+    ttmResource->compressionMethod = ps1_readUint8(f);
+    ttmResource->uncompressedSize = ps1_readUint32(f);
+
+    /* Lazy loading: skip compressed data, will load on demand */
+    ttmResource->uncompressedData = NULL;
+    ttmResource->lastUsedTick = 0;
+    ttmResource->pinCount = 0;
+    ps1_fseek(f, ttmResource->compressedSize, SEEK_CUR);
+
+    /* Read "TTI:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "TTI:", 4)) {
+        free(buffer);
+        free(ttmResource->versionString);
+        free(ttmResource->resName);
+        free(ttmResource);
+        return NULL;
+    }
+    free(buffer);
+
+    ttmResource->ttiUnknown1 = ps1_readUint8(f);
+    ttmResource->ttiUnknown2 = ps1_readUint8(f);
+    ttmResource->ttiUnknown3 = ps1_readUint8(f);
+    ttmResource->ttiUnknown4 = ps1_readUint8(f);
+
+    /* Read "TAG:" header */
+    buffer = ps1_readUint8Block(f, 4);
+    if (!buffer || memcmp(buffer, "TAG:", 4)) {
+        free(buffer);
+        free(ttmResource->versionString);
+        free(ttmResource->resName);
+        free(ttmResource);
+        return NULL;
+    }
+    free(buffer);
+
+    ttmResource->tagSize = ps1_readUint32(f);
+    ttmResource->numTags = ps1_readUint16(f);
+
+    ttmResource->tags = malloc(ttmResource->numTags * sizeof(struct TTags));
+    for (int i = 0; i < ttmResource->numTags; i++) {
+        ttmResource->tags[i].id = ps1_readUint16(f);
+        ttmResource->tags[i].description = ps1_getString(f, 40);
     }
 
-    /* File opened successfully - read header bytes */
-    uint8 header[6];
-    header[0] = ps1_readUint8(mapFile);
-    header[1] = ps1_readUint8(mapFile);
-    header[2] = ps1_readUint8(mapFile);
-    header[3] = ps1_readUint8(mapFile);
-    header[4] = ps1_readUint8(mapFile);
-    header[5] = ps1_readUint8(mapFile);
-
-    /* Skip resource filename (13 bytes) */
-    for (int i = 0; i < 13; i++) {
-        ps1_readUint8(mapFile);
-    }
-
-    /* Read number of entries */
-    uint16 numEntries = ps1_readUint16(mapFile);
-
-    ps1_fclose(mapFile);
-
-    /* Show results via colors */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-
-    /* Check if we got reasonable data */
-    if (numEntries > 0 && numEntries < 1000) {
-        /* GREEN = Success! Got reasonable number of entries */
-        setRGB0(&draw, 0, 255, 0);
-    } else if (numEntries == 0) {
-        /* YELLOW = No entries found */
-        setRGB0(&draw, 255, 255, 0);
-    } else {
-        /* CYAN = Unreasonable number (data corruption?) */
-        setRGB0(&draw, 0, 255, 255);
-    }
-
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-
-    /* Hold result screen */
-    for (int i = 0; i < 300; i++) {
-        VSync(0);
-    }
+    return ttmResource;
 }

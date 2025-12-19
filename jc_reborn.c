@@ -253,36 +253,42 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef PS1_BUILD
-    /* 5. PURPLE = parseResourceFiles completed successfully */
-    showDebugScreen(128, 0, 255);
+    /* Get resource counts */
+    extern int numScrResources;
+    extern int numBmpResources;
+    extern int numAdsResources;
+    extern int numTtmResources;
+    extern int numPalResources;
+
+    /* Show resource loading results */
+    ps1DebugClear();
+    ps1DebugPrint("=== Resources Loaded ===");
+    ps1DebugPrint("");
+    ps1DebugPrint("ADS: %d", numAdsResources);
+    ps1DebugPrint("BMP: %d", numBmpResources);
+    ps1DebugPrint("PAL: %d", numPalResources);
+    ps1DebugPrint("SCR: %d", numScrResources);
+    ps1DebugPrint("TTM: %d", numTtmResources);
+    ps1DebugPrint("");
+    ps1DebugPrint("Total: %d",
+        numAdsResources + numBmpResources + numPalResources +
+        numScrResources + numTtmResources);
+    ps1DebugPrint("");
+    ps1DebugPrint("Press SELECT to continue...");
+    ps1DebugFlush();
+    ps1DebugWait();
 #endif
 
     /* Initialize LRU cache for memory management */
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* 6. WHITE = LRU cache initialized */
-    showDebugScreen(255, 255, 255);
+    /* Continue with graphics init next... */
+    ps1DebugClear();
+    ps1DebugPrint("Initializing graphics...");
+    ps1DebugFlush();
 
-    /* Get resource counts */
-    extern int numScrResources;
-    extern int numBmpResources;
-    extern int numAdsResources;
-    extern int numTtmResources;
-
-    /* 7. TEAL = show total resources parsed (flash white for each 10) */
-    int total = numScrResources + numBmpResources + numAdsResources + numTtmResources;
-    int flashes = (total > 0) ? (total / 10) : 0;
-    if (flashes > 20) flashes = 20;
-
-    showDebugScreen(0, 128, 128);  /* TEAL base */
-    for (int i = 0; i < flashes; i++) {
-        showDebugScreen(255, 255, 255);  /* WHITE flash */
-        showDebugScreen(0, 128, 128);    /* Back to TEAL */
-    }
-
-    /* Final BRIGHT GREEN = all done! */
-    showDebugScreen(0, 255, 0);
+    /* For now, just hang here - next step is graphics */
     while(1);
 
     return 0;

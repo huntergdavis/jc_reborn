@@ -94,17 +94,19 @@ int ps1_fseek(PS1File* file, long offset, int whence);
 long ps1_ftell(PS1File* file);
 int ps1_fclose(PS1File* file);
 
-/* PS1 Resource Loading Test */
-void ps1TestResourceLoading(void);
-
 /* PS1-specific utility functions for resource parsing */
 uint8 ps1_readUint8(PS1File *f);
 uint16 ps1_readUint16(PS1File *f);
 uint32 ps1_readUint32(PS1File *f);
 char *ps1_getString(PS1File *f, int maxlen);
 uint8 *ps1_readUint8Block(PS1File *f, int len);
+uint16 *ps1_readUint16Block(PS1File *f, int count);
 
 /* PS1-specific resource parsing functions */
+struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName);
+struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName);
+struct TPalResource* ps1_parsePalResource(PS1File *f, const char *resName);
 struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName);
+struct TTtmResource* ps1_parseTtmResource(PS1File *f, const char *resName);
 
 #endif /* CDROM_PS1_H */

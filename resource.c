@@ -496,41 +496,10 @@ static void parseResourceFile(char * filename)
 #ifdef PS1_BUILD
     PS1File *f;
 
-    /* parseResourceFile starting - removed printf that hangs */
-
-    /* Visual checkpoint: CYAN = Starting parseResourceFile */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, 0, 255, 255);  /* CYAN = parseResourceFile entry */
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 120; i++) VSync(0);
-
     f = ps1_fopen(mapFile.resFileName,"rb");
 
     if (f == NULL) {
-        /* RED = Resource file not found */
-        setRGB0(&draw, 255, 0, 0);
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (int i = 0; i < 300; i++) VSync(0);
         fatalError("Main resources file not found: %s\n", mapFile.resFileName);
-    }
-
-    /* BLUE = Resource file opened successfully */
-    setRGB0(&draw, 0, 0, 255);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 120; i++) VSync(0);
-
-    if (debugMode) {
-        printf("Loading resources ");
-        fflush (stdout);
     }
 
     for (int i=0; i < mapFile.numEntries; i++) {
@@ -545,60 +514,40 @@ static void parseResourceFile(char * filename)
 
         /* Resource type debug removed - printf hangs on PS1 */
 
-        /* For PS1, temporarily skip resource parsing to test file access */
-        /* TODO: Implement PS1 versions of parseAdsResource, parseBmpResource, etc. */
+        /* Parse all resource types */
         if (!strcmp(resType, ".ADS")) {
-            // adsResources[numAdsResources] = parseAdsResource(f);
-            // adsResources[numAdsResources]->resName = resName;
-            // numAdsResources++;
-            /* ADS - printf removed */
+            adsResources[numAdsResources] = ps1_parseAdsResource(f, resName);
+            if (adsResources[numAdsResources] != NULL) {
+                numAdsResources++;
+            }
         }
         else if (!strcmp(resType, ".BMP")) {
-            // bmpResources[numBmpResources] = parseBmpResource(f);
-            // bmpResources[numBmpResources]->resName = resName;
-            // numBmpResources++;
-            /* BMP - printf removed */
+            bmpResources[numBmpResources] = ps1_parseBmpResource(f, resName);
+            if (bmpResources[numBmpResources] != NULL) {
+                numBmpResources++;
+            }
         }
         else if (!strcmp(resType, ".PAL")) {
-            // palResources[numPalResources] = parsePalResource(f);
-            // palResources[numPalResources]->resName = resName;
-            // numPalResources++;
-            /* PAL - printf removed */
+            palResources[numPalResources] = ps1_parsePalResource(f, resName);
+            if (palResources[numPalResources] != NULL) {
+                numPalResources++;
+            }
         }
         else if (!strcmp(resType, ".SCR")) {
             scrResources[numScrResources] = ps1_parseScrResource(f, resName);
             if (scrResources[numScrResources] != NULL) {
                 numScrResources++;
-                /* SCR-OK - printf removed */
-            } else {
-                /* SCR-FAIL - printf removed */
             }
         }
         else if (!strcmp(resType, ".TTM")) {
-            // ttmResources[numTtmResources] = parseTtmResource(f);
-            // ttmResources[numTtmResources]->resName = resName;
-            // numTtmResources++;
-            /* TTM - printf removed */
+            ttmResources[numTtmResources] = ps1_parseTtmResource(f, resName);
+            if (ttmResources[numTtmResources] != NULL) {
+                numTtmResources++;
+            }
         }
     }
 
     ps1_fclose(f);
-
-    /* MAGENTA = Resource parsing loop completed */
-    setRGB0(&draw, 255, 0, 255);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 120; i++) VSync(0);
-
-    /* parseResourceFile completed - printf removed */
-
-    /* GREEN = parseResourceFile completed successfully */
-    setRGB0(&draw, 0, 255, 0);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    for (int i = 0; i < 180; i++) VSync(0);
 #else
     FILE *f;
 

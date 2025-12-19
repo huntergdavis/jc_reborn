@@ -262,6 +262,10 @@ static uint32 cdSectorBuffer[CD_BUFFER_SIZE / sizeof(uint32)];  /* Static buffer
  */
 int cdromInit()
 {
+    /* Initialize PSn00bSDK CD-ROM library */
+    /* Note: This is needed even when booting from CD to use CdSearchFile() */
+    CdInit();
+
     /* Initialize our internal state */
     for (int i = 0; i < MAX_CD_FILES; i++) {
         cdFileInUse[i] = 0;
@@ -539,7 +543,6 @@ uint32 cdromGetSize(int fileHandle)
  * ============================================================================ */
 
 static PS1File ps1FilePool[4];  /* Support up to 4 open files */
-static uint8_t ps1ReadBuffer[CD_SECTOR_SIZE];  /* Shared read buffer */
 
 PS1File* ps1_fopen(const char* filename, const char* mode)
 {
@@ -556,16 +559,30 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
         return NULL;  /* No free slots */
     }
 
-    /* Wait for CD to be ready - need some frames for CD to be responsive */
-    for (int i = 0; i < 30; i++) {
-        VSync(0);
-    }
+    /* Brief wait for CD to be ready */
+    for (volatile int i = 0; i < 1000000; i++);
 
-    /* Use CdSearchFile to find the actual file on CD-ROM */
-    CdlFILE *result = CdSearchFile(&file->cdfile, filename);
+    /* Build PS1 CD-ROM path: \\FILENAME.EXT;1 */
+    char cdPath[64];
+    cdPath[0] = '\\';
+    strncpy(cdPath + 1, filename, sizeof(cdPath) - 4);
+    cdPath[sizeof(cdPath) - 3] = '\0';
+    strcat(cdPath, ";1");
+
+    /* Search for file on CD */
+    CdlFILE *result = CdSearchFile(&file->cdfile, cdPath);
 
     if (result == NULL) {
-        return NULL;  /* CdSearchFile failed */
+        /* Try without ;1 suffix */
+        char altPath[64];
+        altPath[0] = '\\';
+        strncpy(altPath + 1, filename, sizeof(altPath) - 2);
+        altPath[sizeof(altPath) - 1] = '\0';
+        result = CdSearchFile(&file->cdfile, altPath);
+    }
+
+    if (result == NULL) {
+        return NULL;  /* File not found */
     }
 
     /* Initialize file structure */
@@ -574,7 +591,7 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
     strncpy(file->filename, filename, sizeof(file->filename) - 1);
     file->filename[sizeof(file->filename) - 1] = '\0';
 
-    /* Preload entire file into buffer to avoid CD-ROM calls during parsing */
+    /* Allocate buffer for entire file */
     file->bufferSize = file->cdfile.size;
     file->buffer = (uint8_t*)malloc(file->bufferSize);
 
@@ -582,39 +599,25 @@ PS1File* ps1_fopen(const char* filename, const char* mode)
         return NULL;  /* Malloc failed */
     }
 
-    /* Read entire file into buffer using PSn00bSDK CD-ROM API */
+    /* Calculate sectors needed */
     int numSectors = (file->bufferSize + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
 
-    /* Position CD head at file location first */
+    /* Position CD head at file location */
     CdControl(CdlSetloc, (uint8_t*)&file->cdfile.pos, NULL);
 
-    /* Wait for seek to complete - give it some frames */
-    for (int i = 0; i < 30; i++) {
-        VSync(0);
-    }
+    /* Brief wait for seek */
+    for (volatile int i = 0; i < 500000; i++);
 
     /* Start CD read */
     CdRead(numSectors, (uint32_t*)file->buffer, CdlModeSpeed);
 
-    /* Wait for read to complete with timeout */
-    int sync_result;
-    int read_timeout = 1000000;
-    while (read_timeout-- > 0) {
-        sync_result = CdReadSync(0, 0);
-        if (sync_result == 0) {
-            break;  /* Read complete! */
-        }
-        if (sync_result < 0) {
-            free(file->buffer);
-            file->buffer = NULL;
-            return NULL;
-        }
-    }
+    /* Wait for read to complete (blocking) */
+    int sync_result = CdReadSync(0, NULL);
 
-    if (read_timeout <= 0) {
+    if (sync_result < 0) {
         free(file->buffer);
         file->buffer = NULL;
-        return NULL;
+        return NULL;  /* Read error */
     }
 
     return file;

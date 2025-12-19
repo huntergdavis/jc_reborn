@@ -228,25 +228,15 @@ static void parseArgs(int argc, char **argv)
 int main(int argc, char **argv)
 {
 #ifdef PS1_BUILD
-    /* TEST: cdromInit + parseResourceFiles */
+    /* Initialize debug system FIRST, before any CD operations */
+    /* FntLoad must happen before CdInit or it causes hangs */
+    ps1DebugInit();
 
-    /* 1. CYAN = main() reached */
-    showDebugScreen(0, 255, 255);
-
-    /* 2. YELLOW = about to cdromInit */
-    showDebugScreen(255, 255, 0);
-
-    /* Initialize CD-ROM */
+    /* Initialize CD-ROM subsystem */
     if (cdromInit() < 0) {
-        showDebugScreen(255, 0, 255);  /* MAGENTA = error */
+        ps1DebugError("CD-ROM init failed!");
         while(1);
     }
-
-    /* 3. GREEN = cdromInit succeeded */
-    showDebugScreen(0, 255, 0);
-
-    /* 4. BLUE = about to parseResourceFiles */
-    showDebugScreen(0, 0, 255);
 
     debugMode = 1;
 

@@ -109,4 +109,9 @@ struct TPalResource* ps1_parsePalResource(PS1File *f, const char *resName);
 struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName);
 struct TTtmResource* ps1_parseTtmResource(PS1File *f, const char *resName);
 
+/* PS1-specific decompression functions */
+uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32 outSize);
+uint8 *ps1_uncompressRLE(PS1File *f, uint32 inSize, uint32 outSize);
+uint8 *ps1_uncompressLZW(PS1File *f, uint32 inSize, uint32 outSize);
+
 #endif /* CDROM_PS1_H */

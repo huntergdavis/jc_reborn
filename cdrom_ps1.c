@@ -933,7 +933,7 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     bmpResource->compressionMethod = ps1_readUint8(f);
     bmpResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Lazy loading: skip compressed data for now */
+    /* Lazy loading: skip compressed data, will decompress on demand */
     bmpResource->uncompressedData = NULL;
     bmpResource->lastUsedTick = 0;
     bmpResource->pinCount = 0;
@@ -1045,7 +1045,7 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     scrResource->compressionMethod = ps1_readUint8(f);
     scrResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Lazy loading: skip compressed data for now */
+    /* Lazy loading: skip compressed data, will decompress on demand */
     scrResource->uncompressedData = NULL;
     scrResource->lastUsedTick = 0;
     scrResource->pinCount = 0;
@@ -1151,4 +1151,206 @@ struct TTtmResource* ps1_parseTtmResource(PS1File *f, const char *resName)
     }
 
     return ttmResource;
+}
+
+/* ========================================================================
+ * PS1-specific decompression functions
+ * These work with PS1File (preloaded buffer) instead of FILE*
+ * ======================================================================== */
+
+/* LZW decompression structures */
+struct PS1_TCodeTableEntry {
+    uint16 prefix;
+    uint8 append;
+};
+
+/* Static LZW buffers (16KB total) - matches original */
+static struct PS1_TCodeTableEntry ps1_codeTable[4096];  /* 12KB */
+static uint8 ps1_decodeStack[4096];                      /* 4KB */
+
+/* Bit-reading state */
+static int ps1_nextbit;
+static uint8 ps1_current;
+static uint32 ps1_inOffset;
+static uint32 ps1_maxInOffset;
+
+/* Internal byte reader from PS1File buffer */
+static uint8 ps1_getByte(PS1File *f)
+{
+    if (ps1_inOffset >= ps1_maxInOffset) {
+        return 0;
+    }
+    ps1_inOffset++;
+    return ps1_readUint8(f);
+}
+
+/* Bit reader for LZW */
+static uint16 ps1_getBits(PS1File *f, uint32 n)
+{
+    if (n == 0)
+        return 0;
+
+    uint32 x = 0;
+
+    for (uint32 i = 0; i < n; i++) {
+        if (ps1_current & (1 << ps1_nextbit))
+            x |= (uint32)(1 << i);
+
+        ps1_nextbit++;
+
+        if (ps1_nextbit > 7) {
+            ps1_current = ps1_getByte(f);
+            ps1_nextbit = 0;
+        }
+    }
+
+    return x;
+}
+
+/* PS1 LZW decompression */
+uint8 *ps1_uncompressLZW(PS1File *f, uint32 inSize, uint32 outSize)
+{
+    uint8 *outData;
+    uint32 stackPtr = 0;
+    uint8 n_bits = 9;
+    uint32 free_entry = 257;
+    uint16 oldcode;
+    uint16 lastbyte;
+    uint32 bitpos = 0;
+    uint32 outOffset = 0;
+
+    if (outSize == 0) {
+        printf("ps1_uncompressLZW: can't uncompress to 0 bytes\n");
+        return NULL;
+    }
+
+    ps1_maxInOffset = inSize;
+    ps1_nextbit = 0;
+    ps1_inOffset = 0;
+    outData = malloc(outSize);
+    if (!outData) {
+        printf("ps1_uncompressLZW: malloc failed for %lu bytes\n", (unsigned long)outSize);
+        return NULL;
+    }
+
+    ps1_current = ps1_getByte(f);
+    lastbyte = oldcode = ps1_getBits(f, n_bits);
+
+    outData[outOffset++] = (uint8)oldcode;
+
+    while (ps1_inOffset < inSize) {
+        uint16 newcode = ps1_getBits(f, n_bits);
+        bitpos += n_bits;
+
+        if (newcode == 256) {
+            uint32 nbits3 = n_bits << 3;
+            uint32 nskip = (nbits3 - ((bitpos - 1) % nbits3)) - 1;
+            ps1_getBits(f, nskip);
+            n_bits = 9;
+            free_entry = 256;
+            bitpos = 0;
+        }
+        else {
+            uint16 code = newcode;
+
+            if (code >= free_entry) {
+                if (stackPtr > 4095)
+                    break;
+
+                ps1_decodeStack[stackPtr] = (uint8)lastbyte;
+                stackPtr++;
+                code = oldcode;
+            }
+
+            while (code > 255) {
+                if (code > 4095)
+                    break;
+
+                ps1_decodeStack[stackPtr] = ps1_codeTable[code].append;
+                stackPtr++;
+                code = ps1_codeTable[code].prefix;
+            }
+
+            ps1_decodeStack[stackPtr] = (uint8)code;
+            stackPtr++;
+            lastbyte = code;
+
+            while (stackPtr > 0) {
+                stackPtr--;
+
+                if (outOffset >= outSize)
+                    return outData;
+
+                outData[outOffset++] = ps1_decodeStack[stackPtr];
+            }
+
+            if (free_entry < 4096) {
+                ps1_codeTable[free_entry].prefix = (uint16)oldcode;
+                ps1_codeTable[free_entry].append = (uint8)lastbyte;
+                free_entry++;
+                uint32 temp = 1 << n_bits;
+
+                if (free_entry >= temp && n_bits < 12) {
+                    n_bits++;
+                    bitpos = 0;
+                }
+            }
+
+            oldcode = newcode;
+        }
+    }
+
+    return outData;
+}
+
+/* PS1 RLE decompression */
+uint8 *ps1_uncompressRLE(PS1File *f, uint32 inSize, uint32 outSize)
+{
+    uint8 *outData;
+    uint32 outOffset = 0;
+
+    ps1_inOffset = 0;
+    ps1_maxInOffset = inSize;
+
+    outData = malloc(outSize);
+    if (!outData) {
+        printf("ps1_uncompressRLE: malloc failed for %lu bytes\n", (unsigned long)outSize);
+        return NULL;
+    }
+
+    while (outOffset < outSize && ps1_inOffset < inSize) {
+        uint8 control = ps1_readUint8(f);
+        ps1_inOffset++;
+
+        if ((control & 0x80) == 0x80) {
+            uint8 length = control & 0x7F;
+            uint8 b = ps1_readUint8(f);
+            ps1_inOffset++;
+
+            for (int i = 0; i < length && outOffset < outSize; i++)
+                outData[outOffset++] = b;
+        }
+        else {
+            for (int i = 0; i < control && outOffset < outSize; i++) {
+                outData[outOffset++] = ps1_readUint8(f);
+                ps1_inOffset++;
+            }
+        }
+    }
+
+    return outData;
+}
+
+/* Main PS1 decompression entry point */
+uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32 outSize)
+{
+    switch (compressionMethod) {
+        case 1:
+            return ps1_uncompressRLE(f, inSize, outSize);
+        case 2:
+            return ps1_uncompressLZW(f, inSize, outSize);
+        default:
+            printf("ps1_uncompress: unknown method %d\n", compressionMethod);
+            return NULL;
+    }
 }

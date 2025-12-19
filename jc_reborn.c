@@ -291,17 +291,33 @@ int main(int argc, char **argv)
 
     graphicsInit();
 
-    /* Graphics test loop - draw colored rectangles every frame
+    /* Graphics test loop - draw primitives every frame
      * PS1 uses double buffering, so we must redraw each frame */
+    int frameCount = 0;
     while(1) {
         /* Draw colored rectangles using palette colors */
-        grDrawRect(NULL, 50, 50, 100, 100, 1);   /* Color 1 */
-        grDrawRect(NULL, 200, 50, 100, 100, 2);  /* Color 2 */
-        grDrawRect(NULL, 50, 200, 100, 100, 3);  /* Color 3 */
-        grDrawRect(NULL, 200, 200, 100, 100, 4); /* Color 4 */
+        grDrawRect(NULL, 20, 20, 80, 60, 1);    /* Red */
+        grDrawRect(NULL, 120, 20, 80, 60, 2);   /* Green */
+        grDrawRect(NULL, 220, 20, 80, 60, 3);   /* Blue */
+
+        /* Draw more rectangles with different colors */
+        grDrawRect(NULL, 20, 100, 80, 60, 4);   /* Yellow */
+        grDrawRect(NULL, 120, 100, 80, 60, 5);  /* Magenta */
+        grDrawRect(NULL, 220, 100, 80, 60, 6);  /* Cyan */
+
+        /* Draw diagonal lines */
+        grDrawLine(NULL, 0, 180, 319, 239, 7);  /* White diagonal */
+        grDrawLine(NULL, 0, 239, 319, 180, 1);  /* Red diagonal */
+
+        /* Draw border */
+        grDrawLine(NULL, 0, 0, 319, 0, 7);      /* Top */
+        grDrawLine(NULL, 0, 239, 319, 239, 7);  /* Bottom */
+        grDrawLine(NULL, 0, 0, 0, 239, 7);      /* Left */
+        grDrawLine(NULL, 319, 0, 319, 239, 7);  /* Right */
 
         /* Swap buffers and display */
         grRefreshDisplay();
+        frameCount++;
     }
 
     return 0;

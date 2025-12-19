@@ -273,23 +273,36 @@ int main(int argc, char **argv)
     ps1DebugPrint("Total: %d",
         numAdsResources + numBmpResources + numPalResources +
         numScrResources + numTtmResources);
-    ps1DebugPrint("");
-    ps1DebugPrint("Press SELECT to continue...");
     ps1DebugFlush();
-    ps1DebugWait();
+
+    /* Brief pause to see results */
+    for (volatile int i = 0; i < 10000000; i++);
 #endif
 
     /* Initialize LRU cache for memory management */
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* Continue with graphics init next... */
+    /* Initialize graphics */
     ps1DebugClear();
     ps1DebugPrint("Initializing graphics...");
     ps1DebugFlush();
+    for (volatile int i = 0; i < 3000000; i++);
 
-    /* For now, just hang here - next step is graphics */
-    while(1);
+    graphicsInit();
+
+    /* Graphics test loop - draw colored rectangles every frame
+     * PS1 uses double buffering, so we must redraw each frame */
+    while(1) {
+        /* Draw colored rectangles using palette colors */
+        grDrawRect(NULL, 50, 50, 100, 100, 1);   /* Color 1 */
+        grDrawRect(NULL, 200, 50, 100, 100, 2);  /* Color 2 */
+        grDrawRect(NULL, 50, 200, 100, 100, 3);  /* Color 3 */
+        grDrawRect(NULL, 200, 200, 100, 100, 4); /* Color 4 */
+
+        /* Swap buffers and display */
+        grRefreshDisplay();
+    }
 
     return 0;
 #endif

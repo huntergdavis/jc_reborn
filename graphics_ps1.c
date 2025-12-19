@@ -143,10 +143,25 @@ void graphicsInit()
     if (debugMode)
         printf("GPU: Loading default palette...\n");
 
-    /* Load default palette (will be replaced by grLoadPalette) */
-    for (int i = 0; i < 16; i++) {
-        ttmPalette[i] = (i << 10) | (i << 5) | i;  /* Grayscale */
-    }
+    /* Load default palette with distinct, bright colors for testing
+     * PS1 uses BGR555 format: (B << 10) | (G << 5) | R
+     * Each channel is 5 bits (0-31) */
+    ttmPalette[0]  = (0 << 10)  | (0 << 5)  | 0;   /* 0: Black */
+    ttmPalette[1]  = (0 << 10)  | (0 << 5)  | 31;  /* 1: Red */
+    ttmPalette[2]  = (0 << 10)  | (31 << 5) | 0;   /* 2: Green */
+    ttmPalette[3]  = (31 << 10) | (0 << 5)  | 0;   /* 3: Blue */
+    ttmPalette[4]  = (0 << 10)  | (31 << 5) | 31;  /* 4: Yellow */
+    ttmPalette[5]  = (31 << 10) | (0 << 5)  | 31;  /* 5: Magenta */
+    ttmPalette[6]  = (31 << 10) | (31 << 5) | 0;   /* 6: Cyan */
+    ttmPalette[7]  = (31 << 10) | (31 << 5) | 31;  /* 7: White */
+    ttmPalette[8]  = (16 << 10) | (16 << 5) | 16;  /* 8: Gray */
+    ttmPalette[9]  = (0 << 10)  | (0 << 5)  | 20;  /* 9: Dark Red */
+    ttmPalette[10] = (0 << 10)  | (20 << 5) | 0;   /* 10: Dark Green */
+    ttmPalette[11] = (20 << 10) | (0 << 5)  | 0;   /* 11: Dark Blue */
+    ttmPalette[12] = (0 << 10)  | (20 << 5) | 20;  /* 12: Orange */
+    ttmPalette[13] = (20 << 10) | (0 << 5)  | 20;  /* 13: Purple */
+    ttmPalette[14] = (20 << 10) | (20 << 5) | 0;   /* 14: Teal */
+    ttmPalette[15] = (20 << 10) | (20 << 5) | 20;  /* 15: Light Gray */
 
     if (debugMode)
         printf("GPU: Initializing event system...\n");
@@ -205,18 +220,23 @@ void grLoadPalette(struct TPalResource *palResource)
  */
 void grRefreshDisplay()
 {
-    /* Wait for GPU to finish drawing */
+    /* Wait for GPU to finish previous frame's drawing */
     DrawSync(0);
 
     /* Wait for vertical blank */
     VSync(0);
 
-    /* Flip buffers */
+    /* Flip buffers - display the one we just drew to */
     db = !db;
     PutDispEnv(&disp[db]);
     PutDrawEnv(&draw[db]);
 
-    /* Clear next ordering table */
+    /* Submit the ordering table to GPU for drawing
+     * This renders all primitives added since last refresh
+     * OT is linked from end to start, so submit from last entry */
+    DrawOTag(&ot[1-db][OT_LENGTH - 1]);
+
+    /* Clear next ordering table for new frame */
     ClearOTagR(ot[db], OT_LENGTH);
 
     /* Reset primitive buffer for next frame */
@@ -530,15 +550,23 @@ void grDrawPixel(PS1Surface *sfc, sint16 x, sint16 y, uint8 color)
  */
 void grDrawLine(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2, uint8 color)
 {
-    /* TODO: Implement line drawing using GPU LINE primitive */
-    LINE_F2 *line = (LINE_F2*)malloc(sizeof(LINE_F2));
+    /* Allocate from primitive buffer, not malloc */
+    if (primitiveIndex[db] + sizeof(LINE_F2) > PRIMITIVE_BUFFER_SIZE) {
+        return;  /* Buffer full */
+    }
+
+    LINE_F2 *line = (LINE_F2*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(LINE_F2);
+    primitiveIndex[db] += sizeof(LINE_F2);
 
     setLineF2(line);
     setXY2(line, x1, y1, x2, y2);
-    setRGB0(line,
-            ttmPalette[color] & 0x1F,
-            (ttmPalette[color] >> 5) & 0x1F,
-            (ttmPalette[color] >> 10) & 0x1F);
+
+    /* Convert palette color to RGB */
+    uint8 r = (ttmPalette[color & 0xF] & 0x1F) << 3;
+    uint8 g = ((ttmPalette[color & 0xF] >> 5) & 0x1F) << 3;
+    uint8 b = ((ttmPalette[color & 0xF] >> 10) & 0x1F) << 3;
+    setRGB0(line, r, g, b);
 
     /* Add to ordering table */
     addPrim(&ot[db][0], line);
@@ -549,16 +577,24 @@ void grDrawLine(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2, uin
  */
 void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height, uint8 color)
 {
-    /* TODO: Implement rectangle drawing using GPU TILE primitive */
-    TILE *tile = (TILE*)malloc(sizeof(TILE));
+    /* Allocate from primitive buffer, not malloc */
+    if (primitiveIndex[db] + sizeof(TILE) > PRIMITIVE_BUFFER_SIZE) {
+        return;  /* Buffer full */
+    }
+
+    TILE *tile = (TILE*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(TILE);
+    primitiveIndex[db] += sizeof(TILE);
 
     setTile(tile);
     setXY0(tile, x, y);
     setWH(tile, width, height);
-    setRGB0(tile,
-            ttmPalette[color] & 0x1F,
-            (ttmPalette[color] >> 5) & 0x1F,
-            (ttmPalette[color] >> 10) & 0x1F);
+
+    /* Convert palette color to RGB - multiply by 8 to scale 5-bit to 8-bit range */
+    uint8 r = (ttmPalette[color & 0xF] & 0x1F) << 3;
+    uint8 g = ((ttmPalette[color & 0xF] >> 5) & 0x1F) << 3;
+    uint8 b = ((ttmPalette[color & 0xF] >> 10) & 0x1F) << 3;
+    setRGB0(tile, r, g, b);
 
     /* Add to ordering table */
     addPrim(&ot[db][0], tile);

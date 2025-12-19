@@ -291,25 +291,74 @@ int main(int argc, char **argv)
 
     graphicsInit();
 
-    /* Graphics test loop - draw primitives every frame
-     * PS1 uses double buffering, so we must redraw each frame */
+    /* Try to find a decompressed SCR and display it */
+    ps1DebugClear();
+    ps1DebugPrint("Looking for SCR...");
+    ps1DebugFlush();
+    for (volatile int i = 0; i < 3000000; i++);
+
+    extern struct TScrResource *scrResources[];
+    extern int numScrResources;
+    struct TScrResource *testScr = NULL;
+
+    /* Find first SCR with decompressed data */
+    for (int i = 0; i < numScrResources; i++) {
+        if (scrResources[i] && scrResources[i]->uncompressedData) {
+            testScr = scrResources[i];
+            break;
+        }
+    }
+
+    if (testScr) {
+        ps1DebugClear();
+        ps1DebugPrint("Found SCR: %s", testScr->resName);
+        ps1DebugPrint("Size: %dx%d", testScr->width, testScr->height);
+        ps1DebugPrint("Data: %lu bytes", (unsigned long)testScr->uncompressedSize);
+        ps1DebugFlush();
+        for (volatile int i = 0; i < 5000000; i++);
+
+        /* Try to load and display this SCR */
+        grLoadScreen(testScr->resName);
+
+        /* Debug: check background state */
+        extern PS1Surface *grBackgroundSfc;
+        ps1DebugClear();
+        ps1DebugPrint("grLoadScreen done!");
+        if (grBackgroundSfc) {
+            ps1DebugPrint("bgSfc: %dx%d", grBackgroundSfc->width, grBackgroundSfc->height);
+            ps1DebugPrint("VRAM: (%d,%d)", grBackgroundSfc->x, grBackgroundSfc->y);
+            ps1DebugPrint("pixels: %s", grBackgroundSfc->pixels ? "YES" : "NULL");
+        } else {
+            ps1DebugPrint("grBackgroundSfc is NULL!");
+        }
+        ps1DebugFlush();
+        for (volatile int i = 0; i < 8000000; i++);
+    } else {
+        ps1DebugClear();
+        ps1DebugPrint("No decompressed SCR found!");
+        ps1DebugFlush();
+        for (volatile int i = 0; i < 5000000; i++);
+    }
+
+    /* Graphics test loop */
     int frameCount = 0;
     while(1) {
-        /* Draw colored rectangles using palette colors */
-        grDrawRect(NULL, 20, 20, 80, 60, 1);    /* Red */
-        grDrawRect(NULL, 120, 20, 80, 60, 2);   /* Green */
-        grDrawRect(NULL, 220, 20, 80, 60, 3);   /* Blue */
+        /* Draw background if loaded */
+        extern PS1Surface *grBackgroundSfc;
+        if (grBackgroundSfc && grBackgroundSfc->pixels) {
+            /* Draw background as full-screen sprite */
+            grDrawBackground();
+        } else if (!testScr) {
+            /* Draw colored rectangles if no background */
+            grDrawRect(NULL, 20, 20, 80, 60, 1);    /* Red */
+            grDrawRect(NULL, 120, 20, 80, 60, 2);   /* Green */
+            grDrawRect(NULL, 220, 20, 80, 60, 3);   /* Blue */
+            grDrawRect(NULL, 20, 100, 80, 60, 4);   /* Yellow */
+            grDrawRect(NULL, 120, 100, 80, 60, 5);  /* Magenta */
+            grDrawRect(NULL, 220, 100, 80, 60, 6);  /* Cyan */
+        }
 
-        /* Draw more rectangles with different colors */
-        grDrawRect(NULL, 20, 100, 80, 60, 4);   /* Yellow */
-        grDrawRect(NULL, 120, 100, 80, 60, 5);  /* Magenta */
-        grDrawRect(NULL, 220, 100, 80, 60, 6);  /* Cyan */
-
-        /* Draw diagonal lines */
-        grDrawLine(NULL, 0, 180, 319, 239, 7);  /* White diagonal */
-        grDrawLine(NULL, 0, 239, 319, 180, 1);  /* Red diagonal */
-
-        /* Draw border */
+        /* Draw border to show screen bounds */
         grDrawLine(NULL, 0, 0, 319, 0, 7);      /* Top */
         grDrawLine(NULL, 0, 239, 319, 239, 7);  /* Bottom */
         grDrawLine(NULL, 0, 0, 0, 239, 7);      /* Left */

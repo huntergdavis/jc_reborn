@@ -68,9 +68,15 @@ int grCaptureFrameNumber = -1;
 char *grCaptureFilename = NULL;
 static int grCurrentFrame = 0;
 
-/* VRAM allocation tracking */
-static uint16 nextVRAMX = 0;
-static uint16 nextVRAMY = 480;  /* Start after framebuffers */
+/* VRAM allocation tracking
+ * VRAM Layout:
+ * (0,0)-(320,240): Framebuffer 0
+ * (0,240)-(320,480): Framebuffer 1
+ * (0,480)-(16,481): CLUT (16 colors)
+ * (320,0) onwards: Textures (to the right of framebuffers)
+ */
+static uint16 nextVRAMX = 320;  /* Start to the right of framebuffers */
+static uint16 nextVRAMY = 0;
 
 /*
  * Initialize PS1 graphics subsystem
@@ -162,6 +168,22 @@ void graphicsInit()
     ttmPalette[13] = (20 << 10) | (0 << 5)  | 20;  /* 13: Purple */
     ttmPalette[14] = (20 << 10) | (20 << 5) | 0;   /* 14: Teal */
     ttmPalette[15] = (20 << 10) | (20 << 5) | 20;  /* 15: Light Gray */
+
+    /* Upload 16-color CLUT for primitives at (0, 480) */
+    RECT clutRect16;
+    setRECT(&clutRect16, 0, 480, 16, 1);  /* 16 colors, 1 row */
+    LoadImage(&clutRect16, (uint32*)ttmPalette);
+
+    /* Create and upload 256-color grayscale CLUT for SCR textures at (0, 481) */
+    static uint16 clut256[256];
+    for (int i = 0; i < 256; i++) {
+        /* Convert 8-bit grayscale to BGR555 */
+        uint8 val = (i >> 3) & 0x1F;  /* Scale 0-255 to 0-31 */
+        clut256[i] = (val << 10) | (val << 5) | val;  /* Grayscale */
+    }
+    RECT clutRect256;
+    setRECT(&clutRect256, 0, 481, 256, 1);  /* 256 colors, 1 row */
+    LoadImage(&clutRect256, (uint32*)clut256);
 
     if (debugMode)
         printf("GPU: Initializing event system...\n");
@@ -746,6 +768,51 @@ void grClearScreen(PS1Surface *sfc)
 }
 
 /*
+ * Draw background surface to screen
+ */
+void grDrawBackground(void)
+{
+    if (grBackgroundSfc == NULL || grBackgroundSfc->pixels == NULL) {
+        return;
+    }
+
+    /* Check buffer space */
+    if (primitiveIndex[db] + sizeof(DR_TPAGE) + sizeof(SPRT) > PRIMITIVE_BUFFER_SIZE) {
+        return;
+    }
+
+    /* Allocate SPRT primitive for background FIRST
+     * OT is LIFO, so we add sprite first, then tpage
+     * This way tpage executes before sprite when GPU processes the list */
+    SPRT *bgSprt = (SPRT*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(SPRT);
+    primitiveIndex[db] += sizeof(SPRT);
+
+    setSprt(bgSprt);
+    setXY0(bgSprt, 0, 0);
+    setWH(bgSprt, grBackgroundSfc->width, grBackgroundSfc->height);
+    /* UV = 0,0 since texture starts at beginning of texture page */
+    setUV0(bgSprt, 0, 0);
+    setClut(bgSprt, grBackgroundSfc->clutX, grBackgroundSfc->clutY);
+    setRGB0(bgSprt, 128, 128, 128);  /* Normal brightness */
+
+    /* Add sprite to ordering table */
+    addPrim(&ot[db][OT_LENGTH - 1], bgSprt);
+
+    /* Set up texture page for 4-bit mode AFTER sprite
+     * (added second = executed first due to LIFO) */
+    DR_TPAGE *tpage = (DR_TPAGE*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(DR_TPAGE);
+    primitiveIndex[db] += sizeof(DR_TPAGE);
+
+    /* Mode 1 = 8-bit CLUT (256 colors), ABR = 0 */
+    setDrawTPage(tpage, 0, 0, getTPage(1, 0, grBackgroundSfc->x, grBackgroundSfc->y));
+
+    /* Add texture page - will execute before sprite */
+    addPrim(&ot[db][OT_LENGTH - 1], tpage);
+}
+
+/*
  * Fade out effect
  */
 void grFadeOut()
@@ -797,27 +864,37 @@ void grLoadScreen(char *strArg)
     grBackgroundSfc->x = nextVRAMX;
     grBackgroundSfc->y = nextVRAMY;
 
-    /* Allocate pixel buffer for 4-bit indexed data */
-    uint32 pixelDataSize = (width * height) / 2;  /* 4-bit = 0.5 bytes per pixel */
+    /* Allocate pixel buffer for 8-bit indexed data */
+    uint32 pixelDataSize = width * height;  /* 8-bit = 1 byte per pixel */
     grBackgroundSfc->pixels = (uint16*)safe_malloc(pixelDataSize);
 
-    /* Copy packed 4-bit data directly */
+    /* Copy 8-bit indexed data */
     memcpy(grBackgroundSfc->pixels, scrResource->uncompressedData, pixelDataSize);
 
-    /* Upload background to VRAM using DMA */
+    /* Upload background to VRAM using DMA
+     * For 8-bit textures: 2 pixels per 16-bit VRAM word */
     RECT rect;
-    setRECT(&rect, grBackgroundSfc->x, grBackgroundSfc->y, width / 4, height);
+    uint16 vramWidth = width / 2;  /* VRAM width in 16-bit units */
+    setRECT(&rect, grBackgroundSfc->x, grBackgroundSfc->y, vramWidth, height);
     LoadImage(&rect, (uint32*)grBackgroundSfc->pixels);
 
-    /* Set CLUT position */
-    grBackgroundSfc->clutX = 0;
-    grBackgroundSfc->clutY = 480;
+    /* Wait for DMA transfer to complete */
+    DrawSync(0);
 
-    /* Update VRAM allocation */
-    nextVRAMX += width;
+    /* Set CLUT position - use 256-color palette at (0, 481) */
+    grBackgroundSfc->clutX = 0;
+    grBackgroundSfc->clutY = 481;
+
+    /* Update VRAM allocation (use actual VRAM width) */
+    nextVRAMX += vramWidth;
     if (nextVRAMX >= 1024) {
-        nextVRAMX = 0;
+        nextVRAMX = 320;  /* Reset to right of framebuffers */
         nextVRAMY += height;
+    }
+
+    if (debugMode) {
+        printf("SCR uploaded: %dx%d at VRAM(%d,%d), vramW=%d\n",
+               width, height, grBackgroundSfc->x, grBackgroundSfc->y, vramWidth);
     }
 
     /* Free SCR data after converting - saves memory */

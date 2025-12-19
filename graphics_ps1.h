@@ -124,6 +124,7 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
 void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y, uint16 spriteNo, uint16 imageNo);
 void grInitEmptyBackground();
 void grClearScreen(PS1Surface *sfc);
+void grDrawBackground(void);
 void grFadeOut();
 
 void grLoadPalette();

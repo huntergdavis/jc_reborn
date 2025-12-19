@@ -993,6 +993,10 @@ struct TPalResource* ps1_parsePalResource(PS1File *f, const char *resName)
     return palResource;
 }
 
+/* Counter for SCR decompression test - only decompress first few */
+static int scrDecompressCount = 0;
+#define MAX_SCR_DECOMPRESS 1  /* Only decompress first SCR for testing */
+
 struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
 {
     struct TScrResource *scrResource;
@@ -1045,11 +1049,33 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     scrResource->compressionMethod = ps1_readUint8(f);
     scrResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Lazy loading: skip compressed data, will decompress on demand */
-    scrResource->uncompressedData = NULL;
+    /* Decompress first SCR for testing, skip the rest */
+    if (scrDecompressCount < MAX_SCR_DECOMPRESS) {
+        printf("Decompressing SCR: %s (%lu -> %lu bytes, method %d)\n",
+               resName,
+               (unsigned long)scrResource->compressedSize,
+               (unsigned long)scrResource->uncompressedSize,
+               scrResource->compressionMethod);
+
+        scrResource->uncompressedData = ps1_uncompress(f,
+                                            scrResource->compressionMethod,
+                                            scrResource->compressedSize,
+                                            scrResource->uncompressedSize);
+        scrDecompressCount++;
+
+        if (scrResource->uncompressedData) {
+            printf("SCR decompression SUCCESS: %s\n", resName);
+        } else {
+            printf("SCR decompression FAILED: %s\n", resName);
+        }
+    } else {
+        /* Skip compressed data for remaining SCRs */
+        scrResource->uncompressedData = NULL;
+        ps1_fseek(f, scrResource->compressedSize, SEEK_CUR);
+    }
+
     scrResource->lastUsedTick = 0;
     scrResource->pinCount = 0;
-    ps1_fseek(f, scrResource->compressedSize, SEEK_CUR);
 
     return scrResource;
 }

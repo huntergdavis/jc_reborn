@@ -788,9 +788,9 @@ void grDrawBackground(void)
 
     RECT srcRect, dstRect;
 
-    /* Draw texture tiled across the screen (3x2 grid, clipped to 640x480) */
-    for (int ty = 0; ty < 2; ty++) {
-        for (int tx = 0; tx < 3; tx++) {
+    /* Draw single tile at top-left (1x1 grid for testing) */
+    for (int ty = 0; ty < 1; ty++) {
+        for (int tx = 0; tx < 1; tx++) {
             /* Calculate destination position */
             int dstX = tx * grBackgroundSfc->width;
             int dstY = ty * grBackgroundSfc->height;
@@ -856,7 +856,7 @@ void grLoadScreen(char *strArg)
     uint16 srcWidth  = scrResource->width;
     uint16 srcHeight = scrResource->height;
 
-    /* Use 256x240 texture - tiles 3x2 across screen (clipped at edges) */
+    /* Use 256x240 texture (back to working size) */
     uint16 dstWidth  = 256;
     uint16 dstHeight = 240;
 

@@ -933,11 +933,24 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     bmpResource->compressionMethod = ps1_readUint8(f);
     bmpResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Lazy loading: skip compressed data, will decompress on demand */
-    bmpResource->uncompressedData = NULL;
+    /* Decompress first few BMPs for testing, lazy load the rest */
+    static int bmpDecompressCount = 0;
+    #define MAX_BMP_DECOMPRESS 3  /* Decompress first 3 BMPs for testing */
+
+    if (bmpDecompressCount < MAX_BMP_DECOMPRESS) {
+        bmpResource->uncompressedData = ps1_uncompress(f,
+                                            bmpResource->compressionMethod,
+                                            bmpResource->compressedSize,
+                                            bmpResource->uncompressedSize);
+        bmpDecompressCount++;
+    } else {
+        /* Lazy loading: skip compressed data */
+        bmpResource->uncompressedData = NULL;
+        ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
+    }
+
     bmpResource->lastUsedTick = 0;
     bmpResource->pinCount = 0;
-    ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
 
     return bmpResource;
 }

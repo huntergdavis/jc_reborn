@@ -69,14 +69,14 @@ char *grCaptureFilename = NULL;
 static int grCurrentFrame = 0;
 
 /* VRAM allocation tracking
- * VRAM Layout:
- * (0,0)-(320,240): Framebuffer 0
- * (0,240)-(320,480): Framebuffer 1
- * (0,480)-(16,481): CLUT (16 colors)
- * (320,0) onwards: Textures (to the right of framebuffers)
+ * VRAM Layout for 640x480 interlaced:
+ * (0,0)-(639,479): Framebuffer (single buffer for 640x480)
+ * (640,0)-(656,1): CLUT (16 colors)
+ * (640,2)-(895,2): CLUT 256 (grayscale)
+ * (640,4) onwards: Textures
  */
-static uint16 nextVRAMX = 320;  /* Start to the right of framebuffers */
-static uint16 nextVRAMY = 0;
+static uint16 nextVRAMX = 640;  /* Start to the right of framebuffer */
+static uint16 nextVRAMY = 4;    /* Below CLUTs */
 
 /*
  * Initialize PS1 graphics subsystem
@@ -99,14 +99,18 @@ void graphicsInit()
     if (debugMode)
         printf("GPU: Setting up display buffers (%dx%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    /* Setup display environments for double buffering */
-    /* For 320x240 mode, use vertical double buffering */
-    /* Buffer 0: (0, 0) - Buffer 1: (0, 240) */
+    /* Setup display environments for 640x480 interlaced mode
+     * Single buffer mode since 2x640x480 won't fit in VRAM
+     * Both buffers point to same location - no flipping needed */
     SetDefDispEnv(&disp[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    SetDefDispEnv(&disp[1], 0, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    SetDefDispEnv(&disp[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    /* Setup drawing environments - swap buffers */
-    SetDefDrawEnv(&draw[0], 0, SCREEN_HEIGHT, SCREEN_WIDTH, SCREEN_HEIGHT);
+    /* Enable interlaced mode for 640x480 */
+    disp[0].isinter = 1;
+    disp[1].isinter = 1;
+
+    /* Setup drawing environments - both draw to same buffer */
+    SetDefDrawEnv(&draw[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     SetDefDrawEnv(&draw[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     /* Set background clear color */
@@ -169,12 +173,12 @@ void graphicsInit()
     ttmPalette[14] = (20 << 10) | (20 << 5) | 0;   /* 14: Teal */
     ttmPalette[15] = (20 << 10) | (20 << 5) | 20;  /* 15: Light Gray */
 
-    /* Upload 16-color CLUT for primitives at (0, 480) */
+    /* Upload 16-color CLUT for primitives at (640, 0) - right of framebuffer */
     RECT clutRect16;
-    setRECT(&clutRect16, 0, 480, 16, 1);  /* 16 colors, 1 row */
+    setRECT(&clutRect16, 640, 0, 16, 1);  /* 16 colors, 1 row */
     LoadImage(&clutRect16, (uint32*)ttmPalette);
 
-    /* Create and upload 256-color grayscale CLUT for SCR textures at (0, 481) */
+    /* Create and upload 256-color grayscale CLUT for SCR textures at (640, 2) */
     static uint16 clut256[256];
     for (int i = 0; i < 256; i++) {
         /* Convert 8-bit grayscale to BGR555 */
@@ -182,7 +186,7 @@ void graphicsInit()
         clut256[i] = (val << 10) | (val << 5) | val;  /* Grayscale */
     }
     RECT clutRect256;
-    setRECT(&clutRect256, 0, 481, 256, 1);  /* 256 colors, 1 row */
+    setRECT(&clutRect256, 640, 2, 256, 1);  /* 256 colors, 1 row */
     LoadImage(&clutRect256, (uint32*)clut256);
 
     if (debugMode)
@@ -233,7 +237,7 @@ void grLoadPalette(struct TPalResource *palResource)
 
     /* Upload CLUT (Color Lookup Table) to VRAM */
     RECT clutRect;
-    setRECT(&clutRect, 0, 480, 16, 1);  /* 16 colors, 1 row, at (0, 480) */
+    setRECT(&clutRect, 640, 0, 16, 1);  /* 16 colors, 1 row, at (640, 0) */
     LoadImage(&clutRect, (uint32*)ttmPalette);
 }
 
@@ -495,8 +499,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         /* Set CLUT position (color lookup table) */
         /* For now, use a fixed position - we'll upload palette here */
-        surface->clutX = 0;
-        surface->clutY = 480;  /* Below framebuffers */
+        surface->clutX = 640;
+        surface->clutY = 0;  /* Right of framebuffer */
 
         /* Store sprite in slot */
         ttmSlot->sprites[slotNo][image] = surface;
@@ -790,11 +794,10 @@ void grDrawBackground(void)
 
     setSprt(bgSprt);
     setXY0(bgSprt, 0, 0);
-    /* Limit sprite size to screen dimensions AND UV max (255)
-     * PS1 UV coordinates are 8-bit, so textures >256 pixels wrap */
-    uint16 displayW = SCREEN_WIDTH;
-    uint16 displayH = SCREEN_HEIGHT;
-    if (displayW > 255) displayW = 255;  /* UV max */
+    /* Limit sprite size to texture dimensions and UV max (255) */
+    uint16 displayW = grBackgroundSfc->width;
+    uint16 displayH = grBackgroundSfc->height;
+    if (displayW > 255) displayW = 255;
     if (displayH > 255) displayH = 255;
     setWH(bgSprt, displayW, displayH);
     /* UV = 0,0 since texture starts at beginning of texture page */
@@ -903,13 +906,8 @@ void grLoadScreen(char *strArg)
                 palIndex = (src[srcOffset] >> 4) & 0x0F;  /* High nibble */
             }
 
-            /* DEBUG: Show palette index as bright color to see variation
-             * palIndex 0-15 maps to red 0-30 */
-            uint8 red = palIndex * 2;
-            /* Also show raw byte value from source in blue to see if file data varies */
-            uint8 rawByte = src[srcOffset];
-            uint8 blue = (rawByte >> 3) & 0x1F;  /* Top 5 bits as blue */
-            dst[y * dstWidth + x] = (blue << 10) | (0 << 5) | red;
+            /* Look up actual palette color - ttmPalette is already in BGR555 format */
+            dst[y * dstWidth + x] = ttmPalette[palIndex & 0x0F];
         }
     }
 
@@ -923,9 +921,9 @@ void grLoadScreen(char *strArg)
     /* Wait for DMA transfer to complete */
     DrawSync(0);
 
-    /* Set CLUT position - use 16-color palette at (0, 480) */
-    grBackgroundSfc->clutX = 0;
-    grBackgroundSfc->clutY = 480;
+    /* Set CLUT position - use 16-color palette at (640, 0) */
+    grBackgroundSfc->clutX = 640;
+    grBackgroundSfc->clutY = 0;
 
     /* Update VRAM allocation (use actual VRAM width) */
     nextVRAMX += vramWidth;

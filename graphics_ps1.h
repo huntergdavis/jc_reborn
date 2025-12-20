@@ -27,8 +27,8 @@
 /* Forward declaration for LRU cache */
 struct TTtmResource;
 
-#define SCREEN_WIDTH        320
-#define SCREEN_HEIGHT       240
+#define SCREEN_WIDTH        640
+#define SCREEN_HEIGHT       480
 
 #define MAX_BMP_SLOTS       6
 #define MAX_SPRITES_PER_BMP 120

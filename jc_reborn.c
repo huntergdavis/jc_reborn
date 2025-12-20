@@ -95,7 +95,7 @@ static void showDebugScreen(int r, int g, int b)
 
     /* Use busy loop - VSync can hang in some situations */
     /* ~1 second with busy loop (adjust count as needed) */
-    for (volatile int i = 0; i < 5000000; i++) {
+    for (volatile int i = 0; i < 1000000; i++) {
         /* Busy wait */
     }
 }
@@ -260,48 +260,27 @@ int main(int argc, char **argv)
     extern int numTtmResources;
     extern int numPalResources;
 
-    /* Show resource loading results */
+    /* Show resource loading results - brief display */
     ps1DebugClear();
-    ps1DebugPrint("=== Resources Loaded ===");
-    ps1DebugPrint("");
-    ps1DebugPrint("ADS: %d", numAdsResources);
-    ps1DebugPrint("BMP: %d", numBmpResources);
-    ps1DebugPrint("PAL: %d", numPalResources);
-    ps1DebugPrint("SCR: %d", numScrResources);
-    ps1DebugPrint("TTM: %d", numTtmResources);
-    ps1DebugPrint("");
-    ps1DebugPrint("Total: %d",
-        numAdsResources + numBmpResources + numPalResources +
-        numScrResources + numTtmResources);
+    ps1DebugPrint("Resources: ADS=%d BMP=%d PAL=%d SCR=%d TTM=%d",
+        numAdsResources, numBmpResources, numPalResources,
+        numScrResources, numTtmResources);
     ps1DebugFlush();
-
-    /* Brief pause to see results */
-    for (volatile int i = 0; i < 10000000; i++);
+    for (volatile int i = 0; i < 500000; i++);  /* Brief pause */
 #endif
 
     /* Initialize LRU cache for memory management */
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* Initialize graphics */
-    ps1DebugClear();
-    ps1DebugPrint("Initializing graphics...");
-    ps1DebugFlush();
-    for (volatile int i = 0; i < 3000000; i++);
-
+    /* Initialize graphics - no debug screen needed */
     graphicsInit();
 
-    /* Try to find a decompressed SCR and display it */
-    ps1DebugClear();
-    ps1DebugPrint("Looking for SCR...");
-    ps1DebugFlush();
-    for (volatile int i = 0; i < 3000000; i++);
-
+    /* Find decompressed SCR for background test */
     extern struct TScrResource *scrResources[];
     extern int numScrResources;
     struct TScrResource *testScr = NULL;
 
-    /* Find first SCR with decompressed data */
     for (int i = 0; i < numScrResources; i++) {
         if (scrResources[i] && scrResources[i]->uncompressedData) {
             testScr = scrResources[i];
@@ -310,49 +289,38 @@ int main(int argc, char **argv)
     }
 
     if (testScr) {
-        ps1DebugClear();
-        ps1DebugPrint("Found SCR: %s", testScr->resName);
-        ps1DebugPrint("Size: %dx%d", testScr->width, testScr->height);
-        ps1DebugPrint("Data: %lu bytes", (unsigned long)testScr->uncompressedSize);
-
-        /* Load palette first - SCR uses 16-color palette from PAL resource */
+        /* Load palette and background */
         extern struct TPalResource *palResources[];
         extern int numPalResources;
         if (numPalResources > 0 && palResources[0]) {
-            ps1DebugPrint("Loading PAL: %s", palResources[0]->resName);
             grLoadPalette(palResources[0]);
-        } else {
-            ps1DebugPrint("No PAL found - using default");
         }
-
-        ps1DebugFlush();
-        for (volatile int i = 0; i < 5000000; i++);
-
-        /* Try to load and display this SCR */
         grLoadScreen(testScr->resName);
+    }
 
-        /* Debug: check background state */
-        extern PS1Surface *grBackgroundSfc;
-        ps1DebugClear();
-        ps1DebugPrint("grLoadScreen done!");
-        if (grBackgroundSfc) {
-            ps1DebugPrint("bgSfc: %dx%d", grBackgroundSfc->width, grBackgroundSfc->height);
-            ps1DebugPrint("VRAM: (%d,%d)", grBackgroundSfc->x, grBackgroundSfc->y);
-            ps1DebugPrint("pixels: %s", grBackgroundSfc->pixels ? "YES" : "NULL");
-        } else {
-            ps1DebugPrint("grBackgroundSfc is NULL!");
+    /* Try to load a BMP sprite for testing */
+    extern struct TBmpResource *bmpResources[];
+    extern int numBmpResources;
+    struct TBmpResource *testBmp = NULL;
+    static struct TTtmSlot testTtmSlot;
+    int spriteLoaded = 0;
+
+    for (int i = 0; i < numBmpResources; i++) {
+        if (bmpResources[i] && bmpResources[i]->uncompressedData) {
+            testBmp = bmpResources[i];
+            break;
         }
-        ps1DebugFlush();
-        for (volatile int i = 0; i < 8000000; i++);
-    } else {
-        ps1DebugClear();
-        ps1DebugPrint("No decompressed SCR found!");
-        ps1DebugFlush();
-        for (volatile int i = 0; i < 5000000; i++);
+    }
+
+    if (testBmp) {
+        memset(&testTtmSlot, 0, sizeof(testTtmSlot));
+        grLoadBmp(&testTtmSlot, 0, testBmp->resName);
+        spriteLoaded = (testTtmSlot.numSprites[0] > 0);
     }
 
     /* Graphics test loop */
     int frameCount = 0;
+    int spriteX = 100;
     while(1) {
         /* Draw background if loaded */
         extern PS1Surface *grBackgroundSfc;
@@ -360,20 +328,28 @@ int main(int argc, char **argv)
             /* Draw background as full-screen sprite */
             grDrawBackground();
         } else if (!testScr) {
-            /* Draw colored rectangles if no background */
-            grDrawRect(NULL, 20, 20, 80, 60, 1);    /* Red */
-            grDrawRect(NULL, 120, 20, 80, 60, 2);   /* Green */
-            grDrawRect(NULL, 220, 20, 80, 60, 3);   /* Blue */
-            grDrawRect(NULL, 20, 100, 80, 60, 4);   /* Yellow */
-            grDrawRect(NULL, 120, 100, 80, 60, 5);  /* Magenta */
-            grDrawRect(NULL, 220, 100, 80, 60, 6);  /* Cyan */
+            /* Draw colored rectangles if no background - spread for 640x480 */
+            grDrawRect(NULL, 50, 50, 120, 80, 1);    /* Red */
+            grDrawRect(NULL, 260, 50, 120, 80, 2);   /* Green */
+            grDrawRect(NULL, 470, 50, 120, 80, 3);   /* Blue */
+            grDrawRect(NULL, 50, 200, 120, 80, 4);   /* Yellow */
+            grDrawRect(NULL, 260, 200, 120, 80, 5);  /* Magenta */
+            grDrawRect(NULL, 470, 200, 120, 80, 6);  /* Cyan */
         }
 
-        /* Draw border to show screen bounds */
-        grDrawLine(NULL, 0, 0, 319, 0, 7);      /* Top */
-        grDrawLine(NULL, 0, 239, 319, 239, 7);  /* Bottom */
-        grDrawLine(NULL, 0, 0, 0, 239, 7);      /* Left */
-        grDrawLine(NULL, 319, 0, 319, 239, 7);  /* Right */
+        /* Draw test sprite if loaded */
+        if (spriteLoaded) {
+            /* Draw sprite 0, image 0 at moving position */
+            grDrawSprite(NULL, &testTtmSlot, spriteX, 240, 0, 0);
+            spriteX += 2;
+            if (spriteX > 580) spriteX = 20;
+        }
+
+        /* Draw border to show screen bounds - 640x480 */
+        grDrawLine(NULL, 0, 0, 639, 0, 7);      /* Top */
+        grDrawLine(NULL, 0, 479, 639, 479, 7);  /* Bottom */
+        grDrawLine(NULL, 0, 0, 0, 479, 7);      /* Left */
+        grDrawLine(NULL, 639, 0, 639, 479, 7);  /* Right */
 
         /* Swap buffers and display */
         grRefreshDisplay();

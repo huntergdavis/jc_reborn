@@ -773,7 +773,8 @@ void grClearScreen(PS1Surface *sfc)
 
 /*
  * Draw background surface to screen
- * Uses POLY_FT4 to scale texture to fill screen
+ * Copies texture data directly to framebuffer using LoadImage (CPU blit)
+ * This avoids PS1 GPU polygon size limitations
  */
 void grDrawBackground(void)
 {
@@ -781,43 +782,33 @@ void grDrawBackground(void)
         return;
     }
 
-    /* Check buffer space */
-    if (primitiveIndex[db] + sizeof(POLY_FT4) > PRIMITIVE_BUFFER_SIZE) {
-        return;
+    /* Copy the scaled texture directly to framebuffer at (0,0)
+     * The texture is 256x240, we need to tile/scale it to fill 640x480
+     * For now, just draw it at 1:1 in the top-left and tile */
+
+    RECT srcRect, dstRect;
+
+    /* Draw texture tiled across the screen (3x2 grid for 640x480) */
+    for (int ty = 0; ty < 2; ty++) {
+        for (int tx = 0; tx < 3; tx++) {
+            /* Calculate destination position */
+            int dstX = tx * grBackgroundSfc->width;
+            int dstY = ty * grBackgroundSfc->height;
+
+            /* Clip to screen bounds */
+            int copyW = grBackgroundSfc->width;
+            int copyH = grBackgroundSfc->height;
+            if (dstX + copyW > 640) copyW = 640 - dstX;
+            if (dstY + copyH > 480) copyH = 480 - dstY;
+            if (copyW <= 0 || copyH <= 0) continue;
+
+            /* Copy from texture VRAM location to framebuffer */
+            setRECT(&srcRect, grBackgroundSfc->x, grBackgroundSfc->y, copyW, copyH);
+            setRECT(&dstRect, dstX, dstY, copyW, copyH);
+            MoveImage(&srcRect, dstX, dstY);
+        }
     }
-
-    /* Use POLY_FT4 (flat-textured quad) to scale texture to screen
-     * Screen coords can differ from UV coords, allowing scaling */
-    POLY_FT4 *poly = (POLY_FT4*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(POLY_FT4);
-    primitiveIndex[db] += sizeof(POLY_FT4);
-
-    setPolyFT4(poly);
-
-    /* Screen coordinates - full 640x480 screen */
-    setXY4(poly,
-           0, 0,           /* Top-left */
-           639, 0,         /* Top-right */
-           0, 479,         /* Bottom-left */
-           639, 479);      /* Bottom-right */
-
-    /* UV coordinates - sample from 256x240 texture
-     * Note: UV coords are 8-bit, max 255 */
-    setUV4(poly,
-           0, 0,           /* Top-left */
-           255, 0,         /* Top-right */
-           0, 239,         /* Bottom-left */
-           255, 239);      /* Bottom-right */
-
-    /* Set texture page directly on the primitive
-     * Mode 2 = 15-bit direct color (no CLUT needed) */
-    poly->tpage = getTPage(2, 0, grBackgroundSfc->x, grBackgroundSfc->y);
-
-    /* Normal brightness */
-    setRGB0(poly, 128, 128, 128);
-
-    /* Add to ordering table */
-    addPrim(&ot[db][OT_LENGTH - 1], poly);
+    DrawSync(0);
 }
 
 /*

@@ -773,6 +773,7 @@ void grClearScreen(PS1Surface *sfc)
 
 /*
  * Draw background surface to screen
+ * Uses POLY_FT4 to scale texture to fill screen
  */
 void grDrawBackground(void)
 {
@@ -781,44 +782,42 @@ void grDrawBackground(void)
     }
 
     /* Check buffer space */
-    if (primitiveIndex[db] + sizeof(DR_TPAGE) + sizeof(SPRT) > PRIMITIVE_BUFFER_SIZE) {
+    if (primitiveIndex[db] + sizeof(POLY_FT4) > PRIMITIVE_BUFFER_SIZE) {
         return;
     }
 
-    /* Allocate SPRT primitive for background FIRST
-     * OT is LIFO, so we add sprite first, then tpage
-     * This way tpage executes before sprite when GPU processes the list */
-    SPRT *bgSprt = (SPRT*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(SPRT);
-    primitiveIndex[db] += sizeof(SPRT);
+    /* Use POLY_FT4 (flat-textured quad) to scale texture to screen
+     * Screen coords can differ from UV coords, allowing scaling */
+    POLY_FT4 *poly = (POLY_FT4*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(POLY_FT4);
+    primitiveIndex[db] += sizeof(POLY_FT4);
 
-    setSprt(bgSprt);
-    setXY0(bgSprt, 0, 0);
-    /* Limit sprite size to texture dimensions and UV max (255) */
-    uint16 displayW = grBackgroundSfc->width;
-    uint16 displayH = grBackgroundSfc->height;
-    if (displayW > 255) displayW = 255;
-    if (displayH > 255) displayH = 255;
-    setWH(bgSprt, displayW, displayH);
-    /* UV = 0,0 since texture starts at beginning of texture page */
-    setUV0(bgSprt, 0, 0);
-    /* No CLUT for 15-bit mode */
-    setRGB0(bgSprt, 128, 128, 128);  /* Normal brightness */
+    setPolyFT4(poly);
 
-    /* Add sprite to ordering table */
-    addPrim(&ot[db][OT_LENGTH - 1], bgSprt);
+    /* Screen coordinates - full 640x480 screen */
+    setXY4(poly,
+           0, 0,           /* Top-left */
+           639, 0,         /* Top-right */
+           0, 479,         /* Bottom-left */
+           639, 479);      /* Bottom-right */
 
-    /* Set up texture page for 15-bit mode AFTER sprite
-     * (added second = executed first due to LIFO) */
-    DR_TPAGE *tpage = (DR_TPAGE*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(DR_TPAGE);
-    primitiveIndex[db] += sizeof(DR_TPAGE);
+    /* UV coordinates - sample from 256x240 texture
+     * Note: UV coords are 8-bit, max 255 */
+    setUV4(poly,
+           0, 0,           /* Top-left */
+           255, 0,         /* Top-right */
+           0, 239,         /* Bottom-left */
+           255, 239);      /* Bottom-right */
 
-    /* Mode 2 = 15-bit direct color (no CLUT), ABR = 0 */
-    setDrawTPage(tpage, 0, 0, getTPage(2, 0, grBackgroundSfc->x, grBackgroundSfc->y));
+    /* Set texture page directly on the primitive
+     * Mode 2 = 15-bit direct color (no CLUT needed) */
+    poly->tpage = getTPage(2, 0, grBackgroundSfc->x, grBackgroundSfc->y);
 
-    /* Add texture page - will execute before sprite */
-    addPrim(&ot[db][OT_LENGTH - 1], tpage);
+    /* Normal brightness */
+    setRGB0(poly, 128, 128, 128);
+
+    /* Add to ordering table */
+    addPrim(&ot[db][OT_LENGTH - 1], poly);
 }
 
 /*

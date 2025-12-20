@@ -790,23 +790,29 @@ void grDrawBackground(void)
 
     setSprt(bgSprt);
     setXY0(bgSprt, 0, 0);
-    setWH(bgSprt, grBackgroundSfc->width, grBackgroundSfc->height);
+    /* Limit sprite size to screen dimensions AND UV max (255)
+     * PS1 UV coordinates are 8-bit, so textures >256 pixels wrap */
+    uint16 displayW = SCREEN_WIDTH;
+    uint16 displayH = SCREEN_HEIGHT;
+    if (displayW > 255) displayW = 255;  /* UV max */
+    if (displayH > 255) displayH = 255;
+    setWH(bgSprt, displayW, displayH);
     /* UV = 0,0 since texture starts at beginning of texture page */
     setUV0(bgSprt, 0, 0);
-    setClut(bgSprt, grBackgroundSfc->clutX, grBackgroundSfc->clutY);
+    /* No CLUT for 15-bit mode */
     setRGB0(bgSprt, 128, 128, 128);  /* Normal brightness */
 
     /* Add sprite to ordering table */
     addPrim(&ot[db][OT_LENGTH - 1], bgSprt);
 
-    /* Set up texture page for 4-bit mode AFTER sprite
+    /* Set up texture page for 15-bit mode AFTER sprite
      * (added second = executed first due to LIFO) */
     DR_TPAGE *tpage = (DR_TPAGE*)nextPrimitive[db];
     nextPrimitive[db] += sizeof(DR_TPAGE);
     primitiveIndex[db] += sizeof(DR_TPAGE);
 
-    /* Mode 1 = 8-bit CLUT (256 colors), ABR = 0 */
-    setDrawTPage(tpage, 0, 0, getTPage(1, 0, grBackgroundSfc->x, grBackgroundSfc->y));
+    /* Mode 2 = 15-bit direct color (no CLUT), ABR = 0 */
+    setDrawTPage(tpage, 0, 0, getTPage(2, 0, grBackgroundSfc->x, grBackgroundSfc->y));
 
     /* Add texture page - will execute before sprite */
     addPrim(&ot[db][OT_LENGTH - 1], tpage);
@@ -854,47 +860,78 @@ void grLoadScreen(char *strArg)
         fatalError("grLoadScreen(): can't manage more than 640x480 resolutions");
     }
 
-    uint16 width  = scrResource->width;
-    uint16 height = scrResource->height;
+    uint16 srcWidth  = scrResource->width;
+    uint16 srcHeight = scrResource->height;
+
+    /* PS1 texture pages are 256x256 max for UV coordinates.
+     * Scale SCR to fit in a single texture page (256x240 to fill screen height) */
+    uint16 dstWidth  = 256;
+    uint16 dstHeight = (srcHeight > 240) ? 240 : srcHeight;
 
     /* Allocate PS1Surface for background */
     grBackgroundSfc = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-    grBackgroundSfc->width = width;
-    grBackgroundSfc->height = height;
+    grBackgroundSfc->width = dstWidth;
+    grBackgroundSfc->height = dstHeight;
     grBackgroundSfc->x = nextVRAMX;
     grBackgroundSfc->y = nextVRAMY;
 
-    /* Allocate pixel buffer for 8-bit indexed data */
-    uint32 pixelDataSize = width * height;  /* 8-bit = 1 byte per pixel */
-    grBackgroundSfc->pixels = (uint16*)safe_malloc(pixelDataSize);
+    /* Convert to 15-bit direct color (no CLUT needed - simplest approach) */
+    uint32 dstPixelDataSize = dstWidth * dstHeight * 2;  /* 16-bit = 2 bytes per pixel */
+    grBackgroundSfc->pixels = (uint16*)safe_malloc(dstPixelDataSize);
 
-    /* Copy 8-bit indexed data */
-    memcpy(grBackgroundSfc->pixels, scrResource->uncompressedData, pixelDataSize);
+    uint8 *src = scrResource->uncompressedData;
+    uint16 *dst = grBackgroundSfc->pixels;
+
+    /* Calculate scale factors (fixed point 8.8) */
+    uint32 xScale = (srcWidth << 8) / dstWidth;   /* src pixels per dst pixel * 256 */
+    uint32 yScale = (srcHeight << 8) / dstHeight;
+
+    /* Convert indexed pixels to 15-bit using palette lookup */
+    for (uint16 y = 0; y < dstHeight; y++) {
+        uint32 srcY = (y * yScale) >> 8;
+        for (uint16 x = 0; x < dstWidth; x++) {
+            /* Get source pixel position */
+            uint32 srcX = (x * xScale) >> 8;
+
+            /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
+            uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
+
+            uint8 palIndex;
+            if (srcX & 1) {
+                palIndex = src[srcOffset] & 0x0F;  /* Low nibble */
+            } else {
+                palIndex = (src[srcOffset] >> 4) & 0x0F;  /* High nibble */
+            }
+
+            /* DEBUG: Show palette index as bright color to see variation
+             * palIndex 0-15 maps to red 0-30 */
+            uint8 red = palIndex * 2;
+            /* Also show raw byte value from source in blue to see if file data varies */
+            uint8 rawByte = src[srcOffset];
+            uint8 blue = (rawByte >> 3) & 0x1F;  /* Top 5 bits as blue */
+            dst[y * dstWidth + x] = (blue << 10) | (0 << 5) | red;
+        }
+    }
 
     /* Upload background to VRAM using DMA
-     * For 8-bit textures: 2 pixels per 16-bit VRAM word */
+     * For 15-bit textures: 1 pixel per 16-bit VRAM word */
     RECT rect;
-    uint16 vramWidth = width / 2;  /* VRAM width in 16-bit units */
-    setRECT(&rect, grBackgroundSfc->x, grBackgroundSfc->y, vramWidth, height);
+    uint16 vramWidth = dstWidth;  /* VRAM width in 16-bit units = pixels */
+    setRECT(&rect, grBackgroundSfc->x, grBackgroundSfc->y, vramWidth, dstHeight);
     LoadImage(&rect, (uint32*)grBackgroundSfc->pixels);
 
     /* Wait for DMA transfer to complete */
     DrawSync(0);
 
-    /* Set CLUT position - use 256-color palette at (0, 481) */
+    /* Set CLUT position - use 16-color palette at (0, 480) */
     grBackgroundSfc->clutX = 0;
-    grBackgroundSfc->clutY = 481;
+    grBackgroundSfc->clutY = 480;
 
     /* Update VRAM allocation (use actual VRAM width) */
     nextVRAMX += vramWidth;
     if (nextVRAMX >= 1024) {
         nextVRAMX = 320;  /* Reset to right of framebuffers */
-        nextVRAMY += height;
-    }
-
-    if (debugMode) {
-        printf("SCR uploaded: %dx%d at VRAM(%d,%d), vramW=%d\n",
-               width, height, grBackgroundSfc->x, grBackgroundSfc->y, vramWidth);
+        nextVRAMY += dstHeight;
     }
 
     /* Free SCR data after converting - saves memory */
@@ -905,11 +942,6 @@ void grLoadScreen(char *strArg)
             printf("Freed SCR data for %s (%u bytes)\n",
                    scrResource->resName, scrResource->uncompressedSize);
         }
-    }
-
-    if (debugMode) {
-        printf("Loaded screen: %dx%d at VRAM(%d,%d)\n",
-               width, height, grBackgroundSfc->x, grBackgroundSfc->y);
     }
 }
 

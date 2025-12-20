@@ -1050,12 +1050,15 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     scrResource->uncompressedSize = ps1_readUint32(f);
 
     /* Decompress first SCR for testing, skip the rest */
+    static uint8 savedInputBytes[8];
+    static size_t savedFilePos;
+
     if (scrDecompressCount < MAX_SCR_DECOMPRESS) {
-        printf("Decompressing SCR: %s (%lu -> %lu bytes, method %d)\n",
-               resName,
-               (unsigned long)scrResource->compressedSize,
-               (unsigned long)scrResource->uncompressedSize,
-               scrResource->compressionMethod);
+        /* Save input bytes for later display */
+        savedFilePos = f->currentPos;
+        for (int i = 0; i < 8; i++) {
+            savedInputBytes[i] = f->buffer[f->currentPos + i];
+        }
 
         scrResource->uncompressedData = ps1_uncompress(f,
                                             scrResource->compressionMethod,
@@ -1063,10 +1066,53 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
                                             scrResource->uncompressedSize);
         scrDecompressCount++;
 
+        /* Quick debug: show unique byte count */
         if (scrResource->uncompressedData) {
-            printf("SCR decompression SUCCESS: %s\n", resName);
-        } else {
-            printf("SCR decompression FAILED: %s\n", resName);
+            uint8 *out = scrResource->uncompressedData;
+            uint32 outSize = scrResource->uncompressedSize;
+
+            /* Count unique values in first 1K */
+            uint8 foundValues[16] = {0};
+            int numUnique = 0;
+            int sampleSize = (outSize > 1000) ? 1000 : outSize;
+
+            for (int i = 0; i < sampleSize && numUnique < 16; i++) {
+                uint8 val = out[i];
+                int found = 0;
+                for (int j = 0; j < numUnique; j++) {
+                    if (foundValues[j] == val) { found = 1; break; }
+                }
+                if (!found) {
+                    foundValues[numUnique++] = val;
+                }
+            }
+
+            /* Declare LZW debug vars as extern */
+            extern uint16 ps1_lzwFirstCode;
+            extern uint16 ps1_lzwDebugCodes[4];
+            extern uint32 ps1_lzwLoopCount;
+            extern uint8 ps1_lzwFirstByte;
+            extern uint8 ps1_lzwBufBytes[4];
+            extern uint8 ps1_lzwReturnedBytes[8];
+            extern uint8 ps1_lzwCurrentAfterOldcode;
+            extern uint8 ps1_lzwNextbitAfterOldcode;
+            extern uint8 ps1_lzwNC1_inputCur;
+            extern uint8 ps1_lzwNC1_inputNb;
+            extern uint16 ps1_lzwNC1_result;
+            extern uint8 ps1_lzwNC1_bits[9];
+            extern uint8 ps1_lzwNC1_curBytes[2];
+
+            /* LZW decompression successful - show brief confirmation */
+            ps1DebugInit();
+            ps1DebugClear();
+            ps1DebugPrint("LZW OK: %s", scrResource->resName);
+            ps1DebugPrint("%dx%d = %lu bytes",
+                scrResource->width, scrResource->height,
+                (unsigned long)outSize);
+            ps1DebugPrint("First: %02X %02X %02X %02X",
+                out[0], out[1], out[2], out[3]);
+            ps1DebugFlush();
+            for (volatile int i = 0; i < 10000000; i++);  /* ~3 sec */
         }
     } else {
         /* Skip compressed data for remaining SCRs */
@@ -1194,43 +1240,113 @@ struct PS1_TCodeTableEntry {
 static struct PS1_TCodeTableEntry ps1_codeTable[4096];  /* 12KB */
 static uint8 ps1_decodeStack[4096];                      /* 4KB */
 
-/* Bit-reading state */
-static int ps1_nextbit;
-static uint8 ps1_current;
-static uint32 ps1_inOffset;
-static uint32 ps1_maxInOffset;
+/* Bit-reading state - using volatile to prevent compiler optimizations */
+static volatile int ps1_nextbit;
+static volatile uint8 ps1_current;
+static volatile uint32 ps1_inOffset;
+static volatile uint32 ps1_maxInOffset;
 
-/* Internal byte reader from PS1File buffer */
+/* LZW buffer reading state - using static+volatile to avoid struct update and optimization issues */
+static volatile uint8 *ps1_lzwBuffer = NULL;
+static volatile size_t ps1_lzwPos = 0;
+static volatile size_t ps1_lzwSize = 0;
+
+/* LZW debug info - saved for display after decompression */
+uint16 ps1_lzwFirstCode = 0;
+uint16 ps1_lzwDebugCodes[4] = {0, 0, 0, 0};
+uint32 ps1_lzwLoopCount = 0;
+uint8 ps1_lzwFirstByte = 0;
+uint8 ps1_lzwBufBytes[4] = {0, 0, 0, 0};
+uint8 ps1_lzwReturnedBytes[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+int ps1_lzwByteCount = 0;
+uint8 ps1_lzwCurrentAfterOldcode = 0;  /* ps1_current after first getBits */
+uint8 ps1_lzwNextbitAfterOldcode = 0;  /* ps1_nextbit after first getBits */
+/* Debug for first newcode getBits */
+int ps1_lzwGetBitsCallCount = 0;
+uint8 ps1_lzwNC1_inputCur = 0;    /* localCurrent at start of first newcode getBits */
+uint8 ps1_lzwNC1_inputNb = 0;     /* localNextbit at start of first newcode getBits */
+uint16 ps1_lzwNC1_result = 0;     /* result of first newcode getBits */
+/* Bit-by-bit debug for first newcode */
+uint8 ps1_lzwNC1_bits[9] = {0};   /* Each bit value (0 or 1) */
+uint8 ps1_lzwNC1_curBytes[2] = {0}; /* localCurrent bytes used */
+
+/* Internal byte reader using static buffer pointer */
 static uint8 ps1_getByte(PS1File *f)
 {
+    (void)f;  /* Unused - using static buffer instead */
     if (ps1_inOffset >= ps1_maxInOffset) {
         return 0;
     }
     ps1_inOffset++;
-    return ps1_readUint8(f);
+    /* Explicit increment to avoid MIPS compiler issues with post-increment */
+    uint8 byte = ps1_lzwBuffer[ps1_lzwPos];
+    ps1_lzwPos++;
+
+    /* Capture first 8 bytes returned for debug */
+    if (ps1_lzwByteCount < 8) {
+        ps1_lzwReturnedBytes[ps1_lzwByteCount] = byte;
+        ps1_lzwByteCount++;
+    }
+    return byte;
 }
 
-/* Bit reader for LZW */
+/* Bit reader for LZW - using local variables to avoid volatile issues in loop */
 static uint16 ps1_getBits(PS1File *f, uint32 n)
 {
     if (n == 0)
         return 0;
 
+    /* Track call count for debug */
+    ps1_lzwGetBitsCallCount++;
+
+    /* Copy volatile state to local variables for efficient loop */
+    uint8 localCurrent = ps1_current;
+    int localNextbit = ps1_nextbit;
+
+    /* Capture input state for 2nd call (first newcode) */
+    if (ps1_lzwGetBitsCallCount == 2) {
+        ps1_lzwNC1_inputCur = localCurrent;
+        ps1_lzwNC1_inputNb = (uint8)localNextbit;
+        ps1_lzwNC1_curBytes[0] = localCurrent;  /* First byte used */
+    }
+
     uint32 x = 0;
+    uint32 i;
 
-    for (uint32 i = 0; i < n; i++) {
-        if (ps1_current & (1 << ps1_nextbit))
-            x |= (uint32)(1 << i);
+    for (i = 0; i < n; i++) {
+        /* Test bit and set if needed - use unsigned shift to avoid MIPS issues */
+        uint32 bitMask = ((uint32)1 << (uint32)localNextbit);
+        uint8 bitVal = (localCurrent & bitMask) ? 1 : 0;
+        if (bitVal) {
+            x = x | ((uint32)1 << i);
+        }
 
-        ps1_nextbit++;
+        /* Capture bits for first newcode debug */
+        if (ps1_lzwGetBitsCallCount == 2 && i < 9) {
+            ps1_lzwNC1_bits[i] = bitVal;
+        }
 
-        if (ps1_nextbit > 7) {
-            ps1_current = ps1_getByte(f);
-            ps1_nextbit = 0;
+        localNextbit++;
+        if (localNextbit > 7) {
+            localCurrent = ps1_getByte(f);
+            localNextbit = 0;
+            /* Capture second byte for first newcode */
+            if (ps1_lzwGetBitsCallCount == 2) {
+                ps1_lzwNC1_curBytes[1] = localCurrent;
+            }
         }
     }
 
-    return x;
+    /* Write back to volatile state */
+    ps1_current = localCurrent;
+    ps1_nextbit = localNextbit;
+
+    /* Capture result for 2nd call (first newcode) */
+    if (ps1_lzwGetBitsCallCount == 2) {
+        ps1_lzwNC1_result = (uint16)x;
+    }
+
+    return (uint16)x;
 }
 
 /* PS1 LZW decompression */
@@ -1246,7 +1362,6 @@ uint8 *ps1_uncompressLZW(PS1File *f, uint32 inSize, uint32 outSize)
     uint32 outOffset = 0;
 
     if (outSize == 0) {
-        printf("ps1_uncompressLZW: can't uncompress to 0 bytes\n");
         return NULL;
     }
 
@@ -1255,18 +1370,46 @@ uint8 *ps1_uncompressLZW(PS1File *f, uint32 inSize, uint32 outSize)
     ps1_inOffset = 0;
     outData = malloc(outSize);
     if (!outData) {
-        printf("ps1_uncompressLZW: malloc failed for %lu bytes\n", (unsigned long)outSize);
         return NULL;
     }
 
-    ps1_current = ps1_getByte(f);
-    lastbyte = oldcode = ps1_getBits(f, n_bits);
+    /* Initialize static buffer reading - bypass f->currentPos issues */
+    ps1_lzwBuffer = f->buffer + f->currentPos;
+    ps1_lzwPos = 0;
+    ps1_lzwSize = f->bufferSize - f->currentPos;
+    ps1_lzwByteCount = 0;  /* Reset byte capture counter */
+    ps1_lzwGetBitsCallCount = 0;  /* Reset getBits call counter */
 
+    /* Save buffer bytes for debug */
+    for (int i = 0; i < 4; i++) {
+        ps1_lzwBufBytes[i] = ps1_lzwBuffer[i];
+    }
+
+    ps1_current = ps1_getByte(f);
+    ps1_lzwFirstByte = ps1_current;  /* Save for debug */
+
+    lastbyte = oldcode = ps1_getBits(f, n_bits);
     outData[outOffset++] = (uint8)oldcode;
+
+    /* Save debug info after first getBits */
+    ps1_lzwFirstCode = oldcode;
+    ps1_lzwCurrentAfterOldcode = ps1_current;  /* Should be 0x92 after reading 9 bits */
+    ps1_lzwNextbitAfterOldcode = ps1_nextbit;  /* Should be 1 after reading 9 bits */
+
+    /* Debug: track first 4 codes */
+    int debugIdx = 0;
+    ps1_lzwLoopCount = 0;
+    for (int i = 0; i < 4; i++) ps1_lzwDebugCodes[i] = 0;
 
     while (ps1_inOffset < inSize) {
         uint16 newcode = ps1_getBits(f, n_bits);
         bitpos += n_bits;
+
+        /* Capture first 4 newcodes */
+        if (debugIdx < 4) {
+            ps1_lzwDebugCodes[debugIdx++] = newcode;
+        }
+        ps1_lzwLoopCount++;
 
         if (newcode == 256) {
             uint32 nbits3 = n_bits << 3;

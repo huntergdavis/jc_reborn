@@ -314,6 +314,17 @@ int main(int argc, char **argv)
         ps1DebugPrint("Found SCR: %s", testScr->resName);
         ps1DebugPrint("Size: %dx%d", testScr->width, testScr->height);
         ps1DebugPrint("Data: %lu bytes", (unsigned long)testScr->uncompressedSize);
+
+        /* Load palette first - SCR uses 16-color palette from PAL resource */
+        extern struct TPalResource *palResources[];
+        extern int numPalResources;
+        if (numPalResources > 0 && palResources[0]) {
+            ps1DebugPrint("Loading PAL: %s", palResources[0]->resName);
+            grLoadPalette(palResources[0]);
+        } else {
+            ps1DebugPrint("No PAL found - using default");
+        }
+
         ps1DebugFlush();
         for (volatile int i = 0; i < 5000000; i++);
 

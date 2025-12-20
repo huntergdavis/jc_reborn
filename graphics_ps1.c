@@ -788,7 +788,7 @@ void grDrawBackground(void)
 
     RECT srcRect, dstRect;
 
-    /* Draw texture tiled across the screen (3x2 grid for 640x480) */
+    /* Draw texture tiled across the screen (3x2 grid, clipped to 640x480) */
     for (int ty = 0; ty < 2; ty++) {
         for (int tx = 0; tx < 3; tx++) {
             /* Calculate destination position */
@@ -856,10 +856,9 @@ void grLoadScreen(char *strArg)
     uint16 srcWidth  = scrResource->width;
     uint16 srcHeight = scrResource->height;
 
-    /* PS1 texture pages are 256x256 max for UV coordinates.
-     * Scale SCR to fit in a single texture page (256x240 to fill screen height) */
+    /* Use 256x240 texture - tiles 3x2 across screen (clipped at edges) */
     uint16 dstWidth  = 256;
-    uint16 dstHeight = (srcHeight > 240) ? 240 : srcHeight;
+    uint16 dstHeight = 240;
 
     /* Allocate PS1Surface for background */
     grBackgroundSfc = (PS1Surface*)safe_malloc(sizeof(PS1Surface));

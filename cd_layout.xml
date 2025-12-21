@@ -20,6 +20,9 @@
             <!-- PS1 executable - paths relative to cd_layout.xml location -->
             <file name="JCREBORN.EXE" type="data" source="build-ps1/jcreborn.exe"/>
 
+            <!-- Title screen - raw 15-bit pixels for early loading -->
+            <file name="TITLE.RAW" type="data" source="TITLE.RAW"/>
+
             <!-- Original Sierra resource files -->
             <file name="RESOURCE.MAP" type="data" source="jc_resources/RESOURCE.MAP"/>
             <file name="RESOURCE.001" type="data" source="jc_resources/RESOURCE.001"/>

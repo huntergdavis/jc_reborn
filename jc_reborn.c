@@ -76,28 +76,66 @@ static char *args[3];
 static int  numArgs  = 0;
 
 #ifdef PS1_BUILD
-/* Visual debug helper - shows colored screen for ~1 second with busy loop */
-static void showDebugScreen(int r, int g, int b)
+/* Load and display title screen from raw file on CD */
+/* This runs BEFORE resource parsing for instant visual feedback */
+static void loadTitleScreenEarly(void)
 {
-    /* Reset GPU to clean state */
+    /* Initialize graphics for 640x480 interlaced */
     ResetGraph(0);
     SetVideoMode(MODE_NTSC);
 
-    /* Create simple draw environment */
+    /* Set up display environment for 640x480 */
+    DISPENV disp;
     DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 320, 240);  /* Use 320x240 for stability */
-    setRGB0(&draw, r, g, b);
-    draw.isbg = 1;  /* Enable background clear */
+    SetDefDispEnv(&disp, 0, 0, 640, 480);
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    disp.isinter = 1;  /* Interlaced mode */
+    draw.isbg = 0;     /* Don't clear - we'll load image directly */
+    PutDispEnv(&disp);
     PutDrawEnv(&draw);
 
     /* Enable display */
     SetDispMask(1);
 
-    /* Use busy loop - VSync can hang in some situations */
-    /* ~1 second with busy loop (adjust count as needed) */
-    for (volatile int i = 0; i < 1000000; i++) {
-        /* Busy wait */
+    /* Allocate buffer for full title screen (640x480 x 2 bytes = 614400) */
+    int totalBytes = 640 * 480 * 2;  /* 614400 bytes */
+    uint8 *screenBuffer = (uint8*)malloc(totalBytes);
+    if (!screenBuffer) {
+        return;  /* Can't show title, continue anyway */
     }
+
+    /* Open TITLE.RAW from CD */
+    CdlFILE fileInfo;
+    if (!CdSearchFile(&fileInfo, "\\TITLE.RAW;1")) {
+        free(screenBuffer);
+        return;  /* File not found, continue anyway */
+    }
+
+    /* Read entire file */
+    int totalSectors = (totalBytes + 2047) / 2048;  /* 300 sectors */
+    CdControl(CdlSetloc, (uint8*)&fileInfo.pos, 0);
+    CdRead(totalSectors, (uint32*)screenBuffer, CdlModeSpeed);
+    CdReadSync(0, 0);
+
+    /* Upload to framebuffer in strips (GPU DMA works better with smaller chunks) */
+    int stripHeight = 60;
+    int numStrips = 480 / stripHeight;  /* 8 strips */
+
+    for (int strip = 0; strip < numStrips; strip++) {
+        int yOffset = strip * stripHeight;
+        uint8 *stripData = screenBuffer + (yOffset * 640 * 2);
+
+        RECT rect;
+        setRECT(&rect, 0, yOffset, 640, stripHeight);
+        LoadImage(&rect, (uint32*)stripData);
+        DrawSync(0);
+    }
+
+    free(screenBuffer);
+
+    /* Show title for a brief moment to ensure it's visible */
+    VSync(0);
+    VSync(0);
 }
 
 #endif
@@ -240,8 +278,15 @@ int main(int argc, char **argv)
 
     debugMode = 1;
 
-    /* Skip parseArgs on PS1 - argc/argv not valid */
+    /* Load and display title screen BEFORE resource parsing */
+    /* This gives instant visual feedback while resources load */
+    loadTitleScreenEarly();
+
+    /* Parse resources - title screen is visible during this */
     parseResourceFiles("RESOURCE.MAP");
+
+    /* Initialize full graphics system (may reset display) */
+    graphicsInit();
 #else
     /* Non-PS1: normal flow */
     parseArgs(argc, argv);
@@ -253,28 +298,20 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef PS1_BUILD
-    /* Get resource counts */
+    /* Resource counts available via extern - no print needed */
     extern int numScrResources;
     extern int numBmpResources;
     extern int numAdsResources;
     extern int numTtmResources;
     extern int numPalResources;
-
-    /* Show resource loading results - brief display */
-    ps1DebugClear();
-    ps1DebugPrint("Resources: ADS=%d BMP=%d PAL=%d SCR=%d TTM=%d",
-        numAdsResources, numBmpResources, numPalResources,
-        numScrResources, numTtmResources);
-    ps1DebugFlush();
-    for (volatile int i = 0; i < 500000; i++);  /* Brief pause */
+    /* Variables declared for use below */
 #endif
 
     /* Initialize LRU cache for memory management */
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* Initialize graphics - no debug screen needed */
-    graphicsInit();
+    /* Graphics already initialized above - now load title screen */
 
     /* Load INTRO.SCR as title screen first, fallback to any 640x480 SCR */
     extern struct TScrResource *scrResources[];
@@ -286,8 +323,6 @@ int main(int argc, char **argv)
         if (scrResources[i] && scrResources[i]->uncompressedData) {
             if (strstr(scrResources[i]->resName, "INTRO") != NULL) {
                 titleScr = scrResources[i];
-                printf("Found INTRO.SCR: %s (%dx%d)\n",
-                       titleScr->resName, titleScr->width, titleScr->height);
                 break;
             } else if (!fallbackScr) {
                 fallbackScr = scrResources[i];
@@ -297,10 +332,6 @@ int main(int argc, char **argv)
 
     /* Use INTRO.SCR if found, otherwise fallback */
     struct TScrResource *testScr = titleScr ? titleScr : fallbackScr;
-    if (testScr && !titleScr) {
-        printf("INTRO.SCR not found, using fallback: %s (%dx%d)\n",
-               testScr->resName, testScr->width, testScr->height);
-    }
 
     if (testScr) {
         /* Load palette and background */
@@ -333,44 +364,25 @@ int main(int argc, char **argv)
     }
 
     /* Show title screen for 3 seconds (180 frames at 60fps) */
-    printf("Showing title screen for 3 seconds...\n");
     for (int i = 0; i < 180; i++) {
         grRefreshDisplay();
     }
 
-    /* Try to find STAND.ADS for Johnny animations */
+    /* Try to find a decompressed ADS and play it */
     extern struct TAdsResource *adsResources[];
     extern int numAdsResources;
     struct TAdsResource *testAds = NULL;
-    struct TAdsResource *standAds = NULL;
 
-    printf("Looking for decompressed ADS resources...\n");
     for (int i = 0; i < numAdsResources; i++) {
         if (adsResources[i] && adsResources[i]->uncompressedData) {
-            printf("Found ADS: %s (tag count: %d)\n",
-                   adsResources[i]->resName, adsResources[i]->numTags);
-            /* Specifically look for STAND.ADS which has Johnny idle animations */
-            if (strstr(adsResources[i]->resName, "STAND") != NULL) {
-                standAds = adsResources[i];
-            }
-            if (testAds == NULL) {
-                testAds = adsResources[i];
-            }
+            testAds = adsResources[i];
+            break;
         }
     }
 
-    /* Prefer STAND.ADS if found */
-    if (standAds) {
-        testAds = standAds;
-        printf("Using STAND.ADS for Johnny animations\n");
-    }
-
     if (testAds) {
-        printf("Playing ADS: %s tag 1\n", testAds->resName);
+        /* Play the first tag of the first available ADS */
         adsPlay(testAds->resName, 1);
-        printf("ADS playback returned\n");
-    } else {
-        printf("No decompressed ADS found\n");
     }
 
     /* Graphics test loop - continue with sprite animation */

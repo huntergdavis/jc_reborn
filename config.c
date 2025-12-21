@@ -21,6 +21,29 @@
  *
  */
 
+/* PS1 doesn't have standard filesystem - stub out config file operations */
+#ifdef PS1_BUILD
+#include <string.h>
+#include "mytypes.h"
+#include "utils.h"
+#include "config.h"
+
+/* PS1: No config file persistence - just use defaults */
+void cfgFileWrite(struct TConfig *cfg)
+{
+    /* No-op on PS1 - no writable filesystem */
+    (void)cfg;
+}
+
+void cfgFileRead(struct TConfig *cfg)
+{
+    /* Return defaults on PS1 */
+    cfg->currentDay = 1;  /* Start on day 1 of the story */
+    cfg->date       = 180;  /* Mid-year (matches getDayOfYear) */
+}
+
+#else
+/* Standard build with filesystem support */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -104,4 +127,5 @@ void cfgFileRead(struct TConfig *cfg)
         fclose(f);
     }
 }
+#endif
 

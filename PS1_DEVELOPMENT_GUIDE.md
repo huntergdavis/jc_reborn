@@ -1,22 +1,24 @@
 # PS1 Development Guide - Johnny Reborn
 
-**Last Updated**: 2025-10-20
+**Last Updated**: 2025-12-21
 **Branch**: `ps1`
-**Status**: Visual debugging implemented, awaiting full game boot test
+**Status**: Title screen + ADS scene playback working!
 
 ## Current State
 
 ### What's Working ✅
-- **Minimal test** (3 colored squares) boots from CD and renders at 640x480
-- CD-ROM boot process (without calling CdInit())
-- GPU initialization and display at 640x480 interlaced
-- Basic rendering (TILE primitives, ordering tables)
+- **Full game boots and runs** from CD at 640x480 interlaced
+- **Title screen** displays immediately at boot (direct CD loading)
+- **ADS scene playback** - Christmas tree scene renders correctly
+- **Resource decompression** - LZW/RLE decompression working
+- **Pixel-perfect 640x480 background rendering** via LoadImage to framebuffer
+- CD-ROM file I/O via ps1_fopen abstraction
 - CD image creation with mkpsxiso
 
 ### What's NOT Working ❌
-- **Full game (jcreborn.exe)** hangs before reaching main()
-- printf() does NOT output to DuckStation TTY console
-- We don't know if it's crashing before main() or during C runtime init
+- printf() does NOT output to DuckStation TTY console (use visual debugging)
+- Full story mode integration (next task)
+- Sound/SPU playback
 
 ### Visual Debugging Solution 🎨
 Since printf() doesn't work, implemented **colored screen indicators**:
@@ -257,6 +259,52 @@ If missing, check build output for errors.
 - **PS1 Dev Wiki**: https://psx-spx.consoledev.net/
 - **DuckStation**: https://github.com/stenzek/duckstation
 - **PCSX-Redux**: https://github.com/grumpycoders/pcsx-redux
+
+## Known Issues & Solutions
+
+### CD State Corruption After Direct CD Calls (Dec 2025)
+
+**Problem**: When loading title screen with direct CD calls (`CdSearchFile`, `CdControl`, `CdRead`, `CdReadSync`) BEFORE calling `ps1_fopen` for resource loading, the CD subsystem state gets corrupted. This causes subsequent `ps1_fopen` calls to fail silently - files appear to open but decompression produces garbage or NULL data.
+
+**Symptoms**:
+- Title screen displays correctly
+- Resource parsing appears to succeed (structures created)
+- BUT `uncompressedData` is NULL for ADS/TTM resources
+- Scene playback fails, falls back to debug rectangles
+
+**Root Cause**: Direct CD calls leave the PSn00bSDK CD subsystem in an inconsistent state. The internal buffers, file position tracking, or DMA state doesn't reset properly for subsequent operations.
+
+**Solution**: Call `CdInit()` after completing direct CD operations to fully reset the CD subsystem:
+
+```c
+void cdromResetState(void)
+{
+    /* Wait for any pending CD operations */
+    CdReadSync(0, NULL);
+
+    /* Re-initialize the CD subsystem to fully reset state */
+    CdInit();
+
+    /* Reset ps1FilePool state */
+    for (int i = 0; i < 4; i++) {
+        ps1FilePool[i].isOpen = 0;
+        ps1FilePool[i].buffer = NULL;
+        ps1FilePool[i].bufferSize = 0;
+        ps1FilePool[i].currentPos = 0;
+    }
+}
+```
+
+**When to call**: After any direct CD operations (CdSearchFile/CdRead) and before using `ps1_fopen`.
+
+**Debugging technique**: Use colored rectangles with varying sizes to encode debug values:
+- RED width = numAdsResources * 10px
+- GREEN width = adsWithData * 30px (missing = 0 decompressed)
+- BLUE = present if specific resource found
+
+This helps identify whether resources exist vs have actual data.
+
+---
 
 ## Session History
 

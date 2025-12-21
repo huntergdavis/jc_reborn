@@ -793,33 +793,13 @@ void grClearScreen(PS1Surface *sfc)
 
 /*
  * Draw background surface to screen
- * Top row: MoveImage from VRAM texture area (pre-loaded at init)
- * Bottom row: Already in framebuffer from init (single-buffer mode persists)
+ * Both top and bottom rows are LoadImage'd directly to framebuffer at init.
+ * In single-buffer mode (640x480), the data persists - nothing to do here.
  */
 void grDrawBackground(void)
 {
-    RECT srcRect;
-
-    /* Draw top row: 4 tiles covering x=0 to x=639, y=0 to y=239 */
-    /* Bottom row was written once at init and persists in framebuffer */
-    if (bgTile0) {
-        setRECT(&srcRect, bgTile0->x, bgTile0->y, bgTile0->width, bgTile0->height);
-        MoveImage(&srcRect, 0, 0);    /* Screen x=0-255 */
-    }
-    if (bgTile1) {
-        setRECT(&srcRect, bgTile1->x, bgTile1->y, bgTile1->width, bgTile1->height);
-        MoveImage(&srcRect, 256, 0);  /* Screen x=256-511 */
-    }
-    if (bgTile2a) {
-        setRECT(&srcRect, bgTile2a->x, bgTile2a->y, bgTile2a->width, bgTile2a->height);
-        MoveImage(&srcRect, 512, 0);  /* Screen x=512-575 */
-    }
-    if (bgTile2b) {
-        setRECT(&srcRect, bgTile2b->x, bgTile2b->y, bgTile2b->width, bgTile2b->height);
-        MoveImage(&srcRect, 576, 0);  /* Screen x=576-639 */
-    }
-
-    DrawSync(0);
+    /* Background was written once at init via LoadImage to framebuffer.
+     * In single-buffer mode, it persists - no need to redraw each frame. */
 }
 
 /*
@@ -985,10 +965,24 @@ void grLoadScreen(char *strArg)
      * - Tile 1  (256x240) at VRAM(640, 244) - srcX=256, y=244-483
      * DEBUG: Test single 64px tile at x=896 to isolate VRAM issue
      */
-    bgTile0  = createBgTile(src, srcWidth, 0,   256, 640, 4);   /* screen x=0-255 */
-    bgTile1  = createBgTile(src, srcWidth, 256, 256, 640, 244); /* screen x=256-511 */
-    bgTile2a = createBgTile(src, srcWidth, 512, 64,  896, 4);   /* screen x=512-575 */
-    bgTile2b = createBgTile(src, srcWidth, 576, 64,  960, 4);   /* screen x=576-639 (full 64px to cover all 640) */
+    /* Top row: LoadImage directly to framebuffer at init
+     * Use 2 tiles of 320px each to cover 640px total */
+    bgTile0  = createBgTileRAM(src, srcWidth, 0,   0, 320);   /* top row, x=0-319 */
+    bgTile1  = createBgTileRAM(src, srcWidth, 320, 0, 320);   /* top row, x=320-639 */
+    bgTile2a = NULL;
+    bgTile2b = NULL;
+
+    /* LoadImage top row directly to framebuffer */
+    RECT topRect;
+    if (bgTile0 && bgTile0->pixels) {
+        setRECT(&topRect, 0, 0, bgTile0->width, bgTile0->height);
+        LoadImage(&topRect, (uint32*)bgTile0->pixels);
+    }
+    if (bgTile1 && bgTile1->pixels) {
+        setRECT(&topRect, 320, 0, bgTile1->width, bgTile1->height);
+        LoadImage(&topRect, (uint32*)bgTile1->pixels);
+    }
+    DrawSync(0);
 
     /* Bottom row: Only create if SCR has enough lines
      * Many SCR files are 640x350, not 640x480 - must check actual height */
@@ -1002,11 +996,11 @@ void grLoadScreen(char *strArg)
     uint16 bottomRowLines = (srcHeight > 240) ? (srcHeight - 240) : 0;
 
     if (bottomRowLines >= 240) {
-        /* Full 640x480 image - create full bottom row tiles */
-        bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 256);
-        bgTile4  = createBgTileRAM(src, srcWidth, 256, 240, 256);
-        bgTile5a = createBgTileRAM(src, srcWidth, 512, 240, 64);
-        bgTile5b = createBgTileRAM(src, srcWidth, 576, 240, 64);
+        /* Full 640x480 image - create bottom row tiles (2x320 to match top row) */
+        bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 320);
+        bgTile4  = createBgTileRAM(src, srcWidth, 320, 240, 320);
+        bgTile5a = NULL;
+        bgTile5b = NULL;
     } else if (bottomRowLines > 0) {
         /* Partial bottom row (e.g., 640x350 = 110 lines for bottom)
          * For now, leave bottom row NULL - shows black
@@ -1029,7 +1023,7 @@ void grLoadScreen(char *strArg)
     /* Disable display during bottom row LoadImage to avoid tearing/corruption */
     SetDispMask(0);
 
-    /* LoadImage bottom row tiles directly to framebuffer */
+    /* LoadImage bottom row tiles directly to framebuffer (2x320 layout) */
     RECT dstRect;
 
     if (bgTile3 && bgTile3->pixels) {
@@ -1037,16 +1031,8 @@ void grLoadScreen(char *strArg)
         LoadImage(&dstRect, (uint32*)bgTile3->pixels);
     }
     if (bgTile4 && bgTile4->pixels) {
-        setRECT(&dstRect, 256, 240, bgTile4->width, bgTile4->height);
+        setRECT(&dstRect, 320, 240, bgTile4->width, bgTile4->height);
         LoadImage(&dstRect, (uint32*)bgTile4->pixels);
-    }
-    if (bgTile5a && bgTile5a->pixels) {
-        setRECT(&dstRect, 512, 240, bgTile5a->width, bgTile5a->height);
-        LoadImage(&dstRect, (uint32*)bgTile5a->pixels);
-    }
-    if (bgTile5b && bgTile5b->pixels) {
-        setRECT(&dstRect, 576, 240, bgTile5b->width, bgTile5b->height);
-        LoadImage(&dstRect, (uint32*)bgTile5b->pixels);
     }
 
     DrawSync(0);  /* Sync bottom row uploads */

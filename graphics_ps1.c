@@ -61,10 +61,17 @@ PS1Surface *grBackgroundSfc = NULL;
  * Top row: 3 tiles (256+256+128 = 640 pixels wide, 240 tall)
  * Bottom row will be added later */
 #define BG_TILE_HEIGHT 240
+/* Top row tiles (stored in VRAM texture area) */
 static PS1Surface *bgTile0 = NULL;  /* x=0-255,   srcX=0 */
 static PS1Surface *bgTile1 = NULL;  /* x=256-511, srcX=256 */
 static PS1Surface *bgTile2a = NULL; /* x=512-575, srcX=512, width=64 */
 static PS1Surface *bgTile2b = NULL; /* x=576-639, srcX=576, width=64 */
+
+/* Bottom row tiles (stored in RAM, LoadImage to framebuffer each frame) */
+static PS1Surface *bgTile3 = NULL;  /* y=240, x=0-255 */
+static PS1Surface *bgTile4 = NULL;  /* y=240, x=256-511 */
+static PS1Surface *bgTile5a = NULL; /* y=240, x=512-575 */
+static PS1Surface *bgTile5b = NULL; /* y=240, x=576-637 */
 
 /* Global variables matching original implementation */
 int grDx = 0;
@@ -807,6 +814,9 @@ void grDrawBackground(void)
         MoveImage(&srcRect, 576, 0);  /* Screen x=576-639 */
     }
 
+    /* TODO: Bottom row tiles - LoadImage approach needs investigation
+     * Bottom row tile creation and drawing disabled for now */
+
     DrawSync(0);
 }
 
@@ -881,6 +891,50 @@ static void freeBgTile(PS1Surface **tile)
 }
 
 /*
+ * Helper: Create a background tile stored in RAM only (no VRAM upload)
+ * For use with LoadImage directly to framebuffer
+ */
+static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
+                                    uint16 srcStartX, uint16 srcStartY,
+                                    uint16 tileWidth)
+{
+    PS1Surface *tile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+    tile->width = tileWidth;
+    tile->height = BG_TILE_HEIGHT;
+    tile->x = 0;  /* Not in VRAM - just RAM */
+    tile->y = 0;
+
+    /* Allocate pixel buffer for 15-bit direct color */
+    uint32 pixelDataSize = tileWidth * BG_TILE_HEIGHT * 2;
+    tile->pixels = (uint16*)safe_malloc(pixelDataSize);
+
+    uint16 *dst = tile->pixels;
+
+    /* 1:1 pixel copy from source region */
+    for (uint16 y = 0; y < BG_TILE_HEIGHT; y++) {
+        for (uint16 x = 0; x < tileWidth; x++) {
+            uint32 srcX = srcStartX + x;
+            uint32 srcY = srcStartY + y;
+
+            /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
+            uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
+
+            uint8 palIndex;
+            if (srcX & 1) {
+                palIndex = src[srcOffset] & 0x0F;
+            } else {
+                palIndex = (src[srcOffset] >> 4) & 0x0F;
+            }
+
+            dst[y * tileWidth + x] = ttmPalette[palIndex & 0x0F];
+        }
+    }
+
+    /* Don't upload to VRAM - keep in RAM for LoadImage to framebuffer */
+    return tile;
+}
+
+/*
  * Load background screen
  */
 void grLoadScreen(char *strArg)
@@ -890,6 +944,10 @@ void grLoadScreen(char *strArg)
     freeBgTile(&bgTile1);
     freeBgTile(&bgTile2a);
     freeBgTile(&bgTile2b);
+    freeBgTile(&bgTile3);
+    freeBgTile(&bgTile4);
+    freeBgTile(&bgTile5a);
+    freeBgTile(&bgTile5b);
     grBackgroundSfc = NULL;  /* Points to bgTile0, already freed */
 
     if (grSavedZonesLayer != NULL) {
@@ -929,6 +987,13 @@ void grLoadScreen(char *strArg)
     bgTile1  = createBgTile(src, srcWidth, 256, 256, 640, 244); /* screen x=256-511 */
     bgTile2a = createBgTile(src, srcWidth, 512, 64,  896, 4);   /* screen x=512-575 */
     bgTile2b = createBgTile(src, srcWidth, 576, 62,  960, 4);   /* screen x=576-637 (62px even, avoids VRAM edge) */
+
+    /* TODO: Bottom row tiles disabled for now - need to investigate LoadImage approach
+    bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 256);
+    bgTile4  = createBgTileRAM(src, srcWidth, 256, 240, 256);
+    bgTile5a = createBgTileRAM(src, srcWidth, 512, 240, 64);
+    bgTile5b = createBgTileRAM(src, srcWidth, 576, 240, 62);
+    */
 
     DrawSync(0);
 

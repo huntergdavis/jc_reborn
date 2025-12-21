@@ -617,22 +617,6 @@ static void parseResourceFile(char * filename)
 void parseResourceFiles(char * filename)
 {
     parseMapFile(filename);
-
-#ifdef PS1_BUILD
-    /* ORANGE = parseMapFile completed, about to parseResourceFile */
-    {
-        ResetGraph(0);
-        SetVideoMode(MODE_NTSC);
-        DRAWENV draw;
-        SetDefDrawEnv(&draw, 0, 0, 320, 240);
-        setRGB0(&draw, 255, 165, 0);  /* ORANGE */
-        draw.isbg = 1;
-        PutDrawEnv(&draw);
-        SetDispMask(1);
-        for (volatile int i = 0; i < 3000000; i++);  /* ~1 sec busy wait */
-    }
-#endif
-
     parseResourceFile(filename);
 }
 

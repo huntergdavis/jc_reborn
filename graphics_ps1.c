@@ -63,7 +63,8 @@ PS1Surface *grBackgroundSfc = NULL;
 #define BG_TILE_HEIGHT 240
 static PS1Surface *bgTile0 = NULL;  /* x=0-255,   srcX=0 */
 static PS1Surface *bgTile1 = NULL;  /* x=256-511, srcX=256 */
-static PS1Surface *bgTile2 = NULL;  /* x=512-639, srcX=512, width=128 */
+static PS1Surface *bgTile2a = NULL; /* x=512-575, srcX=512, width=64 */
+static PS1Surface *bgTile2b = NULL; /* x=576-639, srcX=576, width=64 */
 
 /* Global variables matching original implementation */
 int grDx = 0;
@@ -788,22 +789,23 @@ void grDrawBackground(void)
 {
     RECT srcRect;
 
-    /* Draw top row: 3 tiles covering x=0 to x=639, y=0 to y=239 */
+    /* Draw top row: 4 tiles covering x=0 to x=639, y=0 to y=239 */
     if (bgTile0) {
         setRECT(&srcRect, bgTile0->x, bgTile0->y, bgTile0->width, bgTile0->height);
-        MoveImage(&srcRect, 0, 0);  /* Screen x=0-255 */
+        MoveImage(&srcRect, 0, 0);    /* Screen x=0-255 */
     }
     if (bgTile1) {
         setRECT(&srcRect, bgTile1->x, bgTile1->y, bgTile1->width, bgTile1->height);
         MoveImage(&srcRect, 256, 0);  /* Screen x=256-511 */
     }
-    /* TODO: Re-enable when tile 2 VRAM issue is resolved */
-    /*
-    if (bgTile2) {
-        setRECT(&srcRect, bgTile2->x, bgTile2->y, bgTile2->width, bgTile2->height);
-        MoveImage(&srcRect, 512, 0);
+    if (bgTile2a) {
+        setRECT(&srcRect, bgTile2a->x, bgTile2a->y, bgTile2a->width, bgTile2a->height);
+        MoveImage(&srcRect, 512, 0);  /* Screen x=512-575 */
     }
-    */
+    if (bgTile2b) {
+        setRECT(&srcRect, bgTile2b->x, bgTile2b->y, bgTile2b->width, bgTile2b->height);
+        MoveImage(&srcRect, 576, 0);  /* Screen x=576-639 */
+    }
 
     DrawSync(0);
 }
@@ -886,7 +888,8 @@ void grLoadScreen(char *strArg)
     /* Free existing tiles */
     freeBgTile(&bgTile0);
     freeBgTile(&bgTile1);
-    freeBgTile(&bgTile2);
+    freeBgTile(&bgTile2a);
+    freeBgTile(&bgTile2b);
     grBackgroundSfc = NULL;  /* Points to bgTile0, already freed */
 
     if (grSavedZonesLayer != NULL) {
@@ -916,18 +919,16 @@ void grLoadScreen(char *strArg)
     uint16 srcWidth  = scrResource->width;
     uint8 *src = scrResource->uncompressedData;
 
-    /* Create 3 tiles for top row (y=0-239)
-     * VRAM layout (right of 640x480 framebuffer):
-     * - Tile 0 (256x240) at VRAM(640, 4)
-     * - Tile 1 (256x240) at VRAM(640, 244)  - below tile 0
-     * - Tile 2 (128x240) at VRAM(896, 4)    - right of tile 0
+    /* Create tiles for top row (y=0-239)
+     * VRAM layout:
+     * - Tile 0  (256x240) at VRAM(640, 4)   - srcX=0,   y=4-243
+     * - Tile 1  (256x240) at VRAM(640, 244) - srcX=256, y=244-483
+     * DEBUG: Test single 64px tile at x=896 to isolate VRAM issue
      */
-    bgTile0 = createBgTile(src, srcWidth, 0,   256, 640, 4);    /* srcX=0,   screen x=0-255 */
-    bgTile1 = createBgTile(src, srcWidth, 256, 256, 640, 244);  /* srcX=256, screen x=256-511 */
-    /* TODO: Tile 2 has VRAM boundary issues at x=896. Disabled for now.
-     * Width 128 at x=896 hits VRAM edge (896+128=1024), causing corruption.
-     * Need to investigate: split into 2x64px tiles, or use different VRAM layout */
-    /* bgTile2 = createBgTile(src, srcWidth, 512, 128, 896, 4); */
+    bgTile0  = createBgTile(src, srcWidth, 0,   256, 640, 4);   /* screen x=0-255 */
+    bgTile1  = createBgTile(src, srcWidth, 256, 256, 640, 244); /* screen x=256-511 */
+    bgTile2a = createBgTile(src, srcWidth, 512, 64,  896, 4);   /* screen x=512-575 */
+    bgTile2b = createBgTile(src, srcWidth, 576, 62,  960, 4);   /* screen x=576-637 (62px even, avoids VRAM edge) */
 
     DrawSync(0);
 

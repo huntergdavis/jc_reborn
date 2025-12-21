@@ -504,7 +504,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->y = nextVRAMY;
 
         /* Allocate pixel buffer for 4-bit indexed data */
-        /* PS1 uses 4-bit textures, so we keep the data as-is (packed nibbles) */
+        /* Original sprites are 4-bit (16 colors), packed nibbles */
         uint32 pixelDataSize = (width * height) / 2;  /* 4-bit = 0.5 bytes per pixel */
         surface->pixels = (uint16*)safe_malloc(pixelDataSize);
 
@@ -514,7 +514,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         /* Upload texture to VRAM using DMA */
         RECT rect;
-        setRECT(&rect, surface->x, surface->y, width / 4, height);  /* Width in 16-bit units for 4-bit */
+        /* Width in 16-bit units for 4-bit textures: 4 pixels per 16-bit word */
+        setRECT(&rect, surface->x, surface->y, width / 4, height);
         LoadImage(&rect, (uint32*)surface->pixels);
 
         /* Set CLUT position (color lookup table) */
@@ -693,7 +694,7 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
     /* Calculate texture page from sprite VRAM position
      * tpage X: in 64-pixel units (sprite->x / 64)
      * tpage Y: in 256-pixel units (sprite->y / 256)
-     * Color mode: 0 = 4-bit CLUT */
+     * Color mode: 0 = 4-bit CLUT (16 colors) */
     uint16 tpageX = sprite->x / 64;
     uint16 tpageY = sprite->y / 256;
     setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
@@ -765,7 +766,7 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
            x, y + sprite->height,                   /* Bottom-left */
            x + sprite->width, y + sprite->height);  /* Bottom-right */
 
-    /* Calculate texture page from sprite VRAM position */
+    /* Calculate texture page from sprite VRAM position (4-bit mode) */
     uint16 tpageX = sprite->x / 64;
     uint16 tpageY = sprite->y / 256;
     poly->tpage = getTPage(0, 0, tpageX * 64, tpageY * 256);

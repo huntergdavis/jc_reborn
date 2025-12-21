@@ -338,24 +338,35 @@ int main(int argc, char **argv)
         grRefreshDisplay();
     }
 
-    /* Try to find a decompressed ADS and play it */
+    /* Try to find STAND.ADS for Johnny animations */
     extern struct TAdsResource *adsResources[];
     extern int numAdsResources;
     struct TAdsResource *testAds = NULL;
+    struct TAdsResource *standAds = NULL;
 
-    printf("Looking for decompressed ADS resource...\n");
+    printf("Looking for decompressed ADS resources...\n");
     for (int i = 0; i < numAdsResources; i++) {
         if (adsResources[i] && adsResources[i]->uncompressedData) {
-            testAds = adsResources[i];
             printf("Found ADS: %s (tag count: %d)\n",
-                   testAds->resName, testAds->numTags);
-            break;
+                   adsResources[i]->resName, adsResources[i]->numTags);
+            /* Specifically look for STAND.ADS which has Johnny idle animations */
+            if (strstr(adsResources[i]->resName, "STAND") != NULL) {
+                standAds = adsResources[i];
+            }
+            if (testAds == NULL) {
+                testAds = adsResources[i];
+            }
         }
     }
 
+    /* Prefer STAND.ADS if found */
+    if (standAds) {
+        testAds = standAds;
+        printf("Using STAND.ADS for Johnny animations\n");
+    }
+
     if (testAds) {
-        printf("Attempting to play ADS: %s tag 1\n", testAds->resName);
-        /* Try to play the first tag of the first available ADS */
+        printf("Playing ADS: %s tag 1\n", testAds->resName);
         adsPlay(testAds->resName, 1);
         printf("ADS playback returned\n");
     } else {

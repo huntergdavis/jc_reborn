@@ -831,7 +831,7 @@ struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName)
 
     /* Decompress first ADS for scene testing, lazy load the rest */
     static int adsDecompressCount = 0;
-    #define MAX_ADS_DECOMPRESS 2  /* Decompress first 2 ADS for testing */
+    #define MAX_ADS_DECOMPRESS 3  /* Conservative ADS decompression for memory */
 
     if (adsDecompressCount < MAX_ADS_DECOMPRESS) {
         printf("Decompressing ADS: %s (%u bytes)\n", resName, adsResource->uncompressedSize);
@@ -931,7 +931,7 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
 
     /* Decompress first few BMPs for testing, lazy load the rest */
     static int bmpDecompressCount = 0;
-    #define MAX_BMP_DECOMPRESS 3  /* Decompress first 3 BMPs for testing */
+    #define MAX_BMP_DECOMPRESS 10  /* Conservative BMP decompression for memory */
 
     if (bmpDecompressCount < MAX_BMP_DECOMPRESS) {
         bmpResource->uncompressedData = ps1_uncompress(f,
@@ -1199,7 +1199,7 @@ struct TTtmResource* ps1_parseTtmResource(PS1File *f, const char *resName)
 
     /* Decompress first few TTMs for scene testing, lazy load the rest */
     static int ttmDecompressCount = 0;
-    #define MAX_TTM_DECOMPRESS 5  /* Decompress first 5 TTMs for testing */
+    #define MAX_TTM_DECOMPRESS 10  /* Conservative TTM decompression for memory */
 
     if (ttmDecompressCount < MAX_TTM_DECOMPRESS) {
         printf("Decompressing TTM: %s (%u bytes)\n", resName, ttmResource->uncompressedSize);

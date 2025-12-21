@@ -332,7 +332,37 @@ int main(int argc, char **argv)
         spriteLoaded = (testTtmSlot.numSprites[0] > 0);
     }
 
-    /* Graphics test loop */
+    /* Show title screen for 3 seconds (180 frames at 60fps) */
+    printf("Showing title screen for 3 seconds...\n");
+    for (int i = 0; i < 180; i++) {
+        grRefreshDisplay();
+    }
+
+    /* Try to find a decompressed ADS and play it */
+    extern struct TAdsResource *adsResources[];
+    extern int numAdsResources;
+    struct TAdsResource *testAds = NULL;
+
+    printf("Looking for decompressed ADS resource...\n");
+    for (int i = 0; i < numAdsResources; i++) {
+        if (adsResources[i] && adsResources[i]->uncompressedData) {
+            testAds = adsResources[i];
+            printf("Found ADS: %s (tag count: %d)\n",
+                   testAds->resName, testAds->numTags);
+            break;
+        }
+    }
+
+    if (testAds) {
+        printf("Attempting to play ADS: %s tag 1\n", testAds->resName);
+        /* Try to play the first tag of the first available ADS */
+        adsPlay(testAds->resName, 1);
+        printf("ADS playback returned\n");
+    } else {
+        printf("No decompressed ADS found\n");
+    }
+
+    /* Graphics test loop - continue with sprite animation */
     int frameCount = 0;
     int spriteX = 100;
     while(1) {

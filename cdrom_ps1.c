@@ -962,10 +962,12 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     static int bmpDecompressCount = 0;
     #define MAX_BMP_DECOMPRESS 12  /* Conservative limit to avoid memory crash */
 
-    /* Check if this is an essential Johnny sprite */
+    /* Check if this is an essential sprite */
     int isEssentialBmp = (strstr(resName, "JOHNWALK") != NULL) ||
                          (strstr(resName, "JOHNWOUL") != NULL) ||
-                         (strstr(resName, "BACKGRND") != NULL);
+                         (strstr(resName, "BACKGRND") != NULL) ||
+                         (strstr(resName, "HOLIDAY") != NULL) ||  /* Christmas tree, etc. */
+                         (strstr(resName, "CLOUDS") != NULL);
 
     if (isEssentialBmp || bmpDecompressCount < MAX_BMP_DECOMPRESS) {
         printf("Decompressing BMP: %s (%u bytes)%s\n", resName,

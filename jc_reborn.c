@@ -276,15 +276,31 @@ int main(int argc, char **argv)
     /* Initialize graphics - no debug screen needed */
     graphicsInit();
 
-    /* Find decompressed SCR for background test */
+    /* Find decompressed SCR for background test
+     * Prefer 640x480 SCR to test full-screen rendering */
     extern struct TScrResource *scrResources[];
     extern int numScrResources;
     struct TScrResource *testScr = NULL;
 
+    /* First pass: look for a full 640x480 SCR */
     for (int i = 0; i < numScrResources; i++) {
-        if (scrResources[i] && scrResources[i]->uncompressedData) {
+        if (scrResources[i] && scrResources[i]->uncompressedData &&
+            scrResources[i]->height >= 480) {
             testScr = scrResources[i];
+            printf("Found 640x480 SCR: %s (%dx%d)\n",
+                   testScr->resName, testScr->width, testScr->height);
             break;
+        }
+    }
+    /* Fallback: any SCR with data */
+    if (!testScr) {
+        for (int i = 0; i < numScrResources; i++) {
+            if (scrResources[i] && scrResources[i]->uncompressedData) {
+                testScr = scrResources[i];
+                printf("Using partial SCR: %s (%dx%d)\n",
+                       testScr->resName, testScr->width, testScr->height);
+                break;
+            }
         }
     }
 
@@ -295,7 +311,21 @@ int main(int argc, char **argv)
         if (numPalResources > 0 && palResources[0]) {
             grLoadPalette(palResources[0]);
         }
-        grLoadScreen(testScr->resName);
+        /* Try to load OCEAN00.SCR (known 640x480) if available, else use testScr */
+        struct TScrResource *oceanScr = NULL;
+        for (int i = 0; i < numScrResources; i++) {
+            if (scrResources[i] && strcmp(scrResources[i]->resName, "OCEAN00.SCR") == 0) {
+                oceanScr = scrResources[i];
+                break;
+            }
+        }
+        if (oceanScr && oceanScr->uncompressedData) {
+            printf("Loading OCEAN00.SCR (640x480)\n");
+            grLoadScreen("OCEAN00.SCR");
+        } else {
+            printf("Loading default: %s\n", testScr->resName);
+            grLoadScreen(testScr->resName);
+        }
     }
 
     /* Try to load a BMP sprite for testing */

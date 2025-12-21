@@ -1115,17 +1115,8 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
             extern uint8 ps1_lzwNC1_bits[9];
             extern uint8 ps1_lzwNC1_curBytes[2];
 
-            /* LZW decompression successful - show brief confirmation */
-            ps1DebugInit();
-            ps1DebugClear();
-            ps1DebugPrint("LZW OK: %s", scrResource->resName);
-            ps1DebugPrint("%dx%d = %lu bytes",
-                scrResource->width, scrResource->height,
-                (unsigned long)outSize);
-            ps1DebugPrint("First: %02X %02X %02X %02X",
-                out[0], out[1], out[2], out[3]);
-            ps1DebugFlush();
-            for (volatile int i = 0; i < 10000000; i++);  /* ~3 sec */
+            /* LZW decompression successful - skip debug display */
+            (void)outSize;  /* Suppress unused warning */
         }
     } else {
         /* Skip compressed data for remaining SCRs */

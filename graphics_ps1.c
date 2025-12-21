@@ -57,6 +57,14 @@ static uint16 ttmPalette[16];
 static PS1Surface *grSavedZonesLayer = NULL;
 PS1Surface *grBackgroundSfc = NULL;
 
+/* Background tiles for pixel-perfect 640x480 rendering
+ * Top row: 3 tiles (256+256+128 = 640 pixels wide, 240 tall)
+ * Bottom row will be added later */
+#define BG_TILE_HEIGHT 240
+static PS1Surface *bgTile0 = NULL;  /* x=0-255,   srcX=0 */
+static PS1Surface *bgTile1 = NULL;  /* x=256-511, srcX=256 */
+static PS1Surface *bgTile2 = NULL;  /* x=512-639, srcX=512, width=128 */
+
 /* Global variables matching original implementation */
 int grDx = 0;
 int grDy = 0;
@@ -778,36 +786,25 @@ void grClearScreen(PS1Surface *sfc)
  */
 void grDrawBackground(void)
 {
-    if (grBackgroundSfc == NULL || grBackgroundSfc->pixels == NULL) {
-        return;
+    RECT srcRect;
+
+    /* Draw top row: 3 tiles covering x=0 to x=639, y=0 to y=239 */
+    if (bgTile0) {
+        setRECT(&srcRect, bgTile0->x, bgTile0->y, bgTile0->width, bgTile0->height);
+        MoveImage(&srcRect, 0, 0);  /* Screen x=0-255 */
     }
-
-    /* Copy the scaled texture directly to framebuffer at (0,0)
-     * The texture is 256x240, we need to tile/scale it to fill 640x480
-     * For now, just draw it at 1:1 in the top-left and tile */
-
-    RECT srcRect, dstRect;
-
-    /* Draw single tile at top-left (1x1 grid for testing) */
-    for (int ty = 0; ty < 1; ty++) {
-        for (int tx = 0; tx < 1; tx++) {
-            /* Calculate destination position */
-            int dstX = tx * grBackgroundSfc->width;
-            int dstY = ty * grBackgroundSfc->height;
-
-            /* Clip to screen bounds */
-            int copyW = grBackgroundSfc->width;
-            int copyH = grBackgroundSfc->height;
-            if (dstX + copyW > 640) copyW = 640 - dstX;
-            if (dstY + copyH > 480) copyH = 480 - dstY;
-            if (copyW <= 0 || copyH <= 0) continue;
-
-            /* Copy from texture VRAM location to framebuffer */
-            setRECT(&srcRect, grBackgroundSfc->x, grBackgroundSfc->y, copyW, copyH);
-            setRECT(&dstRect, dstX, dstY, copyW, copyH);
-            MoveImage(&srcRect, dstX, dstY);
-        }
+    if (bgTile1) {
+        setRECT(&srcRect, bgTile1->x, bgTile1->y, bgTile1->width, bgTile1->height);
+        MoveImage(&srcRect, 256, 0);  /* Screen x=256-511 */
     }
+    /* TODO: Re-enable when tile 2 VRAM issue is resolved */
+    /*
+    if (bgTile2) {
+        setRECT(&srcRect, bgTile2->x, bgTile2->y, bgTile2->width, bgTile2->height);
+        MoveImage(&srcRect, 512, 0);
+    }
+    */
+
     DrawSync(0);
 }
 
@@ -820,14 +817,77 @@ void grFadeOut()
 }
 
 /*
+ * Helper: Create a single background tile
+ * src = source image data (4-bit packed)
+ * srcWidth = total width of source image
+ * srcStartX = x offset in source to start copying from
+ * tileWidth = width of this tile (256 or 128)
+ * vramX, vramY = where to place in VRAM
+ */
+static PS1Surface *createBgTile(uint8 *src, uint16 srcWidth,
+                                 uint16 srcStartX, uint16 tileWidth,
+                                 uint16 vramX, uint16 vramY)
+{
+    PS1Surface *tile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+    tile->width = tileWidth;
+    tile->height = BG_TILE_HEIGHT;
+    tile->x = vramX;
+    tile->y = vramY;
+
+    /* Allocate pixel buffer for 15-bit direct color */
+    uint32 pixelDataSize = tileWidth * BG_TILE_HEIGHT * 2;
+    tile->pixels = (uint16*)safe_malloc(pixelDataSize);
+
+    uint16 *dst = tile->pixels;
+
+    /* 1:1 pixel copy from source region */
+    for (uint16 y = 0; y < BG_TILE_HEIGHT; y++) {
+        for (uint16 x = 0; x < tileWidth; x++) {
+            uint32 srcX = srcStartX + x;
+            uint32 srcY = y;
+
+            /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
+            uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
+
+            uint8 palIndex;
+            if (srcX & 1) {
+                palIndex = src[srcOffset] & 0x0F;
+            } else {
+                palIndex = (src[srcOffset] >> 4) & 0x0F;
+            }
+
+            dst[y * tileWidth + x] = ttmPalette[palIndex & 0x0F];
+        }
+    }
+
+    /* Upload tile to VRAM */
+    RECT rect;
+    setRECT(&rect, tile->x, tile->y, tileWidth, BG_TILE_HEIGHT);
+    LoadImage(&rect, (uint32*)tile->pixels);
+
+    return tile;
+}
+
+/* Helper to free a tile */
+static void freeBgTile(PS1Surface **tile)
+{
+    if (*tile != NULL) {
+        if ((*tile)->pixels) free((*tile)->pixels);
+        free(*tile);
+        *tile = NULL;
+    }
+}
+
+/*
  * Load background screen
  */
 void grLoadScreen(char *strArg)
 {
-    if (grBackgroundSfc != NULL) {
-        grFreeLayer(grBackgroundSfc);
-        grBackgroundSfc = NULL;
-    }
+    /* Free existing tiles */
+    freeBgTile(&bgTile0);
+    freeBgTile(&bgTile1);
+    freeBgTile(&bgTile2);
+    grBackgroundSfc = NULL;  /* Points to bgTile0, already freed */
 
     if (grSavedZonesLayer != NULL) {
         grFreeLayer(grSavedZonesLayer);
@@ -854,72 +914,25 @@ void grLoadScreen(char *strArg)
     }
 
     uint16 srcWidth  = scrResource->width;
-    uint16 srcHeight = scrResource->height;
-
-    /* Use 256x240 texture (back to working size) */
-    uint16 dstWidth  = 256;
-    uint16 dstHeight = 240;
-
-    /* Allocate PS1Surface for background */
-    grBackgroundSfc = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-    grBackgroundSfc->width = dstWidth;
-    grBackgroundSfc->height = dstHeight;
-    grBackgroundSfc->x = nextVRAMX;
-    grBackgroundSfc->y = nextVRAMY;
-
-    /* Convert to 15-bit direct color (no CLUT needed - simplest approach) */
-    uint32 dstPixelDataSize = dstWidth * dstHeight * 2;  /* 16-bit = 2 bytes per pixel */
-    grBackgroundSfc->pixels = (uint16*)safe_malloc(dstPixelDataSize);
-
     uint8 *src = scrResource->uncompressedData;
-    uint16 *dst = grBackgroundSfc->pixels;
 
-    /* Calculate scale factors (fixed point 8.8) */
-    uint32 xScale = (srcWidth << 8) / dstWidth;   /* src pixels per dst pixel * 256 */
-    uint32 yScale = (srcHeight << 8) / dstHeight;
+    /* Create 3 tiles for top row (y=0-239)
+     * VRAM layout (right of 640x480 framebuffer):
+     * - Tile 0 (256x240) at VRAM(640, 4)
+     * - Tile 1 (256x240) at VRAM(640, 244)  - below tile 0
+     * - Tile 2 (128x240) at VRAM(896, 4)    - right of tile 0
+     */
+    bgTile0 = createBgTile(src, srcWidth, 0,   256, 640, 4);    /* srcX=0,   screen x=0-255 */
+    bgTile1 = createBgTile(src, srcWidth, 256, 256, 640, 244);  /* srcX=256, screen x=256-511 */
+    /* TODO: Tile 2 has VRAM boundary issues at x=896. Disabled for now.
+     * Width 128 at x=896 hits VRAM edge (896+128=1024), causing corruption.
+     * Need to investigate: split into 2x64px tiles, or use different VRAM layout */
+    /* bgTile2 = createBgTile(src, srcWidth, 512, 128, 896, 4); */
 
-    /* Convert indexed pixels to 15-bit using palette lookup */
-    for (uint16 y = 0; y < dstHeight; y++) {
-        uint32 srcY = (y * yScale) >> 8;
-        for (uint16 x = 0; x < dstWidth; x++) {
-            /* Get source pixel position */
-            uint32 srcX = (x * xScale) >> 8;
-
-            /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
-            uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
-
-            uint8 palIndex;
-            if (srcX & 1) {
-                palIndex = src[srcOffset] & 0x0F;  /* Low nibble */
-            } else {
-                palIndex = (src[srcOffset] >> 4) & 0x0F;  /* High nibble */
-            }
-
-            /* Look up actual palette color - ttmPalette is already in BGR555 format */
-            dst[y * dstWidth + x] = ttmPalette[palIndex & 0x0F];
-        }
-    }
-
-    /* Upload background to VRAM using DMA
-     * For 15-bit textures: 1 pixel per 16-bit VRAM word */
-    RECT rect;
-    uint16 vramWidth = dstWidth;  /* VRAM width in 16-bit units = pixels */
-    setRECT(&rect, grBackgroundSfc->x, grBackgroundSfc->y, vramWidth, dstHeight);
-    LoadImage(&rect, (uint32*)grBackgroundSfc->pixels);
-
-    /* Wait for DMA transfer to complete */
     DrawSync(0);
 
-    /* Set CLUT position - use 16-color palette at (640, 0) */
-    grBackgroundSfc->clutX = 640;
-    grBackgroundSfc->clutY = 0;
-
-    /* Update VRAM allocation (use actual VRAM width) */
-    nextVRAMX += vramWidth;
-    if (nextVRAMX >= 1024) {
-        nextVRAMX = 320;  /* Reset to right of framebuffers */
-        nextVRAMY += dstHeight;
-    }
+    /* Set grBackgroundSfc to first tile for compatibility with existing code */
+    grBackgroundSfc = bgTile0;
 
     /* Free SCR data after converting - saves memory */
     if (scrResource->uncompressedData) {

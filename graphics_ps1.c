@@ -990,17 +990,34 @@ void grLoadScreen(char *strArg)
     bgTile2a = createBgTile(src, srcWidth, 512, 64,  896, 4);   /* screen x=512-575 */
     bgTile2b = createBgTile(src, srcWidth, 576, 62,  960, 4);   /* screen x=576-637 (62px even, avoids VRAM edge) */
 
-    /* Bottom row: Only create if SCR is actually 480 lines tall */
+    /* Bottom row: Only create if SCR has enough lines
+     * Many SCR files are 640x350, not 640x480 - must check actual height */
     uint16 srcHeight = scrResource->height;
-    if (srcHeight > 240) {
-        /* Full 640x480 image - create bottom row tiles */
+
+    /* Debug: Print SCR dimensions */
+    printf("SCR: %s - %dx%d (uncompressed: %u bytes)\n",
+           scrResource->resName, srcWidth, srcHeight, scrResource->uncompressedSize);
+
+    /* Calculate how many lines we can read for bottom half (y=240+) */
+    uint16 bottomRowLines = (srcHeight > 240) ? (srcHeight - 240) : 0;
+
+    if (bottomRowLines >= 240) {
+        /* Full 640x480 image - create full bottom row tiles */
         bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 256);
         bgTile4  = createBgTileRAM(src, srcWidth, 256, 240, 256);
         bgTile5a = createBgTileRAM(src, srcWidth, 512, 240, 64);
         bgTile5b = createBgTileRAM(src, srcWidth, 576, 240, 62);
+    } else if (bottomRowLines > 0) {
+        /* Partial bottom row (e.g., 640x350 = 110 lines for bottom)
+         * For now, leave bottom row NULL - shows black
+         * TODO: Create partial-height tiles to show available lines */
+        printf("SCR has only %d lines for bottom half (need 240)\n", bottomRowLines);
+        bgTile3  = NULL;
+        bgTile4  = NULL;
+        bgTile5a = NULL;
+        bgTile5b = NULL;
     } else {
-        /* SCR is only 240 lines - no bottom row data */
-        /* For now, duplicate top row to fill bottom (or leave black) */
+        /* SCR is only 240 lines or less - no bottom row data at all */
         bgTile3  = NULL;
         bgTile4  = NULL;
         bgTile5a = NULL;

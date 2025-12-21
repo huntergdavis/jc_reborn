@@ -677,13 +677,27 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
-    /* Allocate SPRT primitive from buffer */
-    if (primitiveIndex[db] + sizeof(SPRT) > PRIMITIVE_BUFFER_SIZE) {
+    /* Allocate DR_TPAGE + SPRT primitives from buffer */
+    if (primitiveIndex[db] + sizeof(DR_TPAGE) + sizeof(SPRT) > PRIMITIVE_BUFFER_SIZE) {
         if (debugMode) {
             printf("Warning: Primitive buffer full!\n");
         }
         return;
     }
+
+    /* Add texture page primitive first - tells GPU where texture data is */
+    DR_TPAGE *tpage = (DR_TPAGE*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(DR_TPAGE);
+    primitiveIndex[db] += sizeof(DR_TPAGE);
+
+    /* Calculate texture page from sprite VRAM position
+     * tpage X: in 64-pixel units (sprite->x / 64)
+     * tpage Y: in 256-pixel units (sprite->y / 256)
+     * Color mode: 0 = 4-bit CLUT */
+    uint16 tpageX = sprite->x / 64;
+    uint16 tpageY = sprite->y / 256;
+    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
+    addPrim(&ot[db][0], tpage);
 
     SPRT *sprt = (SPRT*)nextPrimitive[db];
     nextPrimitive[db] += sizeof(SPRT);
@@ -693,7 +707,8 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
     setSprt(sprt);
     setXY0(sprt, x, y);
     setWH(sprt, sprite->width, sprite->height);
-    setUV0(sprt, sprite->x & 0xFF, sprite->y & 0xFF);  /* Texture coords in VRAM (8-bit) */
+    /* UV coords are relative to texture page (0-255 range) */
+    setUV0(sprt, (sprite->x % 256) & 0xFF, (sprite->y % 256) & 0xFF);
     setClut(sprt, sprite->clutX, sprite->clutY);
     setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
 
@@ -750,11 +765,18 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
            x, y + sprite->height,                   /* Bottom-left */
            x + sprite->width, y + sprite->height);  /* Bottom-right */
 
-    /* Set UV coordinates (flipped horizontally) */
-    uint8 u0 = sprite->x + sprite->width;  /* Right edge */
-    uint8 u1 = sprite->x;                   /* Left edge */
-    uint8 v0 = sprite->y;
-    uint8 v1 = sprite->y + sprite->height;
+    /* Calculate texture page from sprite VRAM position */
+    uint16 tpageX = sprite->x / 64;
+    uint16 tpageY = sprite->y / 256;
+    poly->tpage = getTPage(0, 0, tpageX * 64, tpageY * 256);
+
+    /* Set UV coordinates (flipped horizontally, relative to texture page) */
+    uint8 baseU = (sprite->x % 256) & 0xFF;
+    uint8 baseV = (sprite->y % 256) & 0xFF;
+    uint8 u0 = baseU + sprite->width;  /* Right edge */
+    uint8 u1 = baseU;                   /* Left edge */
+    uint8 v0 = baseV;
+    uint8 v1 = baseV + sprite->height;
 
     setUV4(poly, u0, v0, u1, v0, u0, v1, u1, v1);  /* Flipped U coords */
 

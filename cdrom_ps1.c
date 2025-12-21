@@ -1006,9 +1006,9 @@ struct TPalResource* ps1_parsePalResource(PS1File *f, const char *resName)
     return palResource;
 }
 
-/* Counter for SCR decompression test - only decompress first few */
+/* Counter for SCR decompression test - only decompress 640x480 SCRs */
 static int scrDecompressCount = 0;
-#define MAX_SCR_DECOMPRESS 1  /* Only decompress first SCR for testing */
+#define MAX_SCR_DECOMPRESS 1  /* Only decompress first qualifying SCR for testing */
 
 struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
 {
@@ -1066,12 +1066,19 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     static uint8 savedInputBytes[8];
     static size_t savedFilePos;
 
-    if (scrDecompressCount < MAX_SCR_DECOMPRESS) {
+    /* Only decompress 640x480 SCRs for full-screen testing */
+    int shouldDecompress = (scrDecompressCount < MAX_SCR_DECOMPRESS) &&
+                           (scrResource->height >= 480);
+
+    if (shouldDecompress) {
         /* Save input bytes for later display */
         savedFilePos = f->currentPos;
         for (int i = 0; i < 8; i++) {
             savedInputBytes[i] = f->buffer[f->currentPos + i];
         }
+
+        printf("Decompressing 640x480 SCR: %s (%dx%d)\n",
+               resName, scrResource->width, scrResource->height);
 
         scrResource->uncompressedData = ps1_uncompress(f,
                                             scrResource->compressionMethod,

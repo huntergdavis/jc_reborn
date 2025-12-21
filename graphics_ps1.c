@@ -988,7 +988,7 @@ void grLoadScreen(char *strArg)
     bgTile0  = createBgTile(src, srcWidth, 0,   256, 640, 4);   /* screen x=0-255 */
     bgTile1  = createBgTile(src, srcWidth, 256, 256, 640, 244); /* screen x=256-511 */
     bgTile2a = createBgTile(src, srcWidth, 512, 64,  896, 4);   /* screen x=512-575 */
-    bgTile2b = createBgTile(src, srcWidth, 576, 62,  960, 4);   /* screen x=576-637 (62px even, avoids VRAM edge) */
+    bgTile2b = createBgTile(src, srcWidth, 576, 64,  960, 4);   /* screen x=576-639 (full 64px to cover all 640) */
 
     /* Bottom row: Only create if SCR has enough lines
      * Many SCR files are 640x350, not 640x480 - must check actual height */
@@ -1006,7 +1006,7 @@ void grLoadScreen(char *strArg)
         bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 256);
         bgTile4  = createBgTileRAM(src, srcWidth, 256, 240, 256);
         bgTile5a = createBgTileRAM(src, srcWidth, 512, 240, 64);
-        bgTile5b = createBgTileRAM(src, srcWidth, 576, 240, 62);
+        bgTile5b = createBgTileRAM(src, srcWidth, 576, 240, 64);
     } else if (bottomRowLines > 0) {
         /* Partial bottom row (e.g., 640x350 = 110 lines for bottom)
          * For now, leave bottom row NULL - shows black

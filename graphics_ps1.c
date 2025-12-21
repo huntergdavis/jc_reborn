@@ -67,7 +67,11 @@ static PS1Surface *bgTile1 = NULL;  /* x=256-511, srcX=256 */
 static PS1Surface *bgTile2a = NULL; /* x=512-575, srcX=512, width=64 */
 static PS1Surface *bgTile2b = NULL; /* x=576-639, srcX=576, width=64 */
 
-/* Bottom row tiles (stored in RAM, LoadImage to framebuffer each frame) */
+/* Bottom row tiles - need VRAM space outside framebuffer (0-639, 0-479)
+ * VRAM is 1024x512. Texture area: x=640-1023, y=0-511
+ * Top row uses: (640,4)-(895,243), (640,244)-(895,483), (896,4)-(959,243), (960,4)-(1021,243)
+ * Bottom row can use y=484+ area since VRAM is 512 tall: LIMITED SPACE
+ * Alternative: Use same VRAM locations as top row, MoveImage top first, then load bottom, MoveImage bottom */
 static PS1Surface *bgTile3 = NULL;  /* y=240, x=0-255 */
 static PS1Surface *bgTile4 = NULL;  /* y=240, x=256-511 */
 static PS1Surface *bgTile5a = NULL; /* y=240, x=512-575 */
@@ -789,14 +793,15 @@ void grClearScreen(PS1Surface *sfc)
 
 /*
  * Draw background surface to screen
- * Copies texture data directly to framebuffer using LoadImage (CPU blit)
- * This avoids PS1 GPU polygon size limitations
+ * Top row: MoveImage from VRAM texture area (pre-loaded at init)
+ * Bottom row: Already in framebuffer from init (single-buffer mode persists)
  */
 void grDrawBackground(void)
 {
     RECT srcRect;
 
     /* Draw top row: 4 tiles covering x=0 to x=639, y=0 to y=239 */
+    /* Bottom row was written once at init and persists in framebuffer */
     if (bgTile0) {
         setRECT(&srcRect, bgTile0->x, bgTile0->y, bgTile0->width, bgTile0->height);
         MoveImage(&srcRect, 0, 0);    /* Screen x=0-255 */
@@ -813,9 +818,6 @@ void grDrawBackground(void)
         setRECT(&srcRect, bgTile2b->x, bgTile2b->y, bgTile2b->width, bgTile2b->height);
         MoveImage(&srcRect, 576, 0);  /* Screen x=576-639 */
     }
-
-    /* TODO: Bottom row tiles - LoadImage approach needs investigation
-     * Bottom row tile creation and drawing disabled for now */
 
     DrawSync(0);
 }
@@ -988,14 +990,52 @@ void grLoadScreen(char *strArg)
     bgTile2a = createBgTile(src, srcWidth, 512, 64,  896, 4);   /* screen x=512-575 */
     bgTile2b = createBgTile(src, srcWidth, 576, 62,  960, 4);   /* screen x=576-637 (62px even, avoids VRAM edge) */
 
-    /* TODO: Bottom row tiles disabled for now - need to investigate LoadImage approach
-    bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 256);
-    bgTile4  = createBgTileRAM(src, srcWidth, 256, 240, 256);
-    bgTile5a = createBgTileRAM(src, srcWidth, 512, 240, 64);
-    bgTile5b = createBgTileRAM(src, srcWidth, 576, 240, 62);
-    */
+    /* Bottom row: Only create if SCR is actually 480 lines tall */
+    uint16 srcHeight = scrResource->height;
+    if (srcHeight > 240) {
+        /* Full 640x480 image - create bottom row tiles */
+        bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 256);
+        bgTile4  = createBgTileRAM(src, srcWidth, 256, 240, 256);
+        bgTile5a = createBgTileRAM(src, srcWidth, 512, 240, 64);
+        bgTile5b = createBgTileRAM(src, srcWidth, 576, 240, 62);
+    } else {
+        /* SCR is only 240 lines - no bottom row data */
+        /* For now, duplicate top row to fill bottom (or leave black) */
+        bgTile3  = NULL;
+        bgTile4  = NULL;
+        bgTile5a = NULL;
+        bgTile5b = NULL;
+    }
 
-    DrawSync(0);
+    DrawSync(0);  /* Sync top row uploads */
+
+    /* Disable display during bottom row LoadImage to avoid tearing/corruption */
+    SetDispMask(0);
+
+    /* LoadImage bottom row tiles directly to framebuffer */
+    RECT dstRect;
+
+    if (bgTile3 && bgTile3->pixels) {
+        setRECT(&dstRect, 0, 240, bgTile3->width, bgTile3->height);
+        LoadImage(&dstRect, (uint32*)bgTile3->pixels);
+    }
+    if (bgTile4 && bgTile4->pixels) {
+        setRECT(&dstRect, 256, 240, bgTile4->width, bgTile4->height);
+        LoadImage(&dstRect, (uint32*)bgTile4->pixels);
+    }
+    if (bgTile5a && bgTile5a->pixels) {
+        setRECT(&dstRect, 512, 240, bgTile5a->width, bgTile5a->height);
+        LoadImage(&dstRect, (uint32*)bgTile5a->pixels);
+    }
+    if (bgTile5b && bgTile5b->pixels) {
+        setRECT(&dstRect, 576, 240, bgTile5b->width, bgTile5b->height);
+        LoadImage(&dstRect, (uint32*)bgTile5b->pixels);
+    }
+
+    DrawSync(0);  /* Sync bottom row uploads */
+
+    /* Re-enable display */
+    SetDispMask(1);
 
     /* Set grBackgroundSfc to first tile for compatibility with existing code */
     grBackgroundSfc = bgTile0;

@@ -929,16 +929,23 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     bmpResource->compressionMethod = ps1_readUint8(f);
     bmpResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress first few BMPs for testing, lazy load the rest */
+    /* Decompress essential BMPs - prioritize Johnny sprites */
     static int bmpDecompressCount = 0;
-    #define MAX_BMP_DECOMPRESS 10  /* Conservative limit to avoid memory crash */
+    #define MAX_BMP_DECOMPRESS 12  /* Conservative limit to avoid memory crash */
 
-    if (bmpDecompressCount < MAX_BMP_DECOMPRESS) {
+    /* Check if this is an essential Johnny sprite */
+    int isEssentialBmp = (strstr(resName, "JOHNWALK") != NULL) ||
+                         (strstr(resName, "JOHNWOUL") != NULL) ||
+                         (strstr(resName, "BACKGRND") != NULL);
+
+    if (isEssentialBmp || bmpDecompressCount < MAX_BMP_DECOMPRESS) {
+        printf("Decompressing BMP: %s (%u bytes)%s\n", resName,
+               bmpResource->uncompressedSize, isEssentialBmp ? " [ESSENTIAL]" : "");
         bmpResource->uncompressedData = ps1_uncompress(f,
                                             bmpResource->compressionMethod,
                                             bmpResource->compressedSize,
                                             bmpResource->uncompressedSize);
-        bmpDecompressCount++;
+        if (!isEssentialBmp) bmpDecompressCount++;
     } else {
         /* Lazy loading: skip compressed data */
         bmpResource->uncompressedData = NULL;

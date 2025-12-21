@@ -829,9 +829,22 @@ struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName)
     adsResource->compressionMethod = ps1_readUint8(f);
     adsResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Lazy loading: skip compressed data, will load on demand */
-    adsResource->uncompressedData = NULL;
-    ps1_fseek(f, adsResource->compressedSize, SEEK_CUR);
+    /* Decompress first ADS for scene testing, lazy load the rest */
+    static int adsDecompressCount = 0;
+    #define MAX_ADS_DECOMPRESS 2  /* Decompress first 2 ADS for testing */
+
+    if (adsDecompressCount < MAX_ADS_DECOMPRESS) {
+        printf("Decompressing ADS: %s (%u bytes)\n", resName, adsResource->uncompressedSize);
+        adsResource->uncompressedData = ps1_uncompress(f,
+                                            adsResource->compressionMethod,
+                                            adsResource->compressedSize,
+                                            adsResource->uncompressedSize);
+        adsDecompressCount++;
+    } else {
+        /* Lazy loading: skip compressed data */
+        adsResource->uncompressedData = NULL;
+        ps1_fseek(f, adsResource->compressedSize, SEEK_CUR);
+    }
 
     /* Read "TAG:" header */
     buffer = ps1_readUint8Block(f, 4);
@@ -1184,11 +1197,24 @@ struct TTtmResource* ps1_parseTtmResource(PS1File *f, const char *resName)
     ttmResource->compressionMethod = ps1_readUint8(f);
     ttmResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Lazy loading: skip compressed data, will load on demand */
-    ttmResource->uncompressedData = NULL;
+    /* Decompress first few TTMs for scene testing, lazy load the rest */
+    static int ttmDecompressCount = 0;
+    #define MAX_TTM_DECOMPRESS 5  /* Decompress first 5 TTMs for testing */
+
+    if (ttmDecompressCount < MAX_TTM_DECOMPRESS) {
+        printf("Decompressing TTM: %s (%u bytes)\n", resName, ttmResource->uncompressedSize);
+        ttmResource->uncompressedData = ps1_uncompress(f,
+                                            ttmResource->compressionMethod,
+                                            ttmResource->compressedSize,
+                                            ttmResource->uncompressedSize);
+        ttmDecompressCount++;
+    } else {
+        /* Lazy loading: skip compressed data */
+        ttmResource->uncompressedData = NULL;
+        ps1_fseek(f, ttmResource->compressedSize, SEEK_CUR);
+    }
     ttmResource->lastUsedTick = 0;
     ttmResource->pinCount = 0;
-    ps1_fseek(f, ttmResource->compressedSize, SEEK_CUR);
 
     /* Read "TTI:" header */
     buffer = ps1_readUint8Block(f, 4);

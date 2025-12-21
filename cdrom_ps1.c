@@ -47,20 +47,10 @@ int simpleTestFunction(void)
     return 99;
 }
 
-/* Visual checkpoint helper for this function */
+/* Visual checkpoint helper - disabled for production */
 static void checkpoint(int r, int g, int b) {
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, r, g, b);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    /* Wait 1 second to see the color */
-    for (int i = 0; i < 60; i++) {
-        VSync(0);
-    }
+    (void)r; (void)g; (void)b;  /* Suppress unused warnings */
+    /* Debug checkpoints disabled - enable if needed for debugging */
 }
 
 /* Pure CD-ROM test - NO GRAPHICS to avoid corruption */
@@ -219,17 +209,10 @@ int cdromFirstFunction(void)
     return 42;  /* No files found at all */
 }
 
-/* Visual debug helper for CD-ROM errors */
+/* Visual debug helper for CD-ROM errors - disabled for production */
 static void showCDError(int r, int g, int b) {
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    DRAWENV draw;
-    SetDefDrawEnv(&draw, 0, 0, 640, 480);
-    setRGB0(&draw, r, g, b);
-    draw.isbg = 1;
-    PutDrawEnv(&draw);
-    SetDispMask(1);
-    while(1);  /* Hang with error color */
+    (void)r; (void)g; (void)b;  /* Suppress unused warnings */
+    /* Error screens disabled - errors will be logged via ps1Debug instead */
 }
 
 /*
@@ -1006,9 +989,10 @@ struct TPalResource* ps1_parsePalResource(PS1File *f, const char *resName)
     return palResource;
 }
 
-/* Counter for SCR decompression test - only decompress 640x480 SCRs */
+/* Counter for SCR decompression - prioritize INTRO.SCR for title screen */
 static int scrDecompressCount = 0;
-#define MAX_SCR_DECOMPRESS 1  /* Only decompress first qualifying SCR for testing */
+#define MAX_SCR_DECOMPRESS 2  /* Allow INTRO.SCR + one more for testing */
+static int introScrLoaded = 0;  /* Track if we've loaded INTRO.SCR */
 
 struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
 {
@@ -1066,9 +1050,18 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     static uint8 savedInputBytes[8];
     static size_t savedFilePos;
 
-    /* Only decompress 640x480 SCRs for full-screen testing */
-    int shouldDecompress = (scrDecompressCount < MAX_SCR_DECOMPRESS) &&
-                           (scrResource->height >= 480);
+    /* Prioritize INTRO.SCR for title screen, then other 640x480 SCRs */
+    int isIntroScr = (strstr(resName, "INTRO") != NULL);
+    int shouldDecompress = 0;
+
+    if (isIntroScr && !introScrLoaded && scrResource->height >= 480) {
+        /* Always decompress INTRO.SCR for title screen */
+        shouldDecompress = 1;
+        introScrLoaded = 1;
+    } else if (!isIntroScr && scrDecompressCount < MAX_SCR_DECOMPRESS && scrResource->height >= 480) {
+        /* Decompress other 640x480 SCRs up to the limit */
+        shouldDecompress = 1;
+    }
 
     if (shouldDecompress) {
         /* Save input bytes for later display */

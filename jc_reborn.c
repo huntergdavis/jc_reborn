@@ -276,19 +276,30 @@ int main(int argc, char **argv)
     /* Initialize graphics - no debug screen needed */
     graphicsInit();
 
-    /* Find decompressed SCR for background test
-     * Note: cdrom_ps1.c now filters to only decompress 640x480 SCRs */
+    /* Load INTRO.SCR as title screen first, fallback to any 640x480 SCR */
     extern struct TScrResource *scrResources[];
     extern int numScrResources;
-    struct TScrResource *testScr = NULL;
+    struct TScrResource *titleScr = NULL;
+    struct TScrResource *fallbackScr = NULL;
 
     for (int i = 0; i < numScrResources; i++) {
         if (scrResources[i] && scrResources[i]->uncompressedData) {
-            testScr = scrResources[i];
-            printf("Using SCR: %s (%dx%d)\n",
-                   testScr->resName, testScr->width, testScr->height);
-            break;
+            if (strstr(scrResources[i]->resName, "INTRO") != NULL) {
+                titleScr = scrResources[i];
+                printf("Found INTRO.SCR: %s (%dx%d)\n",
+                       titleScr->resName, titleScr->width, titleScr->height);
+                break;
+            } else if (!fallbackScr) {
+                fallbackScr = scrResources[i];
+            }
         }
+    }
+
+    /* Use INTRO.SCR if found, otherwise fallback */
+    struct TScrResource *testScr = titleScr ? titleScr : fallbackScr;
+    if (testScr && !titleScr) {
+        printf("INTRO.SCR not found, using fallback: %s (%dx%d)\n",
+               testScr->resName, testScr->width, testScr->height);
     }
 
     if (testScr) {

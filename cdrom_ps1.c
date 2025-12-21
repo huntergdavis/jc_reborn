@@ -259,6 +259,9 @@ int cdromInit()
     cdReadBufferPos = 0;
     cdReadBufferSize = 0;
 
+    /* ps1FilePool initialization is done in cdromResetState() */
+    /* which must be called after ps1FilePool is defined */
+
     /* Build 31: Use minimal 1KB static buffer to avoid BSS issues */
     /* cdSectorBuffer is now a static array, no allocation needed */
 
@@ -526,6 +529,27 @@ uint32 cdromGetSize(int fileHandle)
  * ============================================================================ */
 
 static PS1File ps1FilePool[4];  /* Support up to 4 open files */
+
+/* Reset CD state after external CD operations (like title screen loading) */
+void cdromResetState(void)
+{
+    /* Wait for any pending CD operations */
+    CdReadSync(0, NULL);
+
+    /* Re-initialize the CD subsystem to fully reset state */
+    CdInit();
+
+    /* Ensure ps1FilePool is clean and initialized */
+    for (int i = 0; i < 4; i++) {
+        if (ps1FilePool[i].buffer && !ps1FilePool[i].isOpen) {
+            free(ps1FilePool[i].buffer);
+            ps1FilePool[i].buffer = NULL;
+        }
+        ps1FilePool[i].isOpen = 0;
+        ps1FilePool[i].bufferSize = 0;
+        ps1FilePool[i].currentPos = 0;
+    }
+}
 
 PS1File* ps1_fopen(const char* filename, const char* mode)
 {

@@ -26,6 +26,12 @@ int cdromFirstFunction(void);
 int cdromInit(void);
 
 /*
+ * Reset CD state after external CD operations (like title screen loading)
+ * Call this before using ps1_fopen after direct CD reads
+ */
+void cdromResetState(void);
+
+/*
  * Build 19: Test function to see if we can call functions in cdrom_ps1.c
  */
 int cdromTestCall(void);

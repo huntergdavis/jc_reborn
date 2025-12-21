@@ -104,16 +104,20 @@ static void loadTitleScreenEarly(void)
         return;  /* Can't show title, continue anyway */
     }
 
-    /* Open TITLE.RAW from CD */
+    /* Load TITLE.RAW using direct CD calls */
     CdlFILE fileInfo;
     if (!CdSearchFile(&fileInfo, "\\TITLE.RAW;1")) {
         free(screenBuffer);
         return;  /* File not found, continue anyway */
     }
 
-    /* Read entire file */
-    int totalSectors = (totalBytes + 2047) / 2048;  /* 300 sectors */
+    /* Calculate sectors needed (2048 bytes per sector) */
+    int totalSectors = (totalBytes + 2047) / 2048;
+
+    /* Seek to file location */
     CdControl(CdlSetloc, (uint8*)&fileInfo.pos, 0);
+
+    /* Read data */
     CdRead(totalSectors, (uint32*)screenBuffer, CdlModeSpeed);
     CdReadSync(0, 0);
 
@@ -133,9 +137,17 @@ static void loadTitleScreenEarly(void)
 
     free(screenBuffer);
 
-    /* Show title for a brief moment to ensure it's visible */
-    VSync(0);
-    VSync(0);
+    /* Show title for 3 seconds */
+    for (int i = 0; i < 180; i++) {  /* 60fps * 3 sec = 180 frames */
+        VSync(0);
+    }
+
+    /* Reset CD state for subsequent resource loading */
+    /* This ensures ps1_fopen works correctly after direct CD calls */
+    cdromResetState();
+
+    /* Additional delay for CD to settle */
+    for (volatile int i = 0; i < 2000000; i++);
 }
 
 #endif
@@ -284,9 +296,6 @@ int main(int argc, char **argv)
 
     /* Parse resources - title screen is visible during this */
     parseResourceFiles("RESOURCE.MAP");
-
-    /* Initialize full graphics system (may reset display) */
-    graphicsInit();
 #else
     /* Non-PS1: normal flow */
     parseArgs(argc, argv);
@@ -311,7 +320,8 @@ int main(int argc, char **argv)
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* Graphics already initialized above - now load title screen */
+    /* Initialize graphics system AFTER resource loading and LRU cache init */
+    graphicsInit();
 
     /* Load INTRO.SCR as title screen first, fallback to any 640x480 SCR */
     extern struct TScrResource *scrResources[];
@@ -373,10 +383,12 @@ int main(int argc, char **argv)
     extern int numAdsResources;
     struct TAdsResource *testAds = NULL;
 
+    /* Count how many have uncompressedData */
+    int adsWithData = 0;
     for (int i = 0; i < numAdsResources; i++) {
         if (adsResources[i] && adsResources[i]->uncompressedData) {
-            testAds = adsResources[i];
-            break;
+            if (!testAds) testAds = adsResources[i];
+            adsWithData++;
         }
     }
 
@@ -385,40 +397,42 @@ int main(int argc, char **argv)
         adsPlay(testAds->resName, 1);
     }
 
-    /* Graphics test loop - continue with sprite animation */
+    /* Debug test loop - encode counts into rectangle sizes/colors */
+    /* Top row shows COUNTS, bottom row shows PRESENCE */
+    /* RED width = numAdsResources (each unit = 10px, max 120) */
+    /* GREEN width = adsWithData (each unit = 30px, max 120) */
+    /* BLUE = solid if testAds found, empty if not */
+    /* YELLOW = numScrResources, MAGENTA = numBmpResources, CYAN = numTtmResources */
     int frameCount = 0;
-    int spriteX = 100;
     while(1) {
-        /* Draw background if loaded */
-        extern PS1Surface *grBackgroundSfc;
-        if (grBackgroundSfc && grBackgroundSfc->pixels) {
-            /* Draw background as full-screen sprite */
-            grDrawBackground();
-        } else if (!testScr) {
-            /* Draw colored rectangles if no background - spread for 640x480 */
-            grDrawRect(NULL, 50, 50, 120, 80, 1);    /* Red */
-            grDrawRect(NULL, 260, 50, 120, 80, 2);   /* Green */
-            grDrawRect(NULL, 470, 50, 120, 80, 3);   /* Blue */
-            grDrawRect(NULL, 50, 200, 120, 80, 4);   /* Yellow */
-            grDrawRect(NULL, 260, 200, 120, 80, 5);  /* Magenta */
-            grDrawRect(NULL, 470, 200, 120, 80, 6);  /* Cyan */
-        }
+        /* Top row: ADS debug info */
+        int redWidth = (numAdsResources > 12) ? 120 : numAdsResources * 10;
+        int greenWidth = (adsWithData > 4) ? 120 : adsWithData * 30;
 
-        /* Draw test sprite if loaded */
-        if (spriteLoaded) {
-            /* Draw sprite 0, image 0 at moving position */
-            grDrawSprite(NULL, &testTtmSlot, spriteX, 240, 0, 0);
-            spriteX += 2;
-            if (spriteX > 580) spriteX = 20;
-        }
+        /* RED = numAdsResources count (width shows count) */
+        if (redWidth > 0) grDrawRect(NULL, 50, 50, redWidth, 80, 1);
 
-        /* Draw border to show screen bounds - 640x480 */
-        grDrawLine(NULL, 0, 0, 639, 0, 7);      /* Top */
-        grDrawLine(NULL, 0, 479, 639, 479, 7);  /* Bottom */
-        grDrawLine(NULL, 0, 0, 0, 479, 7);      /* Left */
-        grDrawLine(NULL, 639, 0, 639, 479, 7);  /* Right */
+        /* GREEN = adsWithData count (width shows count) */
+        if (greenWidth > 0) grDrawRect(NULL, 260, 50, greenWidth, 80, 2);
 
-        /* Swap buffers and display */
+        /* BLUE = testAds found (full=found, absent=not found) */
+        if (testAds) grDrawRect(NULL, 470, 50, 120, 80, 3);
+
+        /* Bottom row: Other resource counts */
+        int yellowWidth = (numScrResources > 12) ? 120 : numScrResources * 10;
+        int magentaWidth = (numBmpResources > 12) ? 120 : numBmpResources * 10;
+        int cyanWidth = (numTtmResources > 12) ? 120 : numTtmResources * 10;
+
+        if (yellowWidth > 0) grDrawRect(NULL, 50, 200, yellowWidth, 80, 4);   /* SCR */
+        if (magentaWidth > 0) grDrawRect(NULL, 260, 200, magentaWidth, 80, 5); /* BMP */
+        if (cyanWidth > 0) grDrawRect(NULL, 470, 200, cyanWidth, 80, 6);      /* TTM */
+
+        /* Draw border */
+        grDrawLine(NULL, 0, 0, 639, 0, 7);
+        grDrawLine(NULL, 0, 479, 639, 479, 7);
+        grDrawLine(NULL, 0, 0, 0, 479, 7);
+        grDrawLine(NULL, 639, 0, 639, 479, 7);
+
         grRefreshDisplay();
         frameCount++;
     }

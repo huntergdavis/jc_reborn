@@ -176,3 +176,29 @@ void showDebugScreen(uint8 r, uint8 g, uint8 b)
 
 ### CD State Corruption
 After direct CD calls (CdSearchFile, CdControl, CdRead), call `cdromResetState()` before using `ps1_fopen()`.
+
+---
+
+## IMPORTANT: Current State Clarification (Dec 21, 2025)
+
+**What IS working:**
+- Title screen (TITLE.RAW) displays correctly
+- Background SCR images render (moonlit ocean/sky)
+- 60 FPS game loop runs
+
+**What is NOT working - NEVER HAS WORKED:**
+- NO Christmas tree has ever been rendered
+- NO snow has ever been rendered
+- NO BMP sprites of any kind are rendering
+- NO animated ADS scenes are playing
+- The "Christmas scene" has NEVER been visible - only static backgrounds
+
+**The screenshot shows ONLY:**
+- Static moonlit background (SCR resource)
+- Stars in sky (part of SCR background image, not sprites)
+- Moon (part of SCR background image, not a sprite)
+- Ocean/water (part of SCR background image)
+
+**Root cause:** BMP sprite LoadImage to VRAM texture area hangs, so all sprites are disabled. ADS scenes run but have no visible output because sprites cannot be drawn.
+
+This has been repeatedly misidentified as "working" when it's just a static background image with no animation.

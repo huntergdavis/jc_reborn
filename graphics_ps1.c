@@ -133,11 +133,12 @@ void graphicsInit()
     SetDefDrawEnv(&draw[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
     SetDefDrawEnv(&draw[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    /* Set background clear color */
+    /* Don't clear background - we use LoadImage to write directly to framebuffer
+     * In single-buffer 640x480 mode, we want to preserve the background */
     setRGB0(&draw[0], 0, 0, 0);
     setRGB0(&draw[1], 0, 0, 0);
-    draw[0].isbg = 1;  /* Enable background clear */
-    draw[1].isbg = 1;
+    draw[0].isbg = 0;  /* Don't clear - background is LoadImage'd */
+    draw[1].isbg = 0;
 
     if (debugMode)
         printf("GPU: Enabling display...\n");

@@ -323,49 +323,39 @@ int main(int argc, char **argv)
     /* Initialize graphics system AFTER resource loading and LRU cache init */
     graphicsInit();
 
-    /* Load INTRO.SCR as title screen first, fallback to any 640x480 SCR */
+    /* Load palette */
+    extern struct TPalResource *palResources[];
+    extern int numPalResources;
+    if (numPalResources > 0 && palResources[0]) {
+        grLoadPalette(palResources[0]);
+    }
+
+    /* Load background screen */
     extern struct TScrResource *scrResources[];
     extern int numScrResources;
-    struct TScrResource *titleScr = NULL;
-    struct TScrResource *fallbackScr = NULL;
-
-    for (int i = 0; i < numScrResources; i++) {
-        if (scrResources[i] && scrResources[i]->uncompressedData) {
-            if (strstr(scrResources[i]->resName, "INTRO") != NULL) {
-                titleScr = scrResources[i];
-                break;
-            } else if (!fallbackScr) {
-                fallbackScr = scrResources[i];
-            }
-        }
+    if (numScrResources > 0 && scrResources[0] && scrResources[0]->uncompressedData) {
+        grLoadScreen(scrResources[0]->resName);
     }
 
-    /* Use INTRO.SCR if found, otherwise fallback */
-    struct TScrResource *testScr = titleScr ? titleScr : fallbackScr;
+    /* Test: Load multiple BMP resources */
+    extern struct TBmpResource *bmpResources[];
+    extern int numBmpResources;
+    static struct TTtmSlot testSlot = {0};
 
-    if (testScr) {
-        /* Load palette and background */
-        extern struct TPalResource *palResources[];
-        extern int numPalResources;
-        if (numPalResources > 0 && palResources[0]) {
-            grLoadPalette(palResources[0]);
-        }
-        grLoadScreen(testScr->resName);
+    /* Load just the first BMP for now */
+    if (numBmpResources > 0 && bmpResources[0] && bmpResources[0]->uncompressedData) {
+        grLoadBmp(&testSlot, 0, bmpResources[0]->resName);
     }
 
-    /* Skip BMP for now - just test that primitives render */
-    grDrawRect(NULL, 100, 100, 80, 80, 2);  /* GREEN rect */
-    grDrawRect(NULL, 200, 100, 80, 80, 1);  /* RED rect */
-    grRefreshDisplay();
-    for (int d = 0; d < 120; d++) VSync(0);  /* 2 sec */
-
-    /* Use test sprite upload to verify texture rendering */
-    grTestSpriteUpload();
-
-    /* Main game loop - draw test sprite */
+    /* Main game loop - draw sprites from first BMP */
     while(1) {
-        grDrawRect(NULL, 10, 10, 30, 30, 6);  /* CYAN marker */
-        grDrawTestSprite(200, 150);
+        /* Draw sprites from slot 0 */
+        for (int i = 0; i < testSlot.numSprites[0] && i < 8; i++) {
+            int xPos = 30 + i * 70;
+            int yPos = 150;
+            grDrawSprite(NULL, &testSlot, xPos, yPos, i, 0);
+        }
+
         grRefreshDisplay();
     }
 

@@ -353,50 +353,49 @@ int main(int argc, char **argv)
         grLoadScreen(testScr->resName);
     }
 
-    /* Try to load a BMP sprite for testing */
+    /* Count BMPs with data for debugging */
     extern struct TBmpResource *bmpResources[];
     extern int numBmpResources;
+    int bmpsWithData = 0;
     struct TBmpResource *testBmp = NULL;
     static struct TTtmSlot testTtmSlot;
-    int spriteLoaded = 0;
 
     for (int i = 0; i < numBmpResources; i++) {
         if (bmpResources[i] && bmpResources[i]->uncompressedData) {
-            testBmp = bmpResources[i];
-            break;
+            bmpsWithData++;
+            if (!testBmp) testBmp = bmpResources[i];
         }
     }
 
-    /* Load BMP sprites for ADS playback */
+    /* Debug: Show count as rect width (each BMP = 20px) */
+    int countWidth = (bmpsWithData > 0) ? bmpsWithData * 20 : 20;
+    if (bmpsWithData > 0) {
+        grDrawRect(NULL, 50, 50, countWidth, 50, 2);  /* GREEN = has BMPs */
+    } else {
+        grDrawRect(NULL, 50, 50, 100, 50, 1);  /* RED = no BMPs */
+    }
+
+    /* Also show total BMP count as second rect */
+    int totalWidth = (numBmpResources > 0) ? numBmpResources * 5 : 20;
+    grDrawRect(NULL, 50, 120, totalWidth, 30, 4);  /* YELLOW = total count */
+
+    grRefreshDisplay();
+    for (int d = 0; d < 120; d++) VSync(0);  /* 2 sec */
+
+    /* Try to load BMP if found */
     if (testBmp) {
         memset(&testTtmSlot, 0, sizeof(testTtmSlot));
         grLoadBmp(&testTtmSlot, 0, testBmp->resName);
-        spriteLoaded = (testTtmSlot.numSprites[0] > 0);
-    }
 
-    /* Show title screen for 1 second only (60 frames) */
-    for (int i = 0; i < 60; i++) {
-        grRefreshDisplay();
-    }
-
-    /* Find a decompressed ADS to play */
-    extern struct TAdsResource *adsResources[];
-    extern int numAdsResources;
-    struct TAdsResource *testAds = NULL;
-
-    for (int i = 0; i < numAdsResources; i++) {
-        if (adsResources[i] && adsResources[i]->uncompressedData) {
-            testAds = adsResources[i];
-            break;
+        /* Show loaded sprite count */
+        if (testTtmSlot.numSprites[0] > 0) {
+            grDrawRect(NULL, 50, 180, testTtmSlot.numSprites[0] * 5, 30, 6);  /* CYAN */
         }
+        grRefreshDisplay();
+        for (int d = 0; d < 120; d++) VSync(0);  /* 2 sec */
     }
 
-    /* Play ADS scene if available */
-    if (testAds) {
-        adsPlay(testAds->resName, 1);
-    }
-
-    /* Main game loop - runs at 60 FPS */
+    /* Main game loop */
     while(1) {
         grRefreshDisplay();
     }

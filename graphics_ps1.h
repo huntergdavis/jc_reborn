@@ -133,4 +133,8 @@ void grLoadScreen(char *strArg);
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
 
+/* Test functions for sprite VRAM debugging */
+int grTestSpriteUpload(void);
+void grDrawTestSprite(int x, int y);
+
 #endif /* GRAPHICS_PS1_H */

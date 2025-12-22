@@ -94,9 +94,15 @@ static int grCurrentFrame = 0;
  * (640,0)-(656,1): CLUT (16 colors)
  * (640,2)-(895,2): CLUT 256 (grayscale)
  * (640,4) onwards: Textures
+ *
+ * IMPORTANT: For 4-bit textures, VRAM width = pixel_width / 4
+ * because each 16-bit VRAM word holds 4 pixels (4 bits each)
  */
 static uint16 nextVRAMX = 640;  /* Start to the right of framebuffer */
 static uint16 nextVRAMY = 4;    /* Below CLUTs */
+
+/* Test sprite for debugging VRAM uploads */
+static PS1Surface *testSprite = NULL;
 
 /*
  * Initialize PS1 graphics subsystem
@@ -218,6 +224,104 @@ void graphicsInit()
 
     if (debugMode)
         printf("GPU: Graphics initialization complete!\n");
+}
+
+/*
+ * Test function: Create and upload a simple 64x64 test sprite to VRAM
+ * Returns 1 on success, 0 on failure/hang
+ * Call this to verify LoadImage works for texture area
+ */
+int grTestSpriteUpload(void)
+{
+    /* Create a larger 64x64 4-bit test pattern for visibility */
+    uint16 testWidth = 64;
+    uint16 testHeight = 64;
+
+    /* 4-bit = 2 pixels per byte, so 64x64 = 2048 bytes */
+    uint32 dataSize = (testWidth * testHeight) / 2;
+    uint8 *testData = (uint8*)malloc(dataSize);
+    if (!testData) return 0;
+
+    /* Fill with solid WHITE (palette index 7) for maximum visibility */
+    for (uint32 i = 0; i < dataSize; i++) {
+        testData[i] = 0x77;  /* Both nibbles = color 7 (white) */
+    }
+
+    /* Allocate surface structure */
+    testSprite = (PS1Surface*)malloc(sizeof(PS1Surface));
+    if (!testSprite) {
+        free(testData);
+        return 0;
+    }
+
+    testSprite->width = testWidth;
+    testSprite->height = testHeight;
+    testSprite->x = 640;  /* Texture area start */
+    testSprite->y = 4;    /* Below CLUTs */
+    testSprite->clutX = 640;
+    testSprite->clutY = 0;
+    testSprite->pixels = (uint16*)testData;
+
+    /* KEY: For 4-bit textures, VRAM width = pixel_width / 4 */
+    RECT texRect;
+    uint16 vramWidth = testWidth / 4;  /* 64 pixels / 4 = 16 VRAM units */
+    setRECT(&texRect, testSprite->x, testSprite->y, vramWidth, testHeight);
+
+    /* Try the upload */
+    LoadImage(&texRect, (uint32*)testData);
+    DrawSync(0);  /* Wait for completion */
+
+    return 1;  /* Success if we get here */
+}
+
+/*
+ * Draw the test sprite at given position using POLY_FT4 (textured quad)
+ * This gives more explicit control over texture coordinates
+ */
+void grDrawTestSprite(int x, int y)
+{
+    if (!testSprite) return;
+
+    /* Allocate POLY_FT4 primitive */
+    if (primitiveIndex[db] + sizeof(POLY_FT4) > PRIMITIVE_BUFFER_SIZE) {
+        return;
+    }
+
+    POLY_FT4 *poly = (POLY_FT4*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(POLY_FT4);
+    primitiveIndex[db] += sizeof(POLY_FT4);
+
+    setPolyFT4(poly);
+
+    /* Screen coordinates - quad corners */
+    int w = testSprite->width;
+    int h = testSprite->height;
+    setXY4(poly,
+           x,     y,      /* Top-left */
+           x + w, y,      /* Top-right */
+           x,     y + h,  /* Bottom-left */
+           x + w, y + h); /* Bottom-right */
+
+    /* Texture page: 4-bit mode (0), at VRAM X=640
+     * getTPage(mode, abr, x, y): mode=0 for 4-bit, x/y in VRAM coords */
+    poly->tpage = getTPage(0, 0, 640, 0);
+
+    /* CLUT position */
+    poly->clut = getClut(testSprite->clutX, testSprite->clutY);
+
+    /* UV coordinates within texture page
+     * Texture is at VRAM (640,4), tpage starts at (640,0)
+     * So U=0, V=4 for top-left corner
+     * UV coords are 0-indexed, so 64-pixel texture uses 0-63 */
+    setUV4(poly,
+           0, 4,           /* Top-left UV */
+           63, 4,          /* Top-right UV */
+           0, 4 + 63,      /* Bottom-left UV */
+           63, 4 + 63);    /* Bottom-right UV */
+
+    setRGB0(poly, 128, 128, 128);  /* Normal brightness */
+
+    addPrim(&ot[db][0], poly);
 }
 
 /*
@@ -468,9 +572,7 @@ void grFreeLayer(PS1Surface *sfc)
 
 /*
  * Load BMP sprite sheet into slot
- * NOTE: VRAM texture upload (LoadImage) is currently disabled as it causes hangs.
- * Sprites are parsed and stored in RAM but not uploaded to VRAM.
- * TODO: Fix LoadImage parameters for BMP sprite texture uploads.
+ * Uploads 4-bit indexed textures to VRAM for GPU rendering.
  */
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
@@ -489,13 +591,16 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     for (int image = 0; image < bmpResource->numImages; image++) {
 
-        /* Skip odd width sprites */
+        /* Skip odd width sprites (4-bit textures need even width) */
         if ((bmpResource->widths[image] % 2) == 1) {
             continue;
         }
 
         uint16 width  = bmpResource->widths[image];
         uint16 height = bmpResource->heights[image];
+
+        /* For 4-bit textures, VRAM width = pixel_width / 4 */
+        uint16 vramWidth = width / 4;
 
         /* Allocate PS1Surface structure */
         PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
@@ -510,7 +615,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         memcpy(surface->pixels, inPtr, pixelDataSize);
         inPtr += pixelDataSize;
 
-        /* Set VRAM position (texture upload disabled - see TODO above) */
+        /* Set VRAM position */
         surface->x = nextVRAMX;
         surface->y = nextVRAMY;
 
@@ -518,13 +623,20 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->clutX = 640;
         surface->clutY = 0;
 
+        /* Upload texture to VRAM
+         * KEY FIX: For 4-bit textures, RECT width = pixel_width / 4 */
+        RECT texRect;
+        setRECT(&texRect, surface->x, surface->y, vramWidth, height);
+        LoadImage(&texRect, (uint32*)surface->pixels);
+        DrawSync(0);  /* Wait for upload to complete */
+
         /* Store sprite in slot */
         ttmSlot->sprites[slotNo][image] = surface;
 
-        /* Update VRAM allocation tracking */
-        nextVRAMX += width;
+        /* Update VRAM allocation tracking (use vramWidth for 4-bit) */
+        nextVRAMX += vramWidth;
         if (nextVRAMX >= 1024) {
-            nextVRAMX = 0;
+            nextVRAMX = 640;  /* Reset to start of texture area */
             nextVRAMY += height;
         }
     }

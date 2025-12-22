@@ -353,50 +353,19 @@ int main(int argc, char **argv)
         grLoadScreen(testScr->resName);
     }
 
-    /* Count BMPs with data for debugging */
-    extern struct TBmpResource *bmpResources[];
-    extern int numBmpResources;
-    int bmpsWithData = 0;
-    struct TBmpResource *testBmp = NULL;
-    static struct TTtmSlot testTtmSlot;
-
-    for (int i = 0; i < numBmpResources; i++) {
-        if (bmpResources[i] && bmpResources[i]->uncompressedData) {
-            bmpsWithData++;
-            if (!testBmp) testBmp = bmpResources[i];
-        }
-    }
-
-    /* Debug: Show count as rect width (each BMP = 20px) */
-    int countWidth = (bmpsWithData > 0) ? bmpsWithData * 20 : 20;
-    if (bmpsWithData > 0) {
-        grDrawRect(NULL, 50, 50, countWidth, 50, 2);  /* GREEN = has BMPs */
-    } else {
-        grDrawRect(NULL, 50, 50, 100, 50, 1);  /* RED = no BMPs */
-    }
-
-    /* Also show total BMP count as second rect */
-    int totalWidth = (numBmpResources > 0) ? numBmpResources * 5 : 20;
-    grDrawRect(NULL, 50, 120, totalWidth, 30, 4);  /* YELLOW = total count */
-
+    /* Skip BMP for now - just test that primitives render */
+    grDrawRect(NULL, 100, 100, 80, 80, 2);  /* GREEN rect */
+    grDrawRect(NULL, 200, 100, 80, 80, 1);  /* RED rect */
     grRefreshDisplay();
     for (int d = 0; d < 120; d++) VSync(0);  /* 2 sec */
 
-    /* Try to load BMP if found */
-    if (testBmp) {
-        memset(&testTtmSlot, 0, sizeof(testTtmSlot));
-        grLoadBmp(&testTtmSlot, 0, testBmp->resName);
+    /* Use test sprite upload to verify texture rendering */
+    grTestSpriteUpload();
 
-        /* Show loaded sprite count */
-        if (testTtmSlot.numSprites[0] > 0) {
-            grDrawRect(NULL, 50, 180, testTtmSlot.numSprites[0] * 5, 30, 6);  /* CYAN */
-        }
-        grRefreshDisplay();
-        for (int d = 0; d < 120; d++) VSync(0);  /* 2 sec */
-    }
-
-    /* Main game loop */
+    /* Main game loop - draw test sprite */
     while(1) {
+        grDrawRect(NULL, 10, 10, 30, 30, 6);  /* CYAN marker */
+        grDrawTestSprite(200, 150);
         grRefreshDisplay();
     }
 

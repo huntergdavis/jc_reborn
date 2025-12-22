@@ -615,9 +615,9 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         memcpy(surface->pixels, inPtr, pixelDataSize);
         inPtr += pixelDataSize;
 
-        /* Set VRAM position */
-        surface->x = nextVRAMX;
-        surface->y = nextVRAMY;
+        /* Set VRAM position in VRAM word coordinates for LoadImage */
+        uint16 vramX = nextVRAMX;
+        uint16 vramY = nextVRAMY;
 
         /* Set CLUT position */
         surface->clutX = 640;
@@ -626,9 +626,14 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         /* Upload texture to VRAM
          * KEY FIX: For 4-bit textures, RECT width = pixel_width / 4 */
         RECT texRect;
-        setRECT(&texRect, surface->x, surface->y, vramWidth, height);
+        setRECT(&texRect, vramX, vramY, vramWidth, height);
         LoadImage(&texRect, (uint32*)surface->pixels);
         DrawSync(0);  /* Wait for upload to complete */
+
+        /* Store VRAM coordinates for texture page and UV calculation
+         * For 4-bit: texture page is 64 VRAM words = 256 texture pixels */
+        surface->x = vramX;  /* VRAM X coordinate */
+        surface->y = vramY;  /* VRAM Y coordinate */
 
         /* Store sprite in slot */
         ttmSlot->sprites[slotNo][image] = surface;
@@ -794,24 +799,29 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
     primitiveIndex[db] += sizeof(DR_TPAGE);
 
     /* Calculate texture page from sprite VRAM position
-     * tpage X: in 64-pixel units (sprite->x / 64)
-     * tpage Y: in 256-pixel units (sprite->y / 256)
-     * Color mode: 0 = 4-bit CLUT (16 colors) */
-    uint16 tpageX = sprite->x / 64;
-    uint16 tpageY = sprite->y / 256;
-    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
+     * For 4-bit mode: tpage X is in 64-VRAM-word boundaries (= 256 pixels)
+     * sprite->x is VRAM X coordinate */
+    uint16 tpageBaseX = (sprite->x / 64) * 64;  /* Align to 64-word boundary */
+    uint16 tpageBaseY = (sprite->y / 256) * 256;
+    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageBaseX, tpageBaseY));
     addPrim(&ot[db][0], tpage);
 
     SPRT *sprt = (SPRT*)nextPrimitive[db];
     nextPrimitive[db] += sizeof(SPRT);
     primitiveIndex[db] += sizeof(SPRT);
 
+    /* Calculate UV coordinates
+     * For 4-bit textures: each VRAM word = 4 texture pixels
+     * U = (sprite->x - tpageBaseX) * 4 = pixel offset within tpage
+     * V = sprite->y - tpageBaseY */
+    uint8 u = ((sprite->x - tpageBaseX) * 4) & 0xFF;
+    uint8 v = (sprite->y - tpageBaseY) & 0xFF;
+
     /* Initialize sprite primitive */
     setSprt(sprt);
     setXY0(sprt, x, y);
     setWH(sprt, sprite->width, sprite->height);
-    /* UV coords are relative to texture page (0-255 range) */
-    setUV0(sprt, (sprite->x % 256) & 0xFF, (sprite->y % 256) & 0xFF);
+    setUV0(sprt, u, v);
     setClut(sprt, sprite->clutX, sprite->clutY);
     setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
 

@@ -199,6 +199,41 @@ After direct CD calls (CdSearchFile, CdControl, CdRead), call `cdromResetState()
 - Moon (part of SCR background image, not a sprite)
 - Ocean/water (part of SCR background image)
 
-**Root cause:** BMP sprite LoadImage to VRAM texture area hangs, so all sprites are disabled. ADS scenes run but have no visible output because sprites cannot be drawn.
+**Root cause (Dec 21 UPDATE):** Fixed! The issue was LoadImage RECT width for 4-bit textures.
+
+---
+
+## BREAKTHROUGH: Sprite Rendering Working (Dec 21, 2025)
+
+**The Fix:**
+For 4-bit textures, LoadImage RECT width must be `pixel_width / 4`
+
+```c
+/* For 4-bit textures, each 16-bit VRAM word holds 4 pixels */
+uint16 vramWidth = width / 4;
+RECT texRect;
+setRECT(&texRect, vramX, vramY, vramWidth, height);
+LoadImage(&texRect, (uint32*)pixelData);
+```
+
+**UV Calculation for 4-bit:**
+```c
+/* Texture page is 64 VRAM words = 256 texture pixels wide */
+uint16 tpageBaseX = (sprite->x / 64) * 64;  /* Align to 64-word boundary */
+uint16 tpageBaseY = (sprite->y / 256) * 256;
+
+/* U = (VRAM_X - tpage_base) * 4 = pixel offset within tpage */
+uint8 u = ((sprite->x - tpageBaseX) * 4) & 0xFF;
+uint8 v = (sprite->y - tpageBaseY) & 0xFF;
+```
+
+**What's Working Now:**
+- Test sprite upload and rendering at 60 FPS
+- TILE primitives (colored rectangles)
+- 4-bit textured POLY_FT4
+
+**Still Investigating:**
+- grLoadBmp causes slowdown (many LoadImage calls)
+- Real BMP sprite rendering needs testing
 
 This has been repeatedly misidentified as "working" when it's just a static background image with no animation.

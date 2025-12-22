@@ -853,13 +853,12 @@ struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName)
     adsResource->compressionMethod = ps1_readUint8(f);
     adsResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress essential ADS - prioritize STAND.ADS for Johnny */
+    /* Decompress essential ADS - prioritize commonly used scenes */
     static int adsDecompressCount = 0;
-    #define MAX_ADS_DECOMPRESS 3  /* Conservative limit to avoid memory crash */
+    #define MAX_ADS_DECOMPRESS 5  /* Moderate limit */
 
-    /* Check if this is an essential ADS with Johnny animations */
-    int isEssentialAds = (strstr(resName, "STAND") != NULL) ||
-                         (strstr(resName, "JOHNNY") != NULL);
+    /* Check if this is an essential ADS - decompress first few found */
+    int isEssentialAds = 0;  /* No specific essential list - just use count */
 
     if (isEssentialAds || adsDecompressCount < MAX_ADS_DECOMPRESS) {
         printf("Decompressing ADS: %s (%u bytes)%s\n", resName,

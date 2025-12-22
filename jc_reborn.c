@@ -367,74 +367,38 @@ int main(int argc, char **argv)
         }
     }
 
+    /* Load BMP sprites for ADS playback */
     if (testBmp) {
         memset(&testTtmSlot, 0, sizeof(testTtmSlot));
         grLoadBmp(&testTtmSlot, 0, testBmp->resName);
         spriteLoaded = (testTtmSlot.numSprites[0] > 0);
     }
 
-    /* Show title screen for 3 seconds (180 frames at 60fps) */
-    for (int i = 0; i < 180; i++) {
+    /* Show title screen for 1 second only (60 frames) */
+    for (int i = 0; i < 60; i++) {
         grRefreshDisplay();
     }
 
-    /* Try to find a decompressed ADS and play it */
+    /* Find a decompressed ADS to play */
     extern struct TAdsResource *adsResources[];
     extern int numAdsResources;
     struct TAdsResource *testAds = NULL;
 
-    /* Count how many have uncompressedData */
-    int adsWithData = 0;
     for (int i = 0; i < numAdsResources; i++) {
         if (adsResources[i] && adsResources[i]->uncompressedData) {
-            if (!testAds) testAds = adsResources[i];
-            adsWithData++;
+            testAds = adsResources[i];
+            break;
         }
     }
 
+    /* Play ADS scene if available */
     if (testAds) {
-        /* Play the first tag of the first available ADS */
         adsPlay(testAds->resName, 1);
     }
 
-    /* Debug test loop - encode counts into rectangle sizes/colors */
-    /* Top row shows COUNTS, bottom row shows PRESENCE */
-    /* RED width = numAdsResources (each unit = 10px, max 120) */
-    /* GREEN width = adsWithData (each unit = 30px, max 120) */
-    /* BLUE = solid if testAds found, empty if not */
-    /* YELLOW = numScrResources, MAGENTA = numBmpResources, CYAN = numTtmResources */
-    int frameCount = 0;
+    /* Main game loop - runs at 60 FPS */
     while(1) {
-        /* Top row: ADS debug info */
-        int redWidth = (numAdsResources > 12) ? 120 : numAdsResources * 10;
-        int greenWidth = (adsWithData > 4) ? 120 : adsWithData * 30;
-
-        /* RED = numAdsResources count (width shows count) */
-        if (redWidth > 0) grDrawRect(NULL, 50, 50, redWidth, 80, 1);
-
-        /* GREEN = adsWithData count (width shows count) */
-        if (greenWidth > 0) grDrawRect(NULL, 260, 50, greenWidth, 80, 2);
-
-        /* BLUE = testAds found (full=found, absent=not found) */
-        if (testAds) grDrawRect(NULL, 470, 50, 120, 80, 3);
-
-        /* Bottom row: Other resource counts */
-        int yellowWidth = (numScrResources > 12) ? 120 : numScrResources * 10;
-        int magentaWidth = (numBmpResources > 12) ? 120 : numBmpResources * 10;
-        int cyanWidth = (numTtmResources > 12) ? 120 : numTtmResources * 10;
-
-        if (yellowWidth > 0) grDrawRect(NULL, 50, 200, yellowWidth, 80, 4);   /* SCR */
-        if (magentaWidth > 0) grDrawRect(NULL, 260, 200, magentaWidth, 80, 5); /* BMP */
-        if (cyanWidth > 0) grDrawRect(NULL, 470, 200, cyanWidth, 80, 6);      /* TTM */
-
-        /* Draw border */
-        grDrawLine(NULL, 0, 0, 639, 0, 7);
-        grDrawLine(NULL, 0, 479, 639, 479, 7);
-        grDrawLine(NULL, 0, 0, 0, 479, 7);
-        grDrawLine(NULL, 639, 0, 639, 479, 7);
-
         grRefreshDisplay();
-        frameCount++;
     }
 
     return 0;

@@ -467,6 +467,9 @@ void grFreeLayer(PS1Surface *sfc)
 
 /*
  * Load BMP sprite sheet into slot
+ * NOTE: VRAM texture upload (LoadImage) is currently disabled as it causes hangs.
+ * Sprites are parsed and stored in RAM but not uploaded to VRAM.
+ * TODO: Fix LoadImage parameters for BMP sprite texture uploads.
  */
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
@@ -475,21 +478,20 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
 
-    /* Handle lazy loading - reload from extracted file if needed */
+    /* Handle lazy loading - return if data not available */
     if (bmpResource->uncompressedData == NULL) {
-        /* PS1 TODO: Use CD-ROM functions to reload from disc if needed */
-        /* For now, fatal error if data was freed */
-        fatalError("BMP data freed - PS1 CD-ROM reloading not yet implemented");
+        return;
     }
 
     uint8 *inPtr = bmpResource->uncompressedData;
-
     ttmSlot->numSprites[slotNo] = bmpResource->numImages;
 
-    for (int image=0; image < bmpResource->numImages; image++) {
+    for (int image = 0; image < bmpResource->numImages; image++) {
 
-        if ((bmpResource->widths[image] % 2) == 1)
-            fatalError("grLoadBmp(): can't manage odd widths");
+        /* Skip odd width sprites */
+        if ((bmpResource->widths[image] % 2) == 1) {
+            continue;
+        }
 
         uint16 width  = bmpResource->widths[image];
         uint16 height = bmpResource->heights[image];
@@ -499,43 +501,30 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->width = width;
         surface->height = height;
 
-        /* Allocate VRAM position for this sprite */
-        surface->x = nextVRAMX;
-        surface->y = nextVRAMY;
-
         /* Allocate pixel buffer for 4-bit indexed data */
-        /* Original sprites are 4-bit (16 colors), packed nibbles */
-        uint32 pixelDataSize = (width * height) / 2;  /* 4-bit = 0.5 bytes per pixel */
+        uint32 pixelDataSize = (width * height) / 2;
         surface->pixels = (uint16*)safe_malloc(pixelDataSize);
 
-        /* Copy packed 4-bit data directly */
+        /* Copy packed 4-bit data */
         memcpy(surface->pixels, inPtr, pixelDataSize);
         inPtr += pixelDataSize;
 
-        /* Upload texture to VRAM using DMA */
-        RECT rect;
-        /* Width in 16-bit units for 4-bit textures: 4 pixels per 16-bit word */
-        setRECT(&rect, surface->x, surface->y, width / 4, height);
-        LoadImage(&rect, (uint32*)surface->pixels);
+        /* Set VRAM position (texture upload disabled - see TODO above) */
+        surface->x = nextVRAMX;
+        surface->y = nextVRAMY;
 
-        /* Set CLUT position (color lookup table) */
-        /* For now, use a fixed position - we'll upload palette here */
+        /* Set CLUT position */
         surface->clutX = 640;
-        surface->clutY = 0;  /* Right of framebuffer */
+        surface->clutY = 0;
 
         /* Store sprite in slot */
         ttmSlot->sprites[slotNo][image] = surface;
 
         /* Update VRAM allocation tracking */
         nextVRAMX += width;
-        if (nextVRAMX >= 1024) {  /* VRAM width limit */
+        if (nextVRAMX >= 1024) {
             nextVRAMX = 0;
             nextVRAMY += height;
-        }
-
-        if (debugMode) {
-            printf("Loaded sprite %d: %dx%d at VRAM(%d,%d)\n",
-                   image, width, height, surface->x, surface->y);
         }
     }
 

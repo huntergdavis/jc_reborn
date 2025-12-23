@@ -548,6 +548,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         /* Width in 16-bit units for 4-bit textures: 4 pixels per 16-bit word */
         setRECT(&rect, surface->x, surface->y, width / 4, height);
         LoadImage(&rect, (uint32*)surface->pixels);
+        DrawSync(0);  /* Wait for DMA to complete before continuing */
 
         /* Set CLUT position (color lookup table) */
         /* For now, use a fixed position - we'll upload palette here */
@@ -833,6 +834,51 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
         printf("Draw flipped sprite: pos=(%d,%d) size=%dx%d\n",
                x, y, sprite->width, sprite->height);
     }
+}
+
+/*
+ * Extended sprite drawing - allows caller to provide their own OT and primitive buffer
+ * Returns 0 on success, -1 on failure
+ */
+int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, sint16 x, sint16 y)
+{
+    if (sprite == NULL || extOT == NULL || nextPri == NULL) {
+        return -1;
+    }
+
+    x += grDx;
+    y += grDy;
+
+    /* Allocate DR_TPAGE primitive first */
+    DR_TPAGE *tpage = (DR_TPAGE*)(*nextPri);
+    *nextPri += sizeof(DR_TPAGE);
+
+    /* Calculate texture page from sprite VRAM position
+     * tpage X: in 64-pixel units (sprite->x / 64)
+     * tpage Y: in 256-pixel units (sprite->y / 256)
+     * Color mode: 0 = 4-bit CLUT (16 colors) */
+    uint16 tpageX = sprite->x / 64;
+    uint16 tpageY = sprite->y / 256;
+    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
+    addPrim(extOT, tpage);
+
+    /* Allocate SPRT primitive */
+    SPRT *sprt = (SPRT*)(*nextPri);
+    *nextPri += sizeof(SPRT);
+
+    /* Initialize sprite primitive */
+    setSprt(sprt);
+    setXY0(sprt, x, y);
+    setWH(sprt, sprite->width, sprite->height);
+    /* UV coords are relative to texture page (0-255 range) */
+    setUV0(sprt, (sprite->x % 256) & 0xFF, (sprite->y % 256) & 0xFF);
+    setClut(sprt, sprite->clutX, sprite->clutY);
+    setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
+
+    /* Add to caller's ordering table */
+    addPrim(extOT, sprt);
+
+    return 0;
 }
 
 /*

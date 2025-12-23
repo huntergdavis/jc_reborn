@@ -362,8 +362,28 @@ int main(int argc, char **argv)
     if (bgScr) {
         grLoadScreen(bgScr->resName);
     }
-    /* Skip sprite loading for now */
+
+    /* Create a simple TTtmSlot to hold sprites */
+    static struct TTtmSlot gameTtmSlot;
+    memset(&gameTtmSlot, 0, sizeof(gameTtmSlot));
+
+    /* Load first available BMP resource into slot 0 */
+    PS1Surface *loadedSprite = NULL;
     int spriteCount = 0;
+    /* Find a small BMP (JOHNNY has many sprites, too large) */
+    struct TBmpResource *bmpToLoad = NULL;
+    for (int i = 0; i < numBmpResources && !bmpToLoad; i++) {
+        if (bmpResources[i] && bmpResources[i]->uncompressedData) {
+            /* Skip BMPs with too many images to avoid VRAM overflow */
+            if (bmpResources[i]->numImages <= 20) {
+                bmpToLoad = bmpResources[i];
+                printf("Selected BMP[%d]: %s (%d images)\n",
+                       i, bmpToLoad->resName, bmpToLoad->numImages);
+            }
+        }
+    }
+    /* DEFER BMP loading to first frame - see below */
+    int bmpLoaded = 0;
 
     /* Animation state */
     int currentSprite = 0;
@@ -376,33 +396,45 @@ int main(int argc, char **argv)
         ClearOTagR(gameOT, GAME_OTLEN);
         gameNextPri = gamePrimBuf;
 
-        (void)spriteCount;
-
         /* Re-upload background from RAM to framebuffer each frame */
         grDrawBackground();
 
-        /* Animated sprite position */
+        /* DEFERRED BMP LOADING: Skip sprite loading for now due to OT conflict
+         * TODO: Investigate LoadImage to texture area breaking OT rendering */
+        /* For now, just increment bmpLoaded to skip loading */
+        if (!bmpLoaded) {
+            bmpLoaded = 1;  /* Skip actual loading, use placeholder squares */
+        }
+
+        /* Animated sprite position - cycle through 4 positions */
         if (++frameCounter >= 10) {
             frameCounter = 0;
-            currentSprite = (currentSprite + 1) % 4;  /* 4 positions */
+            currentSprite = (currentSprite + 1) % 4;
         }
+        /* Animated sprite position - moves horizontally */
         int spriteX = 280 + (currentSprite * 30);
         int spriteY = 200;
 
-        /* Draw sprite placeholder - green square (two triangles) */
+        /* Draw animated placeholder sprite (green square - two triangles)
+         * NOTE: Textured BMP sprites are not yet working due to LoadImage
+         * conflict with OT rendering. See ps1-rendering-debug.md for details. */
         POLY_F3 *spr1 = (POLY_F3*)gameNextPri;
         setPolyF3(spr1);
         setXY3(spr1, spriteX, spriteY, spriteX+64, spriteY, spriteX, spriteY+64);
-        setRGB0(spr1, 0, 255, 0);  /* GREEN */
+        setRGB0(spr1, 0, 255, 0);  /* GREEN placeholder sprite */
         addPrim(&gameOT[0], spr1);
         gameNextPri += sizeof(POLY_F3);
 
         POLY_F3 *spr2 = (POLY_F3*)gameNextPri;
         setPolyF3(spr2);
         setXY3(spr2, spriteX+64, spriteY, spriteX+64, spriteY+64, spriteX, spriteY+64);
-        setRGB0(spr2, 0, 255, 0);  /* GREEN */
+        setRGB0(spr2, 0, 255, 0);  /* GREEN placeholder sprite */
         addPrim(&gameOT[0], spr2);
         gameNextPri += sizeof(POLY_F3);
+
+        /* Unused variable suppression */
+        (void)loadedSprite;
+        (void)bmpToLoad;
 
         /* Draw OT */
         PutDrawEnv(&gameDraw);

@@ -210,6 +210,38 @@ setRGB0(quad, r, g, b);
 addPrim(ot, quad);
 ```
 
+### LoadImage to Texture Area Breaks OT Rendering (CRITICAL BUG)
+
+**Problem**: Calling `LoadImage()` to upload textures to VRAM at coordinates outside the framebuffer (e.g., (640, 4) for texture storage) completely breaks OT primitive rendering.
+
+**What works**:
+- `LoadImage()` to framebuffer (0,0)-(639,479) for background works fine (grDrawBackground)
+- `LoadImage()` to (640,0) for 16x1 CLUT palette works fine (grLoadPalette)
+
+**What breaks OT**:
+- `LoadImage()` to (640,4+) for sprite textures (grLoadBmp) breaks ALL OT primitives
+
+**Symptoms**:
+- POLY_F3 triangles stop rendering completely after LoadImage to texture area
+- Background (via grDrawBackground) still works
+- No error messages or crashes
+
+**Attempted fixes (NONE WORKED)**:
+- `DrawSync(0)` after LoadImage - didn't fix
+- `PutDrawEnv(&gameDraw)` after LoadImage - didn't fix
+- `PutDispEnv(&gameDisp)` after LoadImage - didn't fix
+- `ClearOTagR(ot, OTLEN)` after LoadImage - didn't fix
+- Deferring LoadImage to inside main loop - didn't fix
+- Loading only small BMPs (≤20 images) - didn't fix
+
+**Current status**: Textured sprites are blocked. Using POLY_F3 placeholder squares as workaround.
+
+**Possible causes to investigate**:
+1. GPU DMA conflict between texture upload and OT rendering
+2. Memory corruption from malloc() in grLoadBmp
+3. Draw area or scissor region being corrupted by LoadImage
+4. PSn00bSDK bug with LoadImage to non-framebuffer areas
+
 ## Workarounds
 
 ### Drawing Rectangles

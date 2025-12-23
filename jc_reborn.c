@@ -385,6 +385,18 @@ int main(int argc, char **argv)
     /* DEFER BMP loading to first frame - see below */
     int bmpLoaded = 0;
 
+    /* === TEST 10: Call grLoadBmp with CORRECT argument type === */
+    if (bmpToLoad && bmpToLoad->uncompressedData) {
+        /* FIXED: Pass resource NAME (char*), not pointer to struct! */
+        grLoadBmp(&gameTtmSlot, 0, bmpToLoad->resName);
+        spriteCount = gameTtmSlot.numSprites[0];
+        if (spriteCount > 0) {
+            loadedSprite = gameTtmSlot.sprites[0][0];
+        }
+        /* Re-apply draw environment after grLoadBmp */
+        PutDrawEnv(&gameDraw);
+    }
+
     /* Animation state */
     int currentSprite = 0;
     int frameCounter = 0;
@@ -399,13 +411,6 @@ int main(int argc, char **argv)
         /* Re-upload background from RAM to framebuffer each frame */
         grDrawBackground();
 
-        /* DEFERRED BMP LOADING: Skip sprite loading for now due to OT conflict
-         * TODO: Investigate LoadImage to texture area breaking OT rendering */
-        /* For now, just increment bmpLoaded to skip loading */
-        if (!bmpLoaded) {
-            bmpLoaded = 1;  /* Skip actual loading, use placeholder squares */
-        }
-
         /* Animated sprite position - cycle through 4 positions */
         if (++frameCounter >= 10) {
             frameCounter = 0;
@@ -415,26 +420,54 @@ int main(int argc, char **argv)
         int spriteX = 280 + (currentSprite * 30);
         int spriteY = 200;
 
-        /* Draw animated placeholder sprite (green square - two triangles)
-         * NOTE: Textured BMP sprites are not yet working due to LoadImage
-         * conflict with OT rendering. See ps1-rendering-debug.md for details. */
-        POLY_F3 *spr1 = (POLY_F3*)gameNextPri;
-        setPolyF3(spr1);
-        setXY3(spr1, spriteX, spriteY, spriteX+64, spriteY, spriteX, spriteY+64);
-        setRGB0(spr1, 0, 255, 0);  /* GREEN placeholder sprite */
-        addPrim(&gameOT[0], spr1);
-        gameNextPri += sizeof(POLY_F3);
+        /* Draw actual textured sprite if loaded, otherwise green placeholder */
+        if (loadedSprite && loadedSprite->width > 0) {
+            /* === TEXTURED SPRITE RENDERING === */
+            /* Step 1: Set texture page (tells GPU where texture data is in VRAM) */
+            DR_TPAGE *tpage = (DR_TPAGE*)gameNextPri;
+            gameNextPri += sizeof(DR_TPAGE);
 
-        POLY_F3 *spr2 = (POLY_F3*)gameNextPri;
-        setPolyF3(spr2);
-        setXY3(spr2, spriteX+64, spriteY, spriteX+64, spriteY+64, spriteX, spriteY+64);
-        setRGB0(spr2, 0, 255, 0);  /* GREEN placeholder sprite */
-        addPrim(&gameOT[0], spr2);
-        gameNextPri += sizeof(POLY_F3);
+            /* Calculate texture page from sprite VRAM position
+             * tpage X: in 64-pixel units, tpage Y: in 256-pixel units
+             * Color mode 0 = 4-bit CLUT (16 colors) */
+            uint16 tpageX = loadedSprite->x / 64;
+            uint16 tpageY = loadedSprite->y / 256;
+            setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
+            addPrim(&gameOT[0], tpage);
 
-        /* Unused variable suppression */
-        (void)loadedSprite;
-        (void)bmpToLoad;
+            /* Step 2: Draw sprite primitive */
+            SPRT *sprt = (SPRT*)gameNextPri;
+            gameNextPri += sizeof(SPRT);
+
+            setSprt(sprt);
+            setXY0(sprt, spriteX, spriteY);
+            setWH(sprt, loadedSprite->width, loadedSprite->height);
+            /* UV coords relative to texture page (0-255 range) */
+            /* For 4-bit textures, U is in half-pixel units (multiply x%64 by 4) */
+            uint8 u = ((loadedSprite->x % 64) * 4) & 0xFF;
+            uint8 v = (loadedSprite->y % 256) & 0xFF;
+            setUV0(sprt, u, v);
+            setClut(sprt, loadedSprite->clutX, loadedSprite->clutY);
+            setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
+            addPrim(&gameOT[0], sprt);
+        } else {
+            /* Fallback: Green placeholder squares if no sprite loaded */
+            POLY_F3 *spr1 = (POLY_F3*)gameNextPri;
+            setPolyF3(spr1);
+            setXY3(spr1, spriteX, spriteY, spriteX+64, spriteY, spriteX, spriteY+64);
+            setRGB0(spr1, 0, 255, 0);
+            addPrim(&gameOT[0], spr1);
+            gameNextPri += sizeof(POLY_F3);
+
+            POLY_F3 *spr2 = (POLY_F3*)gameNextPri;
+            setPolyF3(spr2);
+            setXY3(spr2, spriteX+64, spriteY, spriteX+64, spriteY+64, spriteX, spriteY+64);
+            setRGB0(spr2, 0, 255, 0);
+            addPrim(&gameOT[0], spr2);
+            gameNextPri += sizeof(POLY_F3);
+        }
+
+        (void)spriteCount;  /* Suppress unused warning */
 
         /* Draw OT */
         PutDrawEnv(&gameDraw);

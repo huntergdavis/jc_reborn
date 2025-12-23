@@ -210,37 +210,46 @@ setRGB0(quad, r, g, b);
 addPrim(ot, quad);
 ```
 
-### LoadImage to Texture Area Breaks OT Rendering (CRITICAL BUG)
+### LoadImage to Texture Area - SOLVED (December 2025)
 
-**Problem**: Calling `LoadImage()` to upload textures to VRAM at coordinates outside the framebuffer (e.g., (640, 4) for texture storage) completely breaks OT primitive rendering.
+**Problem**: Calling `LoadImage()` with a pointer through a struct member (e.g., `surface->pixels`) breaks OT primitive rendering. This is NOT about the VRAM destination coordinates - it's about how the source buffer is passed to LoadImage.
 
-**What works**:
-- `LoadImage()` to framebuffer (0,0)-(639,479) for background works fine (grDrawBackground)
-- `LoadImage()` to (640,0) for 16x1 CLUT palette works fine (grLoadPalette)
+**Root cause discovered**: LoadImage DMA seems to have issues when the source pointer comes from struct member access. Possibly a compiler optimization or pointer aliasing issue with PSn00bSDK.
 
-**What breaks OT**:
-- `LoadImage()` to (640,4+) for sprite textures (grLoadBmp) breaks ALL OT primitives
+**What BREAKS OT**:
+```c
+/* BROKEN - Using surface->pixels directly in LoadImage */
+PS1Surface *surface = safe_malloc(sizeof(PS1Surface));
+surface->pixels = safe_malloc(pixelSize);
+memcpy(surface->pixels, srcData, pixelSize);
+LoadImage(&rect, (uint32*)surface->pixels);  /* <-- BREAKS OT */
+```
 
-**Symptoms**:
-- POLY_F3 triangles stop rendering completely after LoadImage to texture area
-- Background (via grDrawBackground) still works
-- No error messages or crashes
+**What WORKS**:
+```c
+/* WORKING - Use simple pointer, create struct AFTER LoadImage */
+uint16 *copyBuf = safe_malloc(pixelSize);
+memcpy(copyBuf, srcData, pixelSize);
+LoadImage(&rect, (uint32*)copyBuf);  /* <-- WORKS */
+DrawSync(0);
 
-**Attempted fixes (NONE WORKED)**:
-- `DrawSync(0)` after LoadImage - didn't fix
-- `PutDrawEnv(&gameDraw)` after LoadImage - didn't fix
-- `PutDispEnv(&gameDisp)` after LoadImage - didn't fix
-- `ClearOTagR(ot, OTLEN)` after LoadImage - didn't fix
-- Deferring LoadImage to inside main loop - didn't fix
-- Loading only small BMPs (≤20 images) - didn't fix
+/* Create struct AFTER LoadImage completed */
+PS1Surface *surface = safe_malloc(sizeof(PS1Surface));
+surface->pixels = copyBuf;
+/* ... rest of surface setup ... */
+```
 
-**Current status**: Textured sprites are blocked. Using POLY_F3 placeholder squares as workaround.
+**Critical pattern for grLoadBmp**:
+1. Allocate pixel buffer with simple `uint16*` variable
+2. Copy BMP data to the buffer
+3. Call LoadImage with the simple pointer
+4. Call DrawSync(0)
+5. THEN create PS1Surface struct and store the pointer
+6. Cap sprite dimensions to 64x64 maximum
 
-**Possible causes to investigate**:
-1. GPU DMA conflict between texture upload and OT rendering
-2. Memory corruption from malloc() in grLoadBmp
-3. Draw area or scissor region being corrupted by LoadImage
-4. PSn00bSDK bug with LoadImage to non-framebuffer areas
+**Additional requirement**:
+- Sprite dimensions must be capped at 64x64 to prevent OT rendering issues
+- Large texture uploads may still cause problems even with correct pointer pattern
 
 ## Workarounds
 

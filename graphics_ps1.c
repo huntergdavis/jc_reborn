@@ -501,84 +501,62 @@ void grFreeLayer(PS1Surface *sfc)
  */
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
+    /*
+     * CRITICAL PATTERN: LoadImage MUST be called with a simple uint16* buffer,
+     * NOT through a struct member like surface->pixels. Creating the PS1Surface
+     * AFTER LoadImage works; creating it BEFORE and using surface->pixels
+     * as the LoadImage source breaks OT primitive rendering.
+     *
+     * Additionally, sprite dimensions must be capped at 64x64 to prevent
+     * OT rendering issues with large textures.
+     */
+    #define MAX_SPRITE_DIM 64
+
     if (ttmSlot->numSprites[slotNo])
         grReleaseBmp(ttmSlot, slotNo);
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
+    if (!bmpResource || !bmpResource->uncompressedData) return;
+    if (bmpResource->numImages < 1) return;
 
-    /* Handle lazy loading - reload from extracted file if needed */
-    if (bmpResource->uncompressedData == NULL) {
-        /* PS1 TODO: Use CD-ROM functions to reload from disc if needed */
-        /* For now, fatal error if data was freed */
-        fatalError("BMP data freed - PS1 CD-ROM reloading not yet implemented");
-    }
+    /* Only load first sprite for now (TODO: support multiple) */
+    uint16 width = bmpResource->widths[0];
+    uint16 height = bmpResource->heights[0];
+    uint16 safeW = (width > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : width;
+    uint16 safeH = (height > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : height;
 
-    uint8 *inPtr = bmpResource->uncompressedData;
+    /* Step 1: Allocate and copy pixel data to a SIMPLE buffer (not struct member) */
+    uint32 copySize = (safeW * safeH) / 2;  /* 4-bit = 0.5 bytes/pixel */
+    uint16 *copyBuf = (uint16*)safe_malloc(copySize);
+    memcpy(copyBuf, bmpResource->uncompressedData, copySize);
 
-    ttmSlot->numSprites[slotNo] = bmpResource->numImages;
+    /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
+    uint16 vramX = nextVRAMX;
+    uint16 vramY = nextVRAMY;
+    RECT rect;
+    setRECT(&rect, vramX, vramY, safeW / 4, safeH);  /* 4-bit width = pixels/4 */
+    LoadImage(&rect, (uint32*)copyBuf);
+    DrawSync(0);
 
-    for (int image=0; image < bmpResource->numImages; image++) {
+    /* Step 3: NOW create PS1Surface AFTER LoadImage completed */
+    PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+    surface->width = safeW;
+    surface->height = safeH;
+    surface->x = vramX;
+    surface->y = vramY;
+    surface->pixels = copyBuf;
+    surface->clutX = 640;
+    surface->clutY = 0;
 
-        if ((bmpResource->widths[image] % 2) == 1)
-            fatalError("grLoadBmp(): can't manage odd widths");
+    /* Store in slot */
+    ttmSlot->sprites[slotNo][0] = surface;
+    ttmSlot->numSprites[slotNo] = 1;
 
-        uint16 width  = bmpResource->widths[image];
-        uint16 height = bmpResource->heights[image];
-
-        /* Allocate PS1Surface structure */
-        PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-        surface->width = width;
-        surface->height = height;
-
-        /* Allocate VRAM position for this sprite */
-        surface->x = nextVRAMX;
-        surface->y = nextVRAMY;
-
-        /* Allocate pixel buffer for 4-bit indexed data */
-        /* Original sprites are 4-bit (16 colors), packed nibbles */
-        uint32 pixelDataSize = (width * height) / 2;  /* 4-bit = 0.5 bytes per pixel */
-        surface->pixels = (uint16*)safe_malloc(pixelDataSize);
-
-        /* Copy packed 4-bit data directly */
-        memcpy(surface->pixels, inPtr, pixelDataSize);
-        inPtr += pixelDataSize;
-
-        /* Upload texture to VRAM using DMA */
-        RECT rect;
-        /* Width in 16-bit units for 4-bit textures: 4 pixels per 16-bit word */
-        setRECT(&rect, surface->x, surface->y, width / 4, height);
-        LoadImage(&rect, (uint32*)surface->pixels);
-        DrawSync(0);  /* Wait for DMA to complete before continuing */
-
-        /* Set CLUT position (color lookup table) */
-        /* For now, use a fixed position - we'll upload palette here */
-        surface->clutX = 640;
-        surface->clutY = 0;  /* Right of framebuffer */
-
-        /* Store sprite in slot */
-        ttmSlot->sprites[slotNo][image] = surface;
-
-        /* Update VRAM allocation tracking */
-        nextVRAMX += width;
-        if (nextVRAMX >= 1024) {  /* VRAM width limit */
-            nextVRAMX = 0;
-            nextVRAMY += height;
-        }
-
-        if (debugMode) {
-            printf("Loaded sprite %d: %dx%d at VRAM(%d,%d)\n",
-                   image, width, height, surface->x, surface->y);
-        }
-    }
-
-    /* Free BMP data after converting to PS1 surfaces - saves memory */
-    if (bmpResource->uncompressedData) {
-        free(bmpResource->uncompressedData);
-        bmpResource->uncompressedData = NULL;
-        if (debugMode) {
-            printf("Freed BMP data for %s (%u bytes)\n",
-                   bmpResource->resName, bmpResource->uncompressedSize);
-        }
+    /* Update VRAM tracking for next sprite */
+    nextVRAMX += safeW;
+    if (nextVRAMX >= 1024) {
+        nextVRAMX = 640;
+        nextVRAMY += safeH;
     }
 }
 

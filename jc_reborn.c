@@ -370,16 +370,12 @@ int main(int argc, char **argv)
     /* Load first available BMP resource into slot 0 */
     PS1Surface *loadedSprite = NULL;
     int spriteCount = 0;
-    /* Find a small BMP (JOHNNY has many sprites, too large) */
+
+    /* Just take the first BMP with data - simple approach */
     struct TBmpResource *bmpToLoad = NULL;
     for (int i = 0; i < numBmpResources && !bmpToLoad; i++) {
         if (bmpResources[i] && bmpResources[i]->uncompressedData) {
-            /* Skip BMPs with too many images to avoid VRAM overflow */
-            if (bmpResources[i]->numImages <= 20) {
-                bmpToLoad = bmpResources[i];
-                printf("Selected BMP[%d]: %s (%d images)\n",
-                       i, bmpToLoad->resName, bmpToLoad->numImages);
-            }
+            bmpToLoad = bmpResources[i];
         }
     }
     /* DEFER BMP loading to first frame - see below */

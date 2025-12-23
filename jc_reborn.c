@@ -290,11 +290,10 @@ int main(int argc, char **argv)
 
     debugMode = 1;
 
-    /* Load and display title screen BEFORE resource parsing */
-    /* This gives instant visual feedback while resources load */
+    /* Show title screen FIRST - instant visual feedback */
     loadTitleScreenEarly();
 
-    /* Parse resources - title screen is visible during this */
+    /* Parse resource files from CD - needed for background and sprites */
     parseResourceFiles("RESOURCE.MAP");
 #else
     /* Non-PS1: normal flow */
@@ -307,56 +306,107 @@ int main(int argc, char **argv)
 #endif
 
 #ifdef PS1_BUILD
-    /* Resource counts available via extern - no print needed */
+    /* Resource counts available via extern */
     extern int numScrResources;
     extern int numBmpResources;
     extern int numAdsResources;
     extern int numTtmResources;
     extern int numPalResources;
-    /* Variables declared for use below */
+    extern struct TScrResource *scrResources[];
+    extern struct TBmpResource *bmpResources[];
+    extern struct TPalResource *palResources[];
 #endif
 
     /* Initialize LRU cache for memory management */
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* Initialize graphics system AFTER resource loading and LRU cache init */
-    graphicsInit();
+    /* === FRESH GPU RESET (proven working pattern) === */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    InitGeom();
 
-    /* Load palette */
-    extern struct TPalResource *palResources[];
-    extern int numPalResources;
+    /* Minimal OT and primitive buffer */
+    #define GAME_OTLEN 8
+    #define GAME_PRIMBUF 8192
+    static unsigned long gameOT[GAME_OTLEN];
+    static char gamePrimBuf[GAME_PRIMBUF];
+    char *gameNextPri;
+
+    /* Simple display/draw environments */
+    DISPENV gameDisp;
+    DRAWENV gameDraw;
+    SetDefDispEnv(&gameDisp, 0, 0, 640, 480);
+    SetDefDrawEnv(&gameDraw, 0, 0, 640, 480);
+    gameDisp.isinter = 1;  /* Interlaced for 640x480 */
+    /* isbg=0: Don't clear - grDrawBackground will repaint each frame */
+    setRGB0(&gameDraw, 0, 0, 0);
+    gameDraw.isbg = 0;
+
+    /* Enable display */
+    SetDispMask(1);
+    PutDispEnv(&gameDisp);
+    PutDrawEnv(&gameDraw);
+
+    /* RE-ENABLE palette and background loading */
     if (numPalResources > 0 && palResources[0]) {
         grLoadPalette(palResources[0]);
     }
-
-    /* Load background screen */
-    extern struct TScrResource *scrResources[];
-    extern int numScrResources;
-    if (numScrResources > 0 && scrResources[0] && scrResources[0]->uncompressedData) {
-        grLoadScreen(scrResources[0]->resName);
-    }
-
-    /* Test: Load multiple BMP resources */
-    extern struct TBmpResource *bmpResources[];
-    extern int numBmpResources;
-    static struct TTtmSlot testSlot = {0};
-
-    /* Load just the first BMP for now */
-    if (numBmpResources > 0 && bmpResources[0] && bmpResources[0]->uncompressedData) {
-        grLoadBmp(&testSlot, 0, bmpResources[0]->resName);
-    }
-
-    /* Main game loop - draw sprites from first BMP */
-    while(1) {
-        /* Draw sprites from slot 0 */
-        for (int i = 0; i < testSlot.numSprites[0] && i < 8; i++) {
-            int xPos = 30 + i * 70;
-            int yPos = 150;
-            grDrawSprite(NULL, &testSlot, xPos, yPos, i, 0);
+    struct TScrResource *bgScr = NULL;
+    for (int i = 0; i < numScrResources; i++) {
+        if (scrResources[i] && scrResources[i]->uncompressedData) {
+            bgScr = scrResources[i];
+            break;
         }
+    }
+    if (bgScr) {
+        grLoadScreen(bgScr->resName);
+    }
+    /* Skip sprite loading for now */
+    int spriteCount = 0;
 
-        grRefreshDisplay();
+    /* Animation state */
+    int currentSprite = 0;
+    int frameCounter = 0;
+
+    /* === Main game loop (proven working pattern) === */
+    while (1) {
+        DrawSync(0);
+        VSync(0);
+        ClearOTagR(gameOT, GAME_OTLEN);
+        gameNextPri = gamePrimBuf;
+
+        (void)spriteCount;
+
+        /* Re-upload background from RAM to framebuffer each frame */
+        grDrawBackground();
+
+        /* Animated sprite position */
+        if (++frameCounter >= 10) {
+            frameCounter = 0;
+            currentSprite = (currentSprite + 1) % 4;  /* 4 positions */
+        }
+        int spriteX = 280 + (currentSprite * 30);
+        int spriteY = 200;
+
+        /* Draw sprite placeholder - green square (two triangles) */
+        POLY_F3 *spr1 = (POLY_F3*)gameNextPri;
+        setPolyF3(spr1);
+        setXY3(spr1, spriteX, spriteY, spriteX+64, spriteY, spriteX, spriteY+64);
+        setRGB0(spr1, 0, 255, 0);  /* GREEN */
+        addPrim(&gameOT[0], spr1);
+        gameNextPri += sizeof(POLY_F3);
+
+        POLY_F3 *spr2 = (POLY_F3*)gameNextPri;
+        setPolyF3(spr2);
+        setXY3(spr2, spriteX+64, spriteY, spriteX+64, spriteY+64, spriteX, spriteY+64);
+        setRGB0(spr2, 0, 255, 0);  /* GREEN */
+        addPrim(&gameOT[0], spr2);
+        gameNextPri += sizeof(POLY_F3);
+
+        /* Draw OT */
+        PutDrawEnv(&gameDraw);
+        DrawOTag(gameOT + GAME_OTLEN - 1);
     }
 
     return 0;

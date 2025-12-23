@@ -1,26 +1,22 @@
 # PS1 Development Guide - Johnny Reborn
 
-**Last Updated**: 2025-12-22
+**Last Updated**: 2025-10-20
 **Branch**: `ps1`
-**Status**: Background + BMP sprites + sprite rendering working!
+**Status**: Visual debugging implemented, awaiting full game boot test
 
 ## Current State
 
 ### What's Working ✅
-- **Full game boots and runs** from CD at 640x480 interlaced
-- **Title screen** displays immediately at boot (direct CD loading)
-- **Resource decompression** - LZW/RLE decompression working
-- **Pixel-perfect 640x480 background rendering** via LoadImage to framebuffer
-- **BMP sprite loading to VRAM** - Sprites uploaded to texture area
-- **Palette loading** to VRAM CLUT area
-- **Sprite rendering with grDrawSprite** - 4-bit textured sprites working!
-- CD-ROM file I/O via ps1_fopen abstraction
+- **Minimal test** (3 colored squares) boots from CD and renders at 640x480
+- CD-ROM boot process (without calling CdInit())
+- GPU initialization and display at 640x480 interlaced
+- Basic rendering (TILE primitives, ordering tables)
 - CD image creation with mkpsxiso
 
 ### What's NOT Working ❌
-- printf() does NOT output to DuckStation TTY console (use visual debugging)
-- Full story mode integration (TTM/ADS playback)
-- Sound/SPU playback
+- **Full game (jcreborn.exe)** hangs before reaching main()
+- printf() does NOT output to DuckStation TTY console
+- We don't know if it's crashing before main() or during C runtime init
 
 ### Visual Debugging Solution 🎨
 Since printf() doesn't work, implemented **colored screen indicators**:
@@ -117,107 +113,6 @@ chmod +x duckstation-qt-x64.AppImage
 
 ### Enable TTY Console (doesn't work yet, but for reference)
 Settings → Console Settings → Enable TTY Output
-
-## Critical Bugs & Patterns That Don't Work ⚠️
-
-This section documents PS1-specific bugs discovered during development. These are CRITICAL - ignoring them will cause mysterious hangs.
-
-### 1. memcpy() Hangs on PS1 (Dec 2025)
-
-**Problem**: Standard `memcpy()` calls hang the PS1, even for small copies (16 bytes).
-
-**Symptoms**:
-- Code runs fine up to memcpy call
-- System freezes at 0 FPS
-- No crash, just infinite hang
-
-**Root Cause**: Unknown - possibly PSn00bSDK libc issue or DMA conflict.
-
-**Solution**: Use manual byte-by-byte copy loops:
-```c
-/* DON'T DO THIS - HANGS! */
-memcpy(dst, src, size);
-
-/* DO THIS INSTEAD */
-for (uint32 i = 0; i < size; i++) {
-    dst[i] = src[i];
-}
-```
-
-**Affected code**: `graphics_ps1.c` - BMP sprite loading
-
----
-
-### 2. Static Array Pointer Storage Bug (Dec 2025)
-
-**Problem**: Storing a pointer computed from a static array to any destination causes hangs.
-
-**Symptoms**:
-- Code works if you store NULL or literal constants (0x12345678)
-- Code hangs if you store a pointer from a static array
-- Reading from the array works fine
-- Writing through the pointer (ptr->field) works fine
-- Only storing the pointer VALUE hangs
-
-**Example of what DOESN'T work**:
-```c
-static PS1Surface pool[720];
-int idx = nextIndex++;
-PS1Surface *surface = &pool[idx];  /* This is fine */
-surface->width = 64;                /* This is fine */
-slot->sprites[0][0] = surface;      /* THIS HANGS! */
-
-/* Even this hangs: */
-static PS1Surface *globalPtr;
-globalPtr = surface;                /* HANGS! */
-
-/* And this: */
-slot->sprites[0][0] = &pool[idx];   /* HANGS! */
-```
-
-**What DOES work**:
-```c
-slot->sprites[0][0] = NULL;                    /* OK */
-slot->sprites[0][0] = (PS1Surface*)0x12345678; /* OK */
-
-/* malloc'd pointers work: */
-PS1Surface *surface = malloc(sizeof(PS1Surface));
-slot->sprites[0][0] = surface;                 /* OK! */
-```
-
-**Root Cause**: Unknown compiler/toolchain bug with mipsel-none-elf-gcc or PSn00bSDK.
-
-**Solution**: Use `malloc()` instead of static arrays for structures whose pointers need to be stored elsewhere.
-
-**Affected code**: `graphics_ps1.c` - PS1Surface allocation in grLoadBmp()
-
----
-
-### 3. VRAM Layout for 640x480 Interlaced
-
-**Constraint**: PS1 VRAM is 1024x512 pixels. At 640x480, framebuffer uses most of it.
-
-**Layout**:
-```
-VRAM (1024x512):
-┌─────────────────────────────────────┬────────────┐
-│                                     │            │
-│     Framebuffer (640x480)           │  Textures  │
-│     Display at (0,0)                │  (384x480) │
-│                                     │            │
-│                                     │  X=640+    │
-├─────────────────────────────────────┴────────────┤
-│  CLUT/Palette area (Y=481-511, 31 rows)          │
-└──────────────────────────────────────────────────┘
-```
-
-- **Framebuffer**: (0,0) to (639,479)
-- **Texture area**: X=640 to X=1023 (384 pixels wide)
-- **CLUT area**: Y=481+ (below framebuffer)
-
-**For 4-bit textures**: VRAM width = texture_width / 4 (4 pixels per VRAM pixel)
-
----
 
 ## Key Technical Discoveries
 
@@ -362,52 +257,6 @@ If missing, check build output for errors.
 - **PS1 Dev Wiki**: https://psx-spx.consoledev.net/
 - **DuckStation**: https://github.com/stenzek/duckstation
 - **PCSX-Redux**: https://github.com/grumpycoders/pcsx-redux
-
-## Known Issues & Solutions
-
-### CD State Corruption After Direct CD Calls (Dec 2025)
-
-**Problem**: When loading title screen with direct CD calls (`CdSearchFile`, `CdControl`, `CdRead`, `CdReadSync`) BEFORE calling `ps1_fopen` for resource loading, the CD subsystem state gets corrupted. This causes subsequent `ps1_fopen` calls to fail silently - files appear to open but decompression produces garbage or NULL data.
-
-**Symptoms**:
-- Title screen displays correctly
-- Resource parsing appears to succeed (structures created)
-- BUT `uncompressedData` is NULL for ADS/TTM resources
-- Scene playback fails, falls back to debug rectangles
-
-**Root Cause**: Direct CD calls leave the PSn00bSDK CD subsystem in an inconsistent state. The internal buffers, file position tracking, or DMA state doesn't reset properly for subsequent operations.
-
-**Solution**: Call `CdInit()` after completing direct CD operations to fully reset the CD subsystem:
-
-```c
-void cdromResetState(void)
-{
-    /* Wait for any pending CD operations */
-    CdReadSync(0, NULL);
-
-    /* Re-initialize the CD subsystem to fully reset state */
-    CdInit();
-
-    /* Reset ps1FilePool state */
-    for (int i = 0; i < 4; i++) {
-        ps1FilePool[i].isOpen = 0;
-        ps1FilePool[i].buffer = NULL;
-        ps1FilePool[i].bufferSize = 0;
-        ps1FilePool[i].currentPos = 0;
-    }
-}
-```
-
-**When to call**: After any direct CD operations (CdSearchFile/CdRead) and before using `ps1_fopen`.
-
-**Debugging technique**: Use colored rectangles with varying sizes to encode debug values:
-- RED width = numAdsResources * 10px
-- GREEN width = adsWithData * 30px (missing = 0 decompressed)
-- BLUE = present if specific resource found
-
-This helps identify whether resources exist vs have actual data.
-
----
 
 ## Session History
 

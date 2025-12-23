@@ -96,6 +96,10 @@ extern int grUpdateDelay;
 extern int grCaptureFrameNumber;
 extern char *grCaptureFilename;
 
+/* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly)
+ * Set this to 1 BEFORE calling graphicsInit() if GPU is already set up */
+extern int grGpuAlreadyInitialized;
+
 void graphicsInit();
 void graphicsEnd();
 void grRefreshDisplay();
@@ -132,9 +136,5 @@ void grLoadScreen(char *strArg);
 
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
-
-/* Test functions for sprite VRAM debugging */
-int grTestSpriteUpload(void);
-void grDrawTestSprite(int x, int y);
 
 #endif /* GRAPHICS_PS1_H */

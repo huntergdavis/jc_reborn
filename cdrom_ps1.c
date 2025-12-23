@@ -853,12 +853,13 @@ struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName)
     adsResource->compressionMethod = ps1_readUint8(f);
     adsResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress essential ADS - prioritize commonly used scenes */
+    /* Decompress essential ADS - prioritize STAND.ADS for Johnny */
     static int adsDecompressCount = 0;
-    #define MAX_ADS_DECOMPRESS 5  /* Moderate limit */
+    #define MAX_ADS_DECOMPRESS 3  /* Conservative limit to avoid memory crash */
 
-    /* Check if this is an essential ADS - decompress first few found */
-    int isEssentialAds = 0;  /* No specific essential list - just use count */
+    /* Check if this is an essential ADS with Johnny animations */
+    int isEssentialAds = (strstr(resName, "STAND") != NULL) ||
+                         (strstr(resName, "JOHNNY") != NULL);
 
     if (isEssentialAds || adsDecompressCount < MAX_ADS_DECOMPRESS) {
         printf("Decompressing ADS: %s (%u bytes)%s\n", resName,
@@ -961,12 +962,10 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     static int bmpDecompressCount = 0;
     #define MAX_BMP_DECOMPRESS 12  /* Conservative limit to avoid memory crash */
 
-    /* Check if this is an essential sprite */
+    /* Check if this is an essential Johnny sprite */
     int isEssentialBmp = (strstr(resName, "JOHNWALK") != NULL) ||
                          (strstr(resName, "JOHNWOUL") != NULL) ||
-                         (strstr(resName, "BACKGRND") != NULL) ||
-                         (strstr(resName, "HOLIDAY") != NULL) ||  /* Christmas tree, etc. */
-                         (strstr(resName, "CLOUDS") != NULL);
+                         (strstr(resName, "BACKGRND") != NULL);
 
     if (isEssentialBmp || bmpDecompressCount < MAX_BMP_DECOMPRESS) {
         printf("Decompressing BMP: %s (%u bytes)%s\n", resName,

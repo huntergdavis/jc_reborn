@@ -37,21 +37,21 @@ typedef struct _FILE FILE;
 
 /* Primitive buffer for GPU commands */
 #define PRIMITIVE_BUFFER_SIZE 32768
-static uint8 *primitiveBuffer[2];  /* Malloc'd, not static array! */
-static uint32 primitiveIndex[2];
-static uint8 *nextPrimitive[2];
+uint8 *primitiveBuffer[2];  /* Malloc'd, not static array! */
+uint32 primitiveIndex[2];
+uint8 *nextPrimitive[2];
 
 /* PS1 Display and drawing environments */
 static DISPENV disp[2];
-static DRAWENV draw[2];
-static int db = 0;  /* Double buffer index */
+DRAWENV draw[2];
+int db = 0;  /* Double buffer index */
 
 /* Ordering tables for GPU command queueing */
 #define OT_LENGTH 8
-static unsigned long ot[2][OT_LENGTH];
+unsigned long ot[2][OT_LENGTH];
 
-/* Palette (16 colors, matching original TTM format) */
-static uint16 ttmPalette[16];
+/* Palette (16 colors, matching original TTM format) - exported for jc_reborn.c */
+uint16 ttmPalette[16];
 
 /* Layer management */
 static PS1Surface *grSavedZonesLayer = NULL;
@@ -66,18 +66,6 @@ static PS1Surface *bgTile0 = NULL;  /* x=0-255,   srcX=0 */
 static PS1Surface *bgTile1 = NULL;  /* x=256-511, srcX=256 */
 static PS1Surface *bgTile2a = NULL; /* x=512-575, srcX=512, width=64 */
 static PS1Surface *bgTile2b = NULL; /* x=576-639, srcX=576, width=64 */
-
-/* Pre-allocated tile buffers (allocated in graphicsInit where malloc works) */
-PS1Surface *preallocTile0 = NULL;
-PS1Surface *preallocTile1 = NULL;
-uint16 *preallocPixels0 = NULL;  /* 320x240 = 153,600 bytes */
-uint16 *preallocPixels1 = NULL;  /* 320x240 = 153,600 bytes */
-
-/* Single static pixel buffer for chunked background rendering
- * Process 64px wide strips, upload immediately, reuse buffer for next strip
- * This avoids the ~60KB static buffer limit */
-#define BG_STRIP_WIDTH 64
-static uint16 bgStripBuffer[BG_STRIP_WIDTH * 240];  /* 64x240 = 30,720 bytes */
 
 /* Bottom row tiles - need VRAM space outside framebuffer (0-639, 0-479)
  * VRAM is 1024x512. Texture area: x=640-1023, y=0-511
@@ -100,73 +88,97 @@ int grCaptureFrameNumber = -1;
 char *grCaptureFilename = NULL;
 static int grCurrentFrame = 0;
 
+/* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly) */
+int grGpuAlreadyInitialized = 0;
+
 /* VRAM allocation tracking
  * VRAM Layout for 640x480 interlaced:
  * (0,0)-(639,479): Framebuffer (single buffer for 640x480)
  * (640,0)-(656,1): CLUT (16 colors)
  * (640,2)-(895,2): CLUT 256 (grayscale)
  * (640,4) onwards: Textures
- *
- * IMPORTANT: For 4-bit textures, VRAM width = pixel_width / 4
- * because each 16-bit VRAM word holds 4 pixels (4 bits each)
  */
 static uint16 nextVRAMX = 640;  /* Start to the right of framebuffer */
 static uint16 nextVRAMY = 4;    /* Below CLUTs */
-
-/* Test sprite for debugging VRAM uploads */
-static PS1Surface *testSprite = NULL;
 
 /*
  * Initialize PS1 graphics subsystem
  */
 void graphicsInit()
 {
-    if (debugMode)
-        printf("GPU: Resetting GPU...\n");
+    /* Skip GPU reset if already initialized (e.g., by loadTitleScreenEarly)
+     * CRITICAL: Calling ResetGraph(0) after GPU is already initialized
+     * conflicts with the existing GPU state and causes hangs */
+    if (!grGpuAlreadyInitialized) {
+        if (debugMode)
+            printf("GPU: Resetting GPU...\n");
 
-    /* Reset GPU and set video mode */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
+        /* Reset GPU and set video mode */
+        ResetGraph(0);
+        SetVideoMode(MODE_NTSC);
 
-    if (debugMode)
-        printf("GPU: Initializing GTE...\n");
+        if (debugMode)
+            printf("GPU: Initializing GTE...\n");
 
-    /* Initialize geometry transformation engine */
-    InitGeom();
+        /* Initialize geometry transformation engine */
+        InitGeom();
 
-    if (debugMode)
-        printf("GPU: Setting up display buffers (%dx%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
+        if (debugMode)
+            printf("GPU: Setting up display buffers (%dx%d)...\n", SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    /* Setup display environments for 640x480 interlaced mode
-     * Single buffer mode since 2x640x480 won't fit in VRAM
-     * Both buffers point to same location - no flipping needed */
-    SetDefDispEnv(&disp[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    SetDefDispEnv(&disp[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        /* Setup display environments for 640x480 interlaced mode
+         * Single buffer mode since 2x640x480 won't fit in VRAM
+         * Both buffers point to same location - no flipping needed */
+        SetDefDispEnv(&disp[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        SetDefDispEnv(&disp[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    /* Enable interlaced mode for 640x480 */
-    disp[0].isinter = 1;
-    disp[1].isinter = 1;
+        /* Enable interlaced mode for 640x480 */
+        disp[0].isinter = 1;
+        disp[1].isinter = 1;
 
-    /* Setup drawing environments - both draw to same buffer */
-    SetDefDrawEnv(&draw[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
-    SetDefDrawEnv(&draw[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        /* Setup drawing environments - both draw to same buffer */
+        SetDefDrawEnv(&draw[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        SetDefDrawEnv(&draw[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
-    /* Don't clear background - we use LoadImage to write directly to framebuffer
-     * In single-buffer 640x480 mode, we want to preserve the background */
-    setRGB0(&draw[0], 0, 0, 0);
-    setRGB0(&draw[1], 0, 0, 0);
-    draw[0].isbg = 0;  /* Don't clear - background is LoadImage'd */
-    draw[1].isbg = 0;
+        /* Set background clear color - but DON'T enable clear!
+         * We use grDrawBackground() LoadImage to paint the background each frame,
+         * so isbg=0 preserves it for OT primitives to draw on top */
+        setRGB0(&draw[0], 0, 0, 0);
+        setRGB0(&draw[1], 0, 0, 0);
+        draw[0].isbg = 0;  /* Don't clear - grDrawBackground handles it */
+        draw[1].isbg = 0;
 
-    if (debugMode)
-        printf("GPU: Enabling display...\n");
+        if (debugMode)
+            printf("GPU: Enabling display...\n");
 
-    /* Enable display */
-    SetDispMask(1);
+        /* Enable display */
+        SetDispMask(1);
 
-    /* Apply first buffer */
-    PutDispEnv(&disp[db]);
-    PutDrawEnv(&draw[db]);
+        /* Apply first buffer */
+        PutDispEnv(&disp[db]);
+        PutDrawEnv(&draw[db]);
+    } else {
+        if (debugMode)
+            printf("GPU: Skipping ResetGraph - already initialized\n");
+
+        /* Still need to setup display/draw environments for rendering
+         * GPU is already on, but we need proper environment structs */
+        SetDefDispEnv(&disp[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        SetDefDispEnv(&disp[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        disp[0].isinter = 1;  /* Interlaced mode for 640x480 */
+        disp[1].isinter = 1;
+
+        SetDefDrawEnv(&draw[0], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        SetDefDrawEnv(&draw[1], 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+        setRGB0(&draw[0], 0, 0, 0);
+        setRGB0(&draw[1], 0, 0, 0);
+        draw[0].isbg = 0;  /* Don't clear - grDrawBackground handles it */
+        draw[1].isbg = 0;
+
+        /* Apply environments immediately (like the non-ELSE branch) */
+        PutDispEnv(&disp[db]);
+        PutDrawEnv(&draw[db]);
+    }
 
     if (debugMode)
         printf("GPU: Initializing ordering tables...\n");
@@ -188,8 +200,6 @@ void graphicsInit()
     nextPrimitive[1] = primitiveBuffer[1];
     primitiveIndex[0] = 0;
     primitiveIndex[1] = 0;
-
-    /* Note: Pre-allocation removed - using static bgStripBuffer for chunked rendering */
 
     if (debugMode)
         printf("GPU: Loading default palette...\n");
@@ -238,104 +248,6 @@ void graphicsInit()
 
     if (debugMode)
         printf("GPU: Graphics initialization complete!\n");
-}
-
-/*
- * Test function: Create and upload a simple 64x64 test sprite to VRAM
- * Returns 1 on success, 0 on failure/hang
- * Call this to verify LoadImage works for texture area
- */
-int grTestSpriteUpload(void)
-{
-    /* Create a larger 64x64 4-bit test pattern for visibility */
-    uint16 testWidth = 64;
-    uint16 testHeight = 64;
-
-    /* 4-bit = 2 pixels per byte, so 64x64 = 2048 bytes */
-    uint32 dataSize = (testWidth * testHeight) / 2;
-    uint8 *testData = (uint8*)malloc(dataSize);
-    if (!testData) return 0;
-
-    /* Fill with solid WHITE (palette index 7) for maximum visibility */
-    for (uint32 i = 0; i < dataSize; i++) {
-        testData[i] = 0x77;  /* Both nibbles = color 7 (white) */
-    }
-
-    /* Allocate surface structure */
-    testSprite = (PS1Surface*)malloc(sizeof(PS1Surface));
-    if (!testSprite) {
-        free(testData);
-        return 0;
-    }
-
-    testSprite->width = testWidth;
-    testSprite->height = testHeight;
-    testSprite->x = 640;  /* Texture area start */
-    testSprite->y = 4;    /* Below CLUTs */
-    testSprite->clutX = 640;
-    testSprite->clutY = 0;
-    testSprite->pixels = (uint16*)testData;
-
-    /* KEY: For 4-bit textures, VRAM width = pixel_width / 4 */
-    RECT texRect;
-    uint16 vramWidth = testWidth / 4;  /* 64 pixels / 4 = 16 VRAM units */
-    setRECT(&texRect, testSprite->x, testSprite->y, vramWidth, testHeight);
-
-    /* Try the upload */
-    LoadImage(&texRect, (uint32*)testData);
-    DrawSync(0);  /* Wait for completion */
-
-    return 1;  /* Success if we get here */
-}
-
-/*
- * Draw the test sprite at given position using POLY_FT4 (textured quad)
- * This gives more explicit control over texture coordinates
- */
-void grDrawTestSprite(int x, int y)
-{
-    if (!testSprite) return;
-
-    /* Allocate POLY_FT4 primitive */
-    if (primitiveIndex[db] + sizeof(POLY_FT4) > PRIMITIVE_BUFFER_SIZE) {
-        return;
-    }
-
-    POLY_FT4 *poly = (POLY_FT4*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(POLY_FT4);
-    primitiveIndex[db] += sizeof(POLY_FT4);
-
-    setPolyFT4(poly);
-
-    /* Screen coordinates - quad corners */
-    int w = testSprite->width;
-    int h = testSprite->height;
-    setXY4(poly,
-           x,     y,      /* Top-left */
-           x + w, y,      /* Top-right */
-           x,     y + h,  /* Bottom-left */
-           x + w, y + h); /* Bottom-right */
-
-    /* Texture page: 4-bit mode (0), at VRAM X=640
-     * getTPage(mode, abr, x, y): mode=0 for 4-bit, x/y in VRAM coords */
-    poly->tpage = getTPage(0, 0, 640, 0);
-
-    /* CLUT position */
-    poly->clut = getClut(testSprite->clutX, testSprite->clutY);
-
-    /* UV coordinates within texture page
-     * Texture is at VRAM (640,4), tpage starts at (640,0)
-     * So U=0, V=4 for top-left corner
-     * UV coords are 0-indexed, so 64-pixel texture uses 0-63 */
-    setUV4(poly,
-           0, 4,           /* Top-left UV */
-           63, 4,          /* Top-right UV */
-           0, 4 + 63,      /* Bottom-left UV */
-           63, 4 + 63);    /* Bottom-right UV */
-
-    setRGB0(poly, 128, 128, 128);  /* Normal brightness */
-
-    addPrim(&ot[db][0], poly);
 }
 
 /*
@@ -586,24 +498,7 @@ void grFreeLayer(PS1Surface *sfc)
 
 /*
  * Load BMP sprite sheet into slot
- * Uploads 4-bit indexed textures to VRAM for GPU rendering.
  */
-/* Static buffer for BMP sprite upload (avoids malloc issues) */
-/* Max sprite size: 256x256 at 4-bit = 32KB */
-/* Must be uint32 aligned for DMA transfers to work correctly */
-#define MAX_SPRITE_UPLOAD_SIZE (256 * 256 / 2)
-static uint32 spriteUploadBuffer32[MAX_SPRITE_UPLOAD_SIZE / 4];
-#define spriteUploadBuffer ((uint8*)spriteUploadBuffer32)
-
-/* NOTE: We use malloc() for PS1Surface structs instead of a static pool
- * due to a compiler/toolchain bug where storing pointers from static arrays
- * to ttmSlot->sprites causes hangs. malloc'd pointers work correctly. */
-
-/* Global VRAM tracking for sprite textures */
-/* Sprites go at X=640+ to avoid framebuffer (0-639), Y=1+ to avoid CLUT at Y=0 */
-static uint16 spriteVRAMX = 640;
-static uint16 spriteVRAMY = 1;
-
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
     if (ttmSlot->numSprites[slotNo])
@@ -611,90 +506,78 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
 
-    /* Handle lazy loading - return if data not available */
-    if (bmpResource == NULL || bmpResource->uncompressedData == NULL) {
-        return;
+    /* Handle lazy loading - reload from extracted file if needed */
+    if (bmpResource->uncompressedData == NULL) {
+        /* PS1 TODO: Use CD-ROM functions to reload from disc if needed */
+        /* For now, fatal error if data was freed */
+        fatalError("BMP data freed - PS1 CD-ROM reloading not yet implemented");
     }
 
     uint8 *inPtr = bmpResource->uncompressedData;
-    int numImages = bmpResource->numImages;
 
-    /* Limit to 50 sprites per BMP */
-    if (numImages > 50) numImages = 50;
-    ttmSlot->numSprites[slotNo] = numImages;
+    ttmSlot->numSprites[slotNo] = bmpResource->numImages;
 
-    for (int image = 0; image < numImages; image++) {
+    for (int image=0; image < bmpResource->numImages; image++) {
+
+        if ((bmpResource->widths[image] % 2) == 1)
+            fatalError("grLoadBmp(): can't manage odd widths");
+
         uint16 width  = bmpResource->widths[image];
         uint16 height = bmpResource->heights[image];
-        uint32 pixelDataSize = (width * height) / 2;
-        uint16 vramWidth = width / 4;
 
-        /* Skip invalid sprites */
-        if ((width % 2) == 1 || width > 256 || height > 256 || vramWidth == 0) {
-            inPtr += pixelDataSize;
-            ttmSlot->sprites[slotNo][image] = NULL;
-            continue;
-        }
+        /* Allocate PS1Surface structure */
+        PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+        surface->width = width;
+        surface->height = height;
 
-        /* Allocate surface struct with malloc (static pool causes compiler bug) */
-        PS1Surface *sfc = (PS1Surface*)malloc(sizeof(PS1Surface));
-        if (!sfc) {
-            inPtr += pixelDataSize;
-            ttmSlot->sprites[slotNo][image] = NULL;
-            continue;
-        }
-        sfc->width = width;
-        sfc->height = height;
-        sfc->pixels = NULL;
+        /* Allocate VRAM position for this sprite */
+        surface->x = nextVRAMX;
+        surface->y = nextVRAMY;
 
-        /* Store malloc'd pointer */
-        ttmSlot->sprites[slotNo][image] = sfc;
+        /* Allocate pixel buffer for 4-bit indexed data */
+        /* Original sprites are 4-bit (16 colors), packed nibbles */
+        uint32 pixelDataSize = (width * height) / 2;  /* 4-bit = 0.5 bytes per pixel */
+        surface->pixels = (uint16*)safe_malloc(pixelDataSize);
 
-        /* Copy and upload */
-        if (pixelDataSize <= MAX_SPRITE_UPLOAD_SIZE) {
-            for (uint32 i = 0; i < pixelDataSize; i++) {
-                spriteUploadBuffer[i] = inPtr[i];
-            }
-
-            /* Check if sprite fits in current row */
-            if (spriteVRAMX + vramWidth > 1024) {
-                spriteVRAMX = 640;
-                spriteVRAMY += 128;
-            }
-
-            /* Check VRAM bounds - stop if out of space */
-            if (spriteVRAMY + height > 512) {
-                /* VRAM full, skip remaining sprites */
-                free(sfc);
-                inPtr += pixelDataSize;
-                ttmSlot->sprites[slotNo][image] = NULL;
-                continue;
-            }
-
-            /* Upload to tracked VRAM position */
-            RECT spriteRect;
-            setRECT(&spriteRect, spriteVRAMX, spriteVRAMY, vramWidth, height);
-            LoadImage(&spriteRect, (uint32*)spriteUploadBuffer);
-            DrawSync(0);
-
-            /* Store VRAM position in surface */
-            sfc->x = spriteVRAMX;
-            sfc->y = spriteVRAMY;
-            /* CLUT is at (640, 0) as loaded in grLoadPalette */
-            sfc->clutX = 640;
-            sfc->clutY = 0;
-
-            /* Update position for next sprite */
-            spriteVRAMX += vramWidth;
-        }
-
+        /* Copy packed 4-bit data directly */
+        memcpy(surface->pixels, inPtr, pixelDataSize);
         inPtr += pixelDataSize;
+
+        /* Upload texture to VRAM using DMA */
+        RECT rect;
+        /* Width in 16-bit units for 4-bit textures: 4 pixels per 16-bit word */
+        setRECT(&rect, surface->x, surface->y, width / 4, height);
+        LoadImage(&rect, (uint32*)surface->pixels);
+
+        /* Set CLUT position (color lookup table) */
+        /* For now, use a fixed position - we'll upload palette here */
+        surface->clutX = 640;
+        surface->clutY = 0;  /* Right of framebuffer */
+
+        /* Store sprite in slot */
+        ttmSlot->sprites[slotNo][image] = surface;
+
+        /* Update VRAM allocation tracking */
+        nextVRAMX += width;
+        if (nextVRAMX >= 1024) {  /* VRAM width limit */
+            nextVRAMX = 0;
+            nextVRAMY += height;
+        }
+
+        if (debugMode) {
+            printf("Loaded sprite %d: %dx%d at VRAM(%d,%d)\n",
+                   image, width, height, surface->x, surface->y);
+        }
     }
 
-    /* Free BMP uncompressed data after uploading - saves memory */
+    /* Free BMP data after converting to PS1 surfaces - saves memory */
     if (bmpResource->uncompressedData) {
         free(bmpResource->uncompressedData);
         bmpResource->uncompressedData = NULL;
+        if (debugMode) {
+            printf("Freed BMP data for %s (%u bytes)\n",
+                   bmpResource->resName, bmpResource->uncompressedSize);
+        }
     }
 }
 
@@ -768,31 +651,42 @@ void grDrawLine(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2, uin
 }
 
 /*
- * Draw filled rectangle
+ * Draw filled rectangle using two triangles (TILE primitive doesn't work on PS1)
  */
 void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height, uint8 color)
 {
-    /* Allocate from primitive buffer, not malloc */
-    if (primitiveIndex[db] + sizeof(TILE) > PRIMITIVE_BUFFER_SIZE) {
+    /* Need space for 2 triangles */
+    if (primitiveIndex[db] + 2 * sizeof(POLY_F3) > PRIMITIVE_BUFFER_SIZE) {
         return;  /* Buffer full */
     }
 
-    TILE *tile = (TILE*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(TILE);
-    primitiveIndex[db] += sizeof(TILE);
-
-    setTile(tile);
-    setXY0(tile, x, y);
-    setWH(tile, width, height);
-
-    /* Convert palette color to RGB - multiply by 8 to scale 5-bit to 8-bit range */
+    /* Convert palette color to RGB */
     uint8 r = (ttmPalette[color & 0xF] & 0x1F) << 3;
     uint8 g = ((ttmPalette[color & 0xF] >> 5) & 0x1F) << 3;
     uint8 b = ((ttmPalette[color & 0xF] >> 10) & 0x1F) << 3;
-    setRGB0(tile, r, g, b);
 
-    /* Add to ordering table */
-    addPrim(&ot[db][0], tile);
+    sint16 x2 = x + width;
+    sint16 y2 = y + height;
+
+    /* Top-left triangle */
+    POLY_F3 *tri1 = (POLY_F3*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(POLY_F3);
+    primitiveIndex[db] += sizeof(POLY_F3);
+
+    setPolyF3(tri1);
+    setXY3(tri1, x, y, x2, y, x, y2);
+    setRGB0(tri1, r, g, b);
+    addPrim(&ot[db][0], tri1);
+
+    /* Bottom-right triangle */
+    POLY_F3 *tri2 = (POLY_F3*)nextPrimitive[db];
+    nextPrimitive[db] += sizeof(POLY_F3);
+    primitiveIndex[db] += sizeof(POLY_F3);
+
+    setPolyF3(tri2);
+    setXY3(tri2, x2, y, x2, y2, x, y2);
+    setRGB0(tri2, r, g, b);
+    addPrim(&ot[db][0], tri2);
 }
 
 /*
@@ -840,29 +734,24 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
     primitiveIndex[db] += sizeof(DR_TPAGE);
 
     /* Calculate texture page from sprite VRAM position
-     * For 4-bit mode: tpage X is in 64-VRAM-word boundaries (= 256 pixels)
-     * sprite->x is VRAM X coordinate */
-    uint16 tpageBaseX = (sprite->x / 64) * 64;  /* Align to 64-word boundary */
-    uint16 tpageBaseY = (sprite->y / 256) * 256;
-    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageBaseX, tpageBaseY));
+     * tpage X: in 64-pixel units (sprite->x / 64)
+     * tpage Y: in 256-pixel units (sprite->y / 256)
+     * Color mode: 0 = 4-bit CLUT (16 colors) */
+    uint16 tpageX = sprite->x / 64;
+    uint16 tpageY = sprite->y / 256;
+    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
     addPrim(&ot[db][0], tpage);
 
     SPRT *sprt = (SPRT*)nextPrimitive[db];
     nextPrimitive[db] += sizeof(SPRT);
     primitiveIndex[db] += sizeof(SPRT);
 
-    /* Calculate UV coordinates
-     * For 4-bit textures: each VRAM word = 4 texture pixels
-     * U = (sprite->x - tpageBaseX) * 4 = pixel offset within tpage
-     * V = sprite->y - tpageBaseY */
-    uint8 u = ((sprite->x - tpageBaseX) * 4) & 0xFF;
-    uint8 v = (sprite->y - tpageBaseY) & 0xFF;
-
     /* Initialize sprite primitive */
     setSprt(sprt);
     setXY0(sprt, x, y);
     setWH(sprt, sprite->width, sprite->height);
-    setUV0(sprt, u, v);
+    /* UV coords are relative to texture page (0-255 range) */
+    setUV0(sprt, (sprite->x % 256) & 0xFF, (sprite->y % 256) & 0xFF);
     setClut(sprt, sprite->clutX, sprite->clutY);
     setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
 
@@ -969,13 +858,35 @@ void grClearScreen(PS1Surface *sfc)
 
 /*
  * Draw background surface to screen
- * Both top and bottom rows are LoadImage'd directly to framebuffer at init.
- * In single-buffer mode (640x480), the data persists - nothing to do here.
+ * Re-LoadImages all tiles to framebuffer to restore background each frame.
+ * Required when isbg=0 to erase previous frame's sprites.
  */
 void grDrawBackground(void)
 {
-    /* Background was written once at init via LoadImage to framebuffer.
-     * In single-buffer mode, it persists - no need to redraw each frame. */
+    RECT dstRect;
+
+    /* Top row tiles (y=0-239) */
+    if (bgTile0 && bgTile0->pixels) {
+        setRECT(&dstRect, 0, 0, bgTile0->width, bgTile0->height);
+        LoadImage(&dstRect, (uint32*)bgTile0->pixels);
+    }
+    if (bgTile1 && bgTile1->pixels) {
+        setRECT(&dstRect, 320, 0, bgTile1->width, bgTile1->height);
+        LoadImage(&dstRect, (uint32*)bgTile1->pixels);
+    }
+
+    /* Bottom row tiles (y=240-479) */
+    if (bgTile3 && bgTile3->pixels) {
+        setRECT(&dstRect, 0, 240, bgTile3->width, bgTile3->height);
+        LoadImage(&dstRect, (uint32*)bgTile3->pixels);
+    }
+    if (bgTile4 && bgTile4->pixels) {
+        setRECT(&dstRect, 320, 240, bgTile4->width, bgTile4->height);
+        LoadImage(&dstRect, (uint32*)bgTile4->pixels);
+    }
+
+    /* Wait for DMA completion before drawing sprites */
+    DrawSync(0);
 }
 
 /*
@@ -1052,29 +963,25 @@ static void freeBgTile(PS1Surface **tile)
  * Helper: Create a background tile stored in RAM only (no VRAM upload)
  * For use with LoadImage directly to framebuffer
  */
-/*
- * Helper: Convert a vertical strip of SCR data and upload directly to framebuffer
- * This is the chunked rendering approach - process 64px wide strips one at a time
- */
-static void convertAndUploadStrip(uint8 *src, uint16 srcWidth, uint16 srcHeight,
-                                   uint16 srcStartX, uint16 srcStartY,
-                                   uint16 dstX, uint16 dstY,
-                                   uint16 stripWidth, uint16 stripHeight)
+static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
+                                    uint16 srcStartX, uint16 srcStartY,
+                                    uint16 tileWidth)
 {
-    uint16 *dst = bgStripBuffer;
+    PS1Surface *tile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+    tile->width = tileWidth;
+    tile->height = BG_TILE_HEIGHT;
+    tile->x = 0;  /* Not in VRAM - just RAM */
+    tile->y = 0;
 
-    /* Clamp strip dimensions to source bounds */
-    if (srcStartX + stripWidth > srcWidth) {
-        stripWidth = srcWidth - srcStartX;
-    }
-    if (srcStartY + stripHeight > srcHeight) {
-        stripHeight = srcHeight - srcStartY;
-    }
-    if (stripWidth == 0 || stripHeight == 0) return;
+    /* Allocate pixel buffer for 15-bit direct color */
+    uint32 pixelDataSize = tileWidth * BG_TILE_HEIGHT * 2;
+    tile->pixels = (uint16*)safe_malloc(pixelDataSize);
 
-    /* Convert 4-bit indexed to 15-bit color */
-    for (uint16 y = 0; y < stripHeight; y++) {
-        for (uint16 x = 0; x < stripWidth; x++) {
+    uint16 *dst = tile->pixels;
+
+    /* 1:1 pixel copy from source region */
+    for (uint16 y = 0; y < BG_TILE_HEIGHT; y++) {
+        for (uint16 x = 0; x < tileWidth; x++) {
             uint32 srcX = srcStartX + x;
             uint32 srcY = srcStartY + y;
 
@@ -1088,18 +995,13 @@ static void convertAndUploadStrip(uint8 *src, uint16 srcWidth, uint16 srcHeight,
                 palIndex = (src[srcOffset] >> 4) & 0x0F;
             }
 
-            dst[y * stripWidth + x] = ttmPalette[palIndex & 0x0F];
+            dst[y * tileWidth + x] = ttmPalette[palIndex & 0x0F];
         }
     }
 
-    /* Upload strip directly to framebuffer */
-    RECT rect;
-    setRECT(&rect, dstX, dstY, stripWidth, stripHeight);
-    LoadImage(&rect, (uint32*)bgStripBuffer);
-    DrawSync(0);
+    /* Don't upload to VRAM - keep in RAM for LoadImage to framebuffer */
+    return tile;
 }
-
-/* Note: createBgTileRAM removed - using chunked strip rendering instead */
 
 /*
  * Load background screen
@@ -1122,81 +1024,111 @@ void grLoadScreen(char *strArg)
         grSavedZonesLayer = NULL;
     }
 
-    /* DEBUG: Skip search entirely - just use first SCR resource */
-    extern struct TScrResource *scrResources[];
-    extern int numScrResources;
-    if (numScrResources == 0 || !scrResources[0]) return;
-    struct TScrResource *scrResource = scrResources[0];
+    struct TScrResource *scrResource = findScrResource(strArg);
 
     /* Handle lazy loading - reload from extracted file if needed */
     if (scrResource->uncompressedData == NULL) {
         /* PS1 TODO: Use CD-ROM functions to reload from disc if needed */
-        /* For now, just return */
-        return;
+        /* For now, fatal error if data was freed */
+        fatalError("SCR data freed - PS1 CD-ROM reloading not yet implemented");
     }
 
     if ((scrResource->width % 2) == 1) {
-        /* Odd widths not supported */
+        if (debugMode) {
+            printf("Warning: grLoadScreen(): can't manage odd widths\n");
+        }
     }
 
     if (scrResource->width > 640 || scrResource->height > 480) {
-        return;  /* Too large */
+        fatalError("grLoadScreen(): can't manage more than 640x480 resolutions");
     }
 
     uint16 srcWidth  = scrResource->width;
-    uint16 srcHeight = scrResource->height;
     uint8 *src = scrResource->uncompressedData;
 
-    /* Clear tile pointers - we're using chunked rendering instead */
-    bgTile0 = NULL;
-    bgTile1 = NULL;
+    /* Create tiles for top row (y=0-239)
+     * VRAM layout:
+     * - Tile 0  (256x240) at VRAM(640, 4)   - srcX=0,   y=4-243
+     * - Tile 1  (256x240) at VRAM(640, 244) - srcX=256, y=244-483
+     * DEBUG: Test single 64px tile at x=896 to isolate VRAM issue
+     */
+    /* Top row: LoadImage directly to framebuffer at init
+     * Use 2 tiles of 320px each to cover 640px total */
+    bgTile0  = createBgTileRAM(src, srcWidth, 0,   0, 320);   /* top row, x=0-319 */
+    bgTile1  = createBgTileRAM(src, srcWidth, 320, 0, 320);   /* top row, x=320-639 */
     bgTile2a = NULL;
     bgTile2b = NULL;
-    bgTile3 = NULL;
-    bgTile4 = NULL;
-    bgTile5a = NULL;
-    bgTile5b = NULL;
-    grBackgroundSfc = NULL;
 
-    /* Chunked rendering: Process 64px wide vertical strips
-     * Upload each strip directly to framebuffer, then reuse buffer
-     * This avoids large static buffer requirements */
-
+    /* LoadImage top row directly to framebuffer */
+    RECT topRect;
+    if (bgTile0 && bgTile0->pixels) {
+        setRECT(&topRect, 0, 0, bgTile0->width, bgTile0->height);
+        LoadImage(&topRect, (uint32*)bgTile0->pixels);
+    }
+    if (bgTile1 && bgTile1->pixels) {
+        setRECT(&topRect, 320, 0, bgTile1->width, bgTile1->height);
+        LoadImage(&topRect, (uint32*)bgTile1->pixels);
+    }
     DrawSync(0);
 
-    /* Render top half (y=0-239) in 64px wide strips */
-    uint16 numStrips = (srcWidth + BG_STRIP_WIDTH - 1) / BG_STRIP_WIDTH;
-    uint16 topHeight = (srcHeight > 240) ? 240 : srcHeight;
+    /* Bottom row: Only create if SCR has enough lines
+     * Many SCR files are 640x350, not 640x480 - must check actual height */
+    uint16 srcHeight = scrResource->height;
 
-    for (uint16 strip = 0; strip < numStrips && strip < 10; strip++) {
-        uint16 stripX = strip * BG_STRIP_WIDTH;
-        uint16 stripW = BG_STRIP_WIDTH;
-        if (stripX + stripW > srcWidth) {
-            stripW = srcWidth - stripX;
-        }
-        convertAndUploadStrip(src, srcWidth, srcHeight,
-                              stripX, 0,      /* source x, y */
-                              stripX, 0,      /* dest x, y */
-                              stripW, topHeight);
+    /* Debug: Print SCR dimensions */
+    printf("SCR: %s - %dx%d (uncompressed: %u bytes)\n",
+           scrResource->resName, srcWidth, srcHeight, scrResource->uncompressedSize);
+
+    /* Calculate how many lines we can read for bottom half (y=240+) */
+    uint16 bottomRowLines = (srcHeight > 240) ? (srcHeight - 240) : 0;
+
+    if (bottomRowLines >= 240) {
+        /* Full 640x480 image - create bottom row tiles (2x320 to match top row) */
+        bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 320);
+        bgTile4  = createBgTileRAM(src, srcWidth, 320, 240, 320);
+        bgTile5a = NULL;
+        bgTile5b = NULL;
+    } else if (bottomRowLines > 0) {
+        /* Partial bottom row (e.g., 640x350 = 110 lines for bottom)
+         * For now, leave bottom row NULL - shows black
+         * TODO: Create partial-height tiles to show available lines */
+        printf("SCR has only %d lines for bottom half (need 240)\n", bottomRowLines);
+        bgTile3  = NULL;
+        bgTile4  = NULL;
+        bgTile5a = NULL;
+        bgTile5b = NULL;
+    } else {
+        /* SCR is only 240 lines or less - no bottom row data at all */
+        bgTile3  = NULL;
+        bgTile4  = NULL;
+        bgTile5a = NULL;
+        bgTile5b = NULL;
     }
 
-    /* Render bottom half (y=240-479) if source is tall enough */
-    if (srcHeight > 240) {
-        uint16 bottomHeight = srcHeight - 240;
-        if (bottomHeight > 240) bottomHeight = 240;
+    DrawSync(0);  /* Sync top row uploads */
 
-        for (uint16 strip = 0; strip < numStrips && strip < 10; strip++) {
-            uint16 stripX = strip * BG_STRIP_WIDTH;
-            uint16 stripW = BG_STRIP_WIDTH;
-            if (stripX + stripW > srcWidth) {
-                stripW = srcWidth - stripX;
-            }
-            convertAndUploadStrip(src, srcWidth, srcHeight,
-                                  stripX, 240,      /* source x, y */
-                                  stripX, 240,      /* dest x, y */
-                                  stripW, bottomHeight);
-        }
+    /* Disable display during bottom row LoadImage to avoid tearing/corruption */
+    SetDispMask(0);
+
+    /* LoadImage bottom row tiles directly to framebuffer (2x320 layout) */
+    RECT dstRect;
+
+    if (bgTile3 && bgTile3->pixels) {
+        setRECT(&dstRect, 0, 240, bgTile3->width, bgTile3->height);
+        LoadImage(&dstRect, (uint32*)bgTile3->pixels);
     }
+    if (bgTile4 && bgTile4->pixels) {
+        setRECT(&dstRect, 320, 240, bgTile4->width, bgTile4->height);
+        LoadImage(&dstRect, (uint32*)bgTile4->pixels);
+    }
+
+    DrawSync(0);  /* Sync bottom row uploads */
+
+    /* Re-enable display */
+    SetDispMask(1);
+
+    /* Set grBackgroundSfc to first tile for compatibility with existing code */
+    grBackgroundSfc = bgTile0;
 
     /* Free SCR data after converting - saves memory */
     if (scrResource->uncompressedData) {

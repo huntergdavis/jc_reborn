@@ -235,6 +235,82 @@ addPrim(ot, tri2);
 nextpri += sizeof(POLY_F3);
 ```
 
+## PROVEN WORKING PATTERN (December 2025)
+
+**Critical insight**: After loadTitleScreenEarly() and parseResourceFiles(), a FRESH `ResetGraph(0)` is required to get clean GPU state. Without this, OT primitives don't render.
+
+### Working Initialization Sequence
+
+```c
+/* 1. Show title screen FIRST - instant visual feedback */
+loadTitleScreenEarly();
+
+/* 2. Parse resource files from CD */
+parseResourceFiles("RESOURCE.MAP");
+initLRUCache();
+
+/* 3. FRESH GPU RESET - Critical! */
+ResetGraph(0);
+SetVideoMode(MODE_NTSC);
+InitGeom();
+
+/* 4. Local OT and primitive buffer (NOT module's) */
+#define GAME_OTLEN 8
+#define GAME_PRIMBUF 8192
+static unsigned long gameOT[GAME_OTLEN];
+static char gamePrimBuf[GAME_PRIMBUF];
+char *gameNextPri;
+
+/* 5. Display/Draw environments */
+DISPENV gameDisp;
+DRAWENV gameDraw;
+SetDefDispEnv(&gameDisp, 0, 0, 640, 480);
+SetDefDrawEnv(&gameDraw, 0, 0, 640, 480);
+gameDisp.isinter = 1;  /* Interlaced for 640x480 */
+gameDraw.isbg = 0;     /* Don't clear - grDrawBackground handles it */
+SetDispMask(1);
+PutDispEnv(&gameDisp);
+PutDrawEnv(&gameDraw);
+
+/* 6. Load palette and background */
+grLoadPalette(palResource);
+grLoadScreen(scrResource->resName);
+```
+
+### Working Main Loop
+
+```c
+while (1) {
+    DrawSync(0);      /* Wait for previous frame's GPU ops */
+    VSync(0);         /* Wait for vsync */
+    ClearOTagR(gameOT, GAME_OTLEN);
+    gameNextPri = gamePrimBuf;
+
+    /* Upload background via LoadImage (has DrawSync at end) */
+    grDrawBackground();
+
+    /* Add primitives to OT */
+    POLY_F3 *sprite = (POLY_F3*)gameNextPri;
+    setPolyF3(sprite);
+    setXY3(sprite, x1, y1, x2, y2, x3, y3);
+    setRGB0(sprite, r, g, b);
+    addPrim(&gameOT[0], sprite);
+    gameNextPri += sizeof(POLY_F3);
+
+    /* Draw OT */
+    PutDrawEnv(&gameDraw);
+    DrawOTag(gameOT + GAME_OTLEN - 1);
+}
+```
+
+### Key Points
+
+1. **Fresh ResetGraph(0) AFTER all initialization** - loadTitleScreenEarly and parseResourceFiles corrupt GPU state
+2. **Use local OT (gameOT), not module's OT (ot[db])** - grDrawSprite uses module OT which conflicts
+3. **grDrawBackground uses LoadImage + DrawSync** - background uploaded directly to framebuffer
+4. **isbg=0** - Don't use background clearing; grDrawBackground handles it
+5. **Order: grDrawBackground THEN add primitives THEN DrawOTag** - primitives render ON TOP of background
+
 ## Success Criteria
 
 - Test executable boots in DuckStation

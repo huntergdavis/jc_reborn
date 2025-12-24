@@ -371,11 +371,16 @@ int main(int argc, char **argv)
     PS1Surface *loadedSprite = NULL;
     int spriteCount = 0;
 
-    /* Just take the first BMP with data - simple approach */
+    /* Skip N BMPs to test different sprites (change this to test others) */
+    int skipCount = 0;  /* 0=DEMO, 1=Johnny?, 2=another sprite */
     struct TBmpResource *bmpToLoad = NULL;
+    int foundCount = 0;
     for (int i = 0; i < numBmpResources && !bmpToLoad; i++) {
         if (bmpResources[i] && bmpResources[i]->uncompressedData) {
-            bmpToLoad = bmpResources[i];
+            if (foundCount >= skipCount) {
+                bmpToLoad = bmpResources[i];
+            }
+            foundCount++;
         }
     }
     /* DEFER BMP loading to first frame - see below */

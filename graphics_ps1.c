@@ -278,12 +278,31 @@ void grLoadPalette(struct TPalResource *palResource)
         fatalError("NULL palette\n");
     }
 
-    /* Convert VGA 6-bit RGB to PS1 15-bit RGB (5-5-5) */
+    /* Convert VGA 6-bit RGB to PS1 15-bit RGB (5-5-5)
+     * Magenta (0xa8, 0, 0xa8) = VGA 6-bit (42, 0, 42) is the transparent color.
+     * Match SDL version: only EXACT magenta (168, 0, 168 in 8-bit) is transparent. */
     for (int i = 0; i < 16; i++) {
-        uint8 r = (palResource->colors[i].r << 2) >> 3;  /* 6-bit to 5-bit */
-        uint8 g = (palResource->colors[i].g << 2) >> 3;
-        uint8 b = (palResource->colors[i].b << 2) >> 3;
-        ttmPalette[i] = (b << 10) | (g << 5) | r;
+        uint8 vgaR = palResource->colors[i].r;  /* 6-bit VGA values (0-63) */
+        uint8 vgaG = palResource->colors[i].g;
+        uint8 vgaB = palResource->colors[i].b;
+
+        /* Convert to 8-bit like SDL version */
+        uint8 r8 = vgaR << 2;
+        uint8 g8 = vgaG << 2;
+        uint8 b8 = vgaB << 2;
+
+        /* Check for EXACT magenta (0xa8=168, 0, 0xa8=168) only - matches SDL behavior */
+        int isMagenta = (r8 == 0xa8) && (g8 == 0) && (b8 == 0xa8);
+
+        if (isMagenta) {
+            /* Make this color black (0x0000) - closest we can get to transparent on PS1 */
+            ttmPalette[i] = 0x0000;
+        } else {
+            uint8 r = r8 >> 3;  /* 8-bit to 5-bit */
+            uint8 g = g8 >> 3;
+            uint8 b = b8 >> 3;
+            ttmPalette[i] = (b << 10) | (g << 5) | r;
+        }
     }
 
     /* Upload CLUT (Color Lookup Table) to VRAM */
@@ -552,8 +571,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     ttmSlot->sprites[slotNo][0] = surface;
     ttmSlot->numSprites[slotNo] = 1;
 
-    /* Update VRAM tracking for next sprite */
-    nextVRAMX += safeW;
+    /* Update VRAM tracking for next sprite (4-bit = width/4 in VRAM) */
+    nextVRAMX += (safeW / 4);
     if (nextVRAMX >= 1024) {
         nextVRAMX = 640;
         nextVRAMY += safeH;

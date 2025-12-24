@@ -371,24 +371,22 @@ int main(int argc, char **argv)
     PS1Surface *loadedSprite = NULL;
     int spriteCount = 0;
 
-    /* Skip N BMPs to test different sprites (change this to test others) */
-    int skipCount = 0;  /* 0=DEMO, 1=Johnny?, 2=another sprite */
+    /* Skip N BMPs to test different sprites */
+    int skipCount = 1;  /* 0=DEMO, 1=Johnny sprite */
     struct TBmpResource *bmpToLoad = NULL;
     int foundCount = 0;
-    for (int i = 0; i < numBmpResources && !bmpToLoad; i++) {
+    for (int i = 0; i < numBmpResources; i++) {
         if (bmpResources[i] && bmpResources[i]->uncompressedData) {
             if (foundCount >= skipCount) {
                 bmpToLoad = bmpResources[i];
+                break;
             }
             foundCount++;
         }
     }
-    /* DEFER BMP loading to first frame - see below */
-    int bmpLoaded = 0;
 
-    /* === TEST 10: Call grLoadBmp with CORRECT argument type === */
+    /* Load the BMP with all its animation frames */
     if (bmpToLoad && bmpToLoad->uncompressedData) {
-        /* FIXED: Pass resource NAME (char*), not pointer to struct! */
         grLoadBmp(&gameTtmSlot, 0, bmpToLoad->resName);
         spriteCount = gameTtmSlot.numSprites[0];
         if (spriteCount > 0) {
@@ -412,14 +410,18 @@ int main(int argc, char **argv)
         /* Re-upload background from RAM to framebuffer each frame */
         grDrawBackground();
 
-        /* Animated sprite position - cycle through 4 positions */
-        if (++frameCounter >= 10) {
+        /* Animate through sprite frames */
+        if (++frameCounter >= 8) {  /* Change frame every 8 vsyncs (~7.5 fps) */
             frameCounter = 0;
-            currentSprite = (currentSprite + 1) % 4;
+            if (spriteCount > 1) {
+                currentSprite = (currentSprite + 1) % spriteCount;
+                loadedSprite = gameTtmSlot.sprites[0][currentSprite];
+            }
         }
-        /* Animated sprite position - moves horizontally */
-        int spriteX = 280 + (currentSprite * 30);
-        int spriteY = 200;
+
+        /* Fixed sprite position for animation testing */
+        int spriteX = 350;
+        int spriteY = 300;
 
         /* Draw actual textured sprite if loaded, otherwise green placeholder */
         if (loadedSprite && loadedSprite->width > 0) {

@@ -538,45 +538,58 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     if (!bmpResource || !bmpResource->uncompressedData) return;
     if (bmpResource->numImages < 1) return;
 
-    /* Only load first sprite for now (TODO: support multiple) */
-    uint16 width = bmpResource->widths[0];
-    uint16 height = bmpResource->heights[0];
-    uint16 safeW = (width > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : width;
-    uint16 safeH = (height > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : height;
-
-    /* Step 1: Allocate and copy pixel data to a SIMPLE buffer (not struct member) */
-    uint32 copySize = (safeW * safeH) / 2;  /* 4-bit = 0.5 bytes/pixel */
-    uint16 *copyBuf = (uint16*)safe_malloc(copySize);
-    memcpy(copyBuf, bmpResource->uncompressedData, copySize);
-
-    /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
-    uint16 vramX = nextVRAMX;
-    uint16 vramY = nextVRAMY;
-    RECT rect;
-    setRECT(&rect, vramX, vramY, safeW / 4, safeH);  /* 4-bit width = pixels/4 */
-    LoadImage(&rect, (uint32*)copyBuf);
-    DrawSync(0);
-
-    /* Step 3: NOW create PS1Surface AFTER LoadImage completed */
-    PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-    surface->width = safeW;
-    surface->height = safeH;
-    surface->x = vramX;
-    surface->y = vramY;
-    surface->pixels = copyBuf;
-    surface->clutX = 640;
-    surface->clutY = 0;
-
-    /* Store in slot */
-    ttmSlot->sprites[slotNo][0] = surface;
-    ttmSlot->numSprites[slotNo] = 1;
-
-    /* Update VRAM tracking for next sprite (4-bit = width/4 in VRAM) */
-    nextVRAMX += (safeW / 4);
-    if (nextVRAMX >= 1024) {
-        nextVRAMX = 640;
-        nextVRAMY += safeH;
+    /* Load sprite frames from BMP for animation support */
+    int numToLoad = bmpResource->numImages;
+    if (numToLoad > 4) {
+        numToLoad = 4;  /* Limit frames for PS1 VRAM/memory constraints */
     }
+
+    uint8 *srcPtr = bmpResource->uncompressedData;
+
+    for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
+        uint16 width = bmpResource->widths[frameIdx];
+        uint16 height = bmpResource->heights[frameIdx];
+        uint16 safeW = (width > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : width;
+        uint16 safeH = (height > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : height;
+
+        /* Step 1: Allocate and copy pixel data to a SIMPLE buffer */
+        uint32 copySize = (safeW * safeH) / 2;  /* 4-bit = 0.5 bytes/pixel */
+        uint16 *copyBuf = (uint16*)safe_malloc(copySize);
+        memcpy(copyBuf, srcPtr, copySize);
+
+        /* Advance source pointer for next frame (use full frame size, not capped) */
+        srcPtr += (width * height) / 2;
+
+        /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
+        uint16 vramX = nextVRAMX;
+        uint16 vramY = nextVRAMY;
+        RECT rect;
+        setRECT(&rect, vramX, vramY, safeW / 4, safeH);  /* 4-bit width = pixels/4 */
+        LoadImage(&rect, (uint32*)copyBuf);
+        DrawSync(0);
+
+        /* Step 3: NOW create PS1Surface AFTER LoadImage completed */
+        PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+        surface->width = safeW;
+        surface->height = safeH;
+        surface->x = vramX;
+        surface->y = vramY;
+        surface->pixels = copyBuf;
+        surface->clutX = 640;
+        surface->clutY = 0;
+
+        /* Store in slot */
+        ttmSlot->sprites[slotNo][frameIdx] = surface;
+
+        /* Update VRAM tracking for next sprite (4-bit = width/4 in VRAM) */
+        nextVRAMX += (safeW / 4);
+        if (nextVRAMX >= 1024) {
+            nextVRAMX = 640;
+            nextVRAMY += safeH;
+        }
+    }
+
+    ttmSlot->numSprites[slotNo] = numToLoad;
 }
 
 /*

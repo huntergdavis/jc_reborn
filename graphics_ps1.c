@@ -529,7 +529,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
      * Additionally, sprite dimensions must be capped at 64x64 to prevent
      * OT rendering issues with large textures.
      */
-    #define MAX_SPRITE_DIM 64
+    #define MAX_SPRITE_DIM 128  /* Increased for larger island sprites */
 
     if (ttmSlot->numSprites[slotNo])
         grReleaseBmp(ttmSlot, slotNo);
@@ -540,8 +540,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     /* Load sprite frames from BMP for animation support */
     int numToLoad = bmpResource->numImages;
-    if (numToLoad > 8) {
-        numToLoad = 8;  /* Limit frames for PS1 VRAM/memory constraints */
+    if (numToLoad > 16) {
+        numToLoad = 16;  /* Limit frames for PS1 VRAM/memory constraints */
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;

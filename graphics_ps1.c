@@ -540,8 +540,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     /* Load sprite frames from BMP for animation support */
     int numToLoad = bmpResource->numImages;
-    if (numToLoad > 4) {
-        numToLoad = 4;  /* Limit frames for PS1 VRAM/memory constraints */
+    if (numToLoad > 8) {
+        numToLoad = 8;  /* Limit frames for PS1 VRAM/memory constraints */
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;

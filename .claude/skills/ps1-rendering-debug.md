@@ -361,6 +361,69 @@ while (1) {
 - Build process produces different MD5 after code changes
 - Findings documented for future reference
 
+### Texture Page Boundary Alignment - SOLVED (December 2025)
+
+**Problem**: Sprite animation frames appear to wrap around - part of the sprite shows on the wrong side, causing a "jerky" effect where feet appear in front of the character.
+
+**Root cause**: For 4-bit textures, each texture page is 64 VRAM pixels wide (256 texture pixels). UV coordinates are 8-bit (0-255). If a sprite's UV offset plus width exceeds 256, the right portion wraps to the left side of the texture page.
+
+**Example of failure**:
+- Sprite stored at VRAM X=696, width=64 texture pixels
+- UV offset = (696 % 64) * 4 = 56 * 4 = 224
+- UV offset + width = 224 + 64 = 288 > 256
+- Result: Right 32 pixels wrap to left side!
+
+**Solution**: When allocating VRAM for sprites, check if the sprite would cross a texture page boundary. If so, align to the next page:
+
+```c
+/* Check texture page boundary before allocating */
+uint16 vramW = spriteWidth / 4;  /* 4-bit: VRAM width = texture pixels / 4 */
+uint16 pageStart = (nextVRAMX / 64) * 64;  /* Current texture page start */
+uint16 pageEnd = pageStart + 64;           /* Current texture page end */
+
+if (nextVRAMX + vramW > pageEnd) {
+    /* Would cross page boundary - align to next page */
+    nextVRAMX = pageEnd;
+    if (nextVRAMX >= 1024) {
+        nextVRAMX = 640;
+        nextVRAMY += MAX_SPRITE_DIM;  /* Move down */
+    }
+}
+```
+
+**Additional fix**: When capping sprite dimensions (e.g., 64x64 max), copy row-by-row with proper stride, not contiguous bytes:
+
+```c
+if (width != safeW || height != safeH) {
+    /* Row-by-row copy to handle different source/dest strides */
+    uint8 *dst = (uint8*)copyBuf;
+    uint8 *src = srcPtr;
+    uint32 srcRowBytes = width / 2;   /* 4-bit = 2 pixels per byte */
+    uint32 dstRowBytes = safeW / 2;
+    for (uint16 y = 0; y < safeH; y++) {
+        memcpy(dst, src, dstRowBytes);
+        dst += dstRowBytes;
+        src += srcRowBytes;
+    }
+}
+```
+
+### Sprite Animation Alignment - SOLVED (December 2025)
+
+**Problem**: Walking animation frames have different sizes, causing the sprite to jump around as frames change.
+
+**Solution**: Center sprites horizontally and bottom-align vertically so feet stay in place:
+
+```c
+/* Base position is where feet should be */
+int baseX = 350;  /* Center X position */
+int baseY = 364;  /* Bottom Y position (feet on ground) */
+
+/* Calculate draw position: center horizontally, bottom-align vertically */
+int spriteX = baseX - (sprite->width / 2);
+int spriteY = baseY - sprite->height;
+```
+
 ## Resources
 
 - PSn00bSDK examples: https://github.com/Lameguy64/PSn00bSDK/tree/master/examples

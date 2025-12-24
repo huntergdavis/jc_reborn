@@ -529,7 +529,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
      * Additionally, sprite dimensions must be capped at 64x64 to prevent
      * OT rendering issues with large textures.
      */
-    #define MAX_SPRITE_DIM 128  /* Increased for larger island sprites */
+    #define MAX_SPRITE_DIM 64
 
     if (ttmSlot->numSprites[slotNo])
         grReleaseBmp(ttmSlot, slotNo);
@@ -540,8 +540,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     /* Load sprite frames from BMP for animation support */
     int numToLoad = bmpResource->numImages;
-    if (numToLoad > 16) {
-        numToLoad = 16;  /* Limit frames for PS1 VRAM/memory constraints */
+    if (numToLoad > 8) {
+        numToLoad = 8;  /* Limit frames for PS1 VRAM/memory constraints */
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;
@@ -555,16 +555,48 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         /* Step 1: Allocate and copy pixel data to a SIMPLE buffer */
         uint32 copySize = (safeW * safeH) / 2;  /* 4-bit = 0.5 bytes/pixel */
         uint16 *copyBuf = (uint16*)safe_malloc(copySize);
-        memcpy(copyBuf, srcPtr, copySize);
+
+        /* Copy with proper row stride when capping dimensions */
+        if (width != safeW || height != safeH) {
+            /* Row-by-row copy to handle different source/dest strides */
+            uint8 *dst = (uint8*)copyBuf;
+            uint8 *src = srcPtr;
+            uint32 srcRowBytes = width / 2;   /* 4-bit = 2 pixels per byte */
+            uint32 dstRowBytes = safeW / 2;
+            for (uint16 y = 0; y < safeH; y++) {
+                memcpy(dst, src, dstRowBytes);
+                dst += dstRowBytes;
+                src += srcRowBytes;
+            }
+        } else {
+            /* Same dimensions - simple contiguous copy */
+            memcpy(copyBuf, srcPtr, copySize);
+        }
 
         /* Advance source pointer for next frame (use full frame size, not capped) */
         srcPtr += (width * height) / 2;
 
         /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
+        /* For 4-bit textures, texture page is 64 VRAM pixels (256 texture pixels) wide.
+         * Sprites must not cross texture page boundaries or UV coords will wrap.
+         * Check if sprite would cross boundary and align to next page if needed. */
+        uint16 vramW = safeW / 4;  /* 4-bit: VRAM width = texture pixels / 4 */
+        uint16 pageStart = (nextVRAMX / 64) * 64;  /* Current texture page start */
+        uint16 pageEnd = pageStart + 64;           /* Current texture page end */
+
+        if (nextVRAMX + vramW > pageEnd) {
+            /* Would cross page boundary - align to next page */
+            nextVRAMX = pageEnd;
+            if (nextVRAMX >= 1024) {
+                nextVRAMX = 640;
+                nextVRAMY += MAX_SPRITE_DIM;  /* Move down */
+            }
+        }
+
         uint16 vramX = nextVRAMX;
         uint16 vramY = nextVRAMY;
         RECT rect;
-        setRECT(&rect, vramX, vramY, safeW / 4, safeH);  /* 4-bit width = pixels/4 */
+        setRECT(&rect, vramX, vramY, vramW, safeH);
         LoadImage(&rect, (uint32*)copyBuf);
         DrawSync(0);
 
@@ -581,8 +613,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         /* Store in slot */
         ttmSlot->sprites[slotNo][frameIdx] = surface;
 
-        /* Update VRAM tracking for next sprite (4-bit = width/4 in VRAM) */
-        nextVRAMX += (safeW / 4);
+        /* Update VRAM tracking for next sprite */
+        nextVRAMX += vramW;
         if (nextVRAMX >= 1024) {
             nextVRAMX = 640;
             nextVRAMY += safeH;

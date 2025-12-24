@@ -367,11 +367,7 @@ int main(int argc, char **argv)
     static struct TTtmSlot gameTtmSlot;
     memset(&gameTtmSlot, 0, sizeof(gameTtmSlot));
 
-    /* Load BACKGRND.BMP into slot 1 for island sprites */
-    grLoadBmp(&gameTtmSlot, 1, "BACKGRND.BMP");
-    int islandSpriteCount = gameTtmSlot.numSprites[1];
-
-    /* Load Johnny animation into slot 0 */
+    /* Load first available BMP resource into slot 0 */
     PS1Surface *loadedSprite = NULL;
     int spriteCount = 0;
 
@@ -389,7 +385,7 @@ int main(int argc, char **argv)
         }
     }
 
-    /* Load Johnny BMP with all its animation frames */
+    /* Load the BMP with all its animation frames */
     if (bmpToLoad && bmpToLoad->uncompressedData) {
         grLoadBmp(&gameTtmSlot, 0, bmpToLoad->resName);
         spriteCount = gameTtmSlot.numSprites[0];
@@ -414,72 +410,6 @@ int main(int argc, char **argv)
         /* Re-upload background from RAM to framebuffer each frame */
         grDrawBackground();
 
-        /* Draw island sprites from slot 1 (BACKGRND.BMP) */
-        /* Island sprites: 0=island, 12=leaves, 13=trunk, 14=shadow */
-        if (islandSpriteCount > 0) {
-            /* Draw in order: island base, trunk, leaves, shadow */
-            /* Island base - sprite 0 at (288, 279) */
-            PS1Surface *islandBase = gameTtmSlot.sprites[1][0];
-            if (islandBase) {
-                DR_TPAGE *tp0 = (DR_TPAGE*)gameNextPri;
-                gameNextPri += sizeof(DR_TPAGE);
-                setDrawTPage(tp0, 0, 0, getTPage(0, 0, (islandBase->x/64)*64, (islandBase->y/256)*256));
-                addPrim(&gameOT[0], tp0);
-
-                SPRT *sp0 = (SPRT*)gameNextPri;
-                gameNextPri += sizeof(SPRT);
-                setSprt(sp0);
-                setXY0(sp0, 288, 279);
-                setWH(sp0, islandBase->width, islandBase->height);
-                setUV0(sp0, ((islandBase->x % 64) * 4) & 0xFF, (islandBase->y % 256) & 0xFF);
-                setClut(sp0, islandBase->clutX, islandBase->clutY);
-                setRGB0(sp0, 128, 128, 128);
-                addPrim(&gameOT[0], sp0);
-            }
-
-            /* Trunk - sprite 13 at (442, 148) */
-            if (gameTtmSlot.numSprites[1] > 13) {
-                PS1Surface *trunk = gameTtmSlot.sprites[1][13];
-                if (trunk) {
-                    DR_TPAGE *tp1 = (DR_TPAGE*)gameNextPri;
-                    gameNextPri += sizeof(DR_TPAGE);
-                    setDrawTPage(tp1, 0, 0, getTPage(0, 0, (trunk->x/64)*64, (trunk->y/256)*256));
-                    addPrim(&gameOT[0], tp1);
-
-                    SPRT *sp1 = (SPRT*)gameNextPri;
-                    gameNextPri += sizeof(SPRT);
-                    setSprt(sp1);
-                    setXY0(sp1, 442, 148);
-                    setWH(sp1, trunk->width, trunk->height);
-                    setUV0(sp1, ((trunk->x % 64) * 4) & 0xFF, (trunk->y % 256) & 0xFF);
-                    setClut(sp1, trunk->clutX, trunk->clutY);
-                    setRGB0(sp1, 128, 128, 128);
-                    addPrim(&gameOT[0], sp1);
-                }
-            }
-
-            /* Leaves - sprite 12 at (365, 122) */
-            if (gameTtmSlot.numSprites[1] > 12) {
-                PS1Surface *leaves = gameTtmSlot.sprites[1][12];
-                if (leaves) {
-                    DR_TPAGE *tp2 = (DR_TPAGE*)gameNextPri;
-                    gameNextPri += sizeof(DR_TPAGE);
-                    setDrawTPage(tp2, 0, 0, getTPage(0, 0, (leaves->x/64)*64, (leaves->y/256)*256));
-                    addPrim(&gameOT[0], tp2);
-
-                    SPRT *sp2 = (SPRT*)gameNextPri;
-                    gameNextPri += sizeof(SPRT);
-                    setSprt(sp2);
-                    setXY0(sp2, 365, 122);
-                    setWH(sp2, leaves->width, leaves->height);
-                    setUV0(sp2, ((leaves->x % 64) * 4) & 0xFF, (leaves->y % 256) & 0xFF);
-                    setClut(sp2, leaves->clutX, leaves->clutY);
-                    setRGB0(sp2, 128, 128, 128);
-                    addPrim(&gameOT[0], sp2);
-                }
-            }
-        }
-
         /* Animate through sprite frames */
         if (++frameCounter >= 8) {  /* Change frame every 8 vsyncs (~7.5 fps) */
             frameCounter = 0;
@@ -489,12 +419,16 @@ int main(int argc, char **argv)
             }
         }
 
-        /* Fixed sprite position for animation testing */
-        int spriteX = 350;
-        int spriteY = 300;
+        /* Base position for animation - this is where the sprite's feet should be */
+        int baseX = 350;  /* Center X position */
+        int baseY = 364;  /* Bottom Y position (feet on ground) */
 
         /* Draw actual textured sprite if loaded, otherwise green placeholder */
         if (loadedSprite && loadedSprite->width > 0) {
+            /* Calculate draw position: center horizontally, bottom-align vertically */
+            int spriteX = baseX - (loadedSprite->width / 2);
+            int spriteY = baseY - loadedSprite->height;
+
             /* === TEXTURED SPRITE RENDERING === */
             /* Step 1: Set texture page (tells GPU where texture data is in VRAM) */
             DR_TPAGE *tpage = (DR_TPAGE*)gameNextPri;
@@ -525,6 +459,8 @@ int main(int argc, char **argv)
             addPrim(&gameOT[0], sprt);
         } else {
             /* Fallback: Green placeholder squares if no sprite loaded */
+            int spriteX = baseX - 32;  /* Center 64x64 placeholder */
+            int spriteY = baseY - 64;
             POLY_F3 *spr1 = (POLY_F3*)gameNextPri;
             setPolyF3(spr1);
             setXY3(spr1, spriteX, spriteY, spriteX+64, spriteY, spriteX, spriteY+64);

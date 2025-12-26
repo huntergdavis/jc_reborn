@@ -372,30 +372,16 @@ int main(int argc, char **argv)
     PS1Surface *loadedSprite = NULL;
     int spriteCount = 0;
 
-    /* Skip N BMPs to test different sprites */
-    int skipCount = 1;  /* 0=DEMO, 1=Johnny sprite */
-    struct TBmpResource *bmpToLoad = NULL;
-    int foundCount = 0;
-    for (int i = 0; i < numBmpResources; i++) {
-        if (bmpResources[i] && bmpResources[i]->uncompressedData) {
-            if (foundCount >= skipCount) {
-                bmpToLoad = bmpResources[i];
-                break;
-            }
-            foundCount++;
-        }
+    /* TEST: Directly load JOHNWALK.BMP to test streaming dynamic loading.
+     * JOHNWALK has uncompressedData = NULL (skipped at startup),
+     * so grLoadBmp will trigger ps1_loadBmpData with streaming reads. */
+    grLoadBmp(&gameTtmSlot, 0, "JOHNWALK.BMP");
+    spriteCount = gameTtmSlot.numSprites[0];
+    if (spriteCount > 0) {
+        loadedSprite = gameTtmSlot.sprites[0][0];
     }
-
-    /* Load the BMP with all its animation frames */
-    if (bmpToLoad && bmpToLoad->uncompressedData) {
-        grLoadBmp(&gameTtmSlot, 0, bmpToLoad->resName);
-        spriteCount = gameTtmSlot.numSprites[0];
-        if (spriteCount > 0) {
-            loadedSprite = gameTtmSlot.sprites[0][0];
-        }
-        /* Re-apply draw environment after grLoadBmp */
-        PutDrawEnv(&gameDraw);
-    }
+    /* Re-apply draw environment after grLoadBmp */
+    PutDrawEnv(&gameDraw);
 
     /* Load BACKGRND.BMP into RAM for framebuffer blitting (island sprites) */
     static struct TTtmSlot islandSlot;

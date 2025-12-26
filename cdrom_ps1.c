@@ -708,6 +708,19 @@ int ps1_fclose(PS1File* file)
 }
 
 /*
+ * Wrap a buffer as a PS1File for use with existing decompress functions.
+ * The PS1File is stack-allocated by caller; this just initializes it.
+ */
+void ps1_wrapBuffer(PS1File* file, uint8_t* buffer, uint32_t size)
+{
+    file->isOpen = 1;
+    file->currentPos = 0;
+    file->buffer = buffer;
+    file->bufferSize = size;
+    file->filename[0] = '\0';  /* No filename for wrapped buffers */
+}
+
+/*
  * Stream read: Read a range of bytes from a file without loading entire file.
  * This is for dynamic loading - reads only the necessary CD sectors.
  * Returns malloc'd buffer that caller must free, or NULL on error.

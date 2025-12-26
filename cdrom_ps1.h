@@ -105,6 +105,9 @@ int ps1_fclose(PS1File* file);
  * Returns malloc'd buffer (caller must free), or NULL on error. */
 uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size);
 
+/* Wrap a buffer as a PS1File for use with decompress functions */
+void ps1_wrapBuffer(PS1File* file, uint8_t* buffer, uint32_t size);
+
 /* PS1-specific utility functions for resource parsing */
 uint8 ps1_readUint8(PS1File *f);
 uint16 ps1_readUint16(PS1File *f);

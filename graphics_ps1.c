@@ -568,21 +568,23 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         uint32 copySize = (safeW * safeH) / 2;  /* 4-bit = 0.5 bytes/pixel */
         uint16 *copyBuf = (uint16*)safe_malloc(copySize);
 
-        /* Copy with proper row stride when capping dimensions */
-        if (width != safeW || height != safeH) {
-            /* Row-by-row copy to handle different source/dest strides */
-            uint8 *dst = (uint8*)copyBuf;
-            uint8 *src = srcPtr;
-            uint32 srcRowBytes = width / 2;   /* 4-bit = 2 pixels per byte */
-            uint32 dstRowBytes = safeW / 2;
-            for (uint16 y = 0; y < safeH; y++) {
-                memcpy(dst, src, dstRowBytes);
-                dst += dstRowBytes;
-                src += srcRowBytes;
+        /* Copy with proper row stride when capping dimensions
+         * IMPORTANT: PS1 4-bit textures expect LOW nibble = pixel 0, HIGH nibble = pixel 1
+         * Sierra BMP format is HIGH nibble = pixel 0, LOW nibble = pixel 1
+         * We must swap nibbles during copy! */
+        uint8 *dst = (uint8*)copyBuf;
+        uint8 *src = srcPtr;
+        uint32 srcRowBytes = width / 2;   /* 4-bit = 2 pixels per byte */
+        uint32 dstRowBytes = safeW / 2;
+
+        for (uint16 y = 0; y < safeH; y++) {
+            for (uint32 x = 0; x < dstRowBytes; x++) {
+                uint8 srcByte = src[x];
+                /* Swap nibbles: high->low, low->high */
+                dst[x] = ((srcByte & 0x0F) << 4) | ((srcByte >> 4) & 0x0F);
             }
-        } else {
-            /* Same dimensions - simple contiguous copy */
-            memcpy(copyBuf, srcPtr, copySize);
+            dst += dstRowBytes;
+            src += srcRowBytes;
         }
 
         /* Advance source pointer for next frame (use full frame size, not capped) */

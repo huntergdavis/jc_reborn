@@ -113,7 +113,9 @@ PS1Surface *grNewLayer();
 void grFreeLayer(PS1Surface *sfc);
 
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg);
+void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg);
 void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo);
+void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY);
 
 void grSetClipZone(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2);
 void grCopyZoneToBg(PS1Surface *sfc, uint16 arg0, uint16 arg1, uint16 arg2, uint16 arg3);

@@ -315,6 +315,7 @@ int main(int argc, char **argv)
     extern struct TScrResource *scrResources[];
     extern struct TBmpResource *bmpResources[];
     extern struct TPalResource *palResources[];
+    extern int fontID;  /* For FntPrint debug display */
 #endif
 
     /* Initialize LRU cache for memory management */
@@ -396,6 +397,34 @@ int main(int argc, char **argv)
         PutDrawEnv(&gameDraw);
     }
 
+    /* Load BACKGRND.BMP into RAM for framebuffer blitting (island sprites) */
+    static struct TTtmSlot islandSlot;
+    memset(&islandSlot, 0, sizeof(islandSlot));
+
+    /* Load island sprites using RAM approach (not VRAM textures) */
+    struct TBmpResource *bgBmpRes = findBmpResource("BACKGRND.BMP");
+    if (bgBmpRes && bgBmpRes->uncompressedData) {
+        grLoadBmpRAM(&islandSlot, 0, "BACKGRND.BMP");
+    }
+    int islandSpriteCount = islandSlot.numSprites[0];
+    PS1Surface *islandLandmass = NULL;
+    PS1Surface *palmTrunk = NULL;
+    PS1Surface *palmLeaves = NULL;
+    PS1Surface *palmShadow = NULL;
+    if (islandSpriteCount > 0) {
+        islandLandmass = islandSlot.sprites[0][0];   /* Sprite 0 = island */
+    }
+    if (islandSpriteCount > 12) {
+        palmLeaves = islandSlot.sprites[0][12];      /* Sprite 12 = leaves */
+    }
+    if (islandSpriteCount > 13) {
+        palmTrunk = islandSlot.sprites[0][13];       /* Sprite 13 = trunk */
+    }
+    if (islandSpriteCount > 14) {
+        palmShadow = islandSlot.sprites[0][14];      /* Sprite 14 = shadow */
+    }
+    PutDrawEnv(&gameDraw);
+
     /* Animation state */
     int currentSprite = 0;
     int frameCounter = 0;
@@ -410,8 +439,18 @@ int main(int argc, char **argv)
         /* Re-upload background from RAM to framebuffer each frame */
         grDrawBackground();
 
-        /* Animate through sprite frames */
-        if (++frameCounter >= 8) {  /* Change frame every 8 vsyncs (~7.5 fps) */
+        /* Blit island sprites to framebuffer */
+        if (islandLandmass && islandLandmass->pixels) {
+            /* Positions from island.c: island(288,279), trunk(442,148), leaves(365,122), shadow(396,279) */
+            grBlitToFramebuffer(islandLandmass, 288, 279);
+            if (palmShadow) grBlitToFramebuffer(palmShadow, 396, 279);
+            if (palmTrunk) grBlitToFramebuffer(palmTrunk, 442, 148);
+            if (palmLeaves) grBlitToFramebuffer(palmLeaves, 365, 122);
+        }
+        DrawSync(0);  /* Wait for island blits before OT rendering */
+
+        /* Animate through sprite frames - slower for debugging */
+        if (++frameCounter >= 15) {  /* Change frame every 15 vsyncs (~4 fps) */
             frameCounter = 0;
             if (spriteCount > 1) {
                 currentSprite = (currentSprite + 1) % spriteCount;
@@ -429,34 +468,8 @@ int main(int argc, char **argv)
             int spriteX = baseX - (loadedSprite->width / 2);
             int spriteY = baseY - loadedSprite->height;
 
-            /* === TEXTURED SPRITE RENDERING === */
-            /* Step 1: Set texture page (tells GPU where texture data is in VRAM) */
-            DR_TPAGE *tpage = (DR_TPAGE*)gameNextPri;
-            gameNextPri += sizeof(DR_TPAGE);
-
-            /* Calculate texture page from sprite VRAM position
-             * tpage X: in 64-pixel units, tpage Y: in 256-pixel units
-             * Color mode 0 = 4-bit CLUT (16 colors) */
-            uint16 tpageX = loadedSprite->x / 64;
-            uint16 tpageY = loadedSprite->y / 256;
-            setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
-            addPrim(&gameOT[0], tpage);
-
-            /* Step 2: Draw sprite primitive */
-            SPRT *sprt = (SPRT*)gameNextPri;
-            gameNextPri += sizeof(SPRT);
-
-            setSprt(sprt);
-            setXY0(sprt, spriteX, spriteY);
-            setWH(sprt, loadedSprite->width, loadedSprite->height);
-            /* UV coords relative to texture page (0-255 range) */
-            /* For 4-bit textures, U is in half-pixel units (multiply x%64 by 4) */
-            uint8 u = ((loadedSprite->x % 64) * 4) & 0xFF;
-            uint8 v = (loadedSprite->y % 256) & 0xFF;
-            setUV0(sprt, u, v);
-            setClut(sprt, loadedSprite->clutX, loadedSprite->clutY);
-            setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
-            addPrim(&gameOT[0], sprt);
+            /* === TEST: Use grDrawSpriteExt to verify UV fix === */
+            grDrawSpriteExt(&gameOT[0], &gameNextPri, loadedSprite, spriteX, spriteY);
         } else {
             /* Fallback: Green placeholder squares if no sprite loaded */
             int spriteX = baseX - 32;  /* Center 64x64 placeholder */
@@ -477,6 +490,16 @@ int main(int argc, char **argv)
         }
 
         (void)spriteCount;  /* Suppress unused warning */
+        (void)islandSpriteCount;
+
+        /* Debug: Show sprite info on screen */
+        if (loadedSprite) {
+            uint8 dbgU = ((loadedSprite->x % 64) * 4) & 0xFF;
+            uint16 dbgTpage = loadedSprite->x / 64;
+            FntPrint("Fr:%d VX:%d U:%d TP:%d Cnt:%d\n",
+                     currentSprite, loadedSprite->x, dbgU, dbgTpage, spriteCount);
+        }
+        FntFlush(fontID);
 
         /* Draw OT */
         PutDrawEnv(&gameDraw);

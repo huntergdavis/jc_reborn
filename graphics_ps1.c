@@ -529,7 +529,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
      * Additionally, sprite dimensions must be capped at 64x64 to prevent
      * OT rendering issues with large textures.
      */
-    #define MAX_SPRITE_DIM 64
+    #define MAX_SPRITE_DIM 64  /* Keep at 64 - larger causes VRAM/UV issues */
 
     if (ttmSlot->numSprites[slotNo])
         grReleaseBmp(ttmSlot, slotNo);
@@ -538,10 +538,15 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     if (!bmpResource || !bmpResource->uncompressedData) return;
     if (bmpResource->numImages < 1) return;
 
+    /* Reset VRAM tracking to ensure sprites start at clean position
+     * This prevents cumulative drift from previous allocations */
+    nextVRAMX = 640;  /* Start of texture area */
+    nextVRAMY = 4;    /* Below CLUTs */
+
     /* Load sprite frames from BMP for animation support */
     int numToLoad = bmpResource->numImages;
-    if (numToLoad > 8) {
-        numToLoad = 8;  /* Limit frames for PS1 VRAM/memory constraints */
+    if (numToLoad > 42) {
+        numToLoad = 42;  /* Max 42 frames (6 pages/row × 7 rows) */
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;
@@ -578,19 +583,26 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
         /* For 4-bit textures, texture page is 64 VRAM pixels (256 texture pixels) wide.
-         * Sprites must not cross texture page boundaries or UV coords will wrap.
-         * Check if sprite would cross boundary and align to next page if needed. */
+         * UV coordinates are 8-bit (0-255). Check if sprite would cause UV wrap. */
         uint16 vramW = safeW / 4;  /* 4-bit: VRAM width = texture pixels / 4 */
-        uint16 pageStart = (nextVRAMX / 64) * 64;  /* Current texture page start */
-        uint16 pageEnd = pageStart + 64;           /* Current texture page end */
 
-        if (nextVRAMX + vramW > pageEnd) {
-            /* Would cross page boundary - align to next page */
-            nextVRAMX = pageEnd;
+        /* Calculate UV offset that would result from current VRAM position */
+        uint16 uOffset = ((nextVRAMX % 64) * 4);  /* UV offset in texture pixels */
+
+        /* AGGRESSIVE: Always align to page boundary - ensures U=0 for every sprite */
+        if (uOffset != 0) {
+            /* Not at page start - align to next texture page */
+            uint16 nextPage = ((nextVRAMX / 64) + 1) * 64;
+            nextVRAMX = nextPage;
             if (nextVRAMX >= 1024) {
                 nextVRAMX = 640;
-                nextVRAMY += MAX_SPRITE_DIM;  /* Move down */
+                nextVRAMY += MAX_SPRITE_DIM;
             }
+        }
+
+        /* Check if we've exhausted VRAM - stop loading more frames */
+        if (nextVRAMY + safeH > 512) {
+            break;  /* Out of VRAM space */
         }
 
         uint16 vramX = nextVRAMX;
@@ -617,7 +629,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         nextVRAMX += vramW;
         if (nextVRAMX >= 1024) {
             nextVRAMX = 640;
-            nextVRAMY += safeH;
+            nextVRAMY += MAX_SPRITE_DIM;  /* Use consistent row height */
         }
     }
 
@@ -642,6 +654,129 @@ void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo)
     }
 
     ttmSlot->numSprites[bmpSlotNo] = 0;
+}
+
+/*
+ * Load BMP sprites into RAM with 15-bit direct color (for framebuffer blitting)
+ * Unlike grLoadBmp, this does NOT upload to VRAM texture area.
+ * Use grBlitToFramebuffer() to draw these sprites.
+ */
+void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
+{
+    if (ttmSlot->numSprites[slotNo])
+        grReleaseBmp(ttmSlot, slotNo);
+
+    struct TBmpResource *bmpResource = findBmpResource(strArg);
+    if (!bmpResource || !bmpResource->uncompressedData) return;
+    if (bmpResource->numImages < 1) return;
+
+    int numToLoad = bmpResource->numImages;
+    if (numToLoad > MAX_SPRITES_PER_BMP) {
+        numToLoad = MAX_SPRITES_PER_BMP;
+    }
+
+    uint8 *srcPtr = bmpResource->uncompressedData;
+
+    for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
+        uint16 width = bmpResource->widths[frameIdx];
+        uint16 height = bmpResource->heights[frameIdx];
+
+        /* Allocate PS1Surface */
+        PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+        surface->width = width;
+        surface->height = height;
+        surface->x = 0;  /* Not in VRAM - RAM only */
+        surface->y = 0;
+        surface->clutX = 0;
+        surface->clutY = 0;
+
+        /* Allocate 15-bit direct color buffer */
+        uint32 pixelCount = width * height;
+        surface->pixels = (uint16*)safe_malloc(pixelCount * 2);
+
+        /* Convert 4-bit indexed to 15-bit direct color using palette */
+        uint16 *dst = surface->pixels;
+        for (uint32 i = 0; i < pixelCount; i++) {
+            uint8 palIndex;
+            if (i & 1) {
+                palIndex = srcPtr[i / 2] & 0x0F;
+            } else {
+                palIndex = (srcPtr[i / 2] >> 4) & 0x0F;
+            }
+            dst[i] = ttmPalette[palIndex & 0x0F];
+        }
+
+        /* Advance source pointer for next frame */
+        srcPtr += (width * height) / 2;
+
+        /* Store in slot */
+        ttmSlot->sprites[slotNo][frameIdx] = surface;
+    }
+
+    ttmSlot->numSprites[slotNo] = numToLoad;
+}
+
+/*
+ * Blit a RAM-stored sprite directly to framebuffer using LoadImage
+ * Sprite must have been loaded with grLoadBmpRAM (15-bit direct color)
+ * NOTE: No transparency support yet - black pixels will show
+ */
+void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY)
+{
+    if (!sprite || !sprite->pixels) return;
+
+    /* Clip to screen bounds */
+    sint16 srcX = 0, srcY = 0;
+    uint16 blitW = sprite->width;
+    uint16 blitH = sprite->height;
+
+    /* Left edge clipping */
+    if (screenX < 0) {
+        srcX = -screenX;
+        blitW -= srcX;
+        screenX = 0;
+    }
+    /* Top edge clipping */
+    if (screenY < 0) {
+        srcY = -screenY;
+        blitH -= srcY;
+        screenY = 0;
+    }
+    /* Right edge clipping */
+    if (screenX + blitW > 640) {
+        blitW = 640 - screenX;
+    }
+    /* Bottom edge clipping */
+    if (screenY + blitH > 480) {
+        blitH = 480 - screenY;
+    }
+
+    /* Nothing to draw if fully clipped */
+    if (blitW <= 0 || blitH <= 0) return;
+
+    /* If no clipping needed, direct LoadImage */
+    if (srcX == 0 && srcY == 0 && blitW == sprite->width && blitH == sprite->height) {
+        RECT dstRect;
+        setRECT(&dstRect, screenX, screenY, sprite->width, sprite->height);
+        LoadImage(&dstRect, (uint32*)sprite->pixels);
+    } else {
+        /* Need to copy clipped region to temp buffer */
+        uint16 *tempBuf = (uint16*)malloc(blitW * blitH * 2);
+        if (!tempBuf) return;
+        uint16 *src = sprite->pixels;
+        uint16 *dst = tempBuf;
+
+        for (uint16 y = 0; y < blitH; y++) {
+            memcpy(dst, &src[(srcY + y) * sprite->width + srcX], blitW * 2);
+            dst += blitW;
+        }
+
+        RECT dstRect;
+        setRECT(&dstRect, screenX, screenY, blitW, blitH);
+        LoadImage(&dstRect, (uint32*)tempBuf);
+
+        free(tempBuf);
+    }
 }
 
 /*
@@ -793,8 +928,10 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
     setSprt(sprt);
     setXY0(sprt, x, y);
     setWH(sprt, sprite->width, sprite->height);
-    /* UV coords are relative to texture page (0-255 range) */
-    setUV0(sprt, (sprite->x % 256) & 0xFF, (sprite->y % 256) & 0xFF);
+    /* UV coords are relative to texture page (0-255 range)
+     * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF
+     * This is because each texture page is 64 VRAM pixels = 256 texture pixels */
+    setUV0(sprt, ((sprite->x % 64) * 4) & 0xFF, (sprite->y % 256) & 0xFF);
     setClut(sprt, sprite->clutX, sprite->clutY);
     setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
 
@@ -856,8 +993,9 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
     uint16 tpageY = sprite->y / 256;
     poly->tpage = getTPage(0, 0, tpageX * 64, tpageY * 256);
 
-    /* Set UV coordinates (flipped horizontally, relative to texture page) */
-    uint8 baseU = (sprite->x % 256) & 0xFF;
+    /* Set UV coordinates (flipped horizontally, relative to texture page)
+     * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF */
+    uint8 baseU = ((sprite->x % 64) * 4) & 0xFF;
     uint8 baseV = (sprite->y % 256) & 0xFF;
     uint8 u0 = baseU + sprite->width;  /* Right edge */
     uint8 u1 = baseU;                   /* Left edge */
@@ -912,8 +1050,10 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
     setSprt(sprt);
     setXY0(sprt, x, y);
     setWH(sprt, sprite->width, sprite->height);
-    /* UV coords are relative to texture page (0-255 range) */
-    setUV0(sprt, (sprite->x % 256) & 0xFF, (sprite->y % 256) & 0xFF);
+    /* UV coords are relative to texture page (0-255 range)
+     * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF
+     * This is because each texture page is 64 VRAM pixels = 256 texture pixels */
+    setUV0(sprt, ((sprite->x % 64) * 4) & 0xFF, (sprite->y % 256) & 0xFF);
     setClut(sprt, sprite->clutX, sprite->clutY);
     setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
 

@@ -958,23 +958,35 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     bmpResource->compressionMethod = ps1_readUint8(f);
     bmpResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress essential BMPs - prioritize Johnny sprites */
+    /* Decompress only BACKGRND and one Johnny sprite - strict memory test */
     static int bmpDecompressCount = 0;
-    #define MAX_BMP_DECOMPRESS 12  /* Conservative limit to avoid memory crash */
+    #define MAX_BMP_DECOMPRESS 2  /* Very conservative for testing */
 
-    /* Check if this is an essential Johnny sprite */
-    int isEssentialBmp = (strstr(resName, "JOHNWALK") != NULL) ||
-                         (strstr(resName, "JOHNWOUL") != NULL) ||
-                         (strstr(resName, "BACKGRND") != NULL);
+    /* Check if this is BACKGRND (island) - highest priority */
+    int isBackgrnd = (strstr(resName, "BACKGRND") != NULL);
+    /* Check if this is Johnny sprite */
+    int isJohnny = (strstr(resName, "JOHNWALK") != NULL);
 
-    if (isEssentialBmp || bmpDecompressCount < MAX_BMP_DECOMPRESS) {
-        printf("Decompressing BMP: %s (%u bytes)%s\n", resName,
-               bmpResource->uncompressedSize, isEssentialBmp ? " [ESSENTIAL]" : "");
+    /* BACKGRND gets top priority */
+    if (isBackgrnd) {
         bmpResource->uncompressedData = ps1_uncompress(f,
                                             bmpResource->compressionMethod,
                                             bmpResource->compressedSize,
                                             bmpResource->uncompressedSize);
-        if (!isEssentialBmp) bmpDecompressCount++;
+    } else if (isJohnny && bmpDecompressCount < 1) {
+        /* Only decompress ONE Johnny sprite sheet */
+        bmpResource->uncompressedData = ps1_uncompress(f,
+                                            bmpResource->compressionMethod,
+                                            bmpResource->compressedSize,
+                                            bmpResource->uncompressedSize);
+        bmpDecompressCount++;
+    } else if (bmpDecompressCount < MAX_BMP_DECOMPRESS) {
+        /* Small number of other BMPs */
+        bmpResource->uncompressedData = ps1_uncompress(f,
+                                            bmpResource->compressionMethod,
+                                            bmpResource->compressedSize,
+                                            bmpResource->uncompressedSize);
+        bmpDecompressCount++;
     } else {
         /* Lazy loading: skip compressed data */
         bmpResource->uncompressedData = NULL;

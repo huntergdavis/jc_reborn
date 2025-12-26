@@ -1685,28 +1685,35 @@ uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32
 }
 
 /*
- * Load BMP data on-demand from CD-ROM
- * This is called when grLoadBmp finds uncompressedData is NULL
+ * Load BMP data on-demand from CD-ROM using streaming reads.
+ * Only reads the necessary sectors (~10-50KB) instead of entire 1.8MB file.
+ * This is called when grLoadBmp finds uncompressedData is NULL.
  */
 void ps1_loadBmpData(struct TBmpResource *bmpResource)
 {
     if (bmpResource == NULL) return;
     if (bmpResource->uncompressedData != NULL) return;  /* Already loaded */
     if (bmpResource->fileOffset == 0) return;  /* No valid offset */
+    if (bmpResource->compressedSize == 0) return;  /* No data to read */
 
-    /* Open resource file and seek to saved offset */
-    PS1File *f = ps1_fopen("RESOURCE.001", "rb");
-    if (f == NULL) {
-        return;  /* Failed to open file */
+    /* Stream read: get only the compressed BMP data from CD */
+    uint8_t* compressedData = ps1_streamRead("RESOURCE.001",
+                                              bmpResource->fileOffset,
+                                              bmpResource->compressedSize);
+    if (compressedData == NULL) {
+        return;  /* Stream read failed */
     }
 
-    ps1_fseek(f, bmpResource->fileOffset, SEEK_SET);
+    /* Wrap buffer as PS1File for decompress functions */
+    PS1File wrappedFile;
+    ps1_wrapBuffer(&wrappedFile, compressedData, bmpResource->compressedSize);
 
     /* Decompress the BMP data */
-    bmpResource->uncompressedData = ps1_uncompress(f,
+    bmpResource->uncompressedData = ps1_uncompress(&wrappedFile,
                                         bmpResource->compressionMethod,
                                         bmpResource->compressedSize,
                                         bmpResource->uncompressedSize);
 
-    ps1_fclose(f);
+    /* Free the compressed data buffer */
+    free(compressedData);
 }

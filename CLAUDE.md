@@ -45,6 +45,8 @@ cd jc_resources
 
 **Current branch**: `ps1` (based on `4mb2025` memory-optimized branch)
 
+**CRITICAL: NEVER use sudo with PS1 scripts** - it breaks permissions and DuckStation access. Always run `./rebuild-and-test.sh` without sudo.
+
 **Quick build and test**:
 ```bash
 # Build using Docker container

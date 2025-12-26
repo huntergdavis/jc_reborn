@@ -295,13 +295,20 @@ void grLoadPalette(struct TPalResource *palResource)
         int isMagenta = (r8 == 0xa8) && (g8 == 0) && (b8 == 0xa8);
 
         if (isMagenta) {
-            /* Make this color black (0x0000) - closest we can get to transparent on PS1 */
+            /* Magenta = 0x0000 = fully transparent on PS1 */
             ttmPalette[i] = 0x0000;
         } else {
             uint8 r = r8 >> 3;  /* 8-bit to 5-bit */
             uint8 g = g8 >> 3;
             uint8 b = b8 >> 3;
-            ttmPalette[i] = (b << 10) | (g << 5) | r;
+            uint16 color = (b << 10) | (g << 5) | r;
+
+            /* IMPORTANT: If color is 0x0000 (black), use 0x0001 instead
+             * because 0x0000 is reserved for transparency on PS1 */
+            if (color == 0x0000) {
+                color = 0x0001;  /* Very dark blue, nearly black */
+            }
+            ttmPalette[i] = color;
         }
     }
 

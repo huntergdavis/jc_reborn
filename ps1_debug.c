@@ -20,8 +20,8 @@
 
 #include "ps1_debug.h"
 
-/* Font stream ID */
-static int fontID = -1;
+/* Font stream ID - not static so jc_reborn.c can access it */
+int fontID = -1;
 
 /* Screen dimensions - 640x480 interlaced high res mode */
 #define SCREEN_WIDTH 640

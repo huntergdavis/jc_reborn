@@ -542,7 +542,13 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         grReleaseBmp(ttmSlot, slotNo);
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
-    if (!bmpResource || !bmpResource->uncompressedData) return;
+    if (!bmpResource) return;
+
+    /* On-demand loading: decompress BMP if not already loaded */
+    if (!bmpResource->uncompressedData) {
+        ps1_loadBmpData(bmpResource);
+    }
+    if (!bmpResource->uncompressedData) return;  /* Still NULL = load failed */
     if (bmpResource->numImages < 1) return;
 
     /* Reset VRAM tracking to ensure sprites start at clean position
@@ -676,7 +682,13 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         grReleaseBmp(ttmSlot, slotNo);
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
-    if (!bmpResource || !bmpResource->uncompressedData) return;
+    if (!bmpResource) return;
+
+    /* On-demand loading: decompress BMP if not already loaded */
+    if (!bmpResource->uncompressedData) {
+        ps1_loadBmpData(bmpResource);
+    }
+    if (!bmpResource->uncompressedData) return;  /* Still NULL = load failed */
     if (bmpResource->numImages < 1) return;
 
     int numToLoad = bmpResource->numImages;

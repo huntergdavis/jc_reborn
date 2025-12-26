@@ -958,28 +958,28 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     bmpResource->compressionMethod = ps1_readUint8(f);
     bmpResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress only BACKGRND and one Johnny sprite - strict memory test */
+    /* Save file offset for on-demand loading */
+    bmpResource->fileOffset = (uint32)ps1_ftell(f);
+
+    /* Decompress only BACKGRND - test dynamic loading for JOHNWALK */
     static int bmpDecompressCount = 0;
     #define MAX_BMP_DECOMPRESS 2  /* Very conservative for testing */
 
     /* Check if this is BACKGRND (island) - highest priority */
     int isBackgrnd = (strstr(resName, "BACKGRND") != NULL);
-    /* Check if this is Johnny sprite */
+    /* Check if this is Johnny sprite - TEST: skip for dynamic loading */
     int isJohnny = (strstr(resName, "JOHNWALK") != NULL);
 
-    /* BACKGRND gets top priority */
+    /* BACKGRND gets top priority - decompress now */
     if (isBackgrnd) {
         bmpResource->uncompressedData = ps1_uncompress(f,
                                             bmpResource->compressionMethod,
                                             bmpResource->compressedSize,
                                             bmpResource->uncompressedSize);
-    } else if (isJohnny && bmpDecompressCount < 1) {
-        /* Only decompress ONE Johnny sprite sheet */
-        bmpResource->uncompressedData = ps1_uncompress(f,
-                                            bmpResource->compressionMethod,
-                                            bmpResource->compressedSize,
-                                            bmpResource->uncompressedSize);
-        bmpDecompressCount++;
+    } else if (isJohnny) {
+        /* TEST: Skip JOHNWALK to test dynamic loading */
+        bmpResource->uncompressedData = NULL;
+        ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
     } else if (bmpDecompressCount < MAX_BMP_DECOMPRESS) {
         /* Small number of other BMPs */
         bmpResource->uncompressedData = ps1_uncompress(f,
@@ -1600,4 +1600,31 @@ uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32
             printf("ps1_uncompress: unknown method %d\n", compressionMethod);
             return NULL;
     }
+}
+
+/*
+ * Load BMP data on-demand from CD-ROM
+ * This is called when grLoadBmp finds uncompressedData is NULL
+ */
+void ps1_loadBmpData(struct TBmpResource *bmpResource)
+{
+    if (bmpResource == NULL) return;
+    if (bmpResource->uncompressedData != NULL) return;  /* Already loaded */
+    if (bmpResource->fileOffset == 0) return;  /* No valid offset */
+
+    /* Open resource file and seek to saved offset */
+    PS1File *f = ps1_fopen("RESOURCE.001", "rb");
+    if (f == NULL) {
+        return;  /* Failed to open file */
+    }
+
+    ps1_fseek(f, bmpResource->fileOffset, SEEK_SET);
+
+    /* Decompress the BMP data */
+    bmpResource->uncompressedData = ps1_uncompress(f,
+                                        bmpResource->compressionMethod,
+                                        bmpResource->compressedSize,
+                                        bmpResource->uncompressedSize);
+
+    ps1_fclose(f);
 }

@@ -88,6 +88,7 @@ struct TBmpResource {
     uint8 compressionMethod;
     uint32 uncompressedSize;
     uint8 *uncompressedData;
+    uint32 fileOffset;  /* Offset in RESOURCE.001 for on-demand loading */
     /* LRU cache fields */
     uint32 lastUsedTick;
     uint32 pinCount;

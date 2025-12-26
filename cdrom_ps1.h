@@ -100,6 +100,11 @@ int ps1_fseek(PS1File* file, long offset, int whence);
 long ps1_ftell(PS1File* file);
 int ps1_fclose(PS1File* file);
 
+/* Stream read: Read a range from file without loading entire file into RAM.
+ * For dynamic loading - only reads necessary CD sectors.
+ * Returns malloc'd buffer (caller must free), or NULL on error. */
+uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size);
+
 /* PS1-specific utility functions for resource parsing */
 uint8 ps1_readUint8(PS1File *f);
 uint16 ps1_readUint16(PS1File *f);

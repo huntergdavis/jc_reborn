@@ -707,6 +707,75 @@ int ps1_fclose(PS1File* file)
     return 0;
 }
 
+/*
+ * Stream read: Read a range of bytes from a file without loading entire file.
+ * This is for dynamic loading - reads only the necessary CD sectors.
+ * Returns malloc'd buffer that caller must free, or NULL on error.
+ */
+uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size)
+{
+    if (size == 0) return NULL;
+
+    /* Find file on CD */
+    CdlFILE cdfile;
+    char cdPath[64];
+    cdPath[0] = '\\';
+    strncpy(cdPath + 1, filename, sizeof(cdPath) - 4);
+    cdPath[sizeof(cdPath) - 3] = '\0';
+    strcat(cdPath, ";1");
+
+    if (CdSearchFile(&cdfile, cdPath) == NULL) {
+        return NULL;  /* File not found */
+    }
+
+    /* Calculate sector range needed
+     * CD sectors are 2048 bytes each */
+    uint32_t startSector = offset / CD_SECTOR_SIZE;
+    uint32_t endByte = offset + size;
+    uint32_t endSector = (endByte + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
+    uint32_t numSectors = endSector - startSector;
+    uint32_t bufferSize = numSectors * CD_SECTOR_SIZE;
+
+    /* Allocate buffer for the sectors we need */
+    uint8_t* sectorBuffer = (uint8_t*)malloc(bufferSize);
+    if (!sectorBuffer) {
+        return NULL;  /* Malloc failed */
+    }
+
+    /* Calculate absolute sector position on CD */
+    CdlLOC loc;
+    CdIntToPos(CdPosToInt(&cdfile.pos) + startSector, &loc);
+
+    /* Position CD head */
+    CdControl(CdlSetloc, (uint8_t*)&loc, NULL);
+
+    /* Brief wait for seek */
+    for (volatile int i = 0; i < 100000; i++);
+
+    /* Read the sectors */
+    CdRead(numSectors, (uint32_t*)sectorBuffer, CdlModeSpeed);
+
+    /* Wait for read to complete */
+    if (CdReadSync(0, NULL) < 0) {
+        free(sectorBuffer);
+        return NULL;  /* Read error */
+    }
+
+    /* Allocate exact-size output buffer and copy the data we need */
+    uint8_t* result = (uint8_t*)malloc(size);
+    if (!result) {
+        free(sectorBuffer);
+        return NULL;
+    }
+
+    /* Copy from sector buffer at the correct offset */
+    uint32_t offsetInBuffer = offset % CD_SECTOR_SIZE;
+    memcpy(result, sectorBuffer + offsetInBuffer, size);
+
+    free(sectorBuffer);
+    return result;
+}
+
 /* ============================================================================
  * PS1 Resource Loading Test
  * Tests the complete PS1 resource loading system

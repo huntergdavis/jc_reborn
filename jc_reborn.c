@@ -423,6 +423,18 @@ int main(int argc, char **argv)
     if (islandSpriteCount > 14) {
         palmShadow = islandSlot.sprites[0][14];      /* Sprite 14 = shadow */
     }
+
+    /* Composite island sprites INTO the background tiles WITH TRANSPARENCY
+     * This is done ONCE at init - grDrawBackground() will render them each frame
+     * Order matters: shadow first, then island, then trunk, then leaves (back to front) */
+    if (islandLandmass && islandLandmass->pixels) {
+        /* Positions from island.c: island(288,279), trunk(442,148), leaves(365,122), shadow(396,279) */
+        grCompositeToBackground(islandLandmass, 288, 279);
+        if (palmShadow) grCompositeToBackground(palmShadow, 396, 279);
+        if (palmTrunk) grCompositeToBackground(palmTrunk, 442, 148);
+        if (palmLeaves) grCompositeToBackground(palmLeaves, 365, 122);
+    }
+
     PutDrawEnv(&gameDraw);
 
     /* Animation state */
@@ -436,18 +448,8 @@ int main(int argc, char **argv)
         ClearOTagR(gameOT, GAME_OTLEN);
         gameNextPri = gamePrimBuf;
 
-        /* Re-upload background from RAM to framebuffer each frame */
+        /* Re-upload background (with composited island sprites) from RAM to framebuffer each frame */
         grDrawBackground();
-
-        /* Blit island sprites to framebuffer */
-        if (islandLandmass && islandLandmass->pixels) {
-            /* Positions from island.c: island(288,279), trunk(442,148), leaves(365,122), shadow(396,279) */
-            grBlitToFramebuffer(islandLandmass, 288, 279);
-            if (palmShadow) grBlitToFramebuffer(palmShadow, 396, 279);
-            if (palmTrunk) grBlitToFramebuffer(palmTrunk, 442, 148);
-            if (palmLeaves) grBlitToFramebuffer(palmLeaves, 365, 122);
-        }
-        DrawSync(0);  /* Wait for island blits before OT rendering */
 
         /* Animate through sprite frames - slower for debugging */
         if (++frameCounter >= 15) {  /* Change frame every 15 vsyncs (~4 fps) */

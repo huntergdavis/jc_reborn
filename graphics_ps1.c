@@ -780,6 +780,73 @@ void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 }
 
 /*
+ * Composite a RAM-stored sprite into the background tile buffers WITH TRANSPARENCY
+ * Skips pixels with value 0x0000 (transparent)
+ * This modifies the bgTile RAM buffers so grDrawBackground() renders with transparency
+ *
+ * Background tile layout:
+ * - bgTile0: x=0-319, y=0-239
+ * - bgTile1: x=320-639, y=0-239
+ * - bgTile3: x=0-319, y=240-479
+ * - bgTile4: x=320-639, y=240-479
+ */
+void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
+{
+    if (!sprite || !sprite->pixels) return;
+
+    uint16 sprW = sprite->width;
+    uint16 sprH = sprite->height;
+    uint16 *sprPixels = sprite->pixels;
+
+    /* Iterate over each pixel in the sprite */
+    for (uint16 sy = 0; sy < sprH; sy++) {
+        sint16 destY = screenY + sy;
+        if (destY < 0 || destY >= 480) continue;
+
+        for (uint16 sx = 0; sx < sprW; sx++) {
+            sint16 destX = screenX + sx;
+            if (destX < 0 || destX >= 640) continue;
+
+            uint16 pixel = sprPixels[sy * sprW + sx];
+
+            /* Skip transparent pixels (0x0000) */
+            if (pixel == 0x0000) continue;
+
+            /* Determine which tile and local coordinates */
+            PS1Surface *tile = NULL;
+            uint16 tileLocalX, tileLocalY;
+
+            if (destY < 240) {
+                /* Top row */
+                tileLocalY = destY;
+                if (destX < 320) {
+                    tile = bgTile0;
+                    tileLocalX = destX;
+                } else {
+                    tile = bgTile1;
+                    tileLocalX = destX - 320;
+                }
+            } else {
+                /* Bottom row */
+                tileLocalY = destY - 240;
+                if (destX < 320) {
+                    tile = bgTile3;
+                    tileLocalX = destX;
+                } else {
+                    tile = bgTile4;
+                    tileLocalX = destX - 320;
+                }
+            }
+
+            /* Write pixel to tile buffer if tile exists */
+            if (tile && tile->pixels) {
+                tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
+            }
+        }
+    }
+}
+
+/*
  * Set clipping rectangle
  */
 void grSetClipZone(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2)

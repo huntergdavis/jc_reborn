@@ -638,12 +638,64 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->pixels = copyBuf;
         surface->clutX = 640;
         surface->clutY = 0;
-        /* Multi-tile fields (single tile, large sprites are still clipped) */
+        /* Multi-tile fields */
         surface->fullWidth = width;
         surface->fullHeight = height;
         surface->tileOffsetX = 0;
         surface->tileOffsetY = 0;
         surface->nextTile = NULL;
+
+        /* Multi-tile: Load bottom portion for tall sprites
+         * NOTE: Currently causes VRAM collision - row 2 main tiles overwrite row 1 bottom tiles
+         * CONFIRMED WORKING with single frame! See PS1_TILE_RENDERING_DEBUG.md for details.
+         * TODO: Fix VRAM layout to prevent collision (use 128px rows or interleaved loading) */
+        if (0 && height > MAX_SPRITE_DIM && frameIdx == 0) {  /* DISABLED - needs VRAM fix */
+            uint16 bottomH = height - MAX_SPRITE_DIM;
+            if (bottomH > MAX_SPRITE_DIM) bottomH = MAX_SPRITE_DIM;
+            uint16 bottomVramY = vramY + MAX_SPRITE_DIM;
+
+            /* Allocate buffer for bottom tile */
+            uint32 bottomCopySize = (safeW * bottomH) / 2;
+            uint16 *bottomBuf = (uint16*)safe_malloc(bottomCopySize);
+
+            /* src already points to row 64 after main tile copy loop */
+            uint8 *bottomSrc = src;
+            uint8 *bottomDst = (uint8*)bottomBuf;
+
+            /* Copy rows 64-77 (feet) with nibble swap */
+            for (uint16 by = 0; by < bottomH; by++) {
+                for (uint32 bx = 0; bx < dstRowBytes; bx++) {
+                    uint8 srcByte = bottomSrc[bx];
+                    bottomDst[bx] = ((srcByte & 0x0F) << 4) | ((srcByte >> 4) & 0x0F);
+                }
+                bottomDst += dstRowBytes;
+                bottomSrc += srcRowBytes;
+            }
+
+            /* LoadImage bottom tile at SAME X column as main tile (same texture page) */
+            RECT bottomRect;
+            setRECT(&bottomRect, vramX, bottomVramY, vramW, bottomH);
+            LoadImage(&bottomRect, (uint32*)bottomBuf);
+            DrawSync(0);
+
+            /* Create PS1Surface for bottom tile */
+            PS1Surface *bottomTile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+            bottomTile->width = safeW;
+            bottomTile->height = bottomH;
+            bottomTile->x = vramX;  /* Same X as main tile */
+            bottomTile->y = bottomVramY;  /* Y=68 */
+            bottomTile->pixels = bottomBuf;
+            bottomTile->clutX = 640;
+            bottomTile->clutY = 0;
+            bottomTile->fullWidth = width;
+            bottomTile->fullHeight = height;
+            bottomTile->tileOffsetX = 0;
+            bottomTile->tileOffsetY = MAX_SPRITE_DIM;
+            bottomTile->nextTile = NULL;
+
+            /* Link: main tile -> bottom tile */
+            surface->nextTile = bottomTile;
+        }
 
         /* Store in slot */
         ttmSlot->sprites[slotNo][frameIdx] = surface;
@@ -652,13 +704,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         nextVRAMX += vramW;
         if (nextVRAMX >= 1024) {
             nextVRAMX = 640;
-            nextVRAMY += MAX_SPRITE_DIM;  /* Use consistent row height */
+            nextVRAMY += MAX_SPRITE_DIM;
         }
-
-        /* TODO: Multi-tile loading for sprites > 64x64
-         * Infrastructure is in place (linked list traversal in grDrawSprite/grDrawSpriteFlip,
-         * multi-tile fields in PS1Surface), but secondary tile loading causes rendering issues.
-         * Needs investigation: VRAM layout, UV calculation, or texture page alignment. */
     }
 
     ttmSlot->numSprites[slotNo] = numToLoad;
@@ -1140,6 +1187,7 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
 
 /*
  * Extended sprite drawing - allows caller to provide their own OT and primitive buffer
+ * Walks linked list of tiles for multi-tile sprites (sprites > 64 pixels)
  * Returns 0 on success, -1 on failure
  */
 int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, sint16 x, sint16 y)
@@ -1151,36 +1199,44 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
     x += grDx;
     y += grDy;
 
-    /* Allocate DR_TPAGE primitive first */
-    DR_TPAGE *tpage = (DR_TPAGE*)(*nextPri);
-    *nextPri += sizeof(DR_TPAGE);
-
-    /* Calculate texture page from sprite VRAM position
-     * tpage X: in 64-pixel units (sprite->x / 64)
-     * tpage Y: in 256-pixel units (sprite->y / 256)
-     * Color mode: 0 = 4-bit CLUT (16 colors) */
+    /* Calculate texture page ONCE from first tile - all tiles share same tpage */
     uint16 tpageX = sprite->x / 64;
     uint16 tpageY = sprite->y / 256;
-    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
-    addPrim(extOT, tpage);
 
-    /* Allocate SPRT primitive */
-    SPRT *sprt = (SPRT*)(*nextPri);
-    *nextPri += sizeof(SPRT);
+    /* Walk linked list of tiles */
+    PS1Surface *tile = sprite;
+    while (tile != NULL) {
+        /* Screen position for this tile */
+        sint16 tileX = x + tile->tileOffsetX;
+        sint16 tileY = y + tile->tileOffsetY;
 
-    /* Initialize sprite primitive */
-    setSprt(sprt);
-    setXY0(sprt, x, y);
-    setWH(sprt, sprite->width, sprite->height);
-    /* UV coords are relative to texture page (0-255 range)
-     * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF
-     * This is because each texture page is 64 VRAM pixels = 256 texture pixels */
-    setUV0(sprt, ((sprite->x % 64) * 4) & 0xFF, (sprite->y % 256) & 0xFF);
-    setClut(sprt, sprite->clutX, sprite->clutY);
-    setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
+        /* Allocate DR_TPAGE primitive */
+        DR_TPAGE *tpage = (DR_TPAGE*)(*nextPri);
+        *nextPri += sizeof(DR_TPAGE);
 
-    /* Add to caller's ordering table */
-    addPrim(extOT, sprt);
+        /* Use SAME texture page for all tiles (calculated from first tile) */
+        setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
+        addPrim(extOT, tpage);
+
+        /* Allocate SPRT primitive */
+        SPRT *sprt = (SPRT*)(*nextPri);
+        *nextPri += sizeof(SPRT);
+
+        /* Initialize sprite primitive */
+        setSprt(sprt);
+        setXY0(sprt, tileX, tileY);
+        setWH(sprt, tile->width, tile->height);
+        /* UV coords are relative to texture page (0-255 range)
+         * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF */
+        setUV0(sprt, ((tile->x % 64) * 4) & 0xFF, (tile->y % 256) & 0xFF);
+        setClut(sprt, tile->clutX, tile->clutY);
+        setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
+
+        /* Add to caller's ordering table */
+        addPrim(extOT, sprt);
+
+        tile = tile->nextTile;
+    }
 
     return 0;
 }

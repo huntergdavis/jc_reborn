@@ -572,8 +572,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     if (numToLoad > 42) {
         numToLoad = 42;  /* Max 42 frames (6 pages/row × 7 rows) */
     }
-    /* For multi-tile BMPs, limit to 2 frames to test if >1 works.
-     * Multi-tile with > 1 frame causes full regression. */
+    /* For multi-tile BMPs, limit to 2 frames (3+ breaks completely) */
     if (needsMultiTile && numToLoad > 2) {
         numToLoad = 2;
     }

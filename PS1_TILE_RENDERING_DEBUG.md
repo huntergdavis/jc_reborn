@@ -571,3 +571,39 @@ Frame 1 failed because:
 3. **Test incrementally**: Going from 1→2 frames revealed the tpage ordering bug
 4. **Visual symptoms are clues**: "Frame 1 shows frame 0's foot" → reading wrong VRAM → wrong tpage active
 5. **Don't assume working code is correct**: Frame 0 worked by accident, not by design
+
+---
+
+## Trial 14: Scaling up frame count
+
+**Date**: 2025-12-27
+
+### Confirmed Working: 2 frames
+- 2 frames with multi-tile: WORKS - Johnny shows feet, animation plays correctly
+
+### Test: 6 frames
+**Result**: FULL REGRESSION - NO SPRITES AT ALL (including island)
+
+**Analysis**: Something breaks between 2 and 6 frames. The issue is NOT just the addPrim ordering (that was fixed). There's another problem that manifests with more frames.
+
+Possible causes:
+1. VRAM collision returns - bottom tiles of frames 0-5 may overlap with something
+2. Memory exhaustion from allocating 6 bottom tile buffers
+3. Primitive buffer overflow from 12 tiles (6 main + 6 bottom)
+4. srcPtr calculation corruption after multiple frames
+
+### Test: 3 frames
+**Result**: FULL REGRESSION - NO SPRITES AT ALL
+
+**Critical Finding**: Breakpoint is exactly at frame 3 (0-indexed: frame 2)
+- 2 frames: WORKS
+- 3 frames: BREAKS completely
+- 6 frames: BREAKS completely
+
+**Analysis**: The third frame's loading causes the failure. This could be:
+1. srcPtr calculation goes wrong after loading 2 frames + their bottom tiles
+2. VRAM placement of frame 2's bottom tile overwrites critical data
+3. Memory exhaustion on the third malloc for bottom tile buffer
+4. Off-by-one error somewhere in the frame loop
+
+### Next: Roll back to 2 frames and re-verify stability

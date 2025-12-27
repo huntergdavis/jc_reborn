@@ -558,10 +558,24 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     nextVRAMX = 640;  /* Start of texture area */
     nextVRAMY = 4;    /* Below CLUTs */
 
+    /* Detect if ANY frame needs multi-tile (height > 64) */
+    int needsMultiTile = 0;
+    for (int i = 0; i < bmpResource->numImages && i < MAX_SPRITES_PER_BMP; i++) {
+        if (bmpResource->heights[i] > MAX_SPRITE_DIM) {
+            needsMultiTile = 1;
+            break;
+        }
+    }
+
     /* Load sprite frames from BMP for animation support */
     int numToLoad = bmpResource->numImages;
     if (numToLoad > 42) {
         numToLoad = 42;  /* Max 42 frames (6 pages/row × 7 rows) */
+    }
+    /* For multi-tile BMPs, limit to 1 frame for now to isolate the issue.
+     * Multi-tile with > 1 frame causes full regression. */
+    if (needsMultiTile && numToLoad > 1) {
+        numToLoad = 1;
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;
@@ -646,10 +660,9 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->nextTile = NULL;
 
         /* Multi-tile: Load bottom portion for tall sprites
-         * NOTE: Currently causes VRAM collision - row 2 main tiles overwrite row 1 bottom tiles
-         * CONFIRMED WORKING with single frame! See PS1_TILE_RENDERING_DEBUG.md for details.
-         * TODO: Fix VRAM layout to prevent collision (use 128px rows or interleaved loading) */
-        if (0 && height > MAX_SPRITE_DIM && frameIdx == 0) {  /* DISABLED - needs VRAM fix */
+         * Limited to 6 frames (one row) above to prevent VRAM collision.
+         * See PS1_TILE_RENDERING_DEBUG.md for debugging history. */
+        if (height > MAX_SPRITE_DIM) {
             uint16 bottomH = height - MAX_SPRITE_DIM;
             if (bottomH > MAX_SPRITE_DIM) bottomH = MAX_SPRITE_DIM;
             uint16 bottomVramY = vramY + MAX_SPRITE_DIM;

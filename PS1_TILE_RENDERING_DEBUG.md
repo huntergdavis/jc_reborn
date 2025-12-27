@@ -348,3 +348,94 @@ Need to prevent VRAM collision. Options:
 4. **Interleave loading**: Load main+bottom for each frame before next frame
 
 Recommended: Option 1 (128-pixel rows) or Option 4 (interleave loading)
+
+---
+
+## Trial 10: 128-pixel rows approach
+
+**Date**: 2025-12-27
+**Goal**: Use 128-pixel rows for multi-tile BMPs to prevent VRAM collision
+
+### Step 10a: Detect needsMultiTile + set rowHeight=128
+**Code changes**:
+- Scan all BMP frame heights to detect if any > 64
+- Set rowHeight = 128 for multi-tile BMPs
+- Use rowHeight in row wrap code (instead of MAX_SPRITE_DIM)
+- Update VRAM exhaustion check to use full sprite height
+
+**Expected**: With 128-pixel rows, bottom tiles at Y=68 won't be overwritten by row 2 (at Y=132)
+**Actual result**: FULL REGRESSION - NO SPRITES AT ALL
+**Reverted**: Yes
+
+### Step 10b: 128-pixel rows + multi-tile for frame 0 only
+**Code changes**: Same as 10a but only enable multi-tile for frameIdx==0
+**Expected**: At least frame 0 should show feet
+**Actual result**: REGRESSION - no sprites, green box over Johnny on some frames
+**Analysis**: The 128-pixel row change affects ALL frame positions, breaking UV calculations
+**Reverted**: Yes
+
+---
+
+## Trial 11: 6-frame limit approach
+
+### Step 11a: Limit multi-tile BMPs to 6 frames
+**Code changes**:
+- Detect needsMultiTile
+- If needsMultiTile && numToLoad > 6, set numToLoad = 6
+- Enable multi-tile code for all frames
+
+**Rationale**: With only 6 frames in row 1, bottom tiles at Y=68 won't be overwritten
+(row 2 would start at Y=68, but we never wrap to row 2)
+
+**Expected**: 6-frame animation with feet on all frames
+**Actual result**: FULL REGRESSION - NO SPRITES AT ALL (including island!)
+**Analysis**: Same as Trial 9f - something about multi-tile loading for >1 frame corrupts global state
+**Reverted**: Yes
+
+---
+
+## Trial 12: Back to 1-frame limit (current stable state)
+
+### Step 12a: Limit multi-tile BMPs to 1 frame
+**Code changes**:
+- Detect needsMultiTile
+- If needsMultiTile && numToLoad > 1, set numToLoad = 1
+- Enable multi-tile code for all frames (only frame 0 runs)
+
+**Expected**: Frame 0 shows feet, no animation
+**Actual result**: SUCCESS - Johnny's feet visible, island renders correctly
+**Analysis**: This confirms:
+- Multi-tile code is correct for a single frame
+- Something breaks when loading multi-tile for MORE than 1 frame
+- The issue is NOT in VRAM collision (we proved that with 128-pixel rows failing too)
+- The issue is in the multi-tile loading loop itself when run multiple times
+
+---
+
+## Current Stable State (Trial 12a)
+
+- needsMultiTile detection: Working
+- numToLoad limit for multi-tile: 1 frame only
+- Multi-tile loading code: Enabled
+- grDrawSpriteExt linked list walking: Working
+- Result: Johnny shows feet on frame 0, no animation (stuck on frame 0)
+
+---
+
+## Unsolved Mystery (Updated)
+
+Why does multi-tile loading for >1 frame break EVERYTHING?
+
+The issue is NOT VRAM collision (we prevented that with 128-pixel rows and still got regression).
+
+Possible causes to investigate:
+1. Memory exhaustion - safe_malloc for bottomBuf × N frames
+2. srcPtr calculation corrupted after first frame
+3. Some global state corrupted during multi-tile loading
+4. Buffer overflow in the nested copy loops
+5. The `src` pointer reuse issue - after main tile copy, src points to row 64, but for frame 1+, does srcPtr get updated correctly?
+
+**Key observation**: Even the ISLAND (loaded via grLoadBmpRAM, completely different code path) stops rendering when multi-tile fails. This suggests:
+- Memory corruption affecting malloc/free
+- VRAM corruption overwriting island texture area
+- GPU state corruption

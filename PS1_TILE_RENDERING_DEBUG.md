@@ -3,6 +3,60 @@
 ## Problem Statement
 JOHNWALK.BMP sprites are 64x78 pixels - 14 pixels taller than the PS1's 64-pixel texture limit. Johnny's feet are cut off because only the top 64 rows are loaded/rendered.
 
+---
+
+## CURRENT STATUS (2025-12-27)
+
+### What Works
+| Frames | Multi-Tile | Result |
+|--------|------------|--------|
+| 1 frame | YES | Johnny shows feet correctly |
+| 2 frames | YES | Both frames render with correct feet |
+
+### What's Broken
+| Frames | Multi-Tile | Result |
+|--------|------------|--------|
+| 3 frames | YES | **FULL REGRESSION** - NO sprites render (including island) |
+| 6 frames | YES | **FULL REGRESSION** - NO sprites render |
+| 42 frames | YES | **FULL REGRESSION** - NO sprites render |
+
+### The Breakpoint
+**Exactly at frame 3** (0-indexed: frame 2)
+- 2 frames = WORKS
+- 3 frames = COMPLETELY BROKEN
+
+### Current Workaround
+Multi-tile BMPs limited to 2 frames in `graphics_ps1.c:575-578`:
+```c
+/* For multi-tile BMPs, limit to 2 frames (3+ breaks completely) */
+if (needsMultiTile && numToLoad > 2) {
+    numToLoad = 2;
+}
+```
+
+### Key Fix Applied
+**addPrim ordering** in `grDrawSpriteExt` (line ~1247):
+```c
+/* Add sprt FIRST so tpage renders BEFORE it
+ * (addPrim adds to HEAD, so last added = first rendered) */
+addPrim(extOT, sprt);   // renders SECOND
+addPrim(extOT, tpage);  // renders FIRST (sets texture page)
+```
+
+### Suspected Causes for Frame 3 Failure
+1. **srcPtr corruption** - pointer calculation may go wrong after loading 2 frames + 2 bottom tiles
+2. **VRAM collision** - frame 2's bottom tile may overwrite critical texture data
+3. **Memory exhaustion** - third bottom tile malloc may fail silently
+4. **Off-by-one error** - loop indexing bug manifesting at frame 3
+
+### Next Steps
+1. Add debug output to track srcPtr values during frame loading
+2. Check VRAM placement of each bottom tile
+3. Verify malloc returns valid pointer for frame 3
+4. Trace exactly where the failure occurs
+
+---
+
 ## Technical Constraints
 
 ### PS1 Hardware Limits

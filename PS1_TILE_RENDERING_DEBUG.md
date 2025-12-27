@@ -439,3 +439,135 @@ Possible causes to investigate:
 - Memory corruption affecting malloc/free
 - VRAM corruption overwriting island texture area
 - GPU state corruption
+
+---
+
+## Trial 13: 2-frame limit to isolate the issue
+
+### Step 13a: Increase limit from 1 to 2 frames
+**Code changes**:
+```c
+/* For multi-tile BMPs, limit to 2 frames to test if >1 works. */
+if (needsMultiTile && numToLoad > 2) {
+    numToLoad = 2;
+}
+```
+
+**Expected**: If VRAM layout is correct, both frames should show feet
+**Actual result**: PARTIAL SUCCESS - Both frames render, but frame 1's bottom tile shows frame 0's foot!
+
+**Analysis**:
+- Frame 0: Main tile (body) + Bottom tile (feet) - CORRECT
+- Frame 1: Main tile (body) + Bottom tile (frame 0's feet!) - WRONG
+
+**Key insight**: Frame 1's UV is reading from frame 0's bottom tile VRAM location, not its own.
+
+### Step 13b: Investigate addPrim ordering
+
+Examined `grDrawSpriteExt` primitive ordering:
+```c
+// Original code (WRONG ORDER):
+addPrim(extOT, tpage);  // Added to OT first
+addPrim(extOT, sprt);   // Added to OT second
+```
+
+**PS1 addPrim behavior**: `addPrim(ot, p)` adds primitive to HEAD of ordering table.
+- Last added = first rendered
+- So: sprt renders BEFORE tpage sets the texture page!
+
+**The bug**: Each tile needs its own DR_TPAGE to set the correct texture page BEFORE the SPRT renders. But the SPRT was being added AFTER tpage, meaning it was rendered FIRST (before the texture page was set).
+
+For frame 0: Works because tpage happens to be correct from previous state
+For frame 1: SPRT renders with frame 0's tpage still active, reads wrong VRAM!
+
+### Step 13c: Fix addPrim order
+**Code change** in grDrawSpriteExt:
+```c
+/* Add to ordering table - sprt FIRST so tpage renders BEFORE it
+ * (addPrim adds to HEAD, so last added = first rendered) */
+addPrim(extOT, sprt);   // Now added first, renders SECOND
+addPrim(extOT, tpage);  // Now added second, renders FIRST
+```
+
+**Expected**: DR_TPAGE sets correct texture page BEFORE SPRT renders
+**Actual result**: SUCCESS!!! Both frames render with correct feet!!!
+
+---
+
+## 🎉🎉🎉 MAJOR MILESTONE: 2-Frame Multi-Tile Working! 🎉🎉🎉
+
+**Date**: 2025-12-27
+
+### The Root Cause
+
+The PS1's `addPrim()` macro adds primitives to the **HEAD** of the ordering table, meaning:
+- Last added primitive = first rendered
+- Earlier added primitives render AFTER later ones
+
+Our original code added tpage first, then sprt:
+```c
+addPrim(extOT, tpage);  // Added first → renders second
+addPrim(extOT, sprt);   // Added second → renders first ← WRONG!
+```
+
+This caused the SPRT to render BEFORE the DR_TPAGE set the correct texture page!
+
+### The Fix
+
+Reverse the addPrim order:
+```c
+addPrim(extOT, sprt);   // Added first → renders second
+addPrim(extOT, tpage);  // Added second → renders first ← NOW CORRECT!
+```
+
+Now DR_TPAGE sets the texture page, THEN SPRT renders with correct UV mapping.
+
+### Why Frame 0 Worked Before
+
+Frame 0 happened to work because:
+1. It was often the first tile rendered
+2. The GPU state/tpage from previous operations happened to be compatible
+3. No other tile had changed the tpage yet
+
+### Why Frame 1 Failed Before
+
+Frame 1 failed because:
+1. Frame 0's tpage was still active (its DR_TPAGE rendered but SPRT already rendered first)
+2. Frame 1's SPRT rendered immediately (before its own DR_TPAGE)
+3. Frame 1's UV coordinates read from frame 0's texture page area
+4. This showed frame 0's foot instead of frame 1's foot
+
+### Summary of the Complete Solution
+
+1. **Multi-tile detection**: Check if any frame height > 64 pixels
+2. **Frame limiting**: Limit to 2 frames (will increase as we verify stability)
+3. **Bottom tile loading**: Copy rows 64+ with nibble swap, LoadImage to VRAM
+4. **Linked list walking**: grDrawSpriteExt iterates all tiles with tileOffsetY
+5. **CRITICAL: addPrim ordering**: Add SPRT first, then TPAGE (so tpage renders first)
+
+### Code Locations
+
+- Multi-tile detection: `graphics_ps1.c:561-569`
+- Frame limiting: `graphics_ps1.c:571-579`
+- Bottom tile loading: `graphics_ps1.c:665-720`
+- addPrim fix: `graphics_ps1.c:1247-1250`
+
+---
+
+## Next Steps
+
+1. ✅ ~~Verify 2-frame multi-tile works~~ DONE
+2. ⬜ Increase frame limit to 6 and test
+3. ⬜ Increase frame limit to full 42 frames (may need VRAM layout changes)
+4. ⬜ Test with other multi-tile BMPs
+5. ⬜ Verify grDrawSpriteFlip also has correct addPrim order
+
+---
+
+## Lessons Learned
+
+1. **PS1 addPrim adds to HEAD**: Last added = first rendered. This is counterintuitive!
+2. **DR_TPAGE must render BEFORE SPRT**: The texture page primitive sets GPU state for subsequent SPRTs
+3. **Test incrementally**: Going from 1→2 frames revealed the tpage ordering bug
+4. **Visual symptoms are clues**: "Frame 1 shows frame 0's foot" → reading wrong VRAM → wrong tpage active
+5. **Don't assume working code is correct**: Frame 0 worked by accident, not by design

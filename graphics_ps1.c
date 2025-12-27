@@ -572,10 +572,10 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     if (numToLoad > 42) {
         numToLoad = 42;  /* Max 42 frames (6 pages/row × 7 rows) */
     }
-    /* For multi-tile BMPs, limit to 1 frame for now to isolate the issue.
+    /* For multi-tile BMPs, limit to 2 frames to test if >1 works.
      * Multi-tile with > 1 frame causes full regression. */
-    if (needsMultiTile && numToLoad > 1) {
-        numToLoad = 1;
+    if (needsMultiTile && numToLoad > 2) {
+        numToLoad = 2;
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;
@@ -1229,7 +1229,6 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
 
         /* Use SAME texture page for all tiles (calculated from first tile) */
         setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
-        addPrim(extOT, tpage);
 
         /* Allocate SPRT primitive */
         SPRT *sprt = (SPRT*)(*nextPri);
@@ -1245,8 +1244,10 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
         setClut(sprt, tile->clutX, tile->clutY);
         setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
 
-        /* Add to caller's ordering table */
+        /* Add to ordering table - sprt FIRST so tpage renders BEFORE it
+         * (addPrim adds to HEAD, so last added = first rendered) */
         addPrim(extOT, sprt);
+        addPrim(extOT, tpage);
 
         tile = tile->nextTile;
     }

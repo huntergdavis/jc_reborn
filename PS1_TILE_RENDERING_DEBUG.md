@@ -660,4 +660,55 @@ Possible causes:
 3. Memory exhaustion on the third malloc for bottom tile buffer
 4. Off-by-one error somewhere in the frame loop
 
-### Next: Roll back to 2 frames and re-verify stability
+### Test: 3 main tiles + 2 bottom tiles (skip frame 2's bottom tile)
+**Code change**: `if (height > MAX_SPRITE_DIM && frameIdx < 2)`
+**Result**: SUCCESS! All 3 frames render, frames 0-1 have feet, frame 2 is cut off
+
+**Critical Finding**: The bug is specifically in the **3rd bottom tile loading**, not the 3rd main tile.
+- 3 main tiles alone: WORKS
+- 3 main + 2 bottom tiles: WORKS
+- 3 main + 3 bottom tiles: BREAKS completely
+
+---
+
+## Current Working State (End of Session 2025-12-27)
+
+### What's Working Now
+| Config | Result |
+|--------|--------|
+| 3 main tiles, 0 bottom tiles | WORKS |
+| 3 main tiles, 2 bottom tiles | WORKS (frames 0-1 have feet, frame 2 cut off) |
+| 2 main tiles, 2 bottom tiles | WORKS (full multi-tile for both frames) |
+
+### What's Still Broken
+| Config | Result |
+|--------|--------|
+| 3 main tiles, 3 bottom tiles | FULL REGRESSION - no sprites render |
+
+### Current Code State
+```c
+/* For multi-tile BMPs, limit to 3 frames for debugging */
+if (needsMultiTile && numToLoad > 3) {
+    numToLoad = 3;
+}
+...
+/* DEBUG: Only load bottom tiles for frames 0-1, skip frame 2 */
+if (height > MAX_SPRITE_DIM && frameIdx < 2) {
+```
+
+### Next Session Target
+Fix the 3rd bottom tile loading. The issue is NOT:
+- Memory exhaustion (42 main tiles worked before)
+- srcPtr calculation (3 main tiles work)
+- VRAM Y collision (bottom tiles at Y=68 don't overlap main tiles at Y=4)
+
+The issue IS somewhere in:
+- The 3rd bottom tile's LoadImage call
+- The 3rd bottom tile's malloc/copy
+- Some cumulative state corruption after 2 bottom tiles
+
+### Debugging Approach for Next Session
+1. Add a DrawSync(0) after each bottom tile LoadImage (already there)
+2. Try loading bottom tile for frame 2 ONLY (skip 0-1) to isolate
+3. Check if bottomVramY calculation is correct for frame 2
+4. Verify VRAM isn't being corrupted by examining texture pages

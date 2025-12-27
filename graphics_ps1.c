@@ -572,14 +572,20 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     if (numToLoad > 42) {
         numToLoad = 42;  /* Max 42 frames (6 pages/row × 7 rows) */
     }
-    /* For multi-tile BMPs, limit to 2 frames (3+ breaks completely) */
-    if (needsMultiTile && numToLoad > 2) {
-        numToLoad = 2;
+    /* For multi-tile BMPs, limit to 3 frames for debugging */
+    if (needsMultiTile && numToLoad > 3) {
+        numToLoad = 3;
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;
 
+    /* DEBUG: Track multi-tile loading progress */
+    static int debugMultiTileFrame = -1;
+
     for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
+        if (needsMultiTile) {
+            debugMultiTileFrame = frameIdx;
+        }
         uint16 width = bmpResource->widths[frameIdx];
         uint16 height = bmpResource->heights[frameIdx];
         uint16 safeW = (width > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : width;
@@ -659,9 +665,8 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->nextTile = NULL;
 
         /* Multi-tile: Load bottom portion for tall sprites
-         * Limited to 6 frames (one row) above to prevent VRAM collision.
-         * See PS1_TILE_RENDERING_DEBUG.md for debugging history. */
-        if (height > MAX_SPRITE_DIM) {
+         * DEBUG: Only load bottom tiles for frames 0-1, skip frame 2 */
+        if (height > MAX_SPRITE_DIM && frameIdx < 2) {
             uint16 bottomH = height - MAX_SPRITE_DIM;
             if (bottomH > MAX_SPRITE_DIM) bottomH = MAX_SPRITE_DIM;
             uint16 bottomVramY = vramY + MAX_SPRITE_DIM;

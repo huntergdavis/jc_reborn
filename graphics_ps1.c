@@ -516,9 +516,11 @@ PS1Surface *grNewLayer()
  */
 void grFreeLayer(PS1Surface *sfc)
 {
-    if (sfc != NULL) {
+    while (sfc != NULL) {
+        PS1Surface *next = sfc->nextTile;
         /* VRAM is managed globally, just free the structure */
         free(sfc);
+        sfc = next;
     }
 }
 
@@ -636,6 +638,12 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->pixels = copyBuf;
         surface->clutX = 640;
         surface->clutY = 0;
+        /* Multi-tile fields (single tile, large sprites are still clipped) */
+        surface->fullWidth = width;
+        surface->fullHeight = height;
+        surface->tileOffsetX = 0;
+        surface->tileOffsetY = 0;
+        surface->nextTile = NULL;
 
         /* Store in slot */
         ttmSlot->sprites[slotNo][frameIdx] = surface;
@@ -646,6 +654,11 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
             nextVRAMX = 640;
             nextVRAMY += MAX_SPRITE_DIM;  /* Use consistent row height */
         }
+
+        /* TODO: Multi-tile loading for sprites > 64x64
+         * Infrastructure is in place (linked list traversal in grDrawSprite/grDrawSpriteFlip,
+         * multi-tile fields in PS1Surface), but secondary tile loading causes rendering issues.
+         * Needs investigation: VRAM layout, UV calculation, or texture page alignment. */
     }
 
     ttmSlot->numSprites[slotNo] = numToLoad;
@@ -986,49 +999,59 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
-    /* Allocate DR_TPAGE + SPRT primitives from buffer */
-    if (primitiveIndex[db] + sizeof(DR_TPAGE) + sizeof(SPRT) > PRIMITIVE_BUFFER_SIZE) {
-        if (debugMode) {
-            printf("Warning: Primitive buffer full!\n");
+    /* Draw all tiles in this sprite's linked list */
+    PS1Surface *tile = sprite;
+    while (tile != NULL) {
+        /* Allocate DR_TPAGE + SPRT primitives from buffer */
+        if (primitiveIndex[db] + sizeof(DR_TPAGE) + sizeof(SPRT) > PRIMITIVE_BUFFER_SIZE) {
+            if (debugMode) {
+                printf("Warning: Primitive buffer full!\n");
+            }
+            return;
         }
-        return;
-    }
 
-    /* Add texture page primitive first - tells GPU where texture data is */
-    DR_TPAGE *tpage = (DR_TPAGE*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(DR_TPAGE);
-    primitiveIndex[db] += sizeof(DR_TPAGE);
+        /* Calculate screen position for this tile */
+        sint16 tileX = x + tile->tileOffsetX;
+        sint16 tileY = y + tile->tileOffsetY;
 
-    /* Calculate texture page from sprite VRAM position
-     * tpage X: in 64-pixel units (sprite->x / 64)
-     * tpage Y: in 256-pixel units (sprite->y / 256)
-     * Color mode: 0 = 4-bit CLUT (16 colors) */
-    uint16 tpageX = sprite->x / 64;
-    uint16 tpageY = sprite->y / 256;
-    setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
-    addPrim(&ot[db][0], tpage);
+        /* Add texture page primitive first - tells GPU where texture data is */
+        DR_TPAGE *tpage = (DR_TPAGE*)nextPrimitive[db];
+        nextPrimitive[db] += sizeof(DR_TPAGE);
+        primitiveIndex[db] += sizeof(DR_TPAGE);
 
-    SPRT *sprt = (SPRT*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(SPRT);
-    primitiveIndex[db] += sizeof(SPRT);
+        /* Calculate texture page from tile VRAM position
+         * tpage X: in 64-pixel units (tile->x / 64)
+         * tpage Y: in 256-pixel units (tile->y / 256)
+         * Color mode: 0 = 4-bit CLUT (16 colors) */
+        uint16 tpageX = tile->x / 64;
+        uint16 tpageY = tile->y / 256;
+        setDrawTPage(tpage, 0, 0, getTPage(0, 0, tpageX * 64, tpageY * 256));
+        addPrim(&ot[db][0], tpage);
 
-    /* Initialize sprite primitive */
-    setSprt(sprt);
-    setXY0(sprt, x, y);
-    setWH(sprt, sprite->width, sprite->height);
-    /* UV coords are relative to texture page (0-255 range)
-     * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF
-     * This is because each texture page is 64 VRAM pixels = 256 texture pixels */
-    setUV0(sprt, ((sprite->x % 64) * 4) & 0xFF, (sprite->y % 256) & 0xFF);
-    setClut(sprt, sprite->clutX, sprite->clutY);
-    setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
+        SPRT *sprt = (SPRT*)nextPrimitive[db];
+        nextPrimitive[db] += sizeof(SPRT);
+        primitiveIndex[db] += sizeof(SPRT);
 
-    /* Add to ordering table */
-    addPrim(&ot[db][0], sprt);
+        /* Initialize sprite primitive */
+        setSprt(sprt);
+        setXY0(sprt, tileX, tileY);
+        setWH(sprt, tile->width, tile->height);
+        /* UV coords are relative to texture page (0-255 range)
+         * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF
+         * This is because each texture page is 64 VRAM pixels = 256 texture pixels */
+        setUV0(sprt, ((tile->x % 64) * 4) & 0xFF, (tile->y % 256) & 0xFF);
+        setClut(sprt, tile->clutX, tile->clutY);
+        setRGB0(sprt, 128, 128, 128);  /* Normal brightness */
 
-    if (debugMode) {
-        printf("Draw sprite: pos=(%d,%d) size=%dx%d VRAM=(%d,%d)\n",
-               x, y, sprite->width, sprite->height, sprite->x, sprite->y);
+        /* Add to ordering table */
+        addPrim(&ot[db][0], sprt);
+
+        if (debugMode) {
+            printf("Draw tile: pos=(%d,%d) size=%dx%d VRAM=(%d,%d)\n",
+                   tileX, tileY, tile->width, tile->height, tile->x, tile->y);
+        }
+
+        tile = tile->nextTile;
     }
 }
 
@@ -1053,54 +1076,65 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
         return;
     }
 
-    /* Allocate POLY_FT4 primitive from buffer */
-    /* PS1 doesn't have hardware flip, so we use textured quad with reversed UVs */
-    if (primitiveIndex[db] + sizeof(POLY_FT4) > PRIMITIVE_BUFFER_SIZE) {
-        if (debugMode) {
-            printf("Warning: Primitive buffer full!\n");
+    /* Draw all tiles in this sprite's linked list (flipped) */
+    PS1Surface *tile = sprite;
+    while (tile != NULL) {
+        /* Allocate POLY_FT4 primitive from buffer */
+        /* PS1 doesn't have hardware flip, so we use textured quad with reversed UVs */
+        if (primitiveIndex[db] + sizeof(POLY_FT4) > PRIMITIVE_BUFFER_SIZE) {
+            if (debugMode) {
+                printf("Warning: Primitive buffer full!\n");
+            }
+            return;
         }
-        return;
-    }
 
-    POLY_FT4 *poly = (POLY_FT4*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(POLY_FT4);
-    primitiveIndex[db] += sizeof(POLY_FT4);
+        /* Calculate flipped screen position for this tile
+         * For horizontal flip: tile at offsetX goes to (fullWidth - offsetX - tileWidth) */
+        sint16 tileX = x + (sprite->fullWidth - tile->tileOffsetX - tile->width);
+        sint16 tileY = y + tile->tileOffsetY;
 
-    /* Initialize textured quad */
-    setPolyFT4(poly);
+        POLY_FT4 *poly = (POLY_FT4*)nextPrimitive[db];
+        nextPrimitive[db] += sizeof(POLY_FT4);
+        primitiveIndex[db] += sizeof(POLY_FT4);
 
-    /* Set screen coordinates (normal quad, flipping happens in UV) */
-    setXY4(poly,
-           x, y,                                    /* Top-left */
-           x + sprite->width, y,                    /* Top-right */
-           x, y + sprite->height,                   /* Bottom-left */
-           x + sprite->width, y + sprite->height);  /* Bottom-right */
+        /* Initialize textured quad */
+        setPolyFT4(poly);
 
-    /* Calculate texture page from sprite VRAM position (4-bit mode) */
-    uint16 tpageX = sprite->x / 64;
-    uint16 tpageY = sprite->y / 256;
-    poly->tpage = getTPage(0, 0, tpageX * 64, tpageY * 256);
+        /* Set screen coordinates (normal quad, flipping happens in UV) */
+        setXY4(poly,
+               tileX, tileY,                              /* Top-left */
+               tileX + tile->width, tileY,                /* Top-right */
+               tileX, tileY + tile->height,               /* Bottom-left */
+               tileX + tile->width, tileY + tile->height); /* Bottom-right */
 
-    /* Set UV coordinates (flipped horizontally, relative to texture page)
-     * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF */
-    uint8 baseU = ((sprite->x % 64) * 4) & 0xFF;
-    uint8 baseV = (sprite->y % 256) & 0xFF;
-    uint8 u0 = baseU + sprite->width;  /* Right edge */
-    uint8 u1 = baseU;                   /* Left edge */
-    uint8 v0 = baseV;
-    uint8 v1 = baseV + sprite->height;
+        /* Calculate texture page from tile VRAM position (4-bit mode) */
+        uint16 tpageX = tile->x / 64;
+        uint16 tpageY = tile->y / 256;
+        poly->tpage = getTPage(0, 0, tpageX * 64, tpageY * 256);
 
-    setUV4(poly, u0, v0, u1, v0, u0, v1, u1, v1);  /* Flipped U coords */
+        /* Set UV coordinates (flipped horizontally, relative to texture page)
+         * For 4-bit textures: U = ((vram_x % 64) * 4) & 0xFF */
+        uint8 baseU = ((tile->x % 64) * 4) & 0xFF;
+        uint8 baseV = (tile->y % 256) & 0xFF;
+        uint8 u0 = baseU + tile->width;  /* Right edge */
+        uint8 u1 = baseU;                 /* Left edge */
+        uint8 v0 = baseV;
+        uint8 v1 = baseV + tile->height;
 
-    setClut(poly, sprite->clutX, sprite->clutY);
-    setRGB0(poly, 128, 128, 128);  /* Normal brightness */
+        setUV4(poly, u0, v0, u1, v0, u0, v1, u1, v1);  /* Flipped U coords */
 
-    /* Add to ordering table */
-    addPrim(&ot[db][0], poly);
+        setClut(poly, tile->clutX, tile->clutY);
+        setRGB0(poly, 128, 128, 128);  /* Normal brightness */
 
-    if (debugMode) {
-        printf("Draw flipped sprite: pos=(%d,%d) size=%dx%d\n",
-               x, y, sprite->width, sprite->height);
+        /* Add to ordering table */
+        addPrim(&ot[db][0], poly);
+
+        if (debugMode) {
+            printf("Draw flipped tile: pos=(%d,%d) size=%dx%d\n",
+                   tileX, tileY, tile->width, tile->height);
+        }
+
+        tile = tile->nextTile;
     }
 }
 

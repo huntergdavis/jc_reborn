@@ -42,12 +42,19 @@ struct TAdsScene {
 };
 
 /* PS1 Sprite structure - replaces SDL_Surface */
-typedef struct {
+/* Supports multi-tile sprites for dimensions > 64 pixels */
+typedef struct PS1Surface {
     uint16 *pixels;     /* Pixel data in VRAM */
-    uint16 width;
-    uint16 height;
+    uint16 width;       /* This tile's width (max 64) */
+    uint16 height;      /* This tile's height (max 64) */
     uint16 x, y;        /* Position in VRAM */
     uint16 clutX, clutY; /* CLUT position in VRAM */
+    /* Multi-tile support */
+    uint16 fullWidth;   /* Original sprite full width */
+    uint16 fullHeight;  /* Original sprite full height */
+    uint16 tileOffsetX; /* This tile's X offset in original sprite */
+    uint16 tileOffsetY; /* This tile's Y offset in original sprite */
+    struct PS1Surface *nextTile; /* Next tile in chain (NULL if last/only) */
 } PS1Surface;
 
 /* Compatibility alias for code that uses SDL_Surface */

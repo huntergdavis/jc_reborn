@@ -712,3 +712,318 @@ The issue IS somewhere in:
 2. Try loading bottom tile for frame 2 ONLY (skip 0-1) to isolate
 3. Check if bottomVramY calculation is correct for frame 2
 4. Verify VRAM isn't being corrupted by examining texture pages
+
+---
+
+## Session 2 Continued (2025-12-27)
+
+### Test: Frame 2 bottom tile ONLY (skip frames 0-1)
+**Code**: `if (height > MAX_SPRITE_DIM && frameIdx == 2)`
+**Result**: FULL REGRESSION - no sprites render
+
+**Critical Finding**: The bug is NOT cumulative! Frame 2's bottom tile alone breaks everything.
+This means something specific about frame 2's parameters is wrong:
+- Frame 2's VRAM X position (768)
+- Frame 2's bottom tile VRAM Y position (68)
+- Frame 2's srcPtr offset into BMP data
+
+### VRAM Layout Analysis
+Frame 0: main at (640, 4), bottom at (640, 68)
+Frame 1: main at (704, 4), bottom at (704, 68)
+Frame 2: main at (768, 4), bottom at (768, 68)
+
+All bottom tiles at Y=68, different X positions. Why does frame 2 fail?
+
+### Test: Frame 1 bottom tile ONLY (skip frames 0 and 2)
+**Code**: `if (height > MAX_SPRITE_DIM && frameIdx == 1)`
+**Result**: SUCCESS! Frame 1 has feet, others cut off
+
+**Pattern emerging**:
+- Frame 0 bottom + Frame 1 bottom: WORKS (tested earlier)
+- Frame 1 bottom alone: WORKS
+- Frame 2 bottom alone: BREAKS
+
+The issue is specific to frame 2! What's different about frame 2?
+- Frame 0: VRAM X = 640 (texture page 10)
+- Frame 1: VRAM X = 704 (texture page 11)
+- Frame 2: VRAM X = 768 (texture page 12)
+
+### Test: Frame 0 bottom tile ONLY (skip frames 1 and 2)
+**Code**: `if (height > MAX_SPRITE_DIM && frameIdx == 0)`
+**Result**: SUCCESS! Frame 0 has feet
+
+### Confirmed Pattern
+| Frame | VRAM X | Texture Page | Bottom tile alone |
+|-------|--------|--------------|-------------------|
+| 0     | 640    | 10           | WORKS |
+| 1     | 704    | 11           | WORKS |
+| 2     | 768    | 12           | BREAKS |
+
+**The bug is 100% specific to frame 2 (VRAM X = 768, texture page 12)**
+
+### Possible causes for frame 2 failure
+1. Texture page 12 (X=768-831) is used by something else?
+2. srcPtr calculation is wrong for frame 2?
+3. Some VRAM region conflict at X=768?
+4. Frame 2's bottom tile Y position (68) conflicts with something?
+
+### Test: Frame 2 bottom tile at VRAM X=640 (frame 0's position)
+**Code**: `uint16 debugVramX = 640;` in frame 2's bottom tile loading
+**Result**: STILL BREAKS - no sprites render
+
+**CRITICAL DISCOVERY**: The bug is NOT the VRAM position!
+The bug is the **source data (srcPtr calculation)** for frame 2.
+
+Frame 2's bottomSrc pointer is reading from corrupted/invalid memory!
+
+### Root Cause Hypothesis
+The `src` pointer advances through 64 rows per frame during main tile copy.
+For frame 2:
+- srcPtr starts at uncompressedData + 2*2496 = byte 4992 (frame 2 start)
+- src = srcPtr
+- After main tile loop: src = srcPtr + 64*32 = srcPtr + 2048 (row 64 of frame 2)
+- bottomSrc = src should point to row 64 of frame 2
+
+But something is wrong with this calculation! Need to investigate src pointer.
+
+### Test: Frame 2 bottom tile with ZEROED buffer (skip source data copy)
+**Code**:
+```c
+if (frameIdx == 2) {
+    memset(bottomBuf, 0, bottomCopySize);  /* Zero out - skip data copy */
+} else {
+    /* Normal copy for frames 0-1 */
+}
+```
+**Expected**: If source data read is the problem, zeroed buffer should work
+**Result**: STILL BREAKS - no sprites render at all
+
+**CRITICAL DISCOVERY UPDATE**: The bug is NOT the source data read!
+Even with zeros (no data copying), frame 2's bottom tile breaks everything.
+
+The issue must be in one of:
+1. The LoadImage call for frame 2's bottom tile
+2. The PS1Surface allocation/linking for frame 2
+3. Something about frame 2's VRAM parameters (vramX, bottomVramY)
+4. The safe_malloc for bottomCopySize failing silently on frame 2
+
+### Pattern Update
+- Frame 2 bottom at normal VRAM position: BREAKS
+- Frame 2 bottom at VRAM X=640: BREAKS
+- Frame 2 bottom with ZEROED data: BREAKS
+- Frames 0-1 bottom tiles: WORK
+
+The failure is NOT related to:
+- ❌ Source data pointer (zeroed still fails)
+- ❌ VRAM X position (X=640 still fails)
+- ❌ Data content (zeros still fail)
+
+The failure IS related to:
+- ✓ Something specific about being the 3rd bottom tile allocation
+- ✓ Or the PS1Surface structure for the 3rd bottom tile
+- ✓ Or LoadImage at the 3rd bottom tile position
+
+### Test: Reuse frame 0's bottomBuf for frame 2
+**Code**:
+```c
+static uint16 *savedBottomBuf = NULL;
+if (frameIdx == 0) {
+    bottomBuf = safe_malloc(bottomCopySize);
+    savedBottomBuf = bottomBuf;
+} else if (frameIdx == 2) {
+    bottomBuf = savedBottomBuf;  /* Reuse frame 0's buffer */
+} else {
+    bottomBuf = safe_malloc(bottomCopySize);
+}
+```
+**Result**: SUCCESS! All 3 frames render correctly!
+
+---
+
+## Session 3: Systematic Frame 2 Debugging (2025-12-27)
+
+### Current Working State
+- 3 main tiles (frames 0, 1, 2)
+- 2 bottom tiles (frames 0, 1 only)
+- Frame 2 has no bottom tile (feet cut off)
+
+### Tests Performed
+
+| Test | What Changed | Result |
+|------|--------------|--------|
+| Baseline | frameIdx < 2 for bottom tiles | WORKS - 2 frames with feet |
+| Test 1 | frameIdx < 3 with normal malloc | FAILS - no sprites |
+| Test 2 | Reuse frame 0's buffer (static var) | FAILS - no Johnny |
+| Test 3 | Stack buffer [512] | FAILS - no sprites |
+| Test 4 | malloc+copy only, NO LoadImage | WORKS - 2 frames with feet |
+| Test 5 | malloc+copy+LoadImage at X=640 | FAILS - no sprites |
+| Test 6 | Use copyBuf for LoadImage | FAILS - no sprites |
+
+### Key Finding
+**The issue is the LoadImage call for frame 2's bottom tile, regardless of:**
+- Which buffer is used (malloc, static, stack, copyBuf)
+- What VRAM position (768 or 640)
+- What data is in the buffer
+
+malloc + data copy for frame 2 WORKS.
+ANY LoadImage for frame 2 bottom tile FAILS.
+
+### What's Different About Frame 2?
+Frame VRAM positions:
+- Frame 0: main (640, 4), bottom (640, 68)
+- Frame 1: main (704, 4), bottom (704, 68)
+- Frame 2: main (768, 4), bottom (768, 68)
+
+Frame 2's bottom tile LoadImage parameters:
+- RECT: (768, 68, 16, 14) for 64x14 bottom tile
+- Or (640, 68, 16, 14) when forced to X=640
+
+### Hypotheses to Test
+1. **Cumulative LoadImage calls**: Maybe 5 LoadImage calls (3 main + 2 bottom) is the max?
+2. **VRAM Y=68 saturation**: Maybe 3 tiles at Y=68 causes issues?
+3. **DrawSync interaction**: Maybe DrawSync after 5th LoadImage corrupts state?
+4. **Buffer alignment issue**: Maybe the 3rd bottomBuf has alignment problem?
+
+### Test 7: Frames 0 and 2 only (skip frame 1's bottom)
+**Result**: FAILS - no sprites
+
+### Test 8: Frame 1's bottom at X=768 (frame 2's position)
+**Result**: WORKS! Sprites render, frame 1 has feet at X=768
+
+**Critical Finding**: X=768 VRAM position is NOT the problem!
+The issue is specific to frame 2's loop iteration, not the VRAM position.
+
+### Hypotheses Updated
+- ❌ VRAM position X=768 is bad
+- ❌ 3rd bottom tile LoadImage count
+- ✓ Something specific to frame 2's loop iteration
+
+### Test 9: ONLY frame 2's bottom tile
+**Result**: FAILS - no sprites
+
+### Test 10: Frame 2 with frame 0's src pointer
+**Result**: FAILS - no sprites
+
+### Test 11: Frames 1 and 2 bottom (skip frame 0)
+**Result**: WORKS! Feet visible on ~half the frames
+
+**Critical Finding**: Frame 2's bottom tile WORKS when frame 0's is skipped!
+The issue is the combination of all 3, or the 6th LoadImage call.
+
+LoadImage count analysis:
+- Working (0,1): 3 main + 2 bottom = 5 LoadImages
+- Working (1,2): 3 main + 2 bottom = 5 LoadImages
+- Failing (0,1,2): 3 main + 3 bottom = 6 LoadImages
+
+**Hypothesis**: Maximum 5 LoadImages during BMP loading?
+
+### Test 12: All 3 bottom tiles, NO DrawSync after bottom LoadImage
+**Result**: WORKS! Johnny has feet on all frames!
+
+**ROOT CAUSE FOUND**: Too many DrawSync(0) calls!
+
+The working state had:
+- 3 main LoadImage + 3 DrawSync
+- 2 bottom LoadImage + 2 DrawSync
+- Total: 5 LoadImage, 5 DrawSync
+
+Adding frame 2's bottom tile added:
+- 1 more LoadImage
+- 1 more DrawSync
+- Total: 6 LoadImage, 6 DrawSync ← 6th DrawSync breaks everything!
+
+**Solution**: Remove DrawSync(0) after bottom tile LoadImage calls.
+The main tile DrawSync is sufficient to sync VRAM writes.
+
+### Test 13: Increase to 6 frames (with no DrawSync fix)
+**Result**: FAILS - no sprites render
+
+Even with DrawSync removed from bottom tiles, 6 frames still fails.
+This suggests there's ANOTHER limit beyond DrawSync.
+
+### Current Working State
+- 3 main frames with 3 bottom tiles
+- NO DrawSync after bottom tile LoadImage
+- All 3 frames show Johnny with feet
+
+---
+
+## Summary of All Limits Discovered
+
+### Limit 1: DrawSync calls
+- Maximum ~5 DrawSync(0) calls during BMP loading
+- Solution: Remove DrawSync after bottom tile LoadImage
+
+### Limit 2: Unknown limit at 6+ frames
+- 3 frames with multi-tile: WORKS
+- 6 frames with multi-tile: FAILS (even without DrawSync)
+- Possible causes:
+  - Memory exhaustion (too many malloc calls)
+  - VRAM row collision (Y=68 overwritten by row 2 main tiles)
+  - Some other GPU/DMA resource limit
+
+### Memory Analysis
+For 3 frames with multi-tile:
+- 3x copyBuf malloc (~2KB each) = 6KB
+- 3x bottomBuf malloc (~224 bytes each) = 672 bytes
+- 6x PS1Surface malloc (~40 bytes each) = 240 bytes
+- Total: ~7KB
+
+For 6 frames with multi-tile:
+- 6x copyBuf malloc = 12KB
+- 6x bottomBuf malloc = 1.3KB
+- 12x PS1Surface malloc = 480 bytes
+- Total: ~14KB
+
+The PS1 heap should handle 14KB easily, but maybe there's fragmentation or the heap is smaller than expected.
+
+### User Suggestion: Free Memory After VRAM Copy
+Since data is copied to VRAM via LoadImage, the RAM buffers could potentially be freed immediately after. This would reduce memory pressure.
+
+Current flow:
+1. malloc copyBuf
+2. Copy data to copyBuf
+3. LoadImage copyBuf to VRAM
+4. Store copyBuf pointer in PS1Surface->pixels
+5. (buffer stays allocated)
+
+Proposed flow:
+1. malloc copyBuf
+2. Copy data to copyBuf
+3. LoadImage copyBuf to VRAM
+4. free(copyBuf)
+5. Set PS1Surface->pixels = NULL
+
+This would allow the same memory to be reused for each frame.
+
+---
+
+## Final Working Configuration (End of Session)
+
+### Code State
+```c
+/* For multi-tile BMPs, limit to 3 frames */
+if (needsMultiTile && numToLoad > 3) {
+    numToLoad = 3;
+}
+
+/* Bottom tiles for frames 0-2, NO DrawSync */
+if (height > MAX_SPRITE_DIM && frameIdx < 3) {
+    // ... malloc, copy, LoadImage (NO DrawSync) ...
+}
+```
+
+### What Works
+- 3 animation frames with full 78-pixel height (feet visible)
+- Johnny walks with smooth 3-frame animation
+- Island renders correctly
+
+### What Doesn't Work Yet
+- 6+ frames causes complete rendering failure
+- 42 frames (full animation) not possible with current approach
+
+### Next Steps to Try
+1. Free copyBuf and bottomBuf immediately after LoadImage
+2. Use a single reusable buffer for all frames
+3. Investigate VRAM row collision for 6+ frames
+4. Profile actual heap usage on PS1

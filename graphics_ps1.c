@@ -572,7 +572,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     if (numToLoad > 42) {
         numToLoad = 42;  /* Max 42 frames (6 pages/row × 7 rows) */
     }
-    /* For multi-tile BMPs, limit to 3 frames for debugging */
+    /* For multi-tile BMPs, limit to 3 frames (DrawSync limit) */
     if (needsMultiTile && numToLoad > 3) {
         numToLoad = 3;
     }
@@ -664,9 +664,9 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->tileOffsetY = 0;
         surface->nextTile = NULL;
 
-        /* Multi-tile: Load bottom portion for tall sprites
-         * DEBUG: Only load bottom tiles for frames 0-1, skip frame 2 */
-        if (height > MAX_SPRITE_DIM && frameIdx < 2) {
+        /* Multi-tile: Load bottom portion for tall sprites (>64px)
+         * NOTE: No DrawSync after LoadImage - too many DrawSync calls breaks rendering */
+        if (height > MAX_SPRITE_DIM && frameIdx < 3) {
             uint16 bottomH = height - MAX_SPRITE_DIM;
             if (bottomH > MAX_SPRITE_DIM) bottomH = MAX_SPRITE_DIM;
             uint16 bottomVramY = vramY + MAX_SPRITE_DIM;
@@ -689,11 +689,11 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
                 bottomSrc += srcRowBytes;
             }
 
-            /* LoadImage bottom tile at SAME X column as main tile (same texture page) */
+            /* LoadImage bottom tile - skip DrawSync to test if that's the issue */
             RECT bottomRect;
             setRECT(&bottomRect, vramX, bottomVramY, vramW, bottomH);
             LoadImage(&bottomRect, (uint32*)bottomBuf);
-            DrawSync(0);
+            /* DrawSync(0) removed for testing */
 
             /* Create PS1Surface for bottom tile */
             PS1Surface *bottomTile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));

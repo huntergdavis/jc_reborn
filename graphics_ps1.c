@@ -525,38 +525,351 @@ void grFreeLayer(PS1Surface *sfc)
 }
 
 /*
+ * Incremental loading state for multi-tile BMPs
+ * Session 6 Option 2: Spread loading across game ticks to bypass 3-frame limit
+ */
+static struct {
+    int active;                       /* 1 = incremental loading in progress */
+    struct TTtmSlot *ttmSlot;
+    uint16 slotNo;
+    struct TBmpResource *bmpResource;
+    int numToLoad;                    /* Total frames to load */
+    int currentFrame;                 /* Next frame to load */
+    uint8 *srcPtr;                    /* Current position in BMP data */
+    int needsMultiTile;
+    /* VRAM tracking for this BMP */
+    uint16 savedVRAMX;
+    uint16 savedVRAMY;
+} incrementalLoadState = {0};
+
+#define MAX_SPRITE_DIM 64  /* Keep at 64 - larger causes VRAM/UV issues */
+#define FRAMES_PER_TICK 1  /* Load 1 multi-tile frame per game tick */
+#define INITIAL_FRAMES 3   /* Load 3 frames initially */
+
+/* Check if incremental BMP loading is in progress */
+int grIsBmpLoadingPending(void)
+{
+    return incrementalLoadState.active;
+}
+
+/* DEBUG: Get incremental loading info for visual debug */
+int grGetIncrementalCurrentFrame(void) { return incrementalLoadState.currentFrame; }
+int grGetIncrementalNumToLoad(void) { return incrementalLoadState.numToLoad; }
+static int dbgContinueCallCount = 0;
+int grGetContinueCallCount(void) { return dbgContinueCallCount; }
+static int dbgActiveAfterLoad = -1;  /* -1=not set, 0=inactive, 1=active */
+int grGetActiveAfterLoad(void) { return dbgActiveAfterLoad; }
+static int dbgCompletionCheckFrame = -1;
+static int dbgCompletionCheckTotal = -1;
+int grGetCompletionCheckFrame(void) { return dbgCompletionCheckFrame; }
+int grGetCompletionCheckTotal(void) { return dbgCompletionCheckTotal; }
+static int dbgEntryNumToLoad = -1;
+int grGetEntryNumToLoad(void) { return dbgEntryNumToLoad; }
+
+/* Helper: Load a single frame (main tile + optional bottom tile) */
+/* DEBUG: Track loadSingleFrame progress (non-static for access from jc_reborn.c) */
+int loadFrameProgress = 0;
+
+static void loadSingleFrame(struct TTtmSlot *ttmSlot, uint16 slotNo,
+                            struct TBmpResource *bmpResource,
+                            int frameIdx, uint8 **srcPtrRef, int needsMultiTile)
+{
+    loadFrameProgress = 1;  /* Entered function */
+
+    /* Safety check for NULL pointers */
+    if (!bmpResource || !bmpResource->widths || !bmpResource->heights) {
+        loadFrameProgress = -1;  /* Missing metadata */
+        return;  /* Can't load - missing metadata */
+    }
+    loadFrameProgress = 2;  /* Metadata OK */
+
+    if (!srcPtrRef || !*srcPtrRef) {
+        loadFrameProgress = -2;  /* Missing source */
+        return;  /* Can't load - no source data */
+    }
+    loadFrameProgress = 3;  /* Source OK */
+
+    uint16 width = bmpResource->widths[frameIdx];
+    uint16 height = bmpResource->heights[frameIdx];
+    loadFrameProgress = 4;  /* Got width/height */
+    uint16 safeW = (width > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : width;
+    uint16 safeH = (height > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : height;
+
+    loadFrameProgress = 5;  /* Calculated safe dimensions */
+
+    /* Step 1: Allocate and copy pixel data to a SIMPLE buffer */
+    /* NOTE: Use malloc() not safe_malloc() - safe_malloc calls fatalError/exit which hangs PS1 */
+    uint32 copySize = (safeW * safeH) / 2;  /* 4-bit = 0.5 bytes/pixel */
+
+    loadFrameProgress = 6;  /* About to malloc copyBuf */
+    uint16 *copyBuf = (uint16*)malloc(copySize);
+    loadFrameProgress = 7;  /* malloc returned */
+
+    if (!copyBuf) {
+        loadFrameProgress = -6;  /* malloc failed */
+        return;  /* Allocation failed */
+    }
+    loadFrameProgress = 8;  /* malloc succeeded */
+
+    /* Copy with proper row stride when capping dimensions
+     * IMPORTANT: PS1 4-bit textures expect LOW nibble = pixel 0, HIGH nibble = pixel 1
+     * Sierra BMP format is HIGH nibble = pixel 0, LOW nibble = pixel 1
+     * We must swap nibbles during copy! */
+    uint8 *dst = (uint8*)copyBuf;
+    uint8 *src = *srcPtrRef;
+    uint32 srcRowBytes = width / 2;   /* 4-bit = 2 pixels per byte */
+    uint32 dstRowBytes = safeW / 2;
+
+    loadFrameProgress = 9;  /* About to copy pixels */
+
+    for (uint16 y = 0; y < safeH; y++) {
+        for (uint32 x = 0; x < dstRowBytes; x++) {
+            uint8 srcByte = src[x];
+            /* Swap nibbles: high->low, low->high */
+            dst[x] = ((srcByte & 0x0F) << 4) | ((srcByte >> 4) & 0x0F);
+        }
+        dst += dstRowBytes;
+        src += srcRowBytes;
+    }
+
+    loadFrameProgress = 10;  /* Pixel copy complete */
+
+    /* Advance source pointer for next frame (use full frame size, not capped) */
+    *srcPtrRef += (width * height) / 2;
+
+    loadFrameProgress = 11;  /* srcPtr advanced */
+
+    /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
+    uint16 vramW = safeW / 4;  /* 4-bit: VRAM width = texture pixels / 4 */
+
+    loadFrameProgress = 12;  /* vramW calculated */
+
+    /* Calculate UV offset that would result from current VRAM position */
+    uint16 uOffset = ((nextVRAMX % 64) * 4);  /* UV offset in texture pixels */
+
+    /* AGGRESSIVE: Always align to page boundary - ensures U=0 for every sprite */
+    if (uOffset != 0) {
+        uint16 nextPage = ((nextVRAMX / 64) + 1) * 64;
+        nextVRAMX = nextPage;
+        if (nextVRAMX >= 1024) {
+            nextVRAMX = 640;
+            nextVRAMY += MAX_SPRITE_DIM;
+        }
+    }
+
+    loadFrameProgress = 13;  /* VRAM alignment done */
+
+    /* Check if we've exhausted VRAM */
+    if (nextVRAMY + safeH > 512) {
+        free(copyBuf);
+        loadFrameProgress = -13;  /* Out of VRAM */
+        return;  /* Out of VRAM space */
+    }
+
+    loadFrameProgress = 14;  /* VRAM space OK */
+
+    uint16 vramX = nextVRAMX;
+    uint16 vramY = nextVRAMY;
+    RECT rect;
+    setRECT(&rect, vramX, vramY, vramW, safeH);
+
+    loadFrameProgress = 15;  /* About to LoadImage */
+
+    LoadImage(&rect, (uint32*)copyBuf);
+
+    loadFrameProgress = 16;  /* LoadImage returned */
+
+    DrawSync(0);  /* Must sync each main tile individually */
+
+    loadFrameProgress = 17;  /* DrawSync done */
+
+    /* Step 3: NOW create PS1Surface AFTER LoadImage completed */
+    loadFrameProgress = 18;  /* About to malloc surface */
+
+    PS1Surface *surface = (PS1Surface*)malloc(sizeof(PS1Surface));
+
+    loadFrameProgress = 19;  /* malloc returned */
+
+    if (!surface) {
+        free(copyBuf);
+        loadFrameProgress = -19;  /* surface malloc failed */
+        return;  /* Allocation failed */
+    }
+
+    loadFrameProgress = 20;  /* surface malloc OK */
+
+    surface->width = safeW;
+    surface->height = safeH;
+    surface->x = vramX;
+    surface->y = vramY;
+    surface->pixels = copyBuf;
+    surface->clutX = 640;
+    surface->clutY = 0;
+    /* Multi-tile fields */
+    surface->fullWidth = width;
+    surface->fullHeight = height;
+    surface->tileOffsetX = 0;
+    surface->tileOffsetY = 0;
+    surface->nextTile = NULL;
+
+    loadFrameProgress = 21;  /* Surface fields set */
+
+    /* Multi-tile: Load bottom portion for tall sprites (>64px) */
+    if (height > MAX_SPRITE_DIM) {
+        loadFrameProgress = 22;  /* Entering multi-tile section */
+
+        uint16 bottomH = height - MAX_SPRITE_DIM;
+        if (bottomH > MAX_SPRITE_DIM) bottomH = MAX_SPRITE_DIM;
+        uint16 bottomVramY = vramY + MAX_SPRITE_DIM;
+
+        /* Allocate buffer for bottom tile */
+        uint32 bottomCopySize = (safeW * bottomH) / 2;
+        loadFrameProgress = 23;  /* About to malloc bottom buf */
+
+        uint16 *bottomBuf = (uint16*)malloc(bottomCopySize);
+
+        loadFrameProgress = 24;  /* bottom malloc returned */
+
+        if (!bottomBuf) {
+            /* Bottom tile alloc failed - still have main tile */
+            loadFrameProgress = -24;  /* bottom malloc failed */
+            ttmSlot->sprites[slotNo][frameIdx] = surface;
+            nextVRAMX += vramW + 1;
+            return;
+        }
+
+        loadFrameProgress = 25;  /* bottom malloc OK */
+
+        /* src already points past main tile rows */
+        uint8 *bottomSrc = src;
+        uint8 *bottomDst = (uint8*)bottomBuf;
+
+        /* Copy remaining rows with nibble swap */
+        for (uint16 by = 0; by < bottomH; by++) {
+            for (uint32 bx = 0; bx < dstRowBytes; bx++) {
+                uint8 srcByte = bottomSrc[bx];
+                bottomDst[bx] = ((srcByte & 0x0F) << 4) | ((srcByte >> 4) & 0x0F);
+            }
+            bottomDst += dstRowBytes;
+            bottomSrc += srcRowBytes;
+        }
+
+        loadFrameProgress = 26;  /* bottom pixels copied */
+
+        /* WORKAROUND: Skip bottom tile for now - causes crashes
+         * Johnny will be missing feet (14px) but sprites work */
+        free(bottomBuf);
+        surface->nextTile = NULL;  /* No bottom tile */
+        loadFrameProgress = 28;
+    } else {
+        loadFrameProgress = 21;  /* No multi-tile needed */
+    }
+
+    /* Store in slot */
+    ttmSlot->sprites[slotNo][frameIdx] = surface;
+
+    loadFrameProgress = 31;  /* Stored in slot */
+
+    /* Update VRAM tracking for next sprite */
+    nextVRAMX += vramW;
+    if (nextVRAMX >= 1024) {
+        nextVRAMX = 640;
+        nextVRAMY += MAX_SPRITE_DIM;
+    }
+
+    loadFrameProgress = 32;  /* Frame complete! */
+}
+
+/*
+ * Continue incremental BMP loading - call each game tick
+ * Returns 1 when complete, 0 when more frames to load
+ */
+int grContinueBmpLoading(void)
+{
+    dbgContinueCallCount++;  /* DEBUG: track calls */
+
+    /* DEBUG: Capture numToLoad at entry, only on first call with active=1 */
+    if (incrementalLoadState.active && dbgEntryNumToLoad == -1) {
+        dbgEntryNumToLoad = incrementalLoadState.numToLoad;
+    }
+
+    if (!incrementalLoadState.active) {
+        return 1;  /* Nothing to do */
+    }
+
+    /* Load FRAMES_PER_TICK frames */
+    for (int i = 0; i < FRAMES_PER_TICK; i++) {
+        if (incrementalLoadState.currentFrame >= incrementalLoadState.numToLoad) {
+            break;
+        }
+
+        loadSingleFrame(incrementalLoadState.ttmSlot,
+                        incrementalLoadState.slotNo,
+                        incrementalLoadState.bmpResource,
+                        incrementalLoadState.currentFrame,
+                        &incrementalLoadState.srcPtr,
+                        incrementalLoadState.needsMultiTile);
+
+        incrementalLoadState.currentFrame++;
+
+        /* Update numSprites so partially-loaded frames can be displayed */
+        incrementalLoadState.ttmSlot->numSprites[incrementalLoadState.slotNo] =
+            incrementalLoadState.currentFrame;
+    }
+
+    /* Check if complete */
+    dbgCompletionCheckFrame = incrementalLoadState.currentFrame;
+    dbgCompletionCheckTotal = incrementalLoadState.numToLoad;
+    if (incrementalLoadState.currentFrame >= incrementalLoadState.numToLoad) {
+        incrementalLoadState.active = 0;
+        return 1;  /* Complete */
+    }
+
+    return 0;  /* More to load */
+}
+
+/* DEBUG: Track grLoadBmp progress */
+int grLoadBmpProgress = 0;  /* 0=not called, 1=entered, 2=found res, 3=has data, 4=has images, 5=loading */
+int grLoadBmpNumImages = 0;  /* DEBUG: numImages value */
+
+/*
  * Load BMP sprite sheet into slot
  */
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
+    grLoadBmpProgress = 1;  /* Entered */
+
     /*
      * CRITICAL PATTERN: LoadImage MUST be called with a simple uint16* buffer,
      * NOT through a struct member like surface->pixels. Creating the PS1Surface
      * AFTER LoadImage works; creating it BEFORE and using surface->pixels
      * as the LoadImage source breaks OT primitive rendering.
      *
-     * Additionally, sprite dimensions must be capped at 64x64 to prevent
-     * OT rendering issues with large textures.
+     * Session 6 Option 2: Multi-tile BMPs use incremental loading across game ticks.
      */
-    #define MAX_SPRITE_DIM 64  /* Keep at 64 - larger causes VRAM/UV issues */
 
     if (ttmSlot->numSprites[slotNo])
         grReleaseBmp(ttmSlot, slotNo);
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
     if (!bmpResource) return;
+    grLoadBmpProgress = 2;  /* Found resource */
 
     /* On-demand loading: decompress BMP if not already loaded */
     if (!bmpResource->uncompressedData) {
         ps1_loadBmpData(bmpResource);
     }
     if (!bmpResource->uncompressedData) return;  /* Still NULL = load failed */
+    grLoadBmpProgress = 3;  /* Has data */
+    grLoadBmpNumImages = bmpResource->numImages;  /* DEBUG */
     if (bmpResource->numImages < 1) return;
+    grLoadBmpProgress = 4;  /* Has images - about to reset VRAM and loop */
 
-    /* Reset VRAM tracking to ensure sprites start at clean position
-     * This prevents cumulative drift from previous allocations */
+    /* Reset VRAM tracking to ensure sprites start at clean position */
     nextVRAMX = 640;  /* Start of texture area */
     nextVRAMY = 4;    /* Below CLUTs */
+
+    grLoadBmpProgress = 10;  /* VRAM reset done */
 
     /* Detect if ANY frame needs multi-tile (height > 64) */
     int needsMultiTile = 0;
@@ -567,165 +880,63 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         }
     }
 
-    /* Load sprite frames from BMP for animation support */
+    grLoadBmpProgress = 20;  /* Multi-tile check done */
+
+    /* Calculate total frames to load */
     int numToLoad = bmpResource->numImages;
     if (numToLoad > 42) {
         numToLoad = 42;  /* Max 42 frames (6 pages/row × 7 rows) */
     }
-    /* For multi-tile BMPs, limit to 3 frames (DrawSync limit) */
-    if (needsMultiTile && numToLoad > 3) {
-        numToLoad = 3;
-    }
+
+    grLoadBmpProgress = 30;  /* numToLoad calculated */
 
     uint8 *srcPtr = bmpResource->uncompressedData;
 
-    /* DEBUG: Track multi-tile loading progress */
-    static int debugMultiTileFrame = -1;
+    grLoadBmpProgress = 40;  /* srcPtr assigned */
 
-    for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
-        if (needsMultiTile) {
-            debugMultiTileFrame = frameIdx;
-        }
-        uint16 width = bmpResource->widths[frameIdx];
-        uint16 height = bmpResource->heights[frameIdx];
-        uint16 safeW = (width > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : width;
-        uint16 safeH = (height > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : height;
-
-        /* Step 1: Allocate and copy pixel data to a SIMPLE buffer */
-        uint32 copySize = (safeW * safeH) / 2;  /* 4-bit = 0.5 bytes/pixel */
-        uint16 *copyBuf = (uint16*)safe_malloc(copySize);
-
-        /* Copy with proper row stride when capping dimensions
-         * IMPORTANT: PS1 4-bit textures expect LOW nibble = pixel 0, HIGH nibble = pixel 1
-         * Sierra BMP format is HIGH nibble = pixel 0, LOW nibble = pixel 1
-         * We must swap nibbles during copy! */
-        uint8 *dst = (uint8*)copyBuf;
-        uint8 *src = srcPtr;
-        uint32 srcRowBytes = width / 2;   /* 4-bit = 2 pixels per byte */
-        uint32 dstRowBytes = safeW / 2;
-
-        for (uint16 y = 0; y < safeH; y++) {
-            for (uint32 x = 0; x < dstRowBytes; x++) {
-                uint8 srcByte = src[x];
-                /* Swap nibbles: high->low, low->high */
-                dst[x] = ((srcByte & 0x0F) << 4) | ((srcByte >> 4) & 0x0F);
-            }
-            dst += dstRowBytes;
-            src += srcRowBytes;
-        }
-
-        /* Advance source pointer for next frame (use full frame size, not capped) */
-        srcPtr += (width * height) / 2;
-
-        /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
-        /* For 4-bit textures, texture page is 64 VRAM pixels (256 texture pixels) wide.
-         * UV coordinates are 8-bit (0-255). Check if sprite would cause UV wrap. */
-        uint16 vramW = safeW / 4;  /* 4-bit: VRAM width = texture pixels / 4 */
-
-        /* Calculate UV offset that would result from current VRAM position */
-        uint16 uOffset = ((nextVRAMX % 64) * 4);  /* UV offset in texture pixels */
-
-        /* AGGRESSIVE: Always align to page boundary - ensures U=0 for every sprite */
-        if (uOffset != 0) {
-            /* Not at page start - align to next texture page */
-            uint16 nextPage = ((nextVRAMX / 64) + 1) * 64;
-            nextVRAMX = nextPage;
-            if (nextVRAMX >= 1024) {
-                nextVRAMX = 640;
-                nextVRAMY += MAX_SPRITE_DIM;
-            }
-        }
-
-        /* Check if we've exhausted VRAM - stop loading more frames */
-        if (nextVRAMY + safeH > 512) {
-            break;  /* Out of VRAM space */
-        }
-
-        uint16 vramX = nextVRAMX;
-        uint16 vramY = nextVRAMY;
-        RECT rect;
-        setRECT(&rect, vramX, vramY, vramW, safeH);
-        LoadImage(&rect, (uint32*)copyBuf);
-        DrawSync(0);
-
-        /* Step 3: NOW create PS1Surface AFTER LoadImage completed */
-        PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-        surface->width = safeW;
-        surface->height = safeH;
-        surface->x = vramX;
-        surface->y = vramY;
-        surface->pixels = copyBuf;
-        surface->clutX = 640;
-        surface->clutY = 0;
-        /* Multi-tile fields */
-        surface->fullWidth = width;
-        surface->fullHeight = height;
-        surface->tileOffsetX = 0;
-        surface->tileOffsetY = 0;
-        surface->nextTile = NULL;
-
-        /* Multi-tile: Load bottom portion for tall sprites (>64px)
-         * NOTE: No DrawSync after LoadImage - too many DrawSync calls breaks rendering */
-        if (height > MAX_SPRITE_DIM && frameIdx < 3) {
-            uint16 bottomH = height - MAX_SPRITE_DIM;
-            if (bottomH > MAX_SPRITE_DIM) bottomH = MAX_SPRITE_DIM;
-            uint16 bottomVramY = vramY + MAX_SPRITE_DIM;
-
-            /* Allocate buffer for bottom tile */
-            uint32 bottomCopySize = (safeW * bottomH) / 2;
-            uint16 *bottomBuf = (uint16*)safe_malloc(bottomCopySize);
-
-            /* src already points to row 64 after main tile copy loop */
-            uint8 *bottomSrc = src;
-            uint8 *bottomDst = (uint8*)bottomBuf;
-
-            /* Copy rows 64-77 (feet) with nibble swap */
-            for (uint16 by = 0; by < bottomH; by++) {
-                for (uint32 bx = 0; bx < dstRowBytes; bx++) {
-                    uint8 srcByte = bottomSrc[bx];
-                    bottomDst[bx] = ((srcByte & 0x0F) << 4) | ((srcByte >> 4) & 0x0F);
-                }
-                bottomDst += dstRowBytes;
-                bottomSrc += srcRowBytes;
-            }
-
-            /* LoadImage bottom tile - skip DrawSync to test if that's the issue */
-            RECT bottomRect;
-            setRECT(&bottomRect, vramX, bottomVramY, vramW, bottomH);
-            LoadImage(&bottomRect, (uint32*)bottomBuf);
-            /* DrawSync(0) removed for testing */
-
-            /* Create PS1Surface for bottom tile */
-            PS1Surface *bottomTile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-            bottomTile->width = safeW;
-            bottomTile->height = bottomH;
-            bottomTile->x = vramX;  /* Same X as main tile */
-            bottomTile->y = bottomVramY;  /* Y=68 */
-            bottomTile->pixels = bottomBuf;
-            bottomTile->clutX = 640;
-            bottomTile->clutY = 0;
-            bottomTile->fullWidth = width;
-            bottomTile->fullHeight = height;
-            bottomTile->tileOffsetX = 0;
-            bottomTile->tileOffsetY = MAX_SPRITE_DIM;
-            bottomTile->nextTile = NULL;
-
-            /* Link: main tile -> bottom tile */
-            surface->nextTile = bottomTile;
-        }
-
-        /* Store in slot */
-        ttmSlot->sprites[slotNo][frameIdx] = surface;
-
-        /* Update VRAM tracking for next sprite */
-        nextVRAMX += vramW;
-        if (nextVRAMX >= 1024) {
-            nextVRAMX = 640;
-            nextVRAMY += MAX_SPRITE_DIM;
-        }
+    /*
+     * Session 6 Option 2: Incremental loading for multi-tile BMPs
+     * Load first INITIAL_FRAMES immediately, then spread remaining frames
+     * across game ticks via grContinueBmpLoading().
+     *
+     * For non-multi-tile BMPs, load all frames immediately.
+     */
+    int initialFrames = needsMultiTile ? INITIAL_FRAMES : numToLoad;
+    if (initialFrames > numToLoad) {
+        initialFrames = numToLoad;
     }
 
-    ttmSlot->numSprites[slotNo] = numToLoad;
+    grLoadBmpProgress = 50;  /* initialFrames calculated, about to load */
+
+    /* Load initial frames immediately */
+    for (int frameIdx = 0; frameIdx < initialFrames; frameIdx++) {
+        grLoadBmpProgress = 100 + frameIdx;  /* Loading frame N */
+        /* DEBUG: Return BEFORE loadSingleFrame to confirm progress tracking */
+        /* return; */
+        loadSingleFrame(ttmSlot, slotNo, bmpResource, frameIdx, &srcPtr, needsMultiTile);
+        grLoadBmpProgress = 150 + frameIdx;  /* After loadSingleFrame for frame N */
+    }
+    grLoadBmpProgress = 200;  /* Finished loading initial frames */
+
+    /* Set numSprites to initial loaded count */
+    ttmSlot->numSprites[slotNo] = initialFrames;
+
+    /* If multi-tile BMP has more frames, set up incremental loading */
+    if (needsMultiTile && initialFrames < numToLoad) {
+        incrementalLoadState.active = 1;
+        incrementalLoadState.ttmSlot = ttmSlot;
+        incrementalLoadState.slotNo = slotNo;
+        incrementalLoadState.bmpResource = bmpResource;
+        incrementalLoadState.numToLoad = numToLoad;
+        incrementalLoadState.currentFrame = initialFrames;
+        incrementalLoadState.srcPtr = srcPtr;
+        incrementalLoadState.needsMultiTile = needsMultiTile;
+        incrementalLoadState.savedVRAMX = nextVRAMX;
+        incrementalLoadState.savedVRAMY = nextVRAMY;
+        dbgActiveAfterLoad = 1;  /* DEBUG: mark that we set active=1 */
+    } else {
+        dbgActiveAfterLoad = 0;  /* DEBUG: condition was false */
+    }
 }
 
 /*

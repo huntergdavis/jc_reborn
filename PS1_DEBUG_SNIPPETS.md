@@ -237,3 +237,100 @@ uint8 v = (sprite->y - tpageBaseY) & 0xFF;
 - Real BMP sprite rendering needs testing
 
 This has been repeatedly misidentified as "working" when it's just a static background image with no animation.
+
+---
+
+## Real-Time Variable Display with TILE Primitives (Dec 2025)
+
+Since printf() and FntPrint() don't output to DuckStation TTY console, use TILE primitives to show numeric values in real-time during the game loop. This is particularly useful for debugging animation frame counters, sprite counts, and other continuously changing values.
+
+### Basic Pattern: Count as Row of Squares
+
+```c
+/* Display spriteCount as a row of gray squares - each square = 1 unit */
+/* Position at (50,50) to avoid overscan area at screen edges */
+for (int i = 0; i < spriteCount && i < 20; i++) {
+    TILE *dbgTile = (TILE*)nextPri;
+    setTile(dbgTile);
+    setXY0(dbgTile, 50 + (i % 10) * 15, 50 + (i / 10) * 15);  /* Grid layout */
+    setWH(dbgTile, 12, 12);
+    setRGB0(dbgTile, 200, 200, 200);  /* Gray */
+    addPrim(&orderingTable[0], dbgTile);
+    nextPri += sizeof(TILE);
+}
+```
+
+### Highlighting Current Index
+
+```c
+/* Highlight current animation frame with bright color on top */
+if (currentSprite < 20) {
+    TILE *curTile = (TILE*)nextPri;
+    setTile(curTile);
+    setXY0(curTile, 50 + (currentSprite % 10) * 15, 50 + (currentSprite / 10) * 15);
+    setWH(curTile, 12, 12);
+    setRGB0(curTile, 255, 0, 0);  /* Bright red overlays the gray */
+    addPrim(&orderingTable[0], curTile);
+    nextPri += sizeof(TILE);
+}
+```
+
+### Full Example: Animation Frame Debugger
+
+```c
+/* In game loop - shows total loaded frames as gray squares,
+   current frame highlighted in red */
+int spriteCount = ttmSlot.numSprites[0];
+int currentSprite = 0;  /* Animation index */
+int frameCounter = 0;
+
+while (1) {
+    /* Animation logic */
+    if (++frameCounter >= 30) {  /* Every 30 vsyncs (~2fps for debugging) */
+        frameCounter = 0;
+        currentSprite = (currentSprite + 1) % spriteCount;
+    }
+
+    /* Visual debug: Gray squares show total count */
+    for (int i = 0; i < spriteCount && i < 20; i++) {
+        TILE *dbgTile = (TILE*)nextPri;
+        setTile(dbgTile);
+        setXY0(dbgTile, 50 + (i % 10) * 15, 50 + (i / 10) * 15);
+        setWH(dbgTile, 12, 12);
+        setRGB0(dbgTile, 200, 200, 200);
+        addPrim(&gameOT[0], dbgTile);
+        nextPri += sizeof(TILE);
+    }
+
+    /* Red highlight shows which frame is current */
+    if (currentSprite < spriteCount) {
+        TILE *curTile = (TILE*)nextPri;
+        setTile(curTile);
+        setXY0(curTile, 50 + (currentSprite % 10) * 15, 50 + (currentSprite / 10) * 15);
+        setWH(curTile, 12, 12);
+        setRGB0(curTile, 255, 0, 0);
+        addPrim(&gameOT[0], curTile);
+        nextPri += sizeof(TILE);
+    }
+
+    /* Render frame */
+    DrawSync(0);
+    VSync(0);
+    PutDispEnv(&disp[db]);
+    PutDrawEnv(&draw[db]);
+    DrawOTag(&gameOT[OT_LEN-1]);
+    db ^= 1;
+}
+```
+
+### Key Points
+
+1. **Avoid overscan**: Start at (50, 50) minimum - pixels near (0,0) may be cut off
+2. **Grid layout**: Use `(i % 10) * 15` for X and `(i / 10) * 15` for Y to wrap rows
+3. **Overlay ordering**: Draw highlight AFTER base squares so red appears on top
+4. **Memory**: Each TILE uses ~12 bytes - budget primitive buffer accordingly
+5. **Slow animation**: Use 30+ vsyncs per frame change when debugging visually
+
+This technique was essential for debugging incremental sprite loading where we needed to see:
+- How many frames loaded successfully (count of gray squares)
+- Which frame the animation is currently on (red highlight position)

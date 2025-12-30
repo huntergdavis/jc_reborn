@@ -10,6 +10,11 @@ Makefile
 *.log
 build-*/
 
+# Exception: release directory contains milestone builds
+!release/
+!release/*.bin
+!release/*.cue
+
 # Compiled binaries at root
 /analyze_resources
 /extract_resources

@@ -140,6 +140,8 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
 /* Extended sprite drawing - allows caller to provide their own OT and primitive buffer */
 int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, sint16 x, sint16 y);
 void grInitEmptyBackground();
+void grSaveCleanBgTiles(void);
+void grRestoreBgTiles(void);
 void grClearScreen(PS1Surface *sfc);
 void grDrawBackground(void);
 void grFadeOut();

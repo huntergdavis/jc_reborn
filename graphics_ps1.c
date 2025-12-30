@@ -77,6 +77,14 @@ static PS1Surface *bgTile4 = NULL;  /* y=240, x=256-511 */
 static PS1Surface *bgTile5a = NULL; /* y=240, x=512-575 */
 static PS1Surface *bgTile5b = NULL; /* y=240, x=576-637 */
 
+/* Clean copies of background tiles for composite pattern.
+ * Each frame: restore from clean → composite sprites → upload to framebuffer.
+ * This avoids multiple LoadImage calls per frame (DMA conflict issue). */
+static uint16 *bgTile0Clean = NULL;
+static uint16 *bgTile1Clean = NULL;
+static uint16 *bgTile3Clean = NULL;
+static uint16 *bgTile4Clean = NULL;
+
 /* Global variables matching original implementation */
 int grDx = 0;
 int grDy = 0;
@@ -1225,9 +1233,10 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
     y += grDy;
 
     /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixels.
-     * Blit directly to framebuffer (no transparency for now - will be black bg) */
+     * Composite to background tiles with transparency (0x0000 = transparent).
+     * grDrawBackground() will upload the composited tiles later this frame. */
     if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
-        grBlitToFramebuffer(sprite, x, y);
+        grCompositeToBackground(sprite, x, y);
         return 0;
     }
 
@@ -1311,6 +1320,61 @@ void grInitEmptyBackground()
 }
 
 /*
+ * Save clean copies of background tiles (after loading background, before any sprite compositing).
+ * Used by composite pattern to restore pristine background each frame.
+ */
+void grSaveCleanBgTiles(void)
+{
+    uint32 tileSize = 320 * 240 * 2;  /* 320x240 @ 16-bit = 153,600 bytes per tile */
+
+    /* Free old clean copies if they exist */
+    if (bgTile0Clean) { free(bgTile0Clean); bgTile0Clean = NULL; }
+    if (bgTile1Clean) { free(bgTile1Clean); bgTile1Clean = NULL; }
+    if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
+    if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
+
+    /* Save copies of current tile pixel data */
+    if (bgTile0 && bgTile0->pixels) {
+        bgTile0Clean = (uint16*)malloc(tileSize);
+        if (bgTile0Clean) memcpy(bgTile0Clean, bgTile0->pixels, tileSize);
+    }
+    if (bgTile1 && bgTile1->pixels) {
+        bgTile1Clean = (uint16*)malloc(tileSize);
+        if (bgTile1Clean) memcpy(bgTile1Clean, bgTile1->pixels, tileSize);
+    }
+    if (bgTile3 && bgTile3->pixels) {
+        bgTile3Clean = (uint16*)malloc(tileSize);
+        if (bgTile3Clean) memcpy(bgTile3Clean, bgTile3->pixels, tileSize);
+    }
+    if (bgTile4 && bgTile4->pixels) {
+        bgTile4Clean = (uint16*)malloc(tileSize);
+        if (bgTile4Clean) memcpy(bgTile4Clean, bgTile4->pixels, tileSize);
+    }
+}
+
+/*
+ * Restore background tiles from clean copies (call at start of each frame).
+ * This erases any previously composited sprites so new frame starts fresh.
+ */
+void grRestoreBgTiles(void)
+{
+    uint32 tileSize = 320 * 240 * 2;
+
+    if (bgTile0Clean && bgTile0 && bgTile0->pixels) {
+        memcpy(bgTile0->pixels, bgTile0Clean, tileSize);
+    }
+    if (bgTile1Clean && bgTile1 && bgTile1->pixels) {
+        memcpy(bgTile1->pixels, bgTile1Clean, tileSize);
+    }
+    if (bgTile3Clean && bgTile3 && bgTile3->pixels) {
+        memcpy(bgTile3->pixels, bgTile3Clean, tileSize);
+    }
+    if (bgTile4Clean && bgTile4 && bgTile4->pixels) {
+        memcpy(bgTile4->pixels, bgTile4Clean, tileSize);
+    }
+}
+
+/*
  * Clear screen to black
  */
 void grClearScreen(PS1Surface *sfc)
@@ -1326,26 +1390,29 @@ void grClearScreen(PS1Surface *sfc)
  */
 void grDrawBackground(void)
 {
-    RECT dstRect;
+    /* Use separate RECTs for each LoadImage - LoadImage may be async and
+     * could read RECT after function returns. Reusing a single RECT could
+     * cause corruption if DMA reads stale/overwritten values. */
+    RECT rect0, rect1, rect3, rect4;
 
     /* Top row tiles (y=0-239) */
     if (bgTile0 && bgTile0->pixels) {
-        setRECT(&dstRect, 0, 0, bgTile0->width, bgTile0->height);
-        LoadImage(&dstRect, (uint32*)bgTile0->pixels);
+        setRECT(&rect0, 0, 0, bgTile0->width, bgTile0->height);
+        LoadImage(&rect0, (uint32*)bgTile0->pixels);
     }
     if (bgTile1 && bgTile1->pixels) {
-        setRECT(&dstRect, 320, 0, bgTile1->width, bgTile1->height);
-        LoadImage(&dstRect, (uint32*)bgTile1->pixels);
+        setRECT(&rect1, 320, 0, bgTile1->width, bgTile1->height);
+        LoadImage(&rect1, (uint32*)bgTile1->pixels);
     }
 
     /* Bottom row tiles (y=240-479) */
     if (bgTile3 && bgTile3->pixels) {
-        setRECT(&dstRect, 0, 240, bgTile3->width, bgTile3->height);
-        LoadImage(&dstRect, (uint32*)bgTile3->pixels);
+        setRECT(&rect3, 0, 240, bgTile3->width, bgTile3->height);
+        LoadImage(&rect3, (uint32*)bgTile3->pixels);
     }
     if (bgTile4 && bgTile4->pixels) {
-        setRECT(&dstRect, 320, 240, bgTile4->width, bgTile4->height);
-        LoadImage(&dstRect, (uint32*)bgTile4->pixels);
+        setRECT(&rect4, 320, 240, bgTile4->width, bgTile4->height);
+        LoadImage(&rect4, (uint32*)bgTile4->pixels);
     }
 
     /* Wait for DMA completion before drawing sprites */
@@ -1522,15 +1589,16 @@ void grLoadScreen(char *strArg)
     bgTile2a = NULL;
     bgTile2b = NULL;
 
-    /* LoadImage top row directly to framebuffer */
-    RECT topRect;
+    /* LoadImage top row directly to framebuffer
+     * Use separate RECTs - LoadImage is async and may read RECT after return */
+    RECT topRect0, topRect1;
     if (bgTile0 && bgTile0->pixels) {
-        setRECT(&topRect, 0, 0, bgTile0->width, bgTile0->height);
-        LoadImage(&topRect, (uint32*)bgTile0->pixels);
+        setRECT(&topRect0, 0, 0, bgTile0->width, bgTile0->height);
+        LoadImage(&topRect0, (uint32*)bgTile0->pixels);
     }
     if (bgTile1 && bgTile1->pixels) {
-        setRECT(&topRect, 320, 0, bgTile1->width, bgTile1->height);
-        LoadImage(&topRect, (uint32*)bgTile1->pixels);
+        setRECT(&topRect1, 320, 0, bgTile1->width, bgTile1->height);
+        LoadImage(&topRect1, (uint32*)bgTile1->pixels);
     }
     DrawSync(0);
 
@@ -1573,16 +1641,17 @@ void grLoadScreen(char *strArg)
     /* Disable display during bottom row LoadImage to avoid tearing/corruption */
     SetDispMask(0);
 
-    /* LoadImage bottom row tiles directly to framebuffer (2x320 layout) */
-    RECT dstRect;
+    /* LoadImage bottom row tiles directly to framebuffer (2x320 layout)
+     * Use separate RECTs - LoadImage is async and may read RECT after return */
+    RECT botRect3, botRect4;
 
     if (bgTile3 && bgTile3->pixels) {
-        setRECT(&dstRect, 0, 240, bgTile3->width, bgTile3->height);
-        LoadImage(&dstRect, (uint32*)bgTile3->pixels);
+        setRECT(&botRect3, 0, 240, bgTile3->width, bgTile3->height);
+        LoadImage(&botRect3, (uint32*)bgTile3->pixels);
     }
     if (bgTile4 && bgTile4->pixels) {
-        setRECT(&dstRect, 320, 240, bgTile4->width, bgTile4->height);
-        LoadImage(&dstRect, (uint32*)bgTile4->pixels);
+        setRECT(&botRect4, 320, 240, bgTile4->width, bgTile4->height);
+        LoadImage(&botRect4, (uint32*)bgTile4->pixels);
     }
 
     DrawSync(0);  /* Sync bottom row uploads */

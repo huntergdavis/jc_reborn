@@ -421,6 +421,10 @@ int main(int argc, char **argv)
         if (palmLeaves) grCompositeToBackground(palmLeaves, 365, 122);
     }
 
+    /* Save clean background tiles (with island already composited).
+     * Each frame we'll restore from this, composite Johnny sprite, then upload. */
+    grSaveCleanBgTiles();
+
     PutDrawEnv(&gameDraw);
 
     /* Animation state */
@@ -434,8 +438,8 @@ int main(int argc, char **argv)
         ClearOTagR(gameOT, GAME_OTLEN);
         gameNextPri = gamePrimBuf;
 
-        /* Re-upload background (with composited island sprites) from RAM to framebuffer each frame */
-        grDrawBackground();
+        /* Restore background tiles from clean copy (erases previous frame's sprite) */
+        grRestoreBgTiles();
 
         /* Animate through sprite frames - slower for debugging */
         if (++frameCounter >= 15) {  /* Change frame every 15 vsyncs (~4 fps) */
@@ -480,6 +484,9 @@ int main(int argc, char **argv)
         (void)spriteCount;  /* Suppress unused warning */
         (void)islandSpriteCount;
 
+        /* Upload composited background tiles (with sprite already composited) to framebuffer */
+        grDrawBackground();
+
         /* Debug: Show sprite info on screen */
         if (loadedSprite) {
             uint8 dbgU = ((loadedSprite->x % 64) * 4) & 0xFF;
@@ -489,7 +496,7 @@ int main(int argc, char **argv)
         }
         FntFlush(fontID);
 
-        /* Draw OT */
+        /* Draw OT (for font, any VRAM-based sprites) */
         PutDrawEnv(&gameDraw);
         DrawOTag(gameOT + GAME_OTLEN - 1);
     }

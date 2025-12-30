@@ -2039,3 +2039,75 @@ da4ad08f RAM-based rendering: All 42 animation frames load (background corruptio
 1. Debug why grBlitToFramebuffer's LoadImage causes background tile corruption
 2. Add transparency support (skip 0x0000 pixels or use grCompositeToBackground)
 3. Test on real PS1 hardware once stable
+
+---
+
+## Session 11: Composite Pattern Fix for Background Corruption (2025-12-30)
+
+### Problem Analysis
+
+The background corruption in Session 10 was caused by having **multiple LoadImage calls per frame**:
+- grDrawBackground(): 4 LoadImages (bgTile0, bgTile1, bgTile3, bgTile4)
+- grBlitToFramebuffer(): 1 LoadImage per sprite
+
+This appears to cause DMA conflicts or timing issues on PS1 hardware. Separate RECT variables per LoadImage did not fix it.
+
+### New Approach: Composite Pattern
+
+Instead of separate LoadImages for background and sprite, composite everything into bgTile RAM buffers first, then upload once:
+
+1. **Save clean bgTile copies at init** - Store pristine background without sprites
+2. **Each frame: Restore → Composite → Upload**
+   - Restore bgTiles from clean copies (fast memcpy in RAM)
+   - Composite sprite to bgTiles via grCompositeToBackground() (with transparency)
+   - grDrawBackground() uploads composited tiles (only 4 LoadImages, no sprite LoadImage)
+
+### Benefits
+
+| Aspect | Before (grBlitToFramebuffer) | After (Composite) |
+|--------|------------------------------|-------------------|
+| LoadImages per frame | 5 (4 bg + 1 sprite) | 4 (bg only) |
+| DMA conflicts | Yes (suspected) | Eliminated |
+| Transparency | No (black rectangles) | Yes (0x0000 skipped) |
+| Memory overhead | Sprite only | +4 clean bgTile copies |
+
+### Implementation Plan
+
+```c
+// 1. New global variables for clean tile copies
+static uint16 *bgTile0Clean = NULL;  // Pristine background data
+static uint16 *bgTile1Clean = NULL;
+static uint16 *bgTile3Clean = NULL;
+static uint16 *bgTile4Clean = NULL;
+
+// 2. After grLoadScreen or grInitEmptyBackground, save clean copies
+void saveCleanBgTiles() {
+    if (bgTile0) bgTile0Clean = memcpy(malloc(...), bgTile0->pixels, ...);
+    // ... same for bgTile1, bgTile3, bgTile4
+}
+
+// 3. Each frame before compositing, restore from clean copies
+void restoreBgTiles() {
+    if (bgTile0Clean) memcpy(bgTile0->pixels, bgTile0Clean, ...);
+    // ... same for others
+}
+
+// 4. In grDrawSpriteExt, use composite instead of blit
+if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+    grCompositeToBackground(sprite, x, y);  // Write to bgTile RAM with transparency
+    return 0;  // grDrawBackground will upload it
+}
+```
+
+### Risk Assessment
+
+| Risk | Mitigation |
+|------|------------|
+| Extra memory (~600KB for 4x 320x240x2) | PS1 has 2MB RAM, we're at ~400KB usage |
+| memcpy performance | Fast in RAM, no DMA involved |
+| Multiple sprites per frame | All composited before single upload |
+
+### Files to Modify
+
+- `graphics_ps1.c` - Add clean tile storage, save/restore functions
+- `jc_reborn.c` - Call restoreBgTiles() at start of each frame

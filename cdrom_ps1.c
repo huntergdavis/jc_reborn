@@ -1040,40 +1040,12 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     bmpResource->compressionMethod = ps1_readUint8(f);
     bmpResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Save file offset for on-demand loading */
+    /* Save file offset (not used with pre-extracted files, but keep for compatibility) */
     bmpResource->fileOffset = (uint32)ps1_ftell(f);
 
-    /* Decompress only BACKGRND - test dynamic loading for JOHNWALK */
-    static int bmpDecompressCount = 0;
-    #define MAX_BMP_DECOMPRESS 2  /* Very conservative for testing */
-
-    /* Check if this is BACKGRND (island) - highest priority */
-    int isBackgrnd = (strstr(resName, "BACKGRND") != NULL);
-    /* Check if this is Johnny sprite - TEST: skip for dynamic loading */
-    int isJohnny = (strstr(resName, "JOHNWALK") != NULL);
-
-    /* BACKGRND gets top priority - decompress now */
-    if (isBackgrnd) {
-        bmpResource->uncompressedData = ps1_uncompress(f,
-                                            bmpResource->compressionMethod,
-                                            bmpResource->compressedSize,
-                                            bmpResource->uncompressedSize);
-    } else if (isJohnny) {
-        /* TEST: Skip JOHNWALK to test dynamic loading */
-        bmpResource->uncompressedData = NULL;
-        ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
-    } else if (bmpDecompressCount < MAX_BMP_DECOMPRESS) {
-        /* Small number of other BMPs */
-        bmpResource->uncompressedData = ps1_uncompress(f,
-                                            bmpResource->compressionMethod,
-                                            bmpResource->compressedSize,
-                                            bmpResource->uncompressedSize);
-        bmpDecompressCount++;
-    } else {
-        /* Lazy loading: skip compressed data */
-        bmpResource->uncompressedData = NULL;
-        ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
-    }
+    /* Skip all decompression - we load from pre-extracted files in BMP/ directory */
+    bmpResource->uncompressedData = NULL;
+    ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
 
     bmpResource->lastUsedTick = 0;
     bmpResource->pinCount = 0;
@@ -1189,83 +1161,9 @@ struct TScrResource* ps1_parseScrResource(PS1File *f, const char *resName)
     scrResource->compressionMethod = ps1_readUint8(f);
     scrResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress first SCR for testing, skip the rest */
-    static uint8 savedInputBytes[8];
-    static size_t savedFilePos;
-
-    /* Prioritize INTRO.SCR for title screen, then other 640x480 SCRs */
-    int isIntroScr = (strstr(resName, "INTRO") != NULL);
-    int shouldDecompress = 0;
-
-    if (isIntroScr && !introScrLoaded && scrResource->height >= 480) {
-        /* Always decompress INTRO.SCR for title screen */
-        shouldDecompress = 1;
-        introScrLoaded = 1;
-    } else if (!isIntroScr && scrDecompressCount < MAX_SCR_DECOMPRESS && scrResource->height >= 480) {
-        /* Decompress other 640x480 SCRs up to the limit */
-        shouldDecompress = 1;
-    }
-
-    if (shouldDecompress) {
-        /* Save input bytes for later display */
-        savedFilePos = f->currentPos;
-        for (int i = 0; i < 8; i++) {
-            savedInputBytes[i] = f->buffer[f->currentPos + i];
-        }
-
-        printf("Decompressing 640x480 SCR: %s (%dx%d)\n",
-               resName, scrResource->width, scrResource->height);
-
-        scrResource->uncompressedData = ps1_uncompress(f,
-                                            scrResource->compressionMethod,
-                                            scrResource->compressedSize,
-                                            scrResource->uncompressedSize);
-        scrDecompressCount++;
-
-        /* Quick debug: show unique byte count */
-        if (scrResource->uncompressedData) {
-            uint8 *out = scrResource->uncompressedData;
-            uint32 outSize = scrResource->uncompressedSize;
-
-            /* Count unique values in first 1K */
-            uint8 foundValues[16] = {0};
-            int numUnique = 0;
-            int sampleSize = (outSize > 1000) ? 1000 : outSize;
-
-            for (int i = 0; i < sampleSize && numUnique < 16; i++) {
-                uint8 val = out[i];
-                int found = 0;
-                for (int j = 0; j < numUnique; j++) {
-                    if (foundValues[j] == val) { found = 1; break; }
-                }
-                if (!found) {
-                    foundValues[numUnique++] = val;
-                }
-            }
-
-            /* Declare LZW debug vars as extern */
-            extern uint16 ps1_lzwFirstCode;
-            extern uint16 ps1_lzwDebugCodes[4];
-            extern uint32 ps1_lzwLoopCount;
-            extern uint8 ps1_lzwFirstByte;
-            extern uint8 ps1_lzwBufBytes[4];
-            extern uint8 ps1_lzwReturnedBytes[8];
-            extern uint8 ps1_lzwCurrentAfterOldcode;
-            extern uint8 ps1_lzwNextbitAfterOldcode;
-            extern uint8 ps1_lzwNC1_inputCur;
-            extern uint8 ps1_lzwNC1_inputNb;
-            extern uint16 ps1_lzwNC1_result;
-            extern uint8 ps1_lzwNC1_bits[9];
-            extern uint8 ps1_lzwNC1_curBytes[2];
-
-            /* LZW decompression successful - skip debug display */
-            (void)outSize;  /* Suppress unused warning */
-        }
-    } else {
-        /* Skip compressed data for remaining SCRs */
-        scrResource->uncompressedData = NULL;
-        ps1_fseek(f, scrResource->compressedSize, SEEK_CUR);
-    }
+    /* Skip all decompression - we load from pre-extracted files in SCR/ directory */
+    scrResource->uncompressedData = NULL;
+    ps1_fseek(f, scrResource->compressedSize, SEEK_CUR);
 
     scrResource->lastUsedTick = 0;
     scrResource->pinCount = 0;
@@ -1685,35 +1583,41 @@ uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32
 }
 
 /*
- * Load BMP data on-demand from CD-ROM using streaming reads.
- * Only reads the necessary sectors (~10-50KB) instead of entire 1.8MB file.
+ * Load BMP data on-demand from pre-extracted files in BMP/ directory.
+ * Files are already decompressed, so we just read the whole file directly.
  * This is called when grLoadBmp finds uncompressedData is NULL.
  */
 void ps1_loadBmpData(struct TBmpResource *bmpResource)
 {
     if (bmpResource == NULL) return;
     if (bmpResource->uncompressedData != NULL) return;  /* Already loaded */
-    if (bmpResource->fileOffset == 0) return;  /* No valid offset */
-    if (bmpResource->compressedSize == 0) return;  /* No data to read */
+    if (bmpResource->uncompressedSize == 0) return;  /* No data to read */
 
-    /* Stream read: get only the compressed BMP data from CD */
-    uint8_t* compressedData = ps1_streamRead("RESOURCE.001",
-                                              bmpResource->fileOffset,
-                                              bmpResource->compressedSize);
-    if (compressedData == NULL) {
-        return;  /* Stream read failed */
-    }
+    /* Build path to pre-extracted file: "BMP/JOHNWALK.BMP"
+     * ps1_streamRead will prepend backslash and append ";1" */
+    char path[32];
+    snprintf(path, sizeof(path), "BMP\\%s", bmpResource->resName);
 
-    /* Wrap buffer as PS1File for decompress functions */
-    PS1File wrappedFile;
-    ps1_wrapBuffer(&wrappedFile, compressedData, bmpResource->compressedSize);
+    /* Read entire file from CD - already decompressed, no processing needed */
+    bmpResource->uncompressedData = ps1_streamRead(path, 0, bmpResource->uncompressedSize);
+}
 
-    /* Decompress the BMP data */
-    bmpResource->uncompressedData = ps1_uncompress(&wrappedFile,
-                                        bmpResource->compressionMethod,
-                                        bmpResource->compressedSize,
-                                        bmpResource->uncompressedSize);
+/*
+ * Load SCR data on-demand from pre-extracted files in SCR/ directory.
+ * Files are already decompressed, so we just read the whole file directly.
+ * This is called when grLoadScreen finds uncompressedData is NULL.
+ */
+void ps1_loadScrData(struct TScrResource *scrResource)
+{
+    if (scrResource == NULL) return;
+    if (scrResource->uncompressedData != NULL) return;  /* Already loaded */
+    if (scrResource->uncompressedSize == 0) return;  /* No data to read */
 
-    /* Free the compressed data buffer */
-    free(compressedData);
+    /* Build path to pre-extracted file: "SCR/ISLETEMP.SCR"
+     * ps1_streamRead will prepend backslash and append ";1" */
+    char path[32];
+    snprintf(path, sizeof(path), "SCR\\%s", scrResource->resName);
+
+    /* Read entire file from CD - already decompressed, no processing needed */
+    scrResource->uncompressedData = ps1_streamRead(path, 0, scrResource->uncompressedSize);
 }

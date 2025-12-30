@@ -128,7 +128,8 @@ uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32
 uint8 *ps1_uncompressRLE(PS1File *f, uint32 inSize, uint32 outSize);
 uint8 *ps1_uncompressLZW(PS1File *f, uint32 inSize, uint32 outSize);
 
-/* On-demand BMP loading */
+/* On-demand resource loading from pre-extracted files */
 void ps1_loadBmpData(struct TBmpResource *bmpResource);
+void ps1_loadScrData(struct TScrResource *scrResource);
 
 #endif /* CDROM_PS1_H */

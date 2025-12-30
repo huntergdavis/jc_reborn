@@ -24,18 +24,150 @@
             <!-- Title screen - raw 15-bit pixels for early loading -->
             <file name="TITLE.RAW" type="data" source="../../TITLE.RAW"/>
 
-            <!-- Original Sierra resource files -->
+            <!-- Original Sierra resource files (for metadata parsing) -->
             <file name="RESOURCE.MAP" type="data" source="../../jc_resources/RESOURCE.MAP"/>
             <file name="RESOURCE.001" type="data" source="../../jc_resources/RESOURCE.001"/>
 
-            <!-- Sound files (if available) -->
-            <!-- Note: These need to be converted to PS1 VAG format or streamed as XA audio -->
-            <!-- For now, we'll omit them and implement SPU playback later -->
-            <!--
-            <file name="SOUND0.VAG" type="data" source="sounds/sound0.vag"/>
-            <file name="SOUND1.VAG" type="data" source="sounds/sound1.vag"/>
-            ... etc ...
-            -->
+            <!-- Pre-extracted BMP files (already decompressed) -->
+            <dir name="BMP">
+                <file name="BACKGRND.BMP" type="data" source="../../jc_resources/extracted/bmp/BACKGRND.BMP"/>
+                <file name="BOAT.BMP" type="data" source="../../jc_resources/extracted/bmp/BOAT.BMP"/>
+                <file name="CLOUDS.BMP" type="data" source="../../jc_resources/extracted/bmp/CLOUDS.BMP"/>
+                <file name="COCOHEAD.BMP" type="data" source="../../jc_resources/extracted/bmp/COCOHEAD.BMP"/>
+                <file name="COCONUTS.BMP" type="data" source="../../jc_resources/extracted/bmp/COCONUTS.BMP"/>
+                <file name="DRUNKJON.BMP" type="data" source="../../jc_resources/extracted/bmp/DRUNKJON.BMP"/>
+                <file name="ENDCRDTS.BMP" type="data" source="../../jc_resources/extracted/bmp/ENDCRDTS.BMP"/>
+                <file name="FIRE1.BMP" type="data" source="../../jc_resources/extracted/bmp/FIRE1.BMP"/>
+                <file name="FIRE2.BMP" type="data" source="../../jc_resources/extracted/bmp/FIRE2.BMP"/>
+                <file name="FIRE3.BMP" type="data" source="../../jc_resources/extracted/bmp/FIRE3.BMP"/>
+                <file name="FIRE4.BMP" type="data" source="../../jc_resources/extracted/bmp/FIRE4.BMP"/>
+                <file name="FIRE5.BMP" type="data" source="../../jc_resources/extracted/bmp/FIRE5.BMP"/>
+                <file name="FIRE.BMP" type="data" source="../../jc_resources/extracted/bmp/FIRE.BMP"/>
+                <file name="FISHMAN.BMP" type="data" source="../../jc_resources/extracted/bmp/FISHMAN.BMP"/>
+                <file name="GJANGRY.BMP" type="data" source="../../jc_resources/extracted/bmp/GJANGRY.BMP"/>
+                <file name="GJBIPLAN.BMP" type="data" source="../../jc_resources/extracted/bmp/GJBIPLAN.BMP"/>
+                <file name="GJCASTLE.BMP" type="data" source="../../jc_resources/extracted/bmp/GJCASTLE.BMP"/>
+                <file name="GJCATCH1.BMP" type="data" source="../../jc_resources/extracted/bmp/GJCATCH1.BMP"/>
+                <file name="GJCATCH2.BMP" type="data" source="../../jc_resources/extracted/bmp/GJCATCH2.BMP"/>
+                <file name="GJCATCH3.BMP" type="data" source="../../jc_resources/extracted/bmp/GJCATCH3.BMP"/>
+                <file name="GJDIVE.BMP" type="data" source="../../jc_resources/extracted/bmp/GJDIVE.BMP"/>
+                <file name="GJFFFOOD.BMP" type="data" source="../../jc_resources/extracted/bmp/GJFFFOOD.BMP"/>
+                <file name="GJGULL1A.BMP" type="data" source="../../jc_resources/extracted/bmp/GJGULL1A.BMP"/>
+                <file name="GJGULL1.BMP" type="data" source="../../jc_resources/extracted/bmp/GJGULL1.BMP"/>
+                <file name="GJGULL2A.BMP" type="data" source="../../jc_resources/extracted/bmp/GJGULL2A.BMP"/>
+                <file name="GJGULL2.BMP" type="data" source="../../jc_resources/extracted/bmp/GJGULL2.BMP"/>
+                <file name="GJGULL3A.BMP" type="data" source="../../jc_resources/extracted/bmp/GJGULL3A.BMP"/>
+                <file name="GJGULL3.BMP" type="data" source="../../jc_resources/extracted/bmp/GJGULL3.BMP"/>
+                <file name="GJHOT.BMP" type="data" source="../../jc_resources/extracted/bmp/GJHOT.BMP"/>
+                <file name="GJKINGKO.BMP" type="data" source="../../jc_resources/extracted/bmp/GJKINGKO.BMP"/>
+                <file name="GJNAT1.BMP" type="data" source="../../jc_resources/extracted/bmp/GJNAT1.BMP"/>
+                <file name="GJNAT1LI.BMP" type="data" source="../../jc_resources/extracted/bmp/GJNAT1LI.BMP"/>
+                <file name="GJNAT3.BMP" type="data" source="../../jc_resources/extracted/bmp/GJNAT3.BMP"/>
+                <file name="GJPROW.BMP" type="data" source="../../jc_resources/extracted/bmp/GJPROW.BMP"/>
+                <file name="GJRUNAWA.BMP" type="data" source="../../jc_resources/extracted/bmp/GJRUNAWA.BMP"/>
+                <file name="GJVIS3.BMP" type="data" source="../../jc_resources/extracted/bmp/GJVIS3.BMP"/>
+                <file name="GJVIS52.BMP" type="data" source="../../jc_resources/extracted/bmp/GJVIS52.BMP"/>
+                <file name="GJVIS5.BMP" type="data" source="../../jc_resources/extracted/bmp/GJVIS5.BMP"/>
+                <file name="GJVIS6.BMP" type="data" source="../../jc_resources/extracted/bmp/GJVIS6.BMP"/>
+                <file name="HOLIDAY.BMP" type="data" source="../../jc_resources/extracted/bmp/HOLIDAY.BMP"/>
+                <file name="JATA.BMP" type="data" source="../../jc_resources/extracted/bmp/JATA.BMP"/>
+                <file name="JCHANGE.BMP" type="data" source="../../jc_resources/extracted/bmp/JCHANGE.BMP"/>
+                <file name="JOHNWALK.BMP" type="data" source="../../jc_resources/extracted/bmp/JOHNWALK.BMP"/>
+                <file name="JOHNWOUL.BMP" type="data" source="../../jc_resources/extracted/bmp/JOHNWOUL.BMP"/>
+                <file name="LILFISH.BMP" type="data" source="../../jc_resources/extracted/bmp/LILFISH.BMP"/>
+                <file name="LILIPUTS.BMP" type="data" source="../../jc_resources/extracted/bmp/LILIPUTS.BMP"/>
+                <file name="LITEBULB.BMP" type="data" source="../../jc_resources/extracted/bmp/LITEBULB.BMP"/>
+                <file name="MEANWHIL.BMP" type="data" source="../../jc_resources/extracted/bmp/MEANWHIL.BMP"/>
+                <file name="MEXCWALK.BMP" type="data" source="../../jc_resources/extracted/bmp/MEXCWALK.BMP"/>
+                <file name="MJ_AMB.BMP" type="data" source="../../jc_resources/extracted/bmp/MJ_AMB.BMP"/>
+                <file name="MJBATH.BMP" type="data" source="../../jc_resources/extracted/bmp/MJBATH.BMP"/>
+                <file name="MJBOTTLE.BMP" type="data" source="../../jc_resources/extracted/bmp/MJBOTTLE.BMP"/>
+                <file name="MJBTL2.BMP" type="data" source="../../jc_resources/extracted/bmp/MJBTL2.BMP"/>
+                <file name="MJCOCO.BMP" type="data" source="../../jc_resources/extracted/bmp/MJCOCO.BMP"/>
+                <file name="MJDIVE.BMP" type="data" source="../../jc_resources/extracted/bmp/MJDIVE.BMP"/>
+                <file name="MJFISH1.BMP" type="data" source="../../jc_resources/extracted/bmp/MJFISH1.BMP"/>
+                <file name="MJFISH2.BMP" type="data" source="../../jc_resources/extracted/bmp/MJFISH2.BMP"/>
+                <file name="MJFISH3.BMP" type="data" source="../../jc_resources/extracted/bmp/MJFISH3.BMP"/>
+                <file name="MJJOG1.BMP" type="data" source="../../jc_resources/extracted/bmp/MJJOG1.BMP"/>
+                <file name="MJJOG2.BMP" type="data" source="../../jc_resources/extracted/bmp/MJJOG2.BMP"/>
+                <file name="MJRAFT2.BMP" type="data" source="../../jc_resources/extracted/bmp/MJRAFT2.BMP"/>
+                <file name="MJREAD.BMP" type="data" source="../../jc_resources/extracted/bmp/MJREAD.BMP"/>
+                <file name="MJSANDC.BMP" type="data" source="../../jc_resources/extracted/bmp/MJSANDC.BMP"/>
+                <file name="MJTELE2.BMP" type="data" source="../../jc_resources/extracted/bmp/MJTELE2.BMP"/>
+                <file name="MJTELE.BMP" type="data" source="../../jc_resources/extracted/bmp/MJTELE.BMP"/>
+                <file name="MRAFT.BMP" type="data" source="../../jc_resources/extracted/bmp/MRAFT.BMP"/>
+                <file name="SA_DEMO.BMP" type="data" source="../../jc_resources/extracted/bmp/SA_DEMO.BMP"/>
+                <file name="SANDCAST.BMP" type="data" source="../../jc_resources/extracted/bmp/SANDCAST.BMP"/>
+                <file name="SBREAKUP.BMP" type="data" source="../../jc_resources/extracted/bmp/SBREAKUP.BMP"/>
+                <file name="SHARK.BMP" type="data" source="../../jc_resources/extracted/bmp/SHARK.BMP"/>
+                <file name="SHARKWLK.BMP" type="data" source="../../jc_resources/extracted/bmp/SHARKWLK.BMP"/>
+                <file name="SHIPS.BMP" type="data" source="../../jc_resources/extracted/bmp/SHIPS.BMP"/>
+                <file name="SHKNFIST.BMP" type="data" source="../../jc_resources/extracted/bmp/SHKNFIST.BMP"/>
+                <file name="SJBRAKUP.BMP" type="data" source="../../jc_resources/extracted/bmp/SJBRAKUP.BMP"/>
+                <file name="SJGFTASK.BMP" type="data" source="../../jc_resources/extracted/bmp/SJGFTASK.BMP"/>
+                <file name="SJGFTJMP.BMP" type="data" source="../../jc_resources/extracted/bmp/SJGFTJMP.BMP"/>
+                <file name="SJGFTSHY.BMP" type="data" source="../../jc_resources/extracted/bmp/SJGFTSHY.BMP"/>
+                <file name="SJGFTXCH.BMP" type="data" source="../../jc_resources/extracted/bmp/SJGFTXCH.BMP"/>
+                <file name="SJMSUZY1.BMP" type="data" source="../../jc_resources/extracted/bmp/SJMSUZY1.BMP"/>
+                <file name="SJMSUZY2.BMP" type="data" source="../../jc_resources/extracted/bmp/SJMSUZY2.BMP"/>
+                <file name="SJMSUZY3.BMP" type="data" source="../../jc_resources/extracted/bmp/SJMSUZY3.BMP"/>
+                <file name="SJRAFT1.BMP" type="data" source="../../jc_resources/extracted/bmp/SJRAFT1.BMP"/>
+                <file name="SJWORK.BMP" type="data" source="../../jc_resources/extracted/bmp/SJWORK.BMP"/>
+                <file name="SLEEP.BMP" type="data" source="../../jc_resources/extracted/bmp/SLEEP.BMP"/>
+                <file name="SLEVEJC1.BMP" type="data" source="../../jc_resources/extracted/bmp/SLEVEJC1.BMP"/>
+                <file name="SLEVEJC2.BMP" type="data" source="../../jc_resources/extracted/bmp/SLEVEJC2.BMP"/>
+                <file name="SLEVEJC3.BMP" type="data" source="../../jc_resources/extracted/bmp/SLEVEJC3.BMP"/>
+                <file name="SLEVEJM1.BMP" type="data" source="../../jc_resources/extracted/bmp/SLEVEJM1.BMP"/>
+                <file name="SLEVEJM2.BMP" type="data" source="../../jc_resources/extracted/bmp/SLEVEJM2.BMP"/>
+                <file name="SLEVEJM3.BMP" type="data" source="../../jc_resources/extracted/bmp/SLEVEJM3.BMP"/>
+                <file name="SMDATE10.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE10.BMP"/>
+                <file name="SMDATE11.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE11.BMP"/>
+                <file name="SMDATE12.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE12.BMP"/>
+                <file name="SMDATE1.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE1.BMP"/>
+                <file name="SMDATE2.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE2.BMP"/>
+                <file name="SMDATE3.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE3.BMP"/>
+                <file name="SMDATE4.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE4.BMP"/>
+                <file name="SMDATE5.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE5.BMP"/>
+                <file name="SMDATE6.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE6.BMP"/>
+                <file name="SMDATE7.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE7.BMP"/>
+                <file name="SMDATE8.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE8.BMP"/>
+                <file name="SMDATE9.BMP" type="data" source="../../jc_resources/extracted/bmp/SMDATE9.BMP"/>
+                <file name="SMGFTWAV.BMP" type="data" source="../../jc_resources/extracted/bmp/SMGFTWAV.BMP"/>
+                <file name="SMGIFT.BMP" type="data" source="../../jc_resources/extracted/bmp/SMGIFT.BMP"/>
+                <file name="SMGLIMSE.BMP" type="data" source="../../jc_resources/extracted/bmp/SMGLIMSE.BMP"/>
+                <file name="SPLASH.BMP" type="data" source="../../jc_resources/extracted/bmp/SPLASH.BMP"/>
+                <file name="SRAFT.BMP" type="data" source="../../jc_resources/extracted/bmp/SRAFT.BMP"/>
+                <file name="SSUZY1.BMP" type="data" source="../../jc_resources/extracted/bmp/SSUZY1.BMP"/>
+                <file name="SSUZY2.BMP" type="data" source="../../jc_resources/extracted/bmp/SSUZY2.BMP"/>
+                <file name="SSUZY3.BMP" type="data" source="../../jc_resources/extracted/bmp/SSUZY3.BMP"/>
+                <file name="STNDLAY.BMP" type="data" source="../../jc_resources/extracted/bmp/STNDLAY.BMP"/>
+                <file name="TANKER.BMP" type="data" source="../../jc_resources/extracted/bmp/TANKER.BMP"/>
+                <file name="THEEND1.BMP" type="data" source="../../jc_resources/extracted/bmp/THEEND1.BMP"/>
+                <file name="THNKBUBL.BMP" type="data" source="../../jc_resources/extracted/bmp/THNKBUBL.BMP"/>
+                <file name="TRUNK.BMP" type="data" source="../../jc_resources/extracted/bmp/TRUNK.BMP"/>
+                <file name="WOULDBE.BMP" type="data" source="../../jc_resources/extracted/bmp/WOULDBE.BMP"/>
+                <file name="ZZZZS.BMP" type="data" source="../../jc_resources/extracted/bmp/ZZZZS.BMP"/>
+            </dir>
+
+            <!-- Pre-extracted SCR files (already decompressed) -->
+            <dir name="SCR">
+                <file name="INTRO.SCR" type="data" source="../../jc_resources/extracted/scr/INTRO.SCR"/>
+                <file name="ISLAND2.SCR" type="data" source="../../jc_resources/extracted/scr/ISLAND2.SCR"/>
+                <file name="ISLETEMP.SCR" type="data" source="../../jc_resources/extracted/scr/ISLETEMP.SCR"/>
+                <file name="JOFFICE.SCR" type="data" source="../../jc_resources/extracted/scr/JOFFICE.SCR"/>
+                <file name="NIGHT.SCR" type="data" source="../../jc_resources/extracted/scr/NIGHT.SCR"/>
+                <file name="OCEAN00.SCR" type="data" source="../../jc_resources/extracted/scr/OCEAN00.SCR"/>
+                <file name="OCEAN01.SCR" type="data" source="../../jc_resources/extracted/scr/OCEAN01.SCR"/>
+                <file name="OCEAN02.SCR" type="data" source="../../jc_resources/extracted/scr/OCEAN02.SCR"/>
+                <file name="SUZBEACH.SCR" type="data" source="../../jc_resources/extracted/scr/SUZBEACH.SCR"/>
+                <file name="THEEND.SCR" type="data" source="../../jc_resources/extracted/scr/THEEND.SCR"/>
+            </dir>
+
+            <!-- Pre-extracted PAL files -->
+            <dir name="PAL">
+                <file name="JOHNCAST.PAL" type="data" source="../../jc_resources/extracted/pal/JOHNCAST.PAL"/>
+            </dir>
+
         </directory_tree>
     </track>
 

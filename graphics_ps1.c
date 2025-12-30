@@ -34,6 +34,7 @@ typedef struct _FILE FILE;
 #include "graphics_ps1.h"
 #include "resource.h"
 #include "events_ps1.h"
+#include "cdrom_ps1.h"
 
 /* Primitive buffer for GPU commands */
 #define PRIMITIVE_BUFFER_SIZE 32768
@@ -1546,11 +1547,12 @@ void grLoadScreen(char *strArg)
 
     struct TScrResource *scrResource = findScrResource(strArg);
 
-    /* Handle lazy loading - reload from extracted file if needed */
+    /* Load from pre-extracted file if not already loaded */
     if (scrResource->uncompressedData == NULL) {
-        /* PS1 TODO: Use CD-ROM functions to reload from disc if needed */
-        /* For now, fatal error if data was freed */
-        fatalError("SCR data freed - PS1 CD-ROM reloading not yet implemented");
+        ps1_loadScrData(scrResource);
+    }
+    if (scrResource->uncompressedData == NULL) {
+        fatalError("grLoadScreen: Failed to load SCR from extracted file");
     }
 
     if ((scrResource->width % 2) == 1) {

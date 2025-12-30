@@ -61,15 +61,13 @@ CMakeFiles/jcreborn.dir/cdrom_ps1.c.obj: ../cdrom_ps1.c \
   ../resource.h
 
 CMakeFiles/jcreborn.dir/config.c.obj: ../config.c \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdlib.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdio.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/string.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
   ../mytypes.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint-gcc.h \
   ../utils.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h \
   ../config.h
 
 CMakeFiles/jcreborn.dir/dump.c.obj: ../dump.c \

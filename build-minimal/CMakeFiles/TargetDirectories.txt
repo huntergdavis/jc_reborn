@@ -1,3 +1,0 @@
-/project/build-minimal/CMakeFiles/ps1_minimal.dir
-/project/build-minimal/CMakeFiles/edit_cache.dir
-/project/build-minimal/CMakeFiles/rebuild_cache.dir

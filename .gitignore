@@ -1,9 +1,33 @@
-.gitignore
-Makefile
+# Build output
 jc_reborn
 jc_reborn.exe
 *.o
+Makefile
+
+# PS1 build artifacts
+*.bin
+*.cue
+*.log
+build-*/
+
+# Compiled binaries at root
+/analyze_resources
+/extract_resources
+/test_bmp_memory
+/test_disk_streaming
+
+# Resource files (not distributed)
 RESOURCE.MAP
 RESOURCE.001
 *.wav
 dump/
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Zip archives
+*.zip

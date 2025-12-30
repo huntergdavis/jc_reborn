@@ -1,3 +1,0 @@
-/project/build-ultra/CMakeFiles/ps1_ultra.dir
-/project/build-ultra/CMakeFiles/edit_cache.dir
-/project/build-ultra/CMakeFiles/rebuild_cache.dir

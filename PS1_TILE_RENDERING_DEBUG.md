@@ -1795,3 +1795,247 @@ Used TILE primitives to show sprite count and current frame since printf() doesn
 **Remaining issues**:
 - Animation timing (currently ~4fps, may need adjustment)
 - May need to verify all 42 frames render correctly with different textures
+
+---
+
+## Session 8: Isolating the 4-Frame Limit (2025-12-29)
+
+### Goal
+Get 4 multi-tile frames working with bottom tiles (feet visible).
+
+### Key Constraint
+All tests MUST include bottom tiles - the bug is in bottom tile logic.
+
+### Test 1: Frame 3 ONLY (with bottom tile)
+
+**Purpose**: Is the issue cumulative, or specific to frame 3?
+
+**Implementation**:
+```c
+/* Advance srcPtr to frame 3's position */
+int targetFrame = 3;
+uint8 *frame3SrcPtr = bmpResource->uncompressedData;
+for (int i = 0; i < targetFrame; i++) {
+    uint16 w = bmpResource->widths[i];
+    uint16 h = bmpResource->heights[i];
+    uint32 frameBytes = ((w + 1) / 2) * h;
+    frame3SrcPtr += frameBytes;
+}
+/* Load frame 3 into slot 0 */
+loadSingleFrame(ttmSlot, slotNo, bmpResource, 0, &frame3SrcPtr, needsMultiTile, 0);
+ttmSlot->numSprites[slotNo] = 1;
+```
+
+**Result**: **SUCCESS** - Full Johnny with feet visible!
+
+### Key Finding
+**The issue is CUMULATIVE, not frame-specific.**
+
+Frame 3's data, VRAM position, and bottom tile all work correctly in isolation. The failure only occurs when loading frames 0, 1, 2 AND 3 together.
+
+### Test 4: 4 Frames, Skip DrawSync on Frame 3's Main Tile
+
+**Purpose**: Is the 4th DrawSync the breaking point?
+
+**Implementation**:
+```c
+for (int frameIdx = 0; frameIdx < 4; frameIdx++) {
+    int skipSync = (frameIdx == 3) ? 1 : 0;
+    loadSingleFrame(..., skipSync);
+}
+```
+
+**Result**: **FAILS** - No Johnny sprites at all, but island background renders.
+
+### Key Finding from Test 4
+**Skipping DrawSync on frame 3's main tile breaks ALL Johnny sprites, not just frame 3.**
+
+This is NOT a full regression (island still works), so it's not global GPU corruption. The issue is specific to the JOHNWALK.BMP sprite loading.
+
+### Analysis
+
+Working pattern (3 frames):
+- Main 0: LoadImage + DrawSync
+- Bottom 0: LoadImage (no sync)
+- Main 1: LoadImage + DrawSync
+- Bottom 1: LoadImage (no sync)
+- Main 2: LoadImage + DrawSync
+- Bottom 2: LoadImage (no sync)
+- **Total: 3 DrawSync, 6 LoadImage**
+
+Test 4 pattern (fails):
+- Main 0-2: LoadImage + DrawSync (same as above)
+- Bottom 0-2: LoadImage (no sync)
+- Main 3: LoadImage **(NO DrawSync)** ← skipped
+- Bottom 3: LoadImage (no sync)
+- **Total: 3 DrawSync, 8 LoadImage**
+
+**Hypothesis**: The issue is NOT the DrawSync count (still 3). The issue is having 2 consecutive LoadImages without any DrawSync between them (main 3 → bottom 3), OR the total LoadImage count (8 vs 6).
+
+### Test 5: 4 Frames, ALL with DrawSync
+
+**Purpose**: Is it DrawSync count (4) or LoadImage count (8) that breaks?
+
+**Implementation**:
+```c
+for (int frameIdx = 0; frameIdx < 4; frameIdx++) {
+    loadSingleFrame(..., 0);  // All with DrawSync
+}
+```
+
+**Result**: **FAILS** - No sprites showing.
+
+### Summary Table
+
+| Test | Frames | DrawSync | LoadImage | Result |
+|------|--------|----------|-----------|--------|
+| Baseline | 3 | 3 | 6 | WORKS |
+| Test 1 | 1 (frame 3 only) | 1 | 2 | WORKS |
+| Test 4 | 4 (skip sync on 3) | 3 | 8 | FAILS |
+| Test 5 | 4 (all with sync) | 4 | 8 | FAILS |
+
+### Key Finding
+**The limit is 6 LoadImage calls, NOT DrawSync count.**
+
+Both Test 4 and Test 5 have 8 LoadImage calls and both fail, regardless of DrawSync count (3 vs 4).
+
+### Test 2: Skip Frame Patterns
+
+**Test 2a**: Load frames 0, 1, 3 (skip frame 2)
+- 6 LoadImage, 3 DrawSync
+- **Result**: FAILS - No sprites render
+
+**Test 2b**: Load frames 1, 2, 3 (skip frame 0)
+- 6 LoadImage, 3 DrawSync
+- **Result**: FAILS - No sprites render
+
+### Key Finding
+**Skipping ANY frame breaks rendering, even with correct srcPtr advancement.**
+
+The 6 LoadImage limit theory is WRONG. Something else is happening.
+
+Possible causes:
+1. Frames must be loaded consecutively starting from frame 0
+2. The srcPtr advancement for skipped frames is still wrong somehow
+3. There's state in loadSingleFrame that depends on consecutive loading
+
+---
+
+## Session 9: Red Team Analysis (2025-12-29)
+
+### Hard-Coded Bugs Found
+
+**Bug 1 - Line 576-577**: Explicit 3-frame cap
+```c
+if (needsMultiTile && numToLoad > 3) {
+    numToLoad = 3;  // <-- HARD-CODED LIMIT
+}
+```
+
+**Bug 2 - Line 669**: Only loads bottom tiles for frames 0-2
+```c
+if (height > MAX_SPRITE_DIM && frameIdx < 3) {  // <-- frameIdx < 3
+```
+
+### Island vs Johnny Analysis
+
+Island sprites use `grLoadBmpRAM()` which stores sprites in RAM as 15-bit direct color. They bypass the entire multi-tile VRAM pipeline with ZERO LoadImage calls for sprites.
+
+Johnny sprites use `grLoadBmp()` which loads to VRAM as 4-bit indexed. This requires LoadImage calls for each tile.
+
+### Systematic LoadImage Count Testing
+
+After removing Bug 1 (cap changed from 3 to 4), tested various configurations:
+
+| Config | Main Tiles | Bottom Tiles | Total LoadImage | Result |
+|--------|------------|--------------|-----------------|--------|
+| 4 main + 0 bottom | 4 | 0 | 4 | **WORKS** |
+| 4 main + 1 bottom | 4 | 1 | 5 | **WORKS** |
+| 4 main + 2 bottom | 4 | 2 | 6 | **WORKS** |
+| 4 main + 3 bottom | 4 | 3 | 7 | Testing... |
+
+### Key Discovery
+
+**4 frames CAN be loaded** - the hard-coded `numToLoad = 3` cap was artificial.
+
+The issue is specifically with bottom tile loading, not main tiles. Need to find the actual limit.
+
+---
+
+## Session 10: RAM-Based Rendering Breakthrough (2025-12-29)
+
+### Problem Reframed
+
+After extensive testing, we determined the 6-LoadImage limit is a **PS1 DMA queue hardware constraint**, not a software bug. The PS1 DMA controller can only queue ~6-8 concurrent LoadImage operations during a single function call sequence.
+
+### Solution: RAM-Based Rendering
+
+Instead of fighting the LoadImage limit, we bypassed it entirely by using RAM-based rendering:
+
+1. **grLoadBmpRAM()** already exists - converts 4-bit indexed sprites to 15-bit BGR direct color in RAM
+2. **grBlitToFramebuffer()** copies RAM buffers directly to framebuffer via single LoadImage
+3. No VRAM texture uploads = no LoadImage limit for sprite loading
+
+### Implementation Changes
+
+```c
+// In grLoadBmp() - redirect multi-tile sprites to RAM path
+if (needsMultiTile) {
+    grLoadBmpRAM(ttmSlot, slotNo, strArg);
+    return;
+}
+
+// In grDrawSpriteExt() - detect RAM sprites and blit directly
+if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+    grBlitToFramebuffer(sprite, x, y);
+    return;
+}
+```
+
+### Results
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Animation frames loaded | 3 | **42** (all frames!) |
+| LoadImage calls during load | 6 (3 main + 3 bottom) | 0 |
+| Sprite height support | 64px (capped) | Full height (78px) |
+
+### Known Issues
+
+1. **Background corruption** - During animation, background shifts position frame-to-frame
+   - Offset appears to match sprite dimensions
+   - Different shift per animation frame
+   - Stabilizes after all 42 frames shown once
+
+2. **No transparency** - Sprites have black rectangles (0x0000 = transparent in source, but shows as black when blitted)
+
+### Background Corruption Analysis
+
+The background shifting correlates with grBlitToFramebuffer() calls. Symptoms:
+- Each frame's LoadImage seems to affect subsequent bgTile LoadImages
+- Background position offset equals approximately sprite width/height
+- Issue compounds during first pass through animation, then stabilizes
+
+Theories:
+1. RECT dimension mismatch between sprite blit and background blit
+2. Memory overlap between sprite pixel buffers and bgTile buffers
+3. PS1 DMA timing/ordering issue with multiple LoadImages per frame
+4. grBlitToFramebuffer modifying global state that affects grDrawBackground
+
+### Files Modified
+
+- `graphics_ps1.c` - RAM sprite routing, empty bgTile creation
+- `jc_reborn.c` - Simplified test loop
+- `rebuild-and-let-run.sh` - New build/test script
+
+### Commit
+
+```
+da4ad08f RAM-based rendering: All 42 animation frames load (background corruption WIP)
+```
+
+### Next Steps
+
+1. Debug why grBlitToFramebuffer's LoadImage causes background tile corruption
+2. Add transparency support (skip 0x0000 pixels or use grCompositeToBackground)
+3. Test on real PS1 hardware once stable

@@ -353,16 +353,8 @@ int main(int argc, char **argv)
     if (numPalResources > 0 && palResources[0]) {
         grLoadPalette(palResources[0]);
     }
-    struct TScrResource *bgScr = NULL;
-    for (int i = 0; i < numScrResources; i++) {
-        if (scrResources[i] && scrResources[i]->uncompressedData) {
-            bgScr = scrResources[i];
-            break;
-        }
-    }
-    if (bgScr) {
-        grLoadScreen(bgScr->resName);
-    }
+    /* Load island background - test with OCEAN00.SCR (640x480) */
+    grLoadScreen("OCEAN00.SCR");
 
     /* Create a simple TTtmSlot to hold sprites */
     static struct TTtmSlot gameTtmSlot;
@@ -387,11 +379,9 @@ int main(int argc, char **argv)
     static struct TTtmSlot islandSlot;
     memset(&islandSlot, 0, sizeof(islandSlot));
 
-    /* Load island sprites using RAM approach (not VRAM textures) */
-    struct TBmpResource *bgBmpRes = findBmpResource("BACKGRND.BMP");
-    if (bgBmpRes && bgBmpRes->uncompressedData) {
-        grLoadBmpRAM(&islandSlot, 0, "BACKGRND.BMP");
-    }
+    /* Load island sprites using RAM approach (not VRAM textures)
+     * grLoadBmpRAM will load from extracted file on-demand */
+    grLoadBmpRAM(&islandSlot, 0, "BACKGRND.BMP");
     int islandSpriteCount = islandSlot.numSprites[0];
     PS1Surface *islandLandmass = NULL;
     PS1Surface *palmTrunk = NULL;

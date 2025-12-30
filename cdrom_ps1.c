@@ -1593,13 +1593,34 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource)
     if (bmpResource->uncompressedData != NULL) return;  /* Already loaded */
     if (bmpResource->uncompressedSize == 0) return;  /* No data to read */
 
-    /* Build path to pre-extracted file: "BMP/JOHNWALK.BMP"
-     * ps1_streamRead will prepend backslash and append ";1" */
-    char path[32];
+    /* Build path to pre-extracted file */
+    char path[64];
+    snprintf(path, sizeof(path), "\\BMP\\%s;1", bmpResource->resName);
+
+    /* Get actual file size from CD (may differ from metadata) */
+    CdlFILE cdfile;
+    if (CdSearchFile(&cdfile, path) == NULL) {
+        printf("ps1_loadBmpData: File not found: %s\n", path);
+        return;
+    }
+
+    uint32 fileSize = cdfile.size;
+
+    /* Use the smaller of file size and metadata size */
+    uint32 readSize = (fileSize < bmpResource->uncompressedSize) ? fileSize : bmpResource->uncompressedSize;
+
+    /* Build path for ps1_streamRead (without leading backslash and ;1) */
     snprintf(path, sizeof(path), "BMP\\%s", bmpResource->resName);
 
     /* Read entire file from CD - already decompressed, no processing needed */
-    bmpResource->uncompressedData = ps1_streamRead(path, 0, bmpResource->uncompressedSize);
+    bmpResource->uncompressedData = ps1_streamRead(path, 0, readSize);
+
+    /* Update uncompressedSize to match what we actually read */
+    if (bmpResource->uncompressedData != NULL && fileSize < bmpResource->uncompressedSize) {
+        printf("ps1_loadBmpData: Adjusting uncompressedSize from %u to %u for %s\n",
+               bmpResource->uncompressedSize, fileSize, bmpResource->resName);
+        bmpResource->uncompressedSize = fileSize;
+    }
 }
 
 /*
@@ -1613,11 +1634,12 @@ void ps1_loadScrData(struct TScrResource *scrResource)
     if (scrResource->uncompressedData != NULL) return;  /* Already loaded */
     if (scrResource->uncompressedSize == 0) return;  /* No data to read */
 
-    /* Build path to pre-extracted file: "SCR/ISLETEMP.SCR"
+    /* Build path to pre-extracted file: "SCR/OCEAN00.SCR" etc.
      * ps1_streamRead will prepend backslash and append ";1" */
     char path[32];
     snprintf(path, sizeof(path), "SCR\\%s", scrResource->resName);
 
-    /* Read entire file from CD - already decompressed, no processing needed */
+    /* Read entire file from CD - already decompressed, no processing needed
+     * Trust the metadata uncompressedSize - the extracted files should match */
     scrResource->uncompressedData = ps1_streamRead(path, 0, scrResource->uncompressedSize);
 }

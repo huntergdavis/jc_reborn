@@ -483,8 +483,8 @@ int main(int argc, char **argv)
         /* Don't use grRestoreBgTiles - using dirty rectangle instead */
         /* grRestoreBgTiles(); */
 
-        /* Animate through sprite frames - slower for debugging */
-        if (++frameCounter >= 15) {  /* Change frame every 15 vsyncs (~4 fps) */
+        /* Animate through sprite frames */
+        if (++frameCounter >= 5) {  /* Change frame every 5 vsyncs (~12 fps) */
             frameCounter = 0;
             if (spriteCount > 1) {
                 currentSprite = (currentSprite + 1) % spriteCount;

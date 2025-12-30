@@ -1043,21 +1043,25 @@ struct TBmpResource* ps1_parseBmpResource(PS1File *f, const char *resName)
     /* Save file offset for on-demand loading */
     bmpResource->fileOffset = (uint32)ps1_ftell(f);
 
-    /* Decompress BACKGRND and JOHNWALK at startup (dynamic loading has heap corruption issues) */
+    /* Decompress only BACKGRND - test dynamic loading for JOHNWALK */
     static int bmpDecompressCount = 0;
     #define MAX_BMP_DECOMPRESS 2  /* Very conservative for testing */
 
     /* Check if this is BACKGRND (island) - highest priority */
     int isBackgrnd = (strstr(resName, "BACKGRND") != NULL);
-    /* Check if this is Johnny sprite - decompress at startup now */
+    /* Check if this is Johnny sprite - TEST: skip for dynamic loading */
     int isJohnny = (strstr(resName, "JOHNWALK") != NULL);
 
-    /* BACKGRND and JOHNWALK get top priority - decompress now */
-    if (isBackgrnd || isJohnny) {
+    /* BACKGRND gets top priority - decompress now */
+    if (isBackgrnd) {
         bmpResource->uncompressedData = ps1_uncompress(f,
                                             bmpResource->compressionMethod,
                                             bmpResource->compressedSize,
                                             bmpResource->uncompressedSize);
+    } else if (isJohnny) {
+        /* TEST: Skip JOHNWALK to test dynamic loading */
+        bmpResource->uncompressedData = NULL;
+        ps1_fseek(f, bmpResource->compressedSize, SEEK_CUR);
     } else if (bmpDecompressCount < MAX_BMP_DECOMPRESS) {
         /* Small number of other BMPs */
         bmpResource->uncompressedData = ps1_uncompress(f,
@@ -1685,24 +1689,14 @@ uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32
  * Only reads the necessary sectors (~10-50KB) instead of entire 1.8MB file.
  * This is called when grLoadBmp finds uncompressedData is NULL.
  */
-/* DEBUG: Track ps1_loadBmpData progress for visual debugging */
-int ps1_loadBmpDataProgress = 0;  /* 0=not called, 1=entered, 2=after checks, 3=stream started, 4=stream done, 5=decompress done */
-uint32 ps1_loadBmpDataUncompSize = 0;  /* DEBUG: uncompressed size requested */
-int ps1_loadBmpDataMallocOk = -1;  /* DEBUG: 1=malloc succeeded, 0=failed, -1=not called */
-
 void ps1_loadBmpData(struct TBmpResource *bmpResource)
 {
-    ps1_loadBmpDataProgress = 1;  /* Entered function */
-
     if (bmpResource == NULL) return;
     if (bmpResource->uncompressedData != NULL) return;  /* Already loaded */
     if (bmpResource->fileOffset == 0) return;  /* No valid offset */
     if (bmpResource->compressedSize == 0) return;  /* No data to read */
 
-    ps1_loadBmpDataProgress = 2;  /* Passed all early checks */
-
     /* Stream read: get only the compressed BMP data from CD */
-    ps1_loadBmpDataProgress = 3;  /* About to stream read */
     uint8_t* compressedData = ps1_streamRead("RESOURCE.001",
                                               bmpResource->fileOffset,
                                               bmpResource->compressedSize);
@@ -1710,25 +1704,15 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource)
         return;  /* Stream read failed */
     }
 
-    ps1_loadBmpDataProgress = 4;  /* Stream read succeeded */
-
     /* Wrap buffer as PS1File for decompress functions */
     PS1File wrappedFile;
     ps1_wrapBuffer(&wrappedFile, compressedData, bmpResource->compressedSize);
-
-    /* DEBUG: Track uncompressed size */
-    ps1_loadBmpDataUncompSize = bmpResource->uncompressedSize;
 
     /* Decompress the BMP data */
     bmpResource->uncompressedData = ps1_uncompress(&wrappedFile,
                                         bmpResource->compressionMethod,
                                         bmpResource->compressedSize,
                                         bmpResource->uncompressedSize);
-
-    /* DEBUG: Track if malloc succeeded */
-    ps1_loadBmpDataMallocOk = (bmpResource->uncompressedData != NULL) ? 1 : 0;
-
-    ps1_loadBmpDataProgress = 5;  /* Decompress done */
 
     /* Free the compressed data buffer */
     free(compressedData);

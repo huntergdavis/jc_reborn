@@ -122,17 +122,6 @@ void grFreeLayer(PS1Surface *sfc);
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg);
 void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg);
 void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo);
-
-/* Incremental BMP loading - spreads multi-tile sprite loading across game ticks */
-int grContinueBmpLoading(void);  /* Returns 1 when complete, 0 when more to load */
-int grIsBmpLoadingPending(void); /* Returns 1 if incremental loading in progress */
-int grGetIncrementalCurrentFrame(void);  /* DEBUG: current frame being loaded */
-int grGetIncrementalNumToLoad(void);     /* DEBUG: total frames to load */
-int grGetContinueCallCount(void);        /* DEBUG: how many times grContinueBmpLoading called */
-int grGetActiveAfterLoad(void);          /* DEBUG: 1 if active was set in grLoadBmp */
-int grGetCompletionCheckFrame(void);     /* DEBUG: currentFrame at completion check */
-int grGetCompletionCheckTotal(void);     /* DEBUG: numToLoad at completion check */
-int grGetEntryNumToLoad(void);           /* DEBUG: numToLoad at grContinueBmpLoading entry */
 void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY);
 void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY);
 

@@ -349,21 +349,6 @@ int main(int argc, char **argv)
     PutDispEnv(&gameDisp);
     PutDrawEnv(&gameDraw);
 
-    /* DEBUG: Flash RED immediately after GPU reset - if this shows, GPU reset works */
-    {
-        TILE flashTile;
-        setTile(&flashTile);
-        setXY0(&flashTile, 0, 0);
-        setWH(&flashTile, 640, 480);
-        setRGB0(&flashTile, 200, 0, 0);
-        ClearOTagR(gameOT, GAME_OTLEN);
-        addPrim(&gameOT[0], &flashTile);
-        DrawOTag(&gameOT[GAME_OTLEN-1]);
-        DrawSync(0);
-        VSync(0);
-        VSync(0);
-    }
-
     /* RE-ENABLE palette and background loading */
     if (numPalResources > 0 && palResources[0]) {
         grLoadPalette(palResources[0]);
@@ -376,20 +361,6 @@ int main(int argc, char **argv)
         }
     }
     if (bgScr) {
-        /* DEBUG: Flash PURPLE before grLoadScreen */
-        {
-            TILE flashTile;
-            setTile(&flashTile);
-            setXY0(&flashTile, 0, 0);
-            setWH(&flashTile, 640, 480);
-            setRGB0(&flashTile, 200, 0, 200);
-            ClearOTagR(gameOT, GAME_OTLEN);
-            addPrim(&gameOT[0], &flashTile);
-            DrawOTag(&gameOT[GAME_OTLEN-1]);
-            DrawSync(0);
-            VSync(0);
-            VSync(0);
-        }
         grLoadScreen(bgScr->resName);
     }
 
@@ -401,57 +372,13 @@ int main(int argc, char **argv)
     PS1Surface *loadedSprite = NULL;
     int spriteCount = 0;
 
-    /* DEBUG: Track BMP resource info */
-    extern int ps1_loadBmpDataProgress;  /* From cdrom_ps1.c */
-    struct TBmpResource *testBmp = findBmpResource("JOHNWALK.BMP");
-
-    /* DEBUG: Capture numImages at find time */
-    static int testBmpNumImagesAtFind = -1;
-    static int testBmpUncompSizeAtFind = -1;
-    static int testBmpNumImagesAfterLoad = -1;
-    if (testBmp) {
-        testBmpNumImagesAtFind = testBmp->numImages;
-        testBmpUncompSizeAtFind = testBmp->uncompressedSize;
-    }
-
-    /* JOHNWALK should now be decompressed at startup - TEST: just skip grLoadBmp to verify startup works */
-    if (testBmp && testBmp->uncompressedData) {
-        /* Flash CYAN - testBmp exists and has data */
-        {
-            TILE flashTile;
-            setTile(&flashTile);
-            setXY0(&flashTile, 0, 0);
-            setWH(&flashTile, 640, 480);
-            setRGB0(&flashTile, 0, 200, 200);  /* Cyan */
-            ClearOTagR(gameOT, GAME_OTLEN);
-            addPrim(&gameOT[0], &flashTile);
-            DrawOTag(&gameOT[GAME_OTLEN-1]);
-            DrawSync(0);
-            VSync(0);
-            VSync(0);
-        }
-
-        /* Re-enabled grLoadBmp - crashes are inside it */
-        grLoadBmp(&gameTtmSlot, 0, "JOHNWALK.BMP");
-        spriteCount = gameTtmSlot.numSprites[0];
-        if (spriteCount > 0) {
-            loadedSprite = gameTtmSlot.sprites[0][0];
-        }
-
-        /* Flash BLUE - proceeding to game loop */
-        {
-            TILE flashTile;
-            setTile(&flashTile);
-            setXY0(&flashTile, 0, 0);
-            setWH(&flashTile, 640, 480);
-            setRGB0(&flashTile, 0, 0, 200);
-            ClearOTagR(gameOT, GAME_OTLEN);
-            addPrim(&gameOT[0], &flashTile);
-            DrawOTag(&gameOT[GAME_OTLEN-1]);
-            DrawSync(0);
-            VSync(0);
-            VSync(0);  /* Hold for 2 frames */
-        }
+    /* TEST: Directly load JOHNWALK.BMP to test streaming dynamic loading.
+     * JOHNWALK has uncompressedData = NULL (skipped at startup),
+     * so grLoadBmp will trigger ps1_loadBmpData with streaming reads. */
+    grLoadBmp(&gameTtmSlot, 0, "JOHNWALK.BMP");
+    spriteCount = gameTtmSlot.numSprites[0];
+    if (spriteCount > 0) {
+        loadedSprite = gameTtmSlot.sprites[0][0];
     }
     /* Re-apply draw environment after grLoadBmp */
     PutDrawEnv(&gameDraw);
@@ -496,10 +423,9 @@ int main(int argc, char **argv)
 
     PutDrawEnv(&gameDraw);
 
-    /* Animation state - STATIC to persist across loop iterations */
-    static int currentSprite = 0;
-    static int frameCounter = 0;
-    static int animCycleCount = 0;  /* Count how many times animation has cycled */
+    /* Animation state */
+    int currentSprite = 0;
+    int frameCounter = 0;
 
     /* === Main game loop (proven working pattern) === */
     while (1) {
@@ -511,326 +437,13 @@ int main(int argc, char **argv)
         /* Re-upload background (with composited island sprites) from RAM to framebuffer each frame */
         grDrawBackground();
 
-        /* Continue incremental BMP loading if in progress
-         * This loads 1 additional frame per game tick to spread the work */
-        int loadingPending = grIsBmpLoadingPending();
-        /* ALWAYS call grContinueBmpLoading to debug - count should grow regardless */
-        grContinueBmpLoading();
-        /* ALWAYS update spriteCount from the actual slot - fixes animation bug */
-        spriteCount = gameTtmSlot.numSprites[0];
-
-        /* DEBUG: Dark background for debug bars */
-        {
-            TILE *bgTile = (TILE*)gameNextPri;
-            setTile(bgTile);
-            setXY0(bgTile, 0, 0);
-            setWH(bgTile, 360, 115);  /* Extended to cover all bars */
-            setRGB0(bgTile, 0, 0, 64);  /* Dark blue background */
-            addPrim(&gameOT[1], bgTile);  /* Behind other primitives */
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show ps1_loadBmpDataProgress (0-5) as WHITE bar
-         * 0=not called, 1=entered, 2=checks passed, 3=stream start, 4=stream done, 5=decompress done */
-        {
-            TILE *progTile = (TILE*)gameNextPri;
-            setTile(progTile);
-            setXY0(progTile, 10, 5);
-            setWH(progTile, ps1_loadBmpDataProgress * 40 + 20, 15);
-            setRGB0(progTile, 255, 255, 255);  /* White */
-            addPrim(&gameOT[0], progTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show spriteCount as LARGE GREEN bar */
-        {
-            TILE *cntTile2 = (TILE*)gameNextPri;
-            setTile(cntTile2);
-            setXY0(cntTile2, 10, 25);
-            setWH(cntTile2, spriteCount * 5 + 10, 15);  /* Scale: 5px per sprite */
-            setRGB0(cntTile2, 0, 255, 0);  /* Bright green */
-            addPrim(&gameOT[0], cntTile2);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show if testBmp exists (RED if NULL, GREEN if exists) */
-        {
-            TILE *bmpTile = (TILE*)gameNextPri;
-            setTile(bmpTile);
-            setXY0(bmpTile, 10, 45);
-            setWH(bmpTile, 30, 15);
-            setRGB0(bmpTile, testBmp ? 0 : 255, testBmp ? 255 : 0, 0);
-            addPrim(&gameOT[0], bmpTile);
-            gameNextPri += sizeof(TILE);
-        }
-        /* DEBUG: Show if uncompressedData is set (RED if NULL, CYAN if set) */
-        {
-            TILE *dataTile = (TILE*)gameNextPri;
-            setTile(dataTile);
-            setXY0(dataTile, 45, 45);
-            setWH(dataTile, 30, 15);
-            setRGB0(dataTile, (testBmp && testBmp->uncompressedData) ? 0 : 255,
-                             (testBmp && testBmp->uncompressedData) ? 255 : 0,
-                             (testBmp && testBmp->uncompressedData) ? 255 : 0);  /* Cyan if set */
-            addPrim(&gameOT[0], dataTile);
-            gameNextPri += sizeof(TILE);
-        }
-        /* DEBUG: Show numImages at testBmp as ORANGE bar */
-        {
-            TILE *numTile = (TILE*)gameNextPri;
-            setTile(numTile);
-            setXY0(numTile, 80, 45);
-            int num = testBmp ? testBmp->numImages : 0;
-            setWH(numTile, num * 4 + 5, 15);
-            setRGB0(numTile, 255, 165, 0);  /* Orange */
-            addPrim(&gameOT[0], numTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show animation frame (currentSprite) as YELLOW bar */
-        {
-            TILE *animTile = (TILE*)gameNextPri;
-            setTile(animTile);
-            setXY0(animTile, 10, 65);
-            setWH(animTile, currentSprite * 5 + 10, 15);
-            setRGB0(animTile, 255, 255, 0);  /* Yellow */
-            addPrim(&gameOT[0], animTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show malloc result - GREEN=ok, RED=failed, GRAY=not called */
-        extern uint32 ps1_loadBmpDataUncompSize;
-        extern int ps1_loadBmpDataMallocOk;
-        {
-            TILE *mallocTile = (TILE*)gameNextPri;
-            setTile(mallocTile);
-            setXY0(mallocTile, 120, 45);
-            setWH(mallocTile, 30, 15);
-            if (ps1_loadBmpDataMallocOk == 1) {
-                setRGB0(mallocTile, 0, 255, 0);  /* Green = malloc ok */
-            } else if (ps1_loadBmpDataMallocOk == 0) {
-                setRGB0(mallocTile, 255, 0, 0);  /* Red = malloc failed */
-            } else {
-                setRGB0(mallocTile, 128, 128, 128);  /* Gray = not called */
-            }
-            addPrim(&gameOT[0], mallocTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show uncompSize as bar (in KB, divide by 1024) */
-        {
-            TILE *sizeTile = (TILE*)gameNextPri;
-            setTile(sizeTile);
-            setXY0(sizeTile, 155, 45);
-            /* Width = size in KB, max 200px */
-            int sizeKB = ps1_loadBmpDataUncompSize / 1024;
-            if (sizeKB > 200) sizeKB = 200;
-            setWH(sizeTile, sizeKB + 5, 15);
-            setRGB0(sizeTile, 128, 0, 128);  /* Purple */
-            addPrim(&gameOT[0], sizeTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show grLoadBmpProgress as CYAN bar (scaled for 0-200 range)
-         * 4=images, 10=VRAM reset, 20=multi-tile, 30=numToLoad, 40=srcPtr,
-         * 50=ready, 100+=loading frame N, 200=done */
-        extern int grLoadBmpProgress;
-        extern int grLoadBmpNumImages;
-        {
-            TILE *loadBmpTile = (TILE*)gameNextPri;
-            setTile(loadBmpTile);
-            setXY0(loadBmpTile, 10, 85);
-            /* Scale: 200 -> 200px, 100 -> 100px, etc */
-            int barW = grLoadBmpProgress;
-            if (barW > 200) barW = 200;
-            setWH(loadBmpTile, barW + 10, 15);
-            setRGB0(loadBmpTile, 0, 255, 255);  /* Cyan */
-            addPrim(&gameOT[0], loadBmpTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show numImages as MAGENTA bar (should be 42 for JOHNWALK) */
-        {
-            TILE *numImgTile = (TILE*)gameNextPri;
-            setTile(numImgTile);
-            setXY0(numImgTile, 70, 85);
-            setWH(numImgTile, grLoadBmpNumImages * 4 + 5, 15);  /* ~168px for 42 images */
-            setRGB0(numImgTile, 255, 0, 255);  /* Magenta */
-            addPrim(&gameOT[0], numImgTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show testBmpNumImagesAtFind as BRIGHT CYAN bar (captured right after findBmpResource) */
-        {
-            TILE *findTile = (TILE*)gameNextPri;
-            setTile(findTile);
-            setXY0(findTile, 180, 85);
-            setWH(findTile, testBmpNumImagesAtFind * 4 + 5, 15);  /* Should be ~168px for 42 */
-            setRGB0(findTile, 0, 255, 255);  /* Bright cyan */
-            addPrim(&gameOT[0], findTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show testBmpUncompSizeAtFind / 1024 as WHITE bar (in KB) */
-        {
-            TILE *findSizeTile = (TILE*)gameNextPri;
-            setTile(findSizeTile);
-            setXY0(findSizeTile, 10, 100);
-            int kb = testBmpUncompSizeAtFind / 1024;
-            if (kb > 200) kb = 200;
-            setWH(findSizeTile, kb + 5, 10);
-            setRGB0(findSizeTile, 255, 255, 255);  /* White */
-            addPrim(&gameOT[0], findSizeTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show testBmpNumImagesAfterLoad as ORANGE bar (after ps1_loadBmpData) */
-        {
-            TILE *afterTile = (TILE*)gameNextPri;
-            setTile(afterTile);
-            setXY0(afterTile, 120, 100);
-            setWH(afterTile, testBmpNumImagesAfterLoad * 4 + 5, 10);
-            setRGB0(afterTile, 255, 165, 0);  /* Orange */
-            addPrim(&gameOT[0], afterTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show loadFrameProgress as BRIGHT GREEN bar (1-8 = success, negative = error) */
-        extern int loadFrameProgress;
-        {
-            TILE *frameTile = (TILE*)gameNextPri;
-            setTile(frameTile);
-            setXY0(frameTile, 230, 100);
-            int w = loadFrameProgress;
-            if (w < 0) w = -w;  /* Show absolute value for errors */
-            setWH(frameTile, w * 20 + 5, 10);
-            setRGB0(frameTile, loadFrameProgress >= 0 ? 0 : 255,
-                              loadFrameProgress >= 0 ? 255 : 0, 0);  /* Green if ok, Red if error */
-            addPrim(&gameOT[0], frameTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show loading state - YELLOW bar if loading pending, RED if not */
-        {
-            TILE *loadTile = (TILE*)gameNextPri;
-            setTile(loadTile);
-            setXY0(loadTile, 10, 140);
-            setWH(loadTile, loadingPending ? 100 : 30, 10);
-            setRGB0(loadTile, loadingPending ? 255 : 255, loadingPending ? 255 : 0, 0);
-            addPrim(&gameOT[0], loadTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show spriteCount as CYAN bar width (should be 42 for JOHNWALK) */
-        {
-            TILE *cntTile = (TILE*)gameNextPri;
-            setTile(cntTile);
-            setXY0(cntTile, 10, 155);
-            setWH(cntTile, spriteCount * 4, 10);  /* Width = spriteCount * 4 */
-            setRGB0(cntTile, 0, 255, 255);  /* Cyan = actual loaded */
-            addPrim(&gameOT[0], cntTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show numToLoad as MAGENTA bar (target frame count) */
-        {
-            int numToLoad = grGetIncrementalNumToLoad();
-            TILE *targetTile = (TILE*)gameNextPri;
-            setTile(targetTile);
-            setXY0(targetTile, 10, 170);
-            setWH(targetTile, numToLoad * 4, 10);  /* Width = numToLoad * 4 */
-            setRGB0(targetTile, 255, 0, 255);  /* Magenta = target */
-            addPrim(&gameOT[0], targetTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show currentFrame as WHITE bar (progress) */
-        {
-            int curFrame = grGetIncrementalCurrentFrame();
-            TILE *progTile = (TILE*)gameNextPri;
-            setTile(progTile);
-            setXY0(progTile, 10, 185);
-            setWH(progTile, curFrame * 4, 10);  /* Width = currentFrame * 4 */
-            setRGB0(progTile, 255, 255, 255);  /* White = progress */
-            addPrim(&gameOT[0], progTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show grContinueBmpLoading call count as ORANGE bar */
-        {
-            int callCount = grGetContinueCallCount();
-            TILE *callTile = (TILE*)gameNextPri;
-            setTile(callTile);
-            setXY0(callTile, 10, 200);
-            /* Cap at 200 pixels - 30sec @ 60fps = 1800 calls, show /10 */
-            int barWidth = (callCount / 10);
-            if (barWidth > 200) barWidth = 200;
-            setWH(callTile, barWidth + 1, 10);
-            setRGB0(callTile, 255, 165, 0);  /* Orange */
-            addPrim(&gameOT[0], callTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show if active was set in grLoadBmp - GREEN=yes, RED=no */
-        {
-            int activeSet = grGetActiveAfterLoad();
-            TILE *actTile = (TILE*)gameNextPri;
-            setTile(actTile);
-            setXY0(actTile, 10, 215);
-            setWH(actTile, 50, 10);
-            if (activeSet == 1) {
-                setRGB0(actTile, 0, 255, 0);  /* GREEN = active was set */
-            } else {
-                setRGB0(actTile, 255, 0, 0);  /* RED = active NOT set */
-            }
-            addPrim(&gameOT[0], actTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* DEBUG: Show completion check values - BLUE bars */
-        {
-            int checkFrame = grGetCompletionCheckFrame();
-            int checkTotal = grGetCompletionCheckTotal();
-            int entryTotal = grGetEntryNumToLoad();
-            /* checkFrame bar */
-            TILE *cfTile = (TILE*)gameNextPri;
-            setTile(cfTile);
-            setXY0(cfTile, 10, 230);
-            setWH(cfTile, checkFrame * 4, 8);
-            setRGB0(cfTile, 100, 100, 255);  /* Light blue = checkFrame */
-            addPrim(&gameOT[0], cfTile);
-            gameNextPri += sizeof(TILE);
-            /* checkTotal bar */
-            TILE *ctTile = (TILE*)gameNextPri;
-            setTile(ctTile);
-            setXY0(ctTile, 10, 240);
-            setWH(ctTile, checkTotal * 4, 8);
-            setRGB0(ctTile, 0, 0, 255);  /* Dark blue = checkTotal */
-            addPrim(&gameOT[0], ctTile);
-            gameNextPri += sizeof(TILE);
-            /* entryTotal bar - numToLoad at first entry */
-            TILE *etTile = (TILE*)gameNextPri;
-            setTile(etTile);
-            setXY0(etTile, 10, 250);
-            setWH(etTile, entryTotal * 4, 8);
-            setRGB0(etTile, 128, 0, 128);  /* Purple = entry numToLoad */
-            addPrim(&gameOT[0], etTile);
-            gameNextPri += sizeof(TILE);
-        }
-
-        /* Animate through sprite frames - cycle every 15 frames (~4fps) */
-        frameCounter++;
-        if (frameCounter >= 15) {
+        /* Animate through sprite frames - slower for debugging */
+        if (++frameCounter >= 15) {  /* Change frame every 15 vsyncs (~4 fps) */
             frameCounter = 0;
-            animCycleCount++;
-            /* Cycle through all loaded sprites */
-            if (spriteCount > 0) {
+            if (spriteCount > 1) {
                 currentSprite = (currentSprite + 1) % spriteCount;
+                loadedSprite = gameTtmSlot.sprites[0][currentSprite];
             }
-        }
-        /* Update loadedSprite from current index */
-        if (currentSprite < spriteCount && gameTtmSlot.sprites[0][currentSprite] != NULL) {
-            loadedSprite = gameTtmSlot.sprites[0][currentSprite];
         }
 
         /* Base position for animation - this is where the sprite's feet should be */
@@ -867,31 +480,14 @@ int main(int argc, char **argv)
         (void)spriteCount;  /* Suppress unused warning */
         (void)islandSpriteCount;
 
-        /* Visual debug: Show each sprite's VRAM X as bar width
-         * If all bars are same width = all sprites at same VRAM X (BUG)
-         * Different widths = sprites at different positions (CORRECT) */
-        for (int i = 0; i < spriteCount && i < 10; i++) {
-            PS1Surface *dbgSpr = gameTtmSlot.sprites[0][i];
-            TILE *dbgTile = (TILE*)gameNextPri;
-            setTile(dbgTile);
-            setXY0(dbgTile, 10, 10 + i * 12);
-            /* Width = (VRAM_X - 640) to show relative position */
-            int barWidth = dbgSpr ? (dbgSpr->x - 640 + 10) : 5;
-            if (barWidth < 5) barWidth = 5;
-            if (barWidth > 200) barWidth = 200;
-            setWH(dbgTile, barWidth, 10);
-            if (i == currentSprite) {
-                setRGB0(dbgTile, 0, 255, 0);  /* GREEN = current */
-            } else {
-                setRGB0(dbgTile, 200, 200, 200);  /* White */
-            }
-            addPrim(&gameOT[0], dbgTile);
-            gameNextPri += sizeof(TILE);
+        /* Debug: Show sprite info on screen */
+        if (loadedSprite) {
+            uint8 dbgU = ((loadedSprite->x % 64) * 4) & 0xFF;
+            uint16 dbgTpage = loadedSprite->x / 64;
+            FntPrint("Fr:%d VX:%d U:%d TP:%d Cnt:%d\n",
+                     currentSprite, loadedSprite->x, dbgU, dbgTpage, spriteCount);
         }
-
-        /* Suppress unused variable warnings */
-        (void)frameCounter;
-        (void)animCycleCount;
+        FntFlush(fontID);
 
         /* Draw OT */
         PutDrawEnv(&gameDraw);

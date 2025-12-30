@@ -61,19 +61,15 @@ PS1Surface *grBackgroundSfc = NULL;
  * Top row: 3 tiles (256+256+128 = 640 pixels wide, 240 tall)
  * Bottom row will be added later */
 #define BG_TILE_HEIGHT 240
-/* Top row tiles (stored in VRAM texture area) */
-static PS1Surface *bgTile0 = NULL;  /* x=0-255,   srcX=0 */
-static PS1Surface *bgTile1 = NULL;  /* x=256-511, srcX=256 */
+/* Top row tiles (stored in VRAM texture area) - exported for dirty rectangle wiping */
+PS1Surface *bgTile0 = NULL;  /* x=0-255,   srcX=0 */
+PS1Surface *bgTile1 = NULL;  /* x=256-511, srcX=256 */
 static PS1Surface *bgTile2a = NULL; /* x=512-575, srcX=512, width=64 */
 static PS1Surface *bgTile2b = NULL; /* x=576-639, srcX=576, width=64 */
 
-/* Bottom row tiles - need VRAM space outside framebuffer (0-639, 0-479)
- * VRAM is 1024x512. Texture area: x=640-1023, y=0-511
- * Top row uses: (640,4)-(895,243), (640,244)-(895,483), (896,4)-(959,243), (960,4)-(1021,243)
- * Bottom row can use y=484+ area since VRAM is 512 tall: LIMITED SPACE
- * Alternative: Use same VRAM locations as top row, MoveImage top first, then load bottom, MoveImage bottom */
-static PS1Surface *bgTile3 = NULL;  /* y=240, x=0-255 */
-static PS1Surface *bgTile4 = NULL;  /* y=240, x=256-511 */
+/* Bottom row tiles - exported for dirty rectangle wiping */
+PS1Surface *bgTile3 = NULL;  /* y=240, x=0-255 */
+PS1Surface *bgTile4 = NULL;  /* y=240, x=256-511 */
 static PS1Surface *bgTile5a = NULL; /* y=240, x=512-575 */
 static PS1Surface *bgTile5b = NULL; /* y=240, x=576-637 */
 
@@ -1333,7 +1329,8 @@ void grSaveCleanBgTiles(void)
     if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
     if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
 
-    /* Save copies of current tile pixel data */
+    /* Save copies of current tile pixel data
+     * NOTE: Only save top row tiles - bottom row clean copies exceed PS1 memory */
     if (bgTile0 && bgTile0->pixels) {
         bgTile0Clean = (uint16*)malloc(tileSize);
         if (bgTile0Clean) memcpy(bgTile0Clean, bgTile0->pixels, tileSize);
@@ -1342,14 +1339,7 @@ void grSaveCleanBgTiles(void)
         bgTile1Clean = (uint16*)malloc(tileSize);
         if (bgTile1Clean) memcpy(bgTile1Clean, bgTile1->pixels, tileSize);
     }
-    if (bgTile3 && bgTile3->pixels) {
-        bgTile3Clean = (uint16*)malloc(tileSize);
-        if (bgTile3Clean) memcpy(bgTile3Clean, bgTile3->pixels, tileSize);
-    }
-    if (bgTile4 && bgTile4->pixels) {
-        bgTile4Clean = (uint16*)malloc(tileSize);
-        if (bgTile4Clean) memcpy(bgTile4Clean, bgTile4->pixels, tileSize);
-    }
+    /* Skip bgTile3/4 clean copies - not enough RAM on PS1 */
 }
 
 /*
@@ -1621,17 +1611,16 @@ void grLoadScreen(char *strArg)
         bgTile5b = NULL;
     } else if (bottomRowLines > 0) {
         /* Partial bottom row (e.g., 640x350 = 110 lines for bottom)
-         * For now, leave bottom row NULL - shows black
-         * TODO: Create partial-height tiles to show available lines */
-        printf("SCR has only %d lines for bottom half (need 240)\n", bottomRowLines);
-        bgTile3  = NULL;
-        bgTile4  = NULL;
+         * Create empty black tiles so sprites can composite to bottom half */
+        printf("SCR has only %d lines for bottom half - creating empty tiles\n", bottomRowLines);
+        bgTile3  = createEmptyBgTileRAM(320, 240);
+        bgTile4  = createEmptyBgTileRAM(320, 240);
         bgTile5a = NULL;
         bgTile5b = NULL;
     } else {
-        /* SCR is only 240 lines or less - no bottom row data at all */
-        bgTile3  = NULL;
-        bgTile4  = NULL;
+        /* SCR is only 240 lines or less - create empty tiles for sprite compositing */
+        bgTile3  = createEmptyBgTileRAM(320, 240);
+        bgTile4  = createEmptyBgTileRAM(320, 240);
         bgTile5a = NULL;
         bgTile5b = NULL;
     }

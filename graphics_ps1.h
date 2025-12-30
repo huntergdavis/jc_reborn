@@ -143,6 +143,12 @@ void grInitEmptyBackground();
 void grSaveCleanBgTiles(void);
 void grRestoreBgTiles(void);
 void grClearScreen(PS1Surface *sfc);
+
+/* Background tiles - exported for dirty rectangle wiping */
+extern PS1Surface *bgTile0;
+extern PS1Surface *bgTile1;
+extern PS1Surface *bgTile3;
+extern PS1Surface *bgTile4;
 void grDrawBackground(void);
 void grFadeOut();
 

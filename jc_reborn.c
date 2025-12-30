@@ -375,7 +375,7 @@ int main(int argc, char **argv)
     /* TEST: Directly load JOHNWALK.BMP to test streaming dynamic loading.
      * JOHNWALK has uncompressedData = NULL (skipped at startup),
      * so grLoadBmp will trigger ps1_loadBmpData with streaming reads. */
-    grLoadBmp(&gameTtmSlot, 0, "JOHNWALK.BMP");
+    grLoadBmpRAM(&gameTtmSlot, 0, "JOHNWALK.BMP");
     spriteCount = gameTtmSlot.numSprites[0];
     if (spriteCount > 0) {
         loadedSprite = gameTtmSlot.sprites[0][0];
@@ -431,6 +431,15 @@ int main(int argc, char **argv)
     int currentSprite = 0;
     int frameCounter = 0;
 
+    /* Dirty rectangle: save only sprite area instead of full tiles (memory efficient) */
+    static uint16 *savedSpriteArea = NULL;
+    static int savedX = 0, savedY = 0, savedW = 0, savedH = 0;
+
+    /* Allocate sprite save buffer once (max 64x80 @ 16-bit = 10KB) */
+    if (!savedSpriteArea) {
+        savedSpriteArea = (uint16*)malloc(64 * 80 * 2);
+    }
+
     /* === Main game loop (proven working pattern) === */
     while (1) {
         DrawSync(0);
@@ -438,8 +447,41 @@ int main(int argc, char **argv)
         ClearOTagR(gameOT, GAME_OTLEN);
         gameNextPri = gamePrimBuf;
 
-        /* Restore background tiles from clean copy (erases previous frame's sprite) */
-        grRestoreBgTiles();
+        /* Restore previous sprite area from saved copy (dirty rectangle) */
+        if (savedSpriteArea && savedW > 0 && savedH > 0) {
+            /* Restore saved pixels back to bgTiles */
+            for (int y = 0; y < savedH; y++) {
+                int destY = savedY + y;
+                if (destY < 0 || destY >= 480) continue;
+                for (int x = 0; x < savedW; x++) {
+                    int destX = savedX + x;
+                    if (destX < 0 || destX >= 640) continue;
+
+                    uint16 pixel = savedSpriteArea[y * savedW + x];
+
+                    /* Determine which tile (bgTile* declared in graphics_ps1.h) */
+                    PS1Surface *tile = NULL;
+                    int tileLocalX, tileLocalY;
+
+                    if (destY < 240) {
+                        tileLocalY = destY;
+                        if (destX < 320) { tile = bgTile0; tileLocalX = destX; }
+                        else { tile = bgTile1; tileLocalX = destX - 320; }
+                    } else {
+                        tileLocalY = destY - 240;
+                        if (destX < 320) { tile = bgTile3; tileLocalX = destX; }
+                        else { tile = bgTile4; tileLocalX = destX - 320; }
+                    }
+
+                    if (tile && tile->pixels) {
+                        tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
+                    }
+                }
+            }
+        }
+
+        /* Don't use grRestoreBgTiles - using dirty rectangle instead */
+        /* grRestoreBgTiles(); */
 
         /* Animate through sprite frames - slower for debugging */
         if (++frameCounter >= 15) {  /* Change frame every 15 vsyncs (~4 fps) */
@@ -452,7 +494,7 @@ int main(int argc, char **argv)
 
         /* Base position for animation - this is where the sprite's feet should be */
         int baseX = 350;  /* Center X position */
-        int baseY = 364;  /* Bottom Y position (feet on ground) */
+        int baseY = 320;  /* Bottom Y position (feet on island) - adjusted up more */
 
         /* Draw actual textured sprite if loaded, otherwise green placeholder */
         if (loadedSprite && loadedSprite->width > 0) {
@@ -460,7 +502,43 @@ int main(int argc, char **argv)
             int spriteX = baseX - (loadedSprite->width / 2);
             int spriteY = baseY - loadedSprite->height;
 
-            /* === TEST: Use grDrawSpriteExt to verify UV fix === */
+            /* SAVE sprite area BEFORE compositing (dirty rectangle) */
+            if (savedSpriteArea && loadedSprite->width <= 64 && loadedSprite->height <= 80) {
+                savedX = spriteX;
+                savedY = spriteY;
+                savedW = loadedSprite->width;
+                savedH = loadedSprite->height;
+
+                /* bgTile* declared in graphics_ps1.h */
+                for (int y = 0; y < savedH; y++) {
+                    int srcY = savedY + y;
+                    if (srcY < 0 || srcY >= 480) continue;
+                    for (int x = 0; x < savedW; x++) {
+                        int srcX = savedX + x;
+                        if (srcX < 0 || srcX >= 640) continue;
+
+                        PS1Surface *tile = NULL;
+                        int tileLocalX, tileLocalY;
+                        if (srcY < 240) {
+                            tileLocalY = srcY;
+                            if (srcX < 320) { tile = bgTile0; tileLocalX = srcX; }
+                            else { tile = bgTile1; tileLocalX = srcX - 320; }
+                        } else {
+                            tileLocalY = srcY - 240;
+                            if (srcX < 320) { tile = bgTile3; tileLocalX = srcX; }
+                            else { tile = bgTile4; tileLocalX = srcX - 320; }
+                        }
+
+                        if (tile && tile->pixels) {
+                            savedSpriteArea[y * savedW + x] = tile->pixels[tileLocalY * tile->width + tileLocalX];
+                        } else {
+                            savedSpriteArea[y * savedW + x] = 0x0000;
+                        }
+                    }
+                }
+            }
+
+            /* === Composite sprite to bgTiles === */
             grDrawSpriteExt(&gameOT[0], &gameNextPri, loadedSprite, spriteX, spriteY);
         } else {
             /* Fallback: Green placeholder squares if no sprite loaded */

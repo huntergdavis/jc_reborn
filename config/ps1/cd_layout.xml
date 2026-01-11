@@ -213,6 +213,20 @@
                 <file name="WOULDBE.TTM" type="data" source="../../jc_resources/extracted/ttm/WOULDBE.TTM"/>
             </dir>
 
+            <!-- Pre-extracted ADS files (scene scripts) -->
+            <dir name="ADS">
+                <file name="ACTIVITY.ADS" type="data" source="../../jc_resources/extracted/ads/ACTIVITY.ADS"/>
+                <file name="BUILDING.ADS" type="data" source="../../jc_resources/extracted/ads/BUILDING.ADS"/>
+                <file name="FISHING.ADS" type="data" source="../../jc_resources/extracted/ads/FISHING.ADS"/>
+                <file name="JOHNNY.ADS" type="data" source="../../jc_resources/extracted/ads/JOHNNY.ADS"/>
+                <file name="MARY.ADS" type="data" source="../../jc_resources/extracted/ads/MARY.ADS"/>
+                <file name="MISCGAG.ADS" type="data" source="../../jc_resources/extracted/ads/MISCGAG.ADS"/>
+                <file name="STAND.ADS" type="data" source="../../jc_resources/extracted/ads/STAND.ADS"/>
+                <file name="SUZY.ADS" type="data" source="../../jc_resources/extracted/ads/SUZY.ADS"/>
+                <file name="VISITOR.ADS" type="data" source="../../jc_resources/extracted/ads/VISITOR.ADS"/>
+                <file name="WALKSTUF.ADS" type="data" source="../../jc_resources/extracted/ads/WALKSTUF.ADS"/>
+            </dir>
+
         </directory_tree>
     </track>
 

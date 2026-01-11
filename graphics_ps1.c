@@ -328,28 +328,11 @@ void grLoadPalette(struct TPalResource *palResource)
  */
 void grRefreshDisplay()
 {
-    /* Wait for GPU to finish previous frame's drawing */
+    /* Wait for GPU DMA to finish (LoadImage operations) */
     DrawSync(0);
 
-    /* Wait for vertical blank */
-    VSync(0);
-
-    /* Flip buffers - display the one we just drew to */
-    db = !db;
-    PutDispEnv(&disp[db]);
-    PutDrawEnv(&draw[db]);
-
-    /* Submit the ordering table to GPU for drawing
-     * This renders all primitives added since last refresh
-     * OT is linked from end to start, so submit from last entry */
-    DrawOTag(&ot[1-db][OT_LENGTH - 1]);
-
-    /* Clear next ordering table for new frame */
-    ClearOTagR(ot[db], OT_LENGTH);
-
-    /* Reset primitive buffer for next frame */
-    nextPrimitive[db] = primitiveBuffer[db];
-    primitiveIndex[db] = 0;
+    /* VSync is called in grUpdateDisplay before LoadImage to prevent tearing.
+     * This function just ensures DMA is complete for standalone use cases. */
 }
 
 /*
@@ -368,113 +351,20 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
                      struct TTtmThread *ttmThreads,
                      struct TTtmThread *ttmHolidayThread)
 {
-    /* Main rendering function that composites all layers */
+    /* PS1 uses RAM-based compositing - sprites are drawn to bgTile buffers
+     * via grCompositeToBackground(). By this point:
+     * - grRestoreBgTiles was called before ttmPlay (at frame start)
+     * - ttmPlay drew sprites to bgTile via grCompositeToBackground
+     * Now we just need to upload and display.
+     */
 
-    /* 1. Draw background layer if it exists */
-    if (grBackgroundSfc != NULL && grBackgroundSfc->pixels != NULL) {
-        /* Allocate SPRT for background */
-        if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
-            SPRT *bgSprt = (SPRT*)nextPrimitive[db];
-            nextPrimitive[db] += sizeof(SPRT);
-            primitiveIndex[db] += sizeof(SPRT);
+    /* CRITICAL: Wait for VSync BEFORE uploading to framebuffer.
+     * This ensures we write during vertical blank when display isn't scanning.
+     * Writing during active scan causes visible tearing/flickering. */
+    VSync(0);
 
-            setSprt(bgSprt);
-            setXY0(bgSprt, 0, 0);
-            setWH(bgSprt, grBackgroundSfc->width, grBackgroundSfc->height);
-            setUV0(bgSprt, grBackgroundSfc->x & 0xFF, grBackgroundSfc->y & 0xFF);
-            setClut(bgSprt, grBackgroundSfc->clutX, grBackgroundSfc->clutY);
-            setRGB0(bgSprt, 128, 128, 128);
-
-            addPrim(&ot[db][7], bgSprt);  /* Lowest priority in OT */
-        }
-    }
-
-    /* 2. Draw saved zones layer if it exists */
-    if (grSavedZonesLayer != NULL && grSavedZonesLayer->pixels != NULL) {
-        if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
-            SPRT *zonesSprt = (SPRT*)nextPrimitive[db];
-            nextPrimitive[db] += sizeof(SPRT);
-            primitiveIndex[db] += sizeof(SPRT);
-
-            setSprt(zonesSprt);
-            setXY0(zonesSprt, 0, 0);
-            setWH(zonesSprt, grSavedZonesLayer->width, grSavedZonesLayer->height);
-            setUV0(zonesSprt, grSavedZonesLayer->x & 0xFF, grSavedZonesLayer->y & 0xFF);
-            setClut(zonesSprt, grSavedZonesLayer->clutX, grSavedZonesLayer->clutY);
-            setRGB0(zonesSprt, 128, 128, 128);
-
-            addPrim(&ot[db][6], zonesSprt);
-        }
-    }
-
-    /* 3. Draw background thread layer */
-    if (ttmBackgroundThread != NULL && ttmBackgroundThread->ttmLayer != NULL) {
-        PS1Surface *layer = ttmBackgroundThread->ttmLayer;
-        if (layer->pixels != NULL) {
-            if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
-                SPRT *layerSprt = (SPRT*)nextPrimitive[db];
-                nextPrimitive[db] += sizeof(SPRT);
-                primitiveIndex[db] += sizeof(SPRT);
-
-                setSprt(layerSprt);
-                setXY0(layerSprt, 0, 0);
-                setWH(layerSprt, layer->width, layer->height);
-                setUV0(layerSprt, layer->x & 0xFF, layer->y & 0xFF);
-                setClut(layerSprt, layer->clutX, layer->clutY);
-                setRGB0(layerSprt, 128, 128, 128);
-
-                addPrim(&ot[db][5], layerSprt);
-            }
-        }
-    }
-
-    /* 4. Draw all active TTM thread layers */
-    for (int i = 0; i < 10; i++) {  /* Max 10 TTM threads */
-        if (ttmThreads[i].isRunning && ttmThreads[i].ttmLayer != NULL) {
-            PS1Surface *layer = ttmThreads[i].ttmLayer;
-            if (layer->pixels != NULL) {
-                if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
-                    SPRT *layerSprt = (SPRT*)nextPrimitive[db];
-                    nextPrimitive[db] += sizeof(SPRT);
-                    primitiveIndex[db] += sizeof(SPRT);
-
-                    setSprt(layerSprt);
-                    setXY0(layerSprt, 0, 0);
-                    setWH(layerSprt, layer->width, layer->height);
-                    setUV0(layerSprt, layer->x & 0xFF, layer->y & 0xFF);
-                    setClut(layerSprt, layer->clutX, layer->clutY);
-                    setRGB0(layerSprt, 128, 128, 128);
-
-                    addPrim(&ot[db][4], layerSprt);
-                }
-            }
-        }
-    }
-
-    /* 5. Draw holiday thread layer if active */
-    if (ttmHolidayThread != NULL && ttmHolidayThread->isRunning && ttmHolidayThread->ttmLayer != NULL) {
-        PS1Surface *layer = ttmHolidayThread->ttmLayer;
-        if (layer->pixels != NULL) {
-            if (primitiveIndex[db] + sizeof(SPRT) <= PRIMITIVE_BUFFER_SIZE) {
-                SPRT *layerSprt = (SPRT*)nextPrimitive[db];
-                nextPrimitive[db] += sizeof(SPRT);
-                primitiveIndex[db] += sizeof(SPRT);
-
-                setSprt(layerSprt);
-                setXY0(layerSprt, 0, 0);
-                setWH(layerSprt, layer->width, layer->height);
-                setUV0(layerSprt, layer->x & 0xFF, layer->y & 0xFF);
-                setClut(layerSprt, layer->clutX, layer->clutY);
-                setRGB0(layerSprt, 128, 128, 128);
-
-                addPrim(&ot[db][3], layerSprt);
-            }
-        }
-    }
-
-    /* Submit all primitives and swap buffers */
-    DrawOTag(&ot[db][OT_LENGTH - 1]);
-    grRefreshDisplay();
+    /* Upload background tiles (with sprites composited) to framebuffer */
+    grDrawBackground();
 
     /* Handle frame timing */
     eventsWaitTick(grUpdateDelay);
@@ -795,11 +685,6 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     int numToLoad = bmpResource->numImages;
     if (numToLoad > MAX_SPRITES_PER_BMP) {
         numToLoad = MAX_SPRITES_PER_BMP;
-    }
-
-    /* Limit frames to prevent memory exhaustion on PS1 */
-    if (numToLoad > 16) {
-        numToLoad = 16;  /* Cap at 16 frames to save RAM */
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;

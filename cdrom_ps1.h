@@ -132,5 +132,6 @@ uint8 *ps1_uncompressLZW(PS1File *f, uint32 inSize, uint32 outSize);
 void ps1_loadBmpData(struct TBmpResource *bmpResource);
 void ps1_loadScrData(struct TScrResource *scrResource);
 void ps1_loadTtmData(struct TTtmResource *ttmResource);
+void ps1_loadAdsData(struct TAdsResource *adsResource);
 
 #endif /* CDROM_PS1_H */

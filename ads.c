@@ -44,6 +44,7 @@ extern int printf(const char *format, ...);
 /* Platform-specific graphics headers */
 #ifdef PS1_BUILD
 #include "graphics_ps1.h"
+#include "cdrom_ps1.h"
 #else
 #include "graphics.h"
 #endif
@@ -469,6 +470,8 @@ void adsPlaySingleTtm(char *ttmName)  // TODO - tempo
     ttmThreads[0].ip = 0;
 
     while (ttmThreads[0].ip < ttmSlots[0].dataSize) {
+        /* Restore clean background before drawing new frame's sprites */
+        grRestoreBgTiles();
         ttmPlay(ttmThreads);
         ttmThreads[0].isRunning = 1;
         grUpdateDisplay(NULL, ttmThreads, NULL);
@@ -705,6 +708,14 @@ void adsPlay(char *adsName, uint16 adsTag)
 
     /* ADS lazy loading: Load ADS data on demand from extracted file if not already loaded */
     if (adsResource->uncompressedData == NULL) {
+#ifdef PS1_BUILD
+        /* PS1: Load from pre-extracted ADS file on CD */
+        ps1_loadAdsData(adsResource);
+        if (adsResource->uncompressedData == NULL) {
+            /* Error - can't continue without ADS data */
+            return;
+        }
+#else
         char extractedPath[512];
         snprintf(extractedPath, sizeof(extractedPath), "extracted/ads/%s",
                  adsResource->resName);
@@ -724,6 +735,7 @@ void adsPlay(char *adsName, uint16 adsTag)
         } else {
             fatalError("ADS data not loaded and extracted file not found - cannot load %s", adsName);
         }
+#endif
     }
 
     /* Pin ADS resource to prevent eviction while in use */

@@ -60,7 +60,8 @@ static uint32 ttmFindPreviousTag(struct TTtmSlot *ttmSlot, uint32 offset)
     uint32 result = 0;
     int i = 0;
 
-    while (ttmSlot->tags[i].offset < offset) {
+    /* Bounds check to prevent reading past tags array */
+    while (i < ttmSlot->numTags && ttmSlot->tags[i].offset < offset) {
         result = ttmSlot->tags[i].offset;
         i++;
     }
@@ -280,10 +281,12 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0x0110:
                 debugMsg("    PURGE");
-                if (ttmThread->sceneTimer)
+                if (ttmThread->sceneTimer) {
                     ttmThread->nextGotoOffset = ttmFindPreviousTag(ttmSlot, offset);
-                else
+                    continueLoop = 0;  /* Exit to let main loop handle the jump */
+                } else {
                     ttmThread->isRunning = 2;
+                }
                 break;
 
             case 0x0FF0:
@@ -324,6 +327,7 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // ex TTM_UNKNOWN_2
                 debugMsg("    GOTO_TAG %d", args[0]);
                 ttmThread->nextGotoOffset = ttmFindTag(ttmSlot, args[0]);
+                continueLoop = 0;  /* Exit to let main loop handle the jump */
                 break;
 
             case 0x2002:

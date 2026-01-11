@@ -288,7 +288,7 @@ int main(int argc, char **argv)
         while(1);
     }
 
-    debugMode = 1;
+    debugMode = 0;  /* Disable debug output on PS1 - vprintf crashes */
 
     /* Show title screen FIRST - instant visual feedback */
     loadTitleScreenEarly();
@@ -307,13 +307,7 @@ int main(int argc, char **argv)
 
 #ifdef PS1_BUILD
     /* Resource counts available via extern */
-    extern int numScrResources;
-    extern int numBmpResources;
-    extern int numAdsResources;
-    extern int numTtmResources;
     extern int numPalResources;
-    extern struct TScrResource *scrResources[];
-    extern struct TBmpResource *bmpResources[];
     extern struct TPalResource *palResources[];
 #endif
 
@@ -321,101 +315,30 @@ int main(int argc, char **argv)
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* === FRESH GPU RESET (proven working pattern) === */
-    ResetGraph(0);
-    SetVideoMode(MODE_NTSC);
-    InitGeom();
+    /* === PS1 ADS-DRIVEN SCENE PLAYBACK === */
 
-    /* Minimal OT and primitive buffer */
-    #define GAME_OTLEN 8
-    #define GAME_PRIMBUF 8192
-    static unsigned long gameOT[GAME_OTLEN];
-    static char gamePrimBuf[GAME_PRIMBUF];
-    char *gameNextPri;
+    /* Initialize graphics subsystem (GPU, display environments) */
+    graphicsInit();
 
-    /* Simple display/draw environments */
-    DISPENV gameDisp;
-    DRAWENV gameDraw;
-    SetDefDispEnv(&gameDisp, 0, 0, 640, 480);
-    SetDefDrawEnv(&gameDraw, 0, 0, 640, 480);
-    gameDisp.isinter = 1;  /* Interlaced for 640x480 */
-    /* isbg=0: Don't clear - grDrawBackground will repaint each frame */
-    setRGB0(&gameDraw, 0, 0, 0);
-    gameDraw.isbg = 0;
+    /* Initialize sound subsystem */
+    soundInit();
 
-    /* Enable display */
-    SetDispMask(1);
-    PutDispEnv(&gameDisp);
-    PutDrawEnv(&gameDraw);
-
-    /* Load palette first - TTM may reference it */
+    /* Load palette first - required for all rendering */
     if (numPalResources > 0 && palResources[0]) {
         grLoadPalette(palResources[0]);
     }
 
-    /* === TTM-DRIVEN SCENE RENDERING ===
-     * Load ocean background first, then let TTM overlay scene-specific background.
-     * FISHWALK.TTM loads ISLETEMP.SCR (640x350) which overlays on ocean. */
+    /* Initialize ADS scene system */
+    adsInit();
 
-    /* Load ocean as base background (640x480) - bottom will persist through scene loads */
-    grLoadScreen("OCEAN00.SCR");
+    /* Use the simpler single-TTM player for testing */
+    adsPlaySingleTtm("FISHWALK.TTM");
 
-    /* Create TTM slot and thread for scene playback */
-    static struct TTtmSlot gameTtmSlot;
-    static struct TTtmThread gameTtmThread;
+    /* The main loop is inside adsPlay() - when it returns, scene is done */
 
-    /* Initialize TTM slot */
-    ttmInitSlot(&gameTtmSlot);
-
-    /* Load FISHWALK.TTM bytecode from CD */
-    ttmLoadTtm(&gameTtmSlot, "FISHWALK.TTM");
-
-    /* Initialize TTM thread for playback */
-    memset(&gameTtmThread, 0, sizeof(gameTtmThread));
-    gameTtmThread.ttmSlot = &gameTtmSlot;
-    gameTtmThread.isRunning = 1;
-    gameTtmThread.ip = 0;
-    gameTtmThread.selectedBmpSlot = 0;
-    gameTtmThread.delay = 4;  /* Initial delay */
-    gameTtmThread.timer = 1;
-
-    /* Run TTM until first UPDATE - this loads background and sprites.
-     * grLoadScreen (called by TTM) automatically saves clean background tiles,
-     * so sprites drawn here will be properly erased each frame. */
-    ttmPlay(&gameTtmThread);
-
-    PutDrawEnv(&gameDraw);
-
-    /* === Main game loop - TTM driven === */
-    while (1) {
-        DrawSync(0);
-        VSync(0);
-        ClearOTagR(gameOT, GAME_OTLEN);
-        gameNextPri = gamePrimBuf;
-
-        /* Restore clean background each frame */
-        grRestoreBgTiles();
-
-        /* TTM execution - advance animation when timer expires */
-        if (gameTtmThread.timer > 0) {
-            gameTtmThread.timer--;
-        }
-        if (gameTtmThread.timer == 0 && gameTtmThread.isRunning) {
-            ttmPlay(&gameTtmThread);
-            gameTtmThread.timer = gameTtmThread.delay;
-            if (gameTtmThread.nextGotoOffset) {
-                gameTtmThread.ip = gameTtmThread.nextGotoOffset;
-                gameTtmThread.nextGotoOffset = 0;
-            }
-        }
-
-        /* Upload background tiles to framebuffer */
-        grDrawBackground();
-
-        /* Draw OT */
-        PutDrawEnv(&gameDraw);
-        DrawOTag(gameOT + GAME_OTLEN - 1);
-    }
+    /* Cleanup */
+    soundEnd();
+    graphicsEnd();
 
     return 0;
 #endif

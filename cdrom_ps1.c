@@ -1653,3 +1653,23 @@ void ps1_loadTtmData(struct TTtmResource *ttmResource)
     /* Read entire file from CD - already decompressed bytecode */
     ttmResource->uncompressedData = ps1_streamRead(path, 0, ttmResource->uncompressedSize);
 }
+
+/*
+ * Load ADS bytecode on-demand from pre-extracted files in ADS/ directory.
+ * Files are already decompressed, so we just read the whole file directly.
+ * This is called when adsPlay finds uncompressedData is NULL.
+ */
+void ps1_loadAdsData(struct TAdsResource *adsResource)
+{
+    if (adsResource == NULL) return;
+    if (adsResource->uncompressedData != NULL) return;  /* Already loaded */
+    if (adsResource->uncompressedSize == 0) return;  /* No data to read */
+
+    /* Build path to pre-extracted file: "ADS/STAND.ADS" etc.
+     * ps1_streamRead will prepend backslash and append ";1" */
+    char path[32];
+    snprintf(path, sizeof(path), "ADS\\%s", adsResource->resName);
+
+    /* Read entire file from CD - already decompressed bytecode */
+    adsResource->uncompressedData = ps1_streamRead(path, 0, adsResource->uncompressedSize);
+}

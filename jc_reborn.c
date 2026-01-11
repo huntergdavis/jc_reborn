@@ -328,6 +328,11 @@ int main(int argc, char **argv)
         grLoadPalette(palResources[0]);
     }
 
+    /* Load ocean background first - provides the full 640x480 base scene.
+     * This gives us the ocean/island background for all animations. */
+    grLoadScreen("OCEAN00.SCR");
+    grSaveCleanBgTiles();
+
     /* Initialize ADS scene system */
     adsInit();
 

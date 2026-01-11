@@ -168,6 +168,51 @@
                 <file name="JOHNCAST.PAL" type="data" source="../../jc_resources/extracted/pal/JOHNCAST.PAL"/>
             </dir>
 
+            <!-- Pre-extracted TTM files (animation bytecode) -->
+            <dir name="TTM">
+                <file name="FIRE.TTM" type="data" source="../../jc_resources/extracted/ttm/FIRE.TTM"/>
+                <file name="FISHWALK.TTM" type="data" source="../../jc_resources/extracted/ttm/FISHWALK.TTM"/>
+                <file name="GFFFOOD.TTM" type="data" source="../../jc_resources/extracted/ttm/GFFFOOD.TTM"/>
+                <file name="GJCATCH2.TTM" type="data" source="../../jc_resources/extracted/ttm/GJCATCH2.TTM"/>
+                <file name="GJDIVE.TTM" type="data" source="../../jc_resources/extracted/ttm/GJDIVE.TTM"/>
+                <file name="GJGULIVR.TTM" type="data" source="../../jc_resources/extracted/ttm/GJGULIVR.TTM"/>
+                <file name="GJGULL1.TTM" type="data" source="../../jc_resources/extracted/ttm/GJGULL1.TTM"/>
+                <file name="GJHOT.TTM" type="data" source="../../jc_resources/extracted/ttm/GJHOT.TTM"/>
+                <file name="GJLILIPU.TTM" type="data" source="../../jc_resources/extracted/ttm/GJLILIPU.TTM"/>
+                <file name="GJNAT1.TTM" type="data" source="../../jc_resources/extracted/ttm/GJNAT1.TTM"/>
+                <file name="GJNAT3.TTM" type="data" source="../../jc_resources/extracted/ttm/GJNAT3.TTM"/>
+                <file name="GJVIS3.TTM" type="data" source="../../jc_resources/extracted/ttm/GJVIS3.TTM"/>
+                <file name="GJVIS5.TTM" type="data" source="../../jc_resources/extracted/ttm/GJVIS5.TTM"/>
+                <file name="GJVIS5W.TTM" type="data" source="../../jc_resources/extracted/ttm/GJVIS5W.TTM"/>
+                <file name="GJVIS6.TTM" type="data" source="../../jc_resources/extracted/ttm/GJVIS6.TTM"/>
+                <file name="MEANWHIL.TTM" type="data" source="../../jc_resources/extracted/ttm/MEANWHIL.TTM"/>
+                <file name="MJAMBWLK.TTM" type="data" source="../../jc_resources/extracted/ttm/MJAMBWLK.TTM"/>
+                <file name="MJBATH.TTM" type="data" source="../../jc_resources/extracted/ttm/MJBATH.TTM"/>
+                <file name="MJCOCO1.TTM" type="data" source="../../jc_resources/extracted/ttm/MJCOCO1.TTM"/>
+                <file name="MJCOCO.TTM" type="data" source="../../jc_resources/extracted/ttm/MJCOCO.TTM"/>
+                <file name="MJDIVE.TTM" type="data" source="../../jc_resources/extracted/ttm/MJDIVE.TTM"/>
+                <file name="MJFIRE.TTM" type="data" source="../../jc_resources/extracted/ttm/MJFIRE.TTM"/>
+                <file name="MJFISHC.TTM" type="data" source="../../jc_resources/extracted/ttm/MJFISHC.TTM"/>
+                <file name="MJFISH.TTM" type="data" source="../../jc_resources/extracted/ttm/MJFISH.TTM"/>
+                <file name="MJJOG.TTM" type="data" source="../../jc_resources/extracted/ttm/MJJOG.TTM"/>
+                <file name="MJRAFT.TTM" type="data" source="../../jc_resources/extracted/ttm/MJRAFT.TTM"/>
+                <file name="MJREAD.TTM" type="data" source="../../jc_resources/extracted/ttm/MJREAD.TTM"/>
+                <file name="MJSAND.TTM" type="data" source="../../jc_resources/extracted/ttm/MJSAND.TTM"/>
+                <file name="MJTELE.TTM" type="data" source="../../jc_resources/extracted/ttm/MJTELE.TTM"/>
+                <file name="SASKDATE.TTM" type="data" source="../../jc_resources/extracted/ttm/SASKDATE.TTM"/>
+                <file name="SBREAKUP.TTM" type="data" source="../../jc_resources/extracted/ttm/SBREAKUP.TTM"/>
+                <file name="SHARK1.TTM" type="data" source="../../jc_resources/extracted/ttm/SHARK1.TTM"/>
+                <file name="SJGLIMPS.TTM" type="data" source="../../jc_resources/extracted/ttm/SJGLIMPS.TTM"/>
+                <file name="SJLEAVES.TTM" type="data" source="../../jc_resources/extracted/ttm/SJLEAVES.TTM"/>
+                <file name="SJMSSGE.TTM" type="data" source="../../jc_resources/extracted/ttm/SJMSSGE.TTM"/>
+                <file name="SJMSUZY.TTM" type="data" source="../../jc_resources/extracted/ttm/SJMSUZY.TTM"/>
+                <file name="SJWORK.TTM" type="data" source="../../jc_resources/extracted/ttm/SJWORK.TTM"/>
+                <file name="SMDATE.TTM" type="data" source="../../jc_resources/extracted/ttm/SMDATE.TTM"/>
+                <file name="SUZYCITY.TTM" type="data" source="../../jc_resources/extracted/ttm/SUZYCITY.TTM"/>
+                <file name="THEEND.TTM" type="data" source="../../jc_resources/extracted/ttm/THEEND.TTM"/>
+                <file name="WOULDBE.TTM" type="data" source="../../jc_resources/extracted/ttm/WOULDBE.TTM"/>
+            </dir>
+
         </directory_tree>
     </track>
 

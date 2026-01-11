@@ -24,6 +24,7 @@
 /* Conditional includes for PS1 freestanding build */
 #ifndef PS1_BUILD
 #include <stdio.h>
+#include <stdlib.h>
 #else
 /* PS1 minimal stdio declarations */
 #ifndef _FILE_DEFINED
@@ -32,6 +33,7 @@ typedef struct _FILE FILE;
 #endif
 extern int fprintf(FILE *stream, const char *format, ...);
 #define stderr ((FILE*)2)
+#include <stdlib.h>  /* For free() */
 #endif
 
 #include "mytypes.h"
@@ -41,6 +43,7 @@ extern int fprintf(FILE *stream, const char *format, ...);
 #ifdef PS1_BUILD
 #include "graphics_ps1.h"
 #include "sound_ps1.h"
+#include "cdrom_ps1.h"
 #else
 #include "graphics.h"
 #include "sound.h"
@@ -94,6 +97,15 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
 
     /* TTM lazy loading: Load TTM data on demand from extracted file if not already loaded */
     if (ttmResource->uncompressedData == NULL) {
+#ifdef PS1_BUILD
+        /* PS1: Load from pre-extracted TTM file on CD */
+        ps1_loadTtmData(ttmResource);
+        if (ttmResource->uncompressedData == NULL) {
+            /* Fatal error - can't continue without TTM data.
+             * Screen will freeze at this point - visual indicator of failure */
+            while(1);  /* Hang on error */
+        }
+#else
         char extractedPath[512];
         snprintf(extractedPath, sizeof(extractedPath), "extracted/ttm/%s",
                  ttmResource->resName);
@@ -113,6 +125,7 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
         } else {
             fatalError("TTM data not loaded and extracted file not found - cannot load %s", ttmName);
         }
+#endif
     }
 
     /* Pin TTM resource to prevent eviction while in use */
@@ -211,6 +224,30 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
     offset = ttmThread->ip;
     data = ttmSlot->data;
 
+#ifdef PS1_BUILD
+    /* DEBUG: Minimal - just show one indicator if TTM data looks valid */
+    {
+        static int verifyDone = 0;
+        if (!verifyDone && data != NULL && ttmSlot->dataSize >= 0x2C) {
+            /* Check first opcode is SET_PALETTE_SLOT (0x1061) */
+            uint16 firstOpcode = data[0] | (data[1] << 8);
+            static uint16 checkPixels[16];
+            if (firstOpcode == 0x1061) {
+                /* Small GREEN dot at top-right = TTM data valid */
+                for (int i = 0; i < 16; i++) checkPixels[i] = (0 << 10) | (31 << 5) | 0;
+            } else {
+                /* Small RED dot = TTM data invalid */
+                for (int i = 0; i < 16; i++) checkPixels[i] = (0 << 10) | (0 << 5) | 31;
+            }
+            RECT checkRect;
+            setRECT(&checkRect, 620, 10, 8, 8);
+            LoadImage(&checkRect, (uint32*)checkPixels);
+            DrawSync(0);
+            verifyDone = 1;
+        }
+    }
+#endif
+
     while (continueLoop) {
 
         opcode = peekUint16(data, &offset);
@@ -232,6 +269,7 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
         else {                        // args are numArgs words
             peekUint16Block(data, &offset, args, numArgs);
         }
+
 
         switch (opcode) {
 
@@ -393,6 +431,10 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0xF05F:
                 debugMsg("    LOAD_PALETTE %s", strArg);
+                break;
+
+            default:
+                debugMsg("    UNKNOWN OPCODE 0x%04X", opcode);
                 break;
         }
 

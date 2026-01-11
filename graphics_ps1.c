@@ -535,6 +535,19 @@ void grFreeLayer(PS1Surface *sfc)
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
     /*
+     * PS1 FIX: Always use RAM-based rendering path.
+     *
+     * The VRAM/OT path adds primitives to global ot[db], but the main game loop
+     * uses a local gameOT for DrawOTag. This causes sprites to never be drawn!
+     *
+     * RAM-based sprites use grCompositeToBackground() which writes directly to
+     * background tile buffers, correctly rendering with the main loop.
+     */
+    grLoadBmpRAM(ttmSlot, slotNo, strArg);
+    return;
+
+    /* === DISABLED: VRAM/OT path (kept for reference) ===
+     *
      * CRITICAL PATTERN: LoadImage MUST be called with a simple uint16* buffer,
      * NOT through a struct member like surface->pixels. Creating the PS1Surface
      * AFTER LoadImage works; creating it BEFORE and using surface->pixels
@@ -772,16 +785,21 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     struct TBmpResource *bmpResource = findBmpResource(strArg);
     if (!bmpResource) return;
 
-    /* On-demand loading: decompress BMP if not already loaded */
+    /* On-demand loading: load BMP data if not already loaded */
     if (!bmpResource->uncompressedData) {
         ps1_loadBmpData(bmpResource);
     }
-    if (!bmpResource->uncompressedData) return;  /* Still NULL = load failed */
+    if (!bmpResource->uncompressedData) return;
     if (bmpResource->numImages < 1) return;
 
     int numToLoad = bmpResource->numImages;
     if (numToLoad > MAX_SPRITES_PER_BMP) {
         numToLoad = MAX_SPRITES_PER_BMP;
+    }
+
+    /* Limit frames to prevent memory exhaustion on PS1 */
+    if (numToLoad > 16) {
+        numToLoad = 16;  /* Cap at 16 frames to save RAM */
     }
 
     uint8 *srcPtr = bmpResource->uncompressedData;
@@ -792,6 +810,8 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         /* Allocate PS1Surface */
         PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+        if (!surface) return;  /* Out of memory */
+
         surface->width = width;
         surface->height = height;
         surface->x = 0;  /* Not in VRAM - RAM only */
@@ -802,6 +822,10 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         /* Allocate 15-bit direct color buffer */
         uint32 pixelCount = width * height;
         surface->pixels = (uint16*)safe_malloc(pixelCount * 2);
+        if (!surface->pixels) {
+            free(surface);
+            return;  /* Out of memory */
+        }
 
         /* Convert 4-bit indexed to 15-bit direct color using palette */
         uint16 *dst = surface->pixels;
@@ -904,6 +928,23 @@ void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 {
     if (!sprite || !sprite->pixels) return;
+
+    /* DEBUG: Draw a bright magenta pixel at top-left of each composited sprite */
+    {
+        PS1Surface *tile = NULL;
+        int localX = screenX, localY = screenY;
+        if (screenY < 240) {
+            if (screenX < 320) { tile = bgTile0; }
+            else { tile = bgTile1; localX = screenX - 320; }
+        } else {
+            localY = screenY - 240;
+            if (screenX < 320) { tile = bgTile3; }
+            else { tile = bgTile4; localX = screenX - 320; }
+        }
+        if (tile && tile->pixels && localX >= 0 && localX < 320 && localY >= 0 && localY < 240) {
+            tile->pixels[localY * 320 + localX] = (31 << 10) | (0 << 5) | 31;  /* Magenta */
+        }
+    }
 
     uint16 sprW = sprite->width;
     uint16 sprH = sprite->height;
@@ -1064,15 +1105,23 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
     x += grDx;
     y += grDy;
 
-    if (spriteNo >= ttmSlot->numSprites[imageNo]) {
-        if (debugMode) {
-            printf("Warning: sprite %d not found in slot %d\n", spriteNo, imageNo);
-        }
+    /* Validate imageNo bounds */
+    if (imageNo >= MAX_BMP_SLOTS || ttmSlot->numSprites[imageNo] == 0) {
         return;
     }
 
-    PS1Surface *sprite = ttmSlot->sprites[imageNo][spriteNo];
+    /* Wrap sprite index to available frames (handles 16-frame cap) */
+    uint16 actualSpriteNo = spriteNo % ttmSlot->numSprites[imageNo];
+
+    PS1Surface *sprite = ttmSlot->sprites[imageNo][actualSpriteNo];
     if (sprite == NULL) {
+        return;
+    }
+
+    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixels.
+     * Composite directly to background tiles - avoids OT/primitive buffer issues. */
+    if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+        grCompositeToBackground(sprite, x, y);
         return;
     }
 
@@ -1133,6 +1182,64 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
 }
 
 /*
+ * Composite sprite to background tiles with horizontal flip
+ */
+static void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 screenY)
+{
+    if (!sprite || !sprite->pixels) return;
+
+    uint16 sprW = sprite->width;
+    uint16 sprH = sprite->height;
+    uint16 *sprPixels = sprite->pixels;
+
+    /* Iterate over each pixel in the sprite (flipped horizontally) */
+    for (uint16 sy = 0; sy < sprH; sy++) {
+        sint16 destY = screenY + sy;
+        if (destY < 0 || destY >= 480) continue;
+
+        for (uint16 sx = 0; sx < sprW; sx++) {
+            /* Flip X coordinate */
+            sint16 destX = screenX + (sprW - 1 - sx);
+            if (destX < 0 || destX >= 640) continue;
+
+            uint16 pixel = sprPixels[sy * sprW + sx];
+
+            /* Skip transparent pixels (0x0000) */
+            if (pixel == 0x0000) continue;
+
+            /* Determine which tile and local coordinates */
+            PS1Surface *tile = NULL;
+            uint16 tileLocalX, tileLocalY;
+
+            if (destY < 240) {
+                tileLocalY = destY;
+                if (destX < 320) {
+                    tile = bgTile0;
+                    tileLocalX = destX;
+                } else {
+                    tile = bgTile1;
+                    tileLocalX = destX - 320;
+                }
+            } else {
+                tileLocalY = destY - 240;
+                if (destX < 320) {
+                    tile = bgTile3;
+                    tileLocalX = destX;
+                } else {
+                    tile = bgTile4;
+                    tileLocalX = destX - 320;
+                }
+            }
+
+            /* Write pixel to tile buffer if tile exists */
+            if (tile && tile->pixels) {
+                tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
+            }
+        }
+    }
+}
+
+/*
  * Draw horizontally flipped sprite
  */
 void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
@@ -1141,15 +1248,23 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
     x += grDx;
     y += grDy;
 
-    if (spriteNo >= ttmSlot->numSprites[imageNo]) {
-        if (debugMode) {
-            printf("Warning: sprite %d not found in slot %d\n", spriteNo, imageNo);
-        }
+    /* Validate imageNo bounds */
+    if (imageNo >= MAX_BMP_SLOTS || ttmSlot->numSprites[imageNo] == 0) {
         return;
     }
 
-    PS1Surface *sprite = ttmSlot->sprites[imageNo][spriteNo];
+    /* Wrap sprite index to available frames (handles 16-frame cap) */
+    uint16 actualSpriteNo = spriteNo % ttmSlot->numSprites[imageNo];
+
+    PS1Surface *sprite = ttmSlot->sprites[imageNo][actualSpriteNo];
     if (sprite == NULL) {
+        return;
+    }
+
+    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixels.
+     * Composite directly to background tiles with flip - avoids OT/primitive buffer issues. */
+    if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+        grCompositeToBackgroundFlip(sprite, x, y);
         return;
     }
 
@@ -1319,19 +1434,18 @@ void grInitEmptyBackground()
 /*
  * Save clean copies of background tiles (after loading background, before any sprite compositing).
  * Used by composite pattern to restore pristine background each frame.
+ *
+ * Called from grLoadScreen after background is loaded/composited.
+ * Always updates ALL clean copies to current tile state.
  */
 void grSaveCleanBgTiles(void)
 {
     uint32 tileSize = 320 * 240 * 2;  /* 320x240 @ 16-bit = 153,600 bytes per tile */
 
-    /* Free old clean copies if they exist */
+    /* Top tiles - always update to current state */
     if (bgTile0Clean) { free(bgTile0Clean); bgTile0Clean = NULL; }
     if (bgTile1Clean) { free(bgTile1Clean); bgTile1Clean = NULL; }
-    if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
-    if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
 
-    /* Save copies of current tile pixel data
-     * NOTE: Only save top row tiles - bottom row clean copies exceed PS1 memory */
     if (bgTile0 && bgTile0->pixels) {
         bgTile0Clean = (uint16*)malloc(tileSize);
         if (bgTile0Clean) memcpy(bgTile0Clean, bgTile0->pixels, tileSize);
@@ -1340,7 +1454,22 @@ void grSaveCleanBgTiles(void)
         bgTile1Clean = (uint16*)malloc(tileSize);
         if (bgTile1Clean) memcpy(bgTile1Clean, bgTile1->pixels, tileSize);
     }
-    /* Skip bgTile3/4 clean copies - not enough RAM on PS1 */
+
+    /* Bottom tiles - always update to current state
+     * For partial height images (like ISLETEMP), the bottom tiles have been
+     * composited with scene data over the ocean base. We need to save this
+     * composited state so sprites can be properly erased each frame. */
+    if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
+    if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
+
+    if (bgTile3 && bgTile3->pixels) {
+        bgTile3Clean = (uint16*)malloc(tileSize);
+        if (bgTile3Clean) memcpy(bgTile3Clean, bgTile3->pixels, tileSize);
+    }
+    if (bgTile4 && bgTile4->pixels) {
+        bgTile4Clean = (uint16*)malloc(tileSize);
+        if (bgTile4Clean) memcpy(bgTile4Clean, bgTile4->pixels, tileSize);
+    }
 }
 
 /*
@@ -1483,10 +1612,11 @@ static void freeBgTile(PS1Surface **tile)
 /*
  * Helper: Create a background tile stored in RAM only (no VRAM upload)
  * For use with LoadImage directly to framebuffer
+ * srcHeight parameter allows partial source data (rest filled with black)
  */
-static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
-                                    uint16 srcStartX, uint16 srcStartY,
-                                    uint16 tileWidth)
+static PS1Surface *createBgTileRAMPartial(uint8 *src, uint16 srcWidth, uint16 srcHeight,
+                                           uint16 srcStartX, uint16 srcStartY,
+                                           uint16 tileWidth)
 {
     PS1Surface *tile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
     tile->width = tileWidth;
@@ -1500,23 +1630,29 @@ static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
 
     uint16 *dst = tile->pixels;
 
-    /* 1:1 pixel copy from source region */
+    /* 1:1 pixel copy from source region, with bounds checking */
     for (uint16 y = 0; y < BG_TILE_HEIGHT; y++) {
         for (uint16 x = 0; x < tileWidth; x++) {
             uint32 srcX = srcStartX + x;
             uint32 srcY = srcStartY + y;
 
-            /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
-            uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
+            /* Check if within source bounds */
+            if (srcY < srcHeight && srcX < srcWidth) {
+                /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
+                uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
 
-            uint8 palIndex;
-            if (srcX & 1) {
-                palIndex = src[srcOffset] & 0x0F;
+                uint8 palIndex;
+                if (srcX & 1) {
+                    palIndex = src[srcOffset] & 0x0F;
+                } else {
+                    palIndex = (src[srcOffset] >> 4) & 0x0F;
+                }
+
+                dst[y * tileWidth + x] = ttmPalette[palIndex & 0x0F];
             } else {
-                palIndex = (src[srcOffset] >> 4) & 0x0F;
+                /* Outside source bounds - fill with black */
+                dst[y * tileWidth + x] = 0x0000;
             }
-
-            dst[y * tileWidth + x] = ttmPalette[palIndex & 0x0F];
         }
     }
 
@@ -1525,34 +1661,57 @@ static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
 }
 
 /*
+ * Helper: Create a background tile stored in RAM only (no VRAM upload)
+ * For use with LoadImage directly to framebuffer
+ * Legacy wrapper - assumes source has enough data
+ */
+static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
+                                    uint16 srcStartX, uint16 srcStartY,
+                                    uint16 tileWidth)
+{
+    /* Assume source has enough height for legacy callers */
+    return createBgTileRAMPartial(src, srcWidth, srcStartY + BG_TILE_HEIGHT,
+                                   srcStartX, srcStartY, tileWidth);
+}
+
+/*
  * Load background screen
  */
 void grLoadScreen(char *strArg)
 {
-    /* Free existing tiles */
-    freeBgTile(&bgTile0);
-    freeBgTile(&bgTile1);
-    freeBgTile(&bgTile2a);
-    freeBgTile(&bgTile2b);
-    freeBgTile(&bgTile3);
-    freeBgTile(&bgTile4);
-    freeBgTile(&bgTile5a);
-    freeBgTile(&bgTile5b);
-    grBackgroundSfc = NULL;  /* Points to bgTile0, already freed */
-
-    if (grSavedZonesLayer != NULL) {
-        grFreeLayer(grSavedZonesLayer);
-        grSavedZonesLayer = NULL;
-    }
-
     struct TScrResource *scrResource = findScrResource(strArg);
 
-    /* Load from pre-extracted file if not already loaded */
+    /* Load SCR data first to check dimensions before freeing tiles */
     if (scrResource->uncompressedData == NULL) {
         ps1_loadScrData(scrResource);
     }
     if (scrResource->uncompressedData == NULL) {
         fatalError("grLoadScreen: Failed to load SCR from extracted file");
+    }
+
+    uint16 srcHeight = scrResource->height;
+    int isPartialHeight = (srcHeight < 480);
+
+    /* Free top tiles always */
+    freeBgTile(&bgTile0);
+    freeBgTile(&bgTile1);
+    freeBgTile(&bgTile2a);
+    freeBgTile(&bgTile2b);
+
+    /* Only free bottom tiles if new image is full height
+     * This preserves ocean background for scenes like ISLETEMP (640x350) */
+    if (!isPartialHeight) {
+        freeBgTile(&bgTile3);
+        freeBgTile(&bgTile4);
+        freeBgTile(&bgTile5a);
+        freeBgTile(&bgTile5b);
+    }
+
+    grBackgroundSfc = NULL;
+
+    if (grSavedZonesLayer != NULL) {
+        grFreeLayer(grSavedZonesLayer);
+        grSavedZonesLayer = NULL;
     }
 
     if ((scrResource->width % 2) == 1) {
@@ -1594,35 +1753,58 @@ void grLoadScreen(char *strArg)
     }
     DrawSync(0);
 
-    /* Bottom row: Only create if SCR has enough lines
-     * Many SCR files are 640x350, not 640x480 - must check actual height */
-    uint16 srcHeight = scrResource->height;
-
-    /* Debug: Print SCR dimensions */
-    printf("SCR: %s - %dx%d (uncompressed: %u bytes)\n",
-           scrResource->resName, srcWidth, srcHeight, scrResource->uncompressedSize);
+    /* Bottom row: Handle based on image height and existing tiles
+     * For partial height images (like ISLETEMP 640x350), preserve existing ocean tiles */
 
     /* Calculate how many lines we can read for bottom half (y=240+) */
     uint16 bottomRowLines = (srcHeight > 240) ? (srcHeight - 240) : 0;
 
     if (bottomRowLines >= 240) {
         /* Full 640x480 image - create bottom row tiles (2x320 to match top row) */
-        bgTile3  = createBgTileRAM(src, srcWidth, 0,   240, 320);
-        bgTile4  = createBgTileRAM(src, srcWidth, 320, 240, 320);
+        bgTile3  = createBgTileRAMPartial(src, srcWidth, srcHeight, 0,   240, 320);
+        bgTile4  = createBgTileRAMPartial(src, srcWidth, srcHeight, 320, 240, 320);
         bgTile5a = NULL;
         bgTile5b = NULL;
+    } else if (isPartialHeight && bgTile3 != NULL && bgTile4 != NULL && bottomRowLines > 0) {
+        /* Partial height image with existing bottom tiles (ocean) - composite on top!
+         * Copy the available rows (240 to srcHeight-1) onto existing tiles */
+        uint16 *dst3 = bgTile3->pixels;
+        uint16 *dst4 = bgTile4->pixels;
+
+        for (uint16 y = 0; y < bottomRowLines && y < 240; y++) {
+            uint16 srcY = 240 + y;
+            for (uint16 x = 0; x < 320; x++) {
+                /* Left tile (bgTile3) */
+                uint32 srcOffset = (srcY * srcWidth + x) / 2;
+                uint8 palIndex;
+                if (x & 1) {
+                    palIndex = src[srcOffset] & 0x0F;
+                } else {
+                    palIndex = (src[srcOffset] >> 4) & 0x0F;
+                }
+                dst3[y * 320 + x] = ttmPalette[palIndex & 0x0F];
+
+                /* Right tile (bgTile4) */
+                uint16 srcX = 320 + x;
+                srcOffset = (srcY * srcWidth + srcX) / 2;
+                if (srcX & 1) {
+                    palIndex = src[srcOffset] & 0x0F;
+                } else {
+                    palIndex = (src[srcOffset] >> 4) & 0x0F;
+                }
+                dst4[y * 320 + x] = ttmPalette[palIndex & 0x0F];
+            }
+        }
     } else if (bottomRowLines > 0) {
-        /* Partial bottom row (e.g., 640x350 = 110 lines for bottom)
-         * Create empty black tiles so sprites can composite to bottom half */
-        printf("SCR has only %d lines for bottom half - creating empty tiles\n", bottomRowLines);
-        bgTile3  = createEmptyBgTileRAM(320, 240);
-        bgTile4  = createEmptyBgTileRAM(320, 240);
+        /* Partial bottom row with no existing tiles - create with partial data */
+        bgTile3  = createBgTileRAMPartial(src, srcWidth, srcHeight, 0,   240, 320);
+        bgTile4  = createBgTileRAMPartial(src, srcWidth, srcHeight, 320, 240, 320);
         bgTile5a = NULL;
         bgTile5b = NULL;
     } else {
         /* SCR is only 240 lines or less - create empty tiles for sprite compositing */
-        bgTile3  = createEmptyBgTileRAM(320, 240);
-        bgTile4  = createEmptyBgTileRAM(320, 240);
+        if (bgTile3 == NULL) bgTile3 = createEmptyBgTileRAM(320, 240);
+        if (bgTile4 == NULL) bgTile4 = createEmptyBgTileRAM(320, 240);
         bgTile5a = NULL;
         bgTile5b = NULL;
     }
@@ -1657,11 +1839,13 @@ void grLoadScreen(char *strArg)
     if (scrResource->uncompressedData) {
         free(scrResource->uncompressedData);
         scrResource->uncompressedData = NULL;
-        if (debugMode) {
-            printf("Freed SCR data for %s (%u bytes)\n",
-                   scrResource->resName, scrResource->uncompressedSize);
-        }
     }
+
+    /* Save clean background tiles immediately after loading.
+     * This ensures the clean copies don't have any sprites baked in.
+     * IMPORTANT: For partial height images, we save top tiles immediately
+     * but preserve any existing bottom tile clean copies (ocean base). */
+    grSaveCleanBgTiles();
 }
 
 /*

@@ -315,7 +315,6 @@ int main(int argc, char **argv)
     extern struct TScrResource *scrResources[];
     extern struct TBmpResource *bmpResources[];
     extern struct TPalResource *palResources[];
-    extern int fontID;  /* For FntPrint debug display */
 #endif
 
     /* Initialize LRU cache for memory management */
@@ -349,222 +348,71 @@ int main(int argc, char **argv)
     PutDispEnv(&gameDisp);
     PutDrawEnv(&gameDraw);
 
-    /* RE-ENABLE palette and background loading */
+    /* Load palette first - TTM may reference it */
     if (numPalResources > 0 && palResources[0]) {
         grLoadPalette(palResources[0]);
     }
-    /* Load island background - test with OCEAN00.SCR (640x480) */
+
+    /* === TTM-DRIVEN SCENE RENDERING ===
+     * Load ocean background first, then let TTM overlay scene-specific background.
+     * FISHWALK.TTM loads ISLETEMP.SCR (640x350) which overlays on ocean. */
+
+    /* Load ocean as base background (640x480) - bottom will persist through scene loads */
     grLoadScreen("OCEAN00.SCR");
 
-    /* Create a simple TTtmSlot to hold sprites */
+    /* Create TTM slot and thread for scene playback */
     static struct TTtmSlot gameTtmSlot;
-    memset(&gameTtmSlot, 0, sizeof(gameTtmSlot));
+    static struct TTtmThread gameTtmThread;
 
-    /* Load first available BMP resource into slot 0 */
-    PS1Surface *loadedSprite = NULL;
-    int spriteCount = 0;
+    /* Initialize TTM slot */
+    ttmInitSlot(&gameTtmSlot);
 
-    /* TEST: Directly load JOHNWALK.BMP to test streaming dynamic loading.
-     * JOHNWALK has uncompressedData = NULL (skipped at startup),
-     * so grLoadBmp will trigger ps1_loadBmpData with streaming reads. */
-    grLoadBmpRAM(&gameTtmSlot, 0, "JOHNWALK.BMP");
-    spriteCount = gameTtmSlot.numSprites[0];
-    if (spriteCount > 0) {
-        loadedSprite = gameTtmSlot.sprites[0][0];
-    }
-    /* Re-apply draw environment after grLoadBmp */
-    PutDrawEnv(&gameDraw);
+    /* Load FISHWALK.TTM bytecode from CD */
+    ttmLoadTtm(&gameTtmSlot, "FISHWALK.TTM");
 
-    /* Load BACKGRND.BMP into RAM for framebuffer blitting (island sprites) */
-    static struct TTtmSlot islandSlot;
-    memset(&islandSlot, 0, sizeof(islandSlot));
+    /* Initialize TTM thread for playback */
+    memset(&gameTtmThread, 0, sizeof(gameTtmThread));
+    gameTtmThread.ttmSlot = &gameTtmSlot;
+    gameTtmThread.isRunning = 1;
+    gameTtmThread.ip = 0;
+    gameTtmThread.selectedBmpSlot = 0;
+    gameTtmThread.delay = 4;  /* Initial delay */
+    gameTtmThread.timer = 1;
 
-    /* Load island sprites using RAM approach (not VRAM textures)
-     * grLoadBmpRAM will load from extracted file on-demand */
-    grLoadBmpRAM(&islandSlot, 0, "BACKGRND.BMP");
-    int islandSpriteCount = islandSlot.numSprites[0];
-    PS1Surface *islandLandmass = NULL;
-    PS1Surface *palmTrunk = NULL;
-    PS1Surface *palmLeaves = NULL;
-    PS1Surface *palmShadow = NULL;
-    if (islandSpriteCount > 0) {
-        islandLandmass = islandSlot.sprites[0][0];   /* Sprite 0 = island */
-    }
-    if (islandSpriteCount > 12) {
-        palmLeaves = islandSlot.sprites[0][12];      /* Sprite 12 = leaves */
-    }
-    if (islandSpriteCount > 13) {
-        palmTrunk = islandSlot.sprites[0][13];       /* Sprite 13 = trunk */
-    }
-    if (islandSpriteCount > 14) {
-        palmShadow = islandSlot.sprites[0][14];      /* Sprite 14 = shadow */
-    }
-
-    /* Composite island sprites INTO the background tiles WITH TRANSPARENCY
-     * This is done ONCE at init - grDrawBackground() will render them each frame
-     * Order matters: shadow first, then island, then trunk, then leaves (back to front) */
-    if (islandLandmass && islandLandmass->pixels) {
-        /* Positions from island.c: island(288,279), trunk(442,148), leaves(365,122), shadow(396,279) */
-        grCompositeToBackground(islandLandmass, 288, 279);
-        if (palmShadow) grCompositeToBackground(palmShadow, 396, 279);
-        if (palmTrunk) grCompositeToBackground(palmTrunk, 442, 148);
-        if (palmLeaves) grCompositeToBackground(palmLeaves, 365, 122);
-    }
-
-    /* Save clean background tiles (with island already composited).
-     * Each frame we'll restore from this, composite Johnny sprite, then upload. */
-    grSaveCleanBgTiles();
+    /* Run TTM until first UPDATE - this loads background and sprites.
+     * grLoadScreen (called by TTM) automatically saves clean background tiles,
+     * so sprites drawn here will be properly erased each frame. */
+    ttmPlay(&gameTtmThread);
 
     PutDrawEnv(&gameDraw);
 
-    /* Animation state */
-    int currentSprite = 0;
-    int frameCounter = 0;
-
-    /* Dirty rectangle: save only sprite area instead of full tiles (memory efficient) */
-    static uint16 *savedSpriteArea = NULL;
-    static int savedX = 0, savedY = 0, savedW = 0, savedH = 0;
-
-    /* Allocate sprite save buffer once (max 64x80 @ 16-bit = 10KB) */
-    if (!savedSpriteArea) {
-        savedSpriteArea = (uint16*)malloc(64 * 80 * 2);
-    }
-
-    /* === Main game loop (proven working pattern) === */
+    /* === Main game loop - TTM driven === */
     while (1) {
         DrawSync(0);
         VSync(0);
         ClearOTagR(gameOT, GAME_OTLEN);
         gameNextPri = gamePrimBuf;
 
-        /* Restore previous sprite area from saved copy (dirty rectangle) */
-        if (savedSpriteArea && savedW > 0 && savedH > 0) {
-            /* Restore saved pixels back to bgTiles */
-            for (int y = 0; y < savedH; y++) {
-                int destY = savedY + y;
-                if (destY < 0 || destY >= 480) continue;
-                for (int x = 0; x < savedW; x++) {
-                    int destX = savedX + x;
-                    if (destX < 0 || destX >= 640) continue;
+        /* Restore clean background each frame */
+        grRestoreBgTiles();
 
-                    uint16 pixel = savedSpriteArea[y * savedW + x];
-
-                    /* Determine which tile (bgTile* declared in graphics_ps1.h) */
-                    PS1Surface *tile = NULL;
-                    int tileLocalX, tileLocalY;
-
-                    if (destY < 240) {
-                        tileLocalY = destY;
-                        if (destX < 320) { tile = bgTile0; tileLocalX = destX; }
-                        else { tile = bgTile1; tileLocalX = destX - 320; }
-                    } else {
-                        tileLocalY = destY - 240;
-                        if (destX < 320) { tile = bgTile3; tileLocalX = destX; }
-                        else { tile = bgTile4; tileLocalX = destX - 320; }
-                    }
-
-                    if (tile && tile->pixels) {
-                        tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
-                    }
-                }
+        /* TTM execution - advance animation when timer expires */
+        if (gameTtmThread.timer > 0) {
+            gameTtmThread.timer--;
+        }
+        if (gameTtmThread.timer == 0 && gameTtmThread.isRunning) {
+            ttmPlay(&gameTtmThread);
+            gameTtmThread.timer = gameTtmThread.delay;
+            if (gameTtmThread.nextGotoOffset) {
+                gameTtmThread.ip = gameTtmThread.nextGotoOffset;
+                gameTtmThread.nextGotoOffset = 0;
             }
         }
 
-        /* Don't use grRestoreBgTiles - using dirty rectangle instead */
-        /* grRestoreBgTiles(); */
-
-        /* Animate through sprite frames */
-        if (++frameCounter >= 5) {  /* Change frame every 5 vsyncs (~12 fps) */
-            frameCounter = 0;
-            if (spriteCount > 1) {
-                currentSprite = (currentSprite + 1) % spriteCount;
-                loadedSprite = gameTtmSlot.sprites[0][currentSprite];
-            }
-        }
-
-        /* Base position for animation - this is where the sprite's feet should be */
-        int baseX = 350;  /* Center X position */
-        int baseY = 320;  /* Bottom Y position (feet on island) - adjusted up more */
-
-        /* Draw actual textured sprite if loaded, otherwise green placeholder */
-        if (loadedSprite && loadedSprite->width > 0) {
-            /* Calculate draw position: center horizontally, bottom-align vertically */
-            int spriteX = baseX - (loadedSprite->width / 2);
-            int spriteY = baseY - loadedSprite->height;
-
-            /* SAVE sprite area BEFORE compositing (dirty rectangle) */
-            if (savedSpriteArea && loadedSprite->width <= 64 && loadedSprite->height <= 80) {
-                savedX = spriteX;
-                savedY = spriteY;
-                savedW = loadedSprite->width;
-                savedH = loadedSprite->height;
-
-                /* bgTile* declared in graphics_ps1.h */
-                for (int y = 0; y < savedH; y++) {
-                    int srcY = savedY + y;
-                    if (srcY < 0 || srcY >= 480) continue;
-                    for (int x = 0; x < savedW; x++) {
-                        int srcX = savedX + x;
-                        if (srcX < 0 || srcX >= 640) continue;
-
-                        PS1Surface *tile = NULL;
-                        int tileLocalX, tileLocalY;
-                        if (srcY < 240) {
-                            tileLocalY = srcY;
-                            if (srcX < 320) { tile = bgTile0; tileLocalX = srcX; }
-                            else { tile = bgTile1; tileLocalX = srcX - 320; }
-                        } else {
-                            tileLocalY = srcY - 240;
-                            if (srcX < 320) { tile = bgTile3; tileLocalX = srcX; }
-                            else { tile = bgTile4; tileLocalX = srcX - 320; }
-                        }
-
-                        if (tile && tile->pixels) {
-                            savedSpriteArea[y * savedW + x] = tile->pixels[tileLocalY * tile->width + tileLocalX];
-                        } else {
-                            savedSpriteArea[y * savedW + x] = 0x0000;
-                        }
-                    }
-                }
-            }
-
-            /* === Composite sprite to bgTiles === */
-            grDrawSpriteExt(&gameOT[0], &gameNextPri, loadedSprite, spriteX, spriteY);
-        } else {
-            /* Fallback: Green placeholder squares if no sprite loaded */
-            int spriteX = baseX - 32;  /* Center 64x64 placeholder */
-            int spriteY = baseY - 64;
-            POLY_F3 *spr1 = (POLY_F3*)gameNextPri;
-            setPolyF3(spr1);
-            setXY3(spr1, spriteX, spriteY, spriteX+64, spriteY, spriteX, spriteY+64);
-            setRGB0(spr1, 0, 255, 0);
-            addPrim(&gameOT[0], spr1);
-            gameNextPri += sizeof(POLY_F3);
-
-            POLY_F3 *spr2 = (POLY_F3*)gameNextPri;
-            setPolyF3(spr2);
-            setXY3(spr2, spriteX+64, spriteY, spriteX+64, spriteY+64, spriteX, spriteY+64);
-            setRGB0(spr2, 0, 255, 0);
-            addPrim(&gameOT[0], spr2);
-            gameNextPri += sizeof(POLY_F3);
-        }
-
-        (void)spriteCount;  /* Suppress unused warning */
-        (void)islandSpriteCount;
-
-        /* Upload composited background tiles (with sprite already composited) to framebuffer */
+        /* Upload background tiles to framebuffer */
         grDrawBackground();
 
-        /* Debug: Show sprite info on screen */
-        if (loadedSprite) {
-            uint8 dbgU = ((loadedSprite->x % 64) * 4) & 0xFF;
-            uint16 dbgTpage = loadedSprite->x / 64;
-            FntPrint("Fr:%d VX:%d U:%d TP:%d Cnt:%d\n",
-                     currentSprite, loadedSprite->x, dbgU, dbgTpage, spriteCount);
-        }
-        FntFlush(fontID);
-
-        /* Draw OT (for font, any VRAM-based sprites) */
+        /* Draw OT */
         PutDrawEnv(&gameDraw);
         DrawOTag(gameOT + GAME_OTLEN - 1);
     }

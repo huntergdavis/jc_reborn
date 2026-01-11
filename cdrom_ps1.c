@@ -1225,22 +1225,12 @@ struct TTtmResource* ps1_parseTtmResource(PS1File *f, const char *resName)
     ttmResource->compressionMethod = ps1_readUint8(f);
     ttmResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress first few TTMs for scene testing, lazy load the rest */
-    static int ttmDecompressCount = 0;
-    #define MAX_TTM_DECOMPRESS 10  /* Conservative limit to avoid memory crash */
-
-    if (ttmDecompressCount < MAX_TTM_DECOMPRESS) {
-        printf("Decompressing TTM: %s (%u bytes)\n", resName, ttmResource->uncompressedSize);
-        ttmResource->uncompressedData = ps1_uncompress(f,
-                                            ttmResource->compressionMethod,
-                                            ttmResource->compressedSize,
-                                            ttmResource->uncompressedSize);
-        ttmDecompressCount++;
-    } else {
-        /* Lazy loading: skip compressed data */
-        ttmResource->uncompressedData = NULL;
-        ps1_fseek(f, ttmResource->compressedSize, SEEK_CUR);
-    }
+    /* ALWAYS lazy load TTMs from pre-extracted files on CD (TTM/ directory)
+     * This bypasses potential LZW decompression bugs and ensures we get
+     * the exact byte-for-byte correct TTM bytecode */
+    ttmResource->uncompressedData = NULL;
+    ps1_fseek(f, ttmResource->compressedSize, SEEK_CUR);
+    printf("TTM: %s will lazy-load from TTM/ (%u bytes)\n", resName, ttmResource->uncompressedSize);
     ttmResource->lastUsedTick = 0;
     ttmResource->pinCount = 0;
 
@@ -1642,4 +1632,24 @@ void ps1_loadScrData(struct TScrResource *scrResource)
     /* Read entire file from CD - already decompressed, no processing needed
      * Trust the metadata uncompressedSize - the extracted files should match */
     scrResource->uncompressedData = ps1_streamRead(path, 0, scrResource->uncompressedSize);
+}
+
+/*
+ * Load TTM bytecode on-demand from pre-extracted files in TTM/ directory.
+ * Files are already decompressed, so we just read the whole file directly.
+ * This is called when ttmLoadTtm finds uncompressedData is NULL.
+ */
+void ps1_loadTtmData(struct TTtmResource *ttmResource)
+{
+    if (ttmResource == NULL) return;
+    if (ttmResource->uncompressedData != NULL) return;  /* Already loaded */
+    if (ttmResource->uncompressedSize == 0) return;  /* No data to read */
+
+    /* Build path to pre-extracted file: "TTM/FISHWALK.TTM" etc.
+     * ps1_streamRead will prepend backslash and append ";1" */
+    char path[32];
+    snprintf(path, sizeof(path), "TTM\\%s", ttmResource->resName);
+
+    /* Read entire file from CD - already decompressed bytecode */
+    ttmResource->uncompressedData = ps1_streamRead(path, 0, ttmResource->uncompressedSize);
 }

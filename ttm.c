@@ -182,6 +182,10 @@ void ttmInitSlot(struct TTtmSlot *ttmSlot)
     ttmSlot->ttmResource = NULL;
     for (int i=0; i < MAX_BMP_SLOTS; i++) {
         ttmSlot->numSprites[i] = 0;
+        /* Zero out sprite pointers to prevent garbage pointer access */
+        for (int j=0; j < MAX_SPRITES_PER_BMP; j++) {
+            ttmSlot->sprites[i][j] = NULL;
+        }
     }
 }
 

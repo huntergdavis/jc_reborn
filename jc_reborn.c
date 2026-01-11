@@ -337,7 +337,7 @@ int main(int argc, char **argv)
     adsInit();
 
     /* Use the simpler single-TTM player for testing */
-    adsPlaySingleTtm("FISHWALK.TTM");
+    adsPlaySingleTtm("GJHOT.TTM");
 
     /* The main loop is inside adsPlay() - when it returns, scene is done */
 

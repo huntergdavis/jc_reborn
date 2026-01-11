@@ -328,16 +328,15 @@ int main(int argc, char **argv)
         grLoadPalette(palResources[0]);
     }
 
-    /* Load ocean background first - provides the full 640x480 base scene.
-     * This gives us the ocean/island background for all animations. */
-    grLoadScreen("OCEAN00.SCR");
-    grSaveCleanBgTiles();
-
     /* Initialize ADS scene system */
     adsInit();
 
+    /* Load ocean background - simpler approach that was working */
+    grLoadScreen("OCEAN00.SCR");
+    grSaveCleanBgTiles();
+
     /* Use the simpler single-TTM player for testing */
-    adsPlaySingleTtm("GJHOT.TTM");
+    adsPlaySingleTtm("FISHWALK.TTM");
 
     /* The main loop is inside adsPlay() - when it returns, scene is done */
 

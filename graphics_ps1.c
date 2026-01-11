@@ -387,6 +387,7 @@ PS1Surface *grNewEmptyBackground()
     sfc->x = nextVRAMX;
     sfc->y = nextVRAMY;
     sfc->pixels = NULL;  /* Will be allocated in VRAM */
+    sfc->nextTile = NULL;
 
     /* Update VRAM allocation tracking */
     nextVRAMY += SCREEN_HEIGHT;
@@ -703,6 +704,7 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->y = 0;
         surface->clutX = 0;
         surface->clutY = 0;
+        surface->nextTile = NULL;  /* Single sprite, no tile chain */
 
         /* Allocate 15-bit direct color buffer */
         uint32 pixelCount = width * height;
@@ -1290,6 +1292,7 @@ static PS1Surface *createEmptyBgTileRAM(uint16 width, uint16 height)
     tile->height = height;
     tile->x = 0;
     tile->y = 0;
+    tile->nextTile = NULL;
     tile->pixels = (uint16*)safe_malloc(width * height * 2);
     /* Fill with black (0x0000 = transparent/black) */
     for (uint32 i = 0; i < width * height; i++) {
@@ -1449,6 +1452,7 @@ static PS1Surface *createBgTile(uint8 *src, uint16 srcWidth,
     tile->height = BG_TILE_HEIGHT;
     tile->x = vramX;
     tile->y = vramY;
+    tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */
     uint32 pixelDataSize = tileWidth * BG_TILE_HEIGHT * 2;
@@ -1508,6 +1512,7 @@ static PS1Surface *createBgTileRAMPartial(uint8 *src, uint16 srcWidth, uint16 sr
     tile->height = BG_TILE_HEIGHT;
     tile->x = 0;  /* Not in VRAM - just RAM */
     tile->y = 0;
+    tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */
     uint32 pixelDataSize = tileWidth * BG_TILE_HEIGHT * 2;

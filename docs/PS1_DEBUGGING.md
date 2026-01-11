@@ -1,0 +1,158 @@
+# PS1 Port Debugging Guide
+
+This document captures lessons learned while debugging the PlayStation 1 port of Johnny Reborn.
+
+## Memory Issues
+
+### Uninitialized nextTile Pointers (FIXED)
+
+**Symptom:** Invalid word read errors at addresses like `0x7C005418`, `0x54542E64` (ASCII-like patterns) occurring in `grReleaseBmp` or `grFreeLayer`.
+
+**Root Cause:** `PS1Surface` structs were allocated without initializing the `nextTile` pointer to NULL. When `grFreeLayer()` traversed the linked list, it followed garbage pointers.
+
+**Fix:** Initialize `nextTile = NULL` in ALL PS1Surface allocations:
+- `grNewEmptyBackground()`
+- `grLoadBmpRAM()`
+- `createEmptyBgTileRAM()`
+- `createBgTile()`
+- `createBgTileRAMPartial()`
+
+### Sprite Pointer Array Initialization (FIXED)
+
+**Symptom:** Memory corruption when releasing BMPs.
+
+**Root Cause:** `ttmInitSlot()` only set `numSprites[i] = 0` but didn't clear the actual sprite pointer arrays.
+
+**Fix:** Zero out all sprite pointers in `ttmInitSlot()`:
+```c
+for (int j=0; j < MAX_SPRITES_PER_BMP; j++) {
+    ttmSlot->sprites[i][j] = NULL;
+}
+```
+
+## Rendering Issues
+
+### Black Flashing / Tearing (PARTIALLY FIXED)
+
+**Symptom:** Screen flashes black in blocks during animation.
+
+**Root Cause:** `LoadImage` was uploading tiles to the visible framebuffer while the display was actively scanning, causing visual tearing.
+
+**Fix:** Call `VSync(0)` BEFORE `LoadImage` operations to ensure uploads happen during vertical blank:
+```c
+void grUpdateDisplay(...) {
+    VSync(0);  // Wait for vblank BEFORE upload
+    grDrawBackground();  // LoadImage operations
+    eventsWaitTick(grUpdateDelay);
+}
+```
+
+### Black Bar at Bottom of Screen (FIXED)
+
+**Symptom:** Bottom 1/4 of screen was black.
+
+**Root Cause:** Using `adsNoIsland()` created empty black tiles. Animations that only load partial-height backgrounds (like ISLETEMP.SCR at 640x350) don't populate the bottom tiles.
+
+**Fix:** Load a full 640x480 ocean background before animations:
+```c
+grLoadScreen("OCEAN00.SCR");
+grSaveCleanBgTiles();
+```
+
+### Background Not Showing After adsInitIsland() (KNOWN ISSUE)
+
+**Symptom:** After `islandInit()` draws the island/tree/clouds to bgTile buffers, they don't appear because `grRestoreBgTiles()` in the animation loop restores from "clean" copies that don't include the island.
+
+**Required Fix:** Call `grSaveCleanBgTiles()` AFTER `adsInitIsland()` completes to save the fully-composed island scene as the new "clean" state.
+
+### adsInitIsland() Hangs (UNRESOLVED)
+
+**Symptom:** Game hangs at title screen when using `adsInitIsland()`.
+
+**Possible Causes:**
+- Resource loading stalling on CD read
+- Infinite loop in `islandAnimate()` called 4 times in `islandInit()`
+- Memory exhaustion from loading multiple BMPs (MRAFT.BMP, BACKGRND.BMP, HOLIDAY.BMP)
+
+**To Investigate:**
+- Add debug output before/after each major step in `islandInit()`
+- Check if all required BMPs are on CD
+- Profile memory usage during island setup
+
+### Missing Sprites During Animation (UNRESOLVED)
+
+**Symptom:** Johnny disappears COMPLETELY for some frames (not just outlines - entire sprite missing) while fishing pole remains visible.
+
+**Possible Causes:**
+1. **Frame index out of bounds:** Sprite indices beyond loaded frames return NULL sprites, causing entire sprite to not render.
+2. **BMP frame loading failure:** Some frames may fail to load from CD, leaving NULL pointers in sprite array.
+3. **Sprite slot confusion:** Animation may be drawing from wrong BMP slot that has fewer/no frames loaded.
+4. **TTM opcode skipping:** Some draw commands may be skipped due to timing or conditional logic.
+
+**To Investigate:**
+- Add logging to `grDrawSprite()` to track requested vs. available sprite indices
+- Log when `ttmSlot->sprites[imageNo][spriteNo]` returns NULL
+- Verify BMP resource `numImages` matches animation requirements
+- Check if sprite wrapping logic (`spriteNo % numSprites`) is causing issues
+- Trace TTM execution to see if draw opcodes are being executed
+
+## Rendering Pipeline
+
+### Correct Frame Order
+1. `grRestoreBgTiles()` - Copy clean background to working tiles
+2. `ttmPlay()` - Execute TTM opcodes, draw sprites via `grCompositeToBackground()`
+3. `VSync(0)` - Wait for vertical blank
+4. `grDrawBackground()` - Upload tiles to framebuffer via `LoadImage()`
+5. `eventsWaitTick()` - Frame timing delay
+
+### Tile Layout
+```
+Screen (640x480):
++----------+----------+
+| bgTile0  | bgTile1  |  <- Top row (y=0-239)
+| (0,0)    | (320,0)  |
++----------+----------+
+| bgTile3  | bgTile4  |  <- Bottom row (y=240-479)
+| (0,240)  | (320,240)|
++----------+----------+
+```
+
+Each tile is 320x240 pixels, stored in RAM as 16-bit direct color (not VRAM).
+
+### Clean Tile Copies
+- `bgTile0Clean`, `bgTile1Clean`, `bgTile3Clean`, `bgTile4Clean`
+- Used to restore pristine background before each frame's sprite compositing
+- Must be saved AFTER background is fully set up (including island graphics)
+
+## CD Resources
+
+### Required Files for Island Setup
+- `OCEAN00.SCR`, `OCEAN01.SCR`, `OCEAN02.SCR` - Ocean backgrounds
+- `NIGHT.SCR` - Night mode background
+- `ISLETEMP.SCR` - Island template overlay
+- `MRAFT.BMP` - Raft sprites
+- `BACKGRND.BMP` - Clouds, island, palm tree sprites
+- `HOLIDAY.BMP` - Holiday decorations
+
+### Currently Missing
+- None identified, but verify all required resources are in `cd_layout.xml`
+
+## Build and Test
+
+```bash
+# Incremental build and test
+./scripts/rebuild-and-let-run.sh noclean
+
+# Full clean build
+./scripts/rebuild-and-let-run.sh
+```
+
+Screenshots are saved to:
+`~/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots/`
+
+## Next Steps
+
+1. Debug `adsInitIsland()` hang - add logging to isolate where it stalls
+2. Fix missing sprite frames - check transparency and frame indices
+3. Verify all animation frames render correctly
+4. Test with full `storyPlay()` for continuous scene playback

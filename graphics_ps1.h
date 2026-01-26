@@ -31,7 +31,7 @@ struct TTtmResource;
 #define SCREEN_HEIGHT       480
 
 #define MAX_BMP_SLOTS       6
-#define MAX_SPRITES_PER_BMP 120
+#define MAX_SPRITES_PER_BMP 8  /* Further reduced for PS1 memory constraints */
 #define MAX_TTM_SLOTS       10
 #define MAX_TTM_THREADS     10
 

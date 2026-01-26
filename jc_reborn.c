@@ -331,7 +331,7 @@ int main(int argc, char **argv)
     /* Initialize ADS scene system */
     adsInit();
 
-    /* Load ocean background - simpler approach that was working */
+    /* Load ocean background first - needed as base for partial-height scenes */
     grLoadScreen("OCEAN00.SCR");
     grSaveCleanBgTiles();
 

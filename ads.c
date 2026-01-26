@@ -27,6 +27,7 @@
 #include <stdio.h>
 #else
 #include <stddef.h>
+#include <psxgpu.h>  /* For RECT, LoadImage, setRECT */
 #ifndef _FILE_DEFINED
 #define _FILE_DEFINED
 typedef struct _FILE FILE;

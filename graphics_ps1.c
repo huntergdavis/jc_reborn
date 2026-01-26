@@ -674,14 +674,21 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         grReleaseBmp(ttmSlot, slotNo);
 
     struct TBmpResource *bmpResource = findBmpResource(strArg);
-    if (!bmpResource) return;
+    if (!bmpResource) {
+        return;
+    }
 
     /* On-demand loading: load BMP data if not already loaded */
     if (!bmpResource->uncompressedData) {
         ps1_loadBmpData(bmpResource);
     }
-    if (!bmpResource->uncompressedData) return;
-    if (bmpResource->numImages < 1) return;
+
+    if (!bmpResource->uncompressedData) {
+        return;
+    }
+    if (bmpResource->numImages < 1) {
+        return;
+    }
 
     int numToLoad = bmpResource->numImages;
     if (numToLoad > MAX_SPRITES_PER_BMP) {
@@ -696,7 +703,9 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         /* Allocate PS1Surface */
         PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-        if (!surface) return;  /* Out of memory */
+        if (!surface) {
+            return;  /* Out of memory */
+        }
 
         surface->width = width;
         surface->height = height;
@@ -816,22 +825,7 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 {
     if (!sprite || !sprite->pixels) return;
 
-    /* DEBUG: Draw a bright magenta pixel at top-left of each composited sprite */
-    {
-        PS1Surface *tile = NULL;
-        int localX = screenX, localY = screenY;
-        if (screenY < 240) {
-            if (screenX < 320) { tile = bgTile0; }
-            else { tile = bgTile1; localX = screenX - 320; }
-        } else {
-            localY = screenY - 240;
-            if (screenX < 320) { tile = bgTile3; }
-            else { tile = bgTile4; localX = screenX - 320; }
-        }
-        if (tile && tile->pixels && localX >= 0 && localX < 320 && localY >= 0 && localY < 240) {
-            tile->pixels[localY * 320 + localX] = (31 << 10) | (0 << 5) | 31;  /* Magenta */
-        }
-    }
+    /* DEBUG: Disabled single-pixel debug - not visible enough */
 
     uint16 sprW = sprite->width;
     uint16 sprH = sprite->height;
@@ -997,7 +991,7 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
-    /* Wrap sprite index to available frames (handles 16-frame cap) */
+    /* Wrap sprite index to available frames (handles frame cap) */
     uint16 actualSpriteNo = spriteNo % ttmSlot->numSprites[imageNo];
 
     PS1Surface *sprite = ttmSlot->sprites[imageNo][actualSpriteNo];
@@ -1079,6 +1073,9 @@ static void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint
     uint16 sprH = sprite->height;
     uint16 *sprPixels = sprite->pixels;
 
+    /* DEBUG: Disabled - was showing magenta block on every flip (too noisy)
+     * Failure cases are now handled by caller with distinct debug squares */
+
     /* Iterate over each pixel in the sprite (flipped horizontally) */
     for (uint16 sy = 0; sy < sprH; sy++) {
         sint16 destY = screenY + sy;
@@ -1140,7 +1137,7 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
         return;
     }
 
-    /* Wrap sprite index to available frames (handles 16-frame cap) */
+    /* Wrap sprite index to available frames (handles frame cap) */
     uint16 actualSpriteNo = spriteNo % ttmSlot->numSprites[imageNo];
 
     PS1Surface *sprite = ttmSlot->sprites[imageNo][actualSpriteNo];

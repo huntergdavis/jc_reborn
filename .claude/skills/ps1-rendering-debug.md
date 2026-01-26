@@ -424,6 +424,79 @@ int spriteX = baseX - (sprite->width / 2);
 int spriteY = baseY - sprite->height;
 ```
 
+### TTM Animation Issues - DIAGNOSED (January 2026)
+
+**Issue 1: DRAW_SPRITE_FLIP showing wrong direction**
+
+**Symptoms**: Johnny appears to face backwards for certain frame ranges (e.g., frames 7-12). The DRAW_SPRITE_FLIP opcode (0xA524) is not producing correct results.
+
+**Root cause investigation needed**:
+- Check if `grCompositeToBackgroundFlip()` is being called at all
+- Verify horizontal flip logic in pixel copying loop
+- The flip should mirror the sprite horizontally when compositing to background tiles
+
+**Relevant code** (`graphics_ps1.c`):
+```c
+void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
+                      uint16 spriteNo, uint16 imageNo)
+{
+    // ... validation ...
+
+    /* RAM-based sprites use composite with flip */
+    if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+        grCompositeToBackgroundFlip(sprite, x, y);  // <-- Is this working?
+        return;
+    }
+    // ... VRAM path (not used for RAM sprites) ...
+}
+```
+
+**Issue 2: Frame modulo wrap causing wrong sprites**
+
+**Symptoms**: Extra Johnny sprites appear at wrong positions (e.g., fishing pose at bottom when he should be walking). Animation has 40+ frames but only 8 are loaded due to memory constraints.
+
+**Root cause**: Frame index wrapping arithmetic:
+```c
+/* This wraps frame 18 to frame 2, showing wrong sprite! */
+uint16 actualSpriteNo = spriteNo % ttmSlot->numSprites[imageNo];
+```
+
+When animation requests frame 18 but only 8 frames loaded:
+- Frame 18 % 8 = 2 → Shows frame 2 instead of frame 18
+- Different frames have different poses/positions, causing "ghost" sprites
+
+**Solutions needed**:
+1. **Short-term**: Accept limited animation with only 8 frames (may look choppy)
+2. **Long-term**: Implement frame streaming/recycling to load frames on-demand
+
+**Frame streaming approach**:
+- Keep a small cache (4-8 frames) in RAM
+- When animation requests frame N, check if loaded
+- If not loaded, evict oldest frame and load N from CD
+- Requires async CD read to avoid stalling animation
+
+### Memory Constraints - PS1 Sprite Loading (January 2026)
+
+**Problem**: PS1 has ~2MB RAM total. Loading all sprite frames exhausts memory.
+
+**JOHNWALK.BMP analysis**:
+- 42 frames of walking animation
+- Each frame ~50x80 pixels @ 16-bit = ~8KB per frame
+- Total: 42 × 8KB = ~336KB just for one character animation
+
+**Memory budget breakdown**:
+- Background tiles (4 × 320×240 @ 16-bit): ~600KB working + ~600KB clean backup
+- Executable code: ~60KB
+- CD sector buffer: ~64KB per read
+- Sprite frames: MAX_SPRITES_PER_BMP × ~8KB per BMP slot
+
+**Current limit**: MAX_SPRITES_PER_BMP = 8 (reduced from 120 → 16 → 8)
+
+**Impact**: Animations cycle through only first 8 frames, causing:
+- Incorrect walk cycles (wrong feet positions)
+- Fishing frames appearing during walk (frame 18 → frame 2)
+- Animation looks "jumpy" instead of smooth
+
 ## Resources
 
 - PSn00bSDK examples: https://github.com/Lameguy64/PSn00bSDK/tree/master/examples

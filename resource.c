@@ -646,8 +646,15 @@ struct TBmpResource *findBmpResource(char *searchString)
             result = bmpResources[i];
     }
 
-    if (result == NULL)
+    if (result == NULL) {
+#ifdef PS1_BUILD
+        /* On PS1, return NULL to allow graceful handling of missing resources.
+         * This prevents hangs when TTMs reference non-existent BMPs. */
+        printf("Warning: BMP resource %s not found\n", searchString);
+#else
         fatalError("BMP resource %s not found.", searchString);
+#endif
+    }
 
     return result;
 }

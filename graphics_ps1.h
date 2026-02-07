@@ -31,7 +31,7 @@ struct TTtmResource;
 #define SCREEN_HEIGHT       480
 
 #define MAX_BMP_SLOTS       6
-#define MAX_SPRITES_PER_BMP 8  /* Further reduced for PS1 memory constraints */
+#define MAX_SPRITES_PER_BMP 120  /* Affordable now that sprites use 4-bit indexed format */
 #define MAX_TTM_SLOTS       10
 #define MAX_TTM_THREADS     10
 
@@ -44,7 +44,8 @@ struct TAdsScene {
 /* PS1 Sprite structure - replaces SDL_Surface */
 /* Supports multi-tile sprites for dimensions > 64 pixels */
 typedef struct PS1Surface {
-    uint16 *pixels;     /* Pixel data in VRAM */
+    uint16 *pixels;     /* 15-bit direct color pixel data (NULL if using indexedPixels) */
+    uint8  *indexedPixels; /* 4-bit packed indexed pixel data (NULL if using pixels) */
     uint16 width;       /* This tile's width (max 64) */
     uint16 height;      /* This tile's height (max 64) */
     uint16 x, y;        /* Position in VRAM */
@@ -75,6 +76,14 @@ struct TTtmTag {
     uint32 offset;
 };
 
+#define MAX_DRAWN_SPRITES 8
+
+struct TDrawnSprite {
+    PS1Surface *sprite;
+    sint16 x, y;
+    uint8  flip;
+};
+
 struct TTtmThread {
     struct TTtmSlot   *ttmSlot;
     int    isRunning;
@@ -90,6 +99,9 @@ struct TTtmThread {
     uint8  fgColor;
     uint8  bgColor;
     PS1Surface *ttmLayer;
+    /* Track composited sprites for frame replay */
+    struct TDrawnSprite drawnSprites[MAX_DRAWN_SPRITES];
+    uint8  numDrawnSprites;
 };
 
 extern PS1Surface *grBackgroundSfc;
@@ -124,6 +136,7 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg);
 void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo);
 void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY);
 void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY);
+void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 screenY);
 
 void grSetClipZone(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2);
 void grCopyZoneToBg(PS1Surface *sfc, uint16 arg0, uint16 arg1, uint16 arg2, uint16 arg3);
@@ -142,6 +155,7 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
 void grInitEmptyBackground();
 void grSaveCleanBgTiles(void);
 void grRestoreBgTiles(void);
+extern struct TTtmThread *grCurrentThread;
 void grClearScreen(PS1Surface *sfc);
 
 /* Background tiles - exported for dirty rectangle wiping */

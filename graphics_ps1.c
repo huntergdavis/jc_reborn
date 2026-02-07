@@ -96,6 +96,9 @@ static int grCurrentFrame = 0;
 /* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly) */
 int grGpuAlreadyInitialized = 0;
 
+/* Current thread being played - used to record sprite draws for replay */
+struct TTtmThread *grCurrentThread = NULL;
+
 /* VRAM allocation tracking
  * VRAM Layout for 640x480 interlaced:
  * (0,0)-(639,479): Framebuffer (single buffer for 640x480)
@@ -387,6 +390,7 @@ PS1Surface *grNewEmptyBackground()
     sfc->x = nextVRAMX;
     sfc->y = nextVRAMY;
     sfc->pixels = NULL;  /* Will be allocated in VRAM */
+    sfc->indexedPixels = NULL;
     sfc->nextTile = NULL;
 
     /* Update VRAM allocation tracking */
@@ -414,7 +418,8 @@ void grFreeLayer(PS1Surface *sfc)
 {
     while (sfc != NULL) {
         PS1Surface *next = sfc->nextTile;
-        /* VRAM is managed globally, just free the structure */
+        if (sfc->indexedPixels) free(sfc->indexedPixels);
+        if (sfc->pixels) free(sfc->pixels);
         free(sfc);
         sfc = next;
     }
@@ -570,6 +575,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->x = vramX;
         surface->y = vramY;
         surface->pixels = copyBuf;
+        surface->indexedPixels = NULL;
         surface->clutX = 640;
         surface->clutY = 0;
         /* Multi-tile fields */
@@ -617,6 +623,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
             bottomTile->x = vramX;  /* Same X as main tile */
             bottomTile->y = bottomVramY;  /* Y=68 */
             bottomTile->pixels = bottomBuf;
+            bottomTile->indexedPixels = NULL;
             bottomTile->clutX = 640;
             bottomTile->clutY = 0;
             bottomTile->fullWidth = width;
@@ -664,9 +671,9 @@ void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo)
 }
 
 /*
- * Load BMP sprites into RAM with 15-bit direct color (for framebuffer blitting)
- * Unlike grLoadBmp, this does NOT upload to VRAM texture area.
- * Use grBlitToFramebuffer() to draw these sprites.
+ * Load BMP sprites into RAM as 4-bit indexed data (compact storage)
+ * Stores raw 4-bit packed pixels in indexedPixels, palette lookup at composite time.
+ * This uses 4x less memory than the previous 15-bit direct color approach.
  */
 void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
@@ -697,6 +704,7 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     uint8 *srcPtr = bmpResource->uncompressedData;
 
+    int framesLoaded = 0;
     for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
         uint16 width = bmpResource->widths[frameIdx];
         uint16 height = bmpResource->heights[frameIdx];
@@ -704,7 +712,7 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         /* Allocate PS1Surface */
         PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
         if (!surface) {
-            return;  /* Out of memory */
+            break;
         }
 
         surface->width = width;
@@ -713,36 +721,29 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->y = 0;
         surface->clutX = 0;
         surface->clutY = 0;
-        surface->nextTile = NULL;  /* Single sprite, no tile chain */
+        surface->nextTile = NULL;
+        surface->pixels = NULL;  /* Not using 15-bit direct color */
 
-        /* Allocate 15-bit direct color buffer */
-        uint32 pixelCount = width * height;
-        surface->pixels = (uint16*)safe_malloc(pixelCount * 2);
-        if (!surface->pixels) {
+        /* Allocate 4-bit indexed buffer (width*height/2 bytes) */
+        uint32 indexedSize = (width * height) / 2;
+        surface->indexedPixels = (uint8*)safe_malloc(indexedSize);
+        if (!surface->indexedPixels) {
             free(surface);
-            return;  /* Out of memory */
+            break;
         }
 
-        /* Convert 4-bit indexed to 15-bit direct color using palette */
-        uint16 *dst = surface->pixels;
-        for (uint32 i = 0; i < pixelCount; i++) {
-            uint8 palIndex;
-            if (i & 1) {
-                palIndex = srcPtr[i / 2] & 0x0F;
-            } else {
-                palIndex = (srcPtr[i / 2] >> 4) & 0x0F;
-            }
-            dst[i] = ttmPalette[palIndex & 0x0F];
-        }
+        /* Copy raw 4-bit data directly - no conversion needed */
+        memcpy(surface->indexedPixels, srcPtr, indexedSize);
 
         /* Advance source pointer for next frame */
-        srcPtr += (width * height) / 2;
+        srcPtr += indexedSize;
 
         /* Store in slot */
         ttmSlot->sprites[slotNo][frameIdx] = surface;
+        framesLoaded++;
     }
 
-    ttmSlot->numSprites[slotNo] = numToLoad;
+    ttmSlot->numSprites[slotNo] = framesLoaded;
 }
 
 /*
@@ -823,55 +824,65 @@ void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY)
  */
 void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 {
-    if (!sprite || !sprite->pixels) return;
-
-    /* DEBUG: Disabled single-pixel debug - not visible enough */
+    if (!sprite) return;
+    if (!sprite->pixels && !sprite->indexedPixels) return;
 
     uint16 sprW = sprite->width;
     uint16 sprH = sprite->height;
-    uint16 *sprPixels = sprite->pixels;
 
-    /* Iterate over each pixel in the sprite */
+    /* Choose indexed or direct color path */
+    int useIndexed = (sprite->indexedPixels != NULL);
+
     for (uint16 sy = 0; sy < sprH; sy++) {
         sint16 destY = screenY + sy;
         if (destY < 0 || destY >= 480) continue;
+
+        /* Determine tile row once per scanline */
+        PS1Surface *tileLeft, *tileRight;
+        uint16 tileLocalY;
+        if (destY < 240) {
+            tileLocalY = destY;
+            tileLeft = bgTile0;
+            tileRight = bgTile1;
+        } else {
+            tileLocalY = destY - 240;
+            tileLeft = bgTile3;
+            tileRight = bgTile4;
+        }
 
         for (uint16 sx = 0; sx < sprW; sx++) {
             sint16 destX = screenX + sx;
             if (destX < 0 || destX >= 640) continue;
 
-            uint16 pixel = sprPixels[sy * sprW + sx];
+            uint16 pixel;
+            if (useIndexed) {
+                /* 4-bit indexed: high nibble = even pixel, low nibble = odd pixel */
+                uint32 pixelIdx = sy * sprW + sx;
+                uint8 palIndex;
+                if (pixelIdx & 1) {
+                    palIndex = sprite->indexedPixels[pixelIdx / 2] & 0x0F;
+                } else {
+                    palIndex = (sprite->indexedPixels[pixelIdx / 2] >> 4) & 0x0F;
+                }
+                pixel = ttmPalette[palIndex];
+            } else {
+                pixel = sprite->pixels[sy * sprW + sx];
+            }
 
             /* Skip transparent pixels (0x0000) */
             if (pixel == 0x0000) continue;
 
-            /* Determine which tile and local coordinates */
-            PS1Surface *tile = NULL;
-            uint16 tileLocalX, tileLocalY;
-
-            if (destY < 240) {
-                /* Top row */
-                tileLocalY = destY;
-                if (destX < 320) {
-                    tile = bgTile0;
-                    tileLocalX = destX;
-                } else {
-                    tile = bgTile1;
-                    tileLocalX = destX - 320;
-                }
+            /* Determine which tile and write pixel */
+            PS1Surface *tile;
+            uint16 tileLocalX;
+            if (destX < 320) {
+                tile = tileLeft;
+                tileLocalX = destX;
             } else {
-                /* Bottom row */
-                tileLocalY = destY - 240;
-                if (destX < 320) {
-                    tile = bgTile3;
-                    tileLocalX = destX;
-                } else {
-                    tile = bgTile4;
-                    tileLocalX = destX - 320;
-                }
+                tile = tileRight;
+                tileLocalX = destX - 320;
             }
 
-            /* Write pixel to tile buffer if tile exists */
             if (tile && tile->pixels) {
                 tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
             }
@@ -999,10 +1010,18 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
-    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixels.
+    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data.
      * Composite directly to background tiles - avoids OT/primitive buffer issues. */
-    if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+    if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackground(sprite, x, y);
+        /* Record draw for frame replay */
+        if (grCurrentThread && grCurrentThread->numDrawnSprites < MAX_DRAWN_SPRITES) {
+            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[grCurrentThread->numDrawnSprites++];
+            ds->sprite = sprite;
+            ds->x = x;
+            ds->y = y;
+            ds->flip = 0;
+        }
         return;
     }
 
@@ -1065,57 +1084,69 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
 /*
  * Composite sprite to background tiles with horizontal flip
  */
-static void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 screenY)
+void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 {
-    if (!sprite || !sprite->pixels) return;
+    if (!sprite) return;
+    if (!sprite->pixels && !sprite->indexedPixels) return;
 
     uint16 sprW = sprite->width;
     uint16 sprH = sprite->height;
-    uint16 *sprPixels = sprite->pixels;
 
-    /* DEBUG: Disabled - was showing magenta block on every flip (too noisy)
-     * Failure cases are now handled by caller with distinct debug squares */
+    /* Choose indexed or direct color path */
+    int useIndexed = (sprite->indexedPixels != NULL);
 
     /* Iterate over each pixel in the sprite (flipped horizontally) */
     for (uint16 sy = 0; sy < sprH; sy++) {
         sint16 destY = screenY + sy;
         if (destY < 0 || destY >= 480) continue;
 
+        /* Determine tile row once per scanline */
+        PS1Surface *tileLeft, *tileRight;
+        uint16 tileLocalY;
+        if (destY < 240) {
+            tileLocalY = destY;
+            tileLeft = bgTile0;
+            tileRight = bgTile1;
+        } else {
+            tileLocalY = destY - 240;
+            tileLeft = bgTile3;
+            tileRight = bgTile4;
+        }
+
         for (uint16 sx = 0; sx < sprW; sx++) {
             /* Flip X coordinate */
             sint16 destX = screenX + (sprW - 1 - sx);
             if (destX < 0 || destX >= 640) continue;
 
-            uint16 pixel = sprPixels[sy * sprW + sx];
+            uint16 pixel;
+            if (useIndexed) {
+                /* 4-bit indexed: high nibble = even pixel, low nibble = odd pixel */
+                uint32 pixelIdx = sy * sprW + sx;
+                uint8 palIndex;
+                if (pixelIdx & 1) {
+                    palIndex = sprite->indexedPixels[pixelIdx / 2] & 0x0F;
+                } else {
+                    palIndex = (sprite->indexedPixels[pixelIdx / 2] >> 4) & 0x0F;
+                }
+                pixel = ttmPalette[palIndex];
+            } else {
+                pixel = sprite->pixels[sy * sprW + sx];
+            }
 
             /* Skip transparent pixels (0x0000) */
             if (pixel == 0x0000) continue;
 
-            /* Determine which tile and local coordinates */
-            PS1Surface *tile = NULL;
-            uint16 tileLocalX, tileLocalY;
-
-            if (destY < 240) {
-                tileLocalY = destY;
-                if (destX < 320) {
-                    tile = bgTile0;
-                    tileLocalX = destX;
-                } else {
-                    tile = bgTile1;
-                    tileLocalX = destX - 320;
-                }
+            /* Determine which tile and write pixel */
+            PS1Surface *tile;
+            uint16 tileLocalX;
+            if (destX < 320) {
+                tile = tileLeft;
+                tileLocalX = destX;
             } else {
-                tileLocalY = destY - 240;
-                if (destX < 320) {
-                    tile = bgTile3;
-                    tileLocalX = destX;
-                } else {
-                    tile = bgTile4;
-                    tileLocalX = destX - 320;
-                }
+                tile = tileRight;
+                tileLocalX = destX - 320;
             }
 
-            /* Write pixel to tile buffer if tile exists */
             if (tile && tile->pixels) {
                 tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
             }
@@ -1145,10 +1176,18 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
         return;
     }
 
-    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixels.
+    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data.
      * Composite directly to background tiles with flip - avoids OT/primitive buffer issues. */
-    if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+    if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackgroundFlip(sprite, x, y);
+        /* Record draw for frame replay */
+        if (grCurrentThread && grCurrentThread->numDrawnSprites < MAX_DRAWN_SPRITES) {
+            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[grCurrentThread->numDrawnSprites++];
+            ds->sprite = sprite;
+            ds->x = x;
+            ds->y = y;
+            ds->flip = 1;
+        }
         return;
     }
 
@@ -1228,10 +1267,10 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
     x += grDx;
     y += grDy;
 
-    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixels.
+    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data.
      * Composite to background tiles with transparency (0x0000 = transparent).
      * grDrawBackground() will upload the composited tiles later this frame. */
-    if (sprite->x == 0 && sprite->y == 0 && sprite->pixels != NULL) {
+    if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackground(sprite, x, y);
         return 0;
     }
@@ -1289,6 +1328,7 @@ static PS1Surface *createEmptyBgTileRAM(uint16 width, uint16 height)
     tile->height = height;
     tile->x = 0;
     tile->y = 0;
+    tile->indexedPixels = NULL;
     tile->nextTile = NULL;
     tile->pixels = (uint16*)safe_malloc(width * height * 2);
     /* Fill with black (0x0000 = transparent/black) */
@@ -1429,7 +1469,26 @@ void grDrawBackground(void)
  */
 void grFadeOut()
 {
-    /* TODO: Implement fade effect using GPU blend modes */
+    /* 16 fade steps, ~2 frames each = ~0.5 sec at 60fps */
+    for (int step = 0; step < 16; step++) {
+        PS1Surface *tiles[] = { bgTile0, bgTile1, bgTile3, bgTile4 };
+        for (int t = 0; t < 4; t++) {
+            if (!tiles[t] || !tiles[t]->pixels) continue;
+            uint32 count = tiles[t]->width * tiles[t]->height;
+            uint16 *px = tiles[t]->pixels;
+            for (uint32 i = 0; i < count; i++) {
+                uint16 c = px[i];
+                if (c == 0) continue;
+                uint16 r = (c & 0x001F) >> 1;
+                uint16 g = ((c >> 5) & 0x1F) >> 1;
+                uint16 b = ((c >> 10) & 0x1F) >> 1;
+                px[i] = (b << 10) | (g << 5) | r;
+            }
+        }
+
+        VSync(0);
+        grDrawBackground();
+    }
 }
 
 /*
@@ -1449,6 +1508,7 @@ static PS1Surface *createBgTile(uint8 *src, uint16 srcWidth,
     tile->height = BG_TILE_HEIGHT;
     tile->x = vramX;
     tile->y = vramY;
+    tile->indexedPixels = NULL;
     tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */
@@ -1509,6 +1569,7 @@ static PS1Surface *createBgTileRAMPartial(uint8 *src, uint16 srcWidth, uint16 sr
     tile->height = BG_TILE_HEIGHT;
     tile->x = 0;  /* Not in VRAM - just RAM */
     tile->y = 0;
+    tile->indexedPixels = NULL;
     tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */

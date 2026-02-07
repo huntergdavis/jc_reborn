@@ -292,6 +292,9 @@ static void adsStopScene(int sceneNo)
 {
     grFreeLayer(ttmThreads[sceneNo].ttmLayer);
     ttmThreads[sceneNo].isRunning = 0;
+#ifdef PS1_BUILD
+    ttmThreads[sceneNo].numDrawnSprites = 0;
+#endif
     numThreads--;
 }
 
@@ -453,6 +456,9 @@ void adsInit()    // Init slots and threads for TTM scripts  // TODO : rename
     for (int i=0; i < MAX_TTM_THREADS; i++) {
         ttmThreads[i].isRunning = 0;
         ttmThreads[i].timer     = 0;
+#ifdef PS1_BUILD
+        ttmThreads[i].numDrawnSprites = 0;
+#endif
     }
 
     grUpdateDelay = 0;
@@ -762,6 +768,11 @@ void adsPlay(char *adsName, uint16 adsTag)
     // Main ADS loop
     while (numThreads) {
 
+#ifdef PS1_BUILD
+        /* Restore clean background before compositing this frame */
+        grRestoreBgTiles();
+#endif
+
         if (ttmBackgroundThread.isRunning && ttmBackgroundThread.timer == 0) {
             debugMsg("    ------> Animate bg");
             ttmBackgroundThread.timer = ttmBackgroundThread.delay;
@@ -774,8 +785,30 @@ void adsPlay(char *adsName, uint16 adsTag)
             if (ttmThreads[i].isRunning && ttmThreads[i].timer == 0) {
                 debugMsg("    ------> Thread #%d", i);
                 ttmThreads[i].timer = ttmThreads[i].delay;
+#ifdef PS1_BUILD
+                /* Clear old draws - ttmPlay will record new ones */
+                ttmThreads[i].numDrawnSprites = 0;
+                grCurrentThread = &ttmThreads[i];
+#endif
                 ttmPlay(&ttmThreads[i]);
+#ifdef PS1_BUILD
+                grCurrentThread = NULL;
+#endif
             }
+#ifdef PS1_BUILD
+            else if (ttmThreads[i].isRunning) {
+                /* Thread not firing - replay its last-drawn sprites */
+                for (int j = 0; j < ttmThreads[i].numDrawnSprites; j++) {
+                    struct TDrawnSprite *ds = &ttmThreads[i].drawnSprites[j];
+                    if (ds->sprite) {
+                        if (ds->flip)
+                            grCompositeToBackgroundFlip(ds->sprite, ds->x, ds->y);
+                        else
+                            grCompositeToBackground(ds->sprite, ds->x, ds->y);
+                    }
+                }
+            }
+#endif
         }
 
         if (debugMode) {
@@ -970,6 +1003,9 @@ void adsInitIsland()
     ttmHolidayThread.timer     = 0;
 
     islandInitHoliday(&ttmHolidayThread);
+
+    /* Save bg tiles with island drawn so grRestoreBgTiles() preserves it */
+    grSaveCleanBgTiles();
 }
 
 

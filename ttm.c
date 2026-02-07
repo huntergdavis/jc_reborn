@@ -416,6 +416,9 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // arg : indicates the SAVE_IMAGE1 nb to be used ?
                 debugMsg("    CLEAR_SCREEN %d", args[0]);
                 grClearScreen(ttmThread->ttmLayer);
+#ifdef PS1_BUILD
+                ttmThread->numDrawnSprites = 0;
+#endif
                 break;
 
             case 0xB606:

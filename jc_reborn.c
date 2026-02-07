@@ -315,35 +315,18 @@ int main(int argc, char **argv)
     initLRUCache();
 
 #ifdef PS1_BUILD
-    /* === PS1 ADS-DRIVEN SCENE PLAYBACK === */
-
-    /* Initialize graphics subsystem (GPU, display environments) */
+    grGpuAlreadyInitialized = 1;
     graphicsInit();
-
-    /* Initialize sound subsystem */
     soundInit();
 
-    /* Load palette first - required for all rendering */
     if (numPalResources > 0 && palResources[0]) {
         grLoadPalette(palResources[0]);
     }
 
-    /* Initialize ADS scene system */
-    adsInit();
+    storyPlay();
 
-    /* Load ocean background first - needed as base for partial-height scenes */
-    grLoadScreen("OCEAN00.SCR");
-    grSaveCleanBgTiles();
-
-    /* Use the simpler single-TTM player for testing */
-    adsPlaySingleTtm("FISHWALK.TTM");
-
-    /* The main loop is inside adsPlay() - when it returns, scene is done */
-
-    /* Cleanup */
     soundEnd();
     graphicsEnd();
-
     return 0;
 #endif
 

@@ -473,6 +473,9 @@ void adsPlaySingleTtm(char *ttmName)  // TODO - tempo
 {
     adsInit();
     ttmLoadTtm(ttmSlots, ttmName);
+#ifdef PS1_BUILD
+    if (ttmSlots[0].data == NULL) return;
+#endif
     adsAddScene(0,0,0);
     ttmThreads[0].ip = 0;
 
@@ -711,6 +714,10 @@ void adsPlay(char *adsName, uint16 adsTag)
 
     struct TAdsResource *adsResource = findAdsResource(adsName);
 
+#ifdef PS1_BUILD
+    if (adsResource == NULL) return;
+#endif
+
     debugMsg("\n\n========== Playing ADS: %s:%d ==========\n", adsResource->resName, adsTag);
 
     /* ADS lazy loading: Load ADS data on demand from extracted file if not already loaded */
@@ -757,6 +764,25 @@ void adsPlay(char *adsName, uint16 adsTag)
     for (int i=0; i < adsResource->numRes; i++)
         ttmLoadTtm(&ttmSlots[adsResource->res[i].id], adsResource->res[i].name);
 
+#ifdef PS1_BUILD
+    /* If any TTM failed to load, skip this scene gracefully */
+    {
+        int loadOk = 1;
+        for (int i=0; i < adsResource->numRes; i++) {
+            if (ttmSlots[adsResource->res[i].id].data == NULL) {
+                loadOk = 0;
+                break;
+            }
+        }
+        if (!loadOk) {
+            for (int i=0; i < adsResource->numRes; i++)
+                ttmResetSlot(&ttmSlots[adsResource->res[i].id]);
+            unpinResource(adsResource, "ADS");
+            return;
+        }
+    }
+#endif
+
     adsLoad(data, dataSize, adsResource->numTags, adsTag, &offset);
 
     adsStopRequested = 0;
@@ -778,6 +804,11 @@ void adsPlay(char *adsName, uint16 adsTag)
             ttmBackgroundThread.timer = ttmBackgroundThread.delay;
             islandAnimate(&ttmBackgroundThread);
         }
+#ifdef PS1_BUILD
+        else if (ttmBackgroundThread.isRunning) {
+            islandRedrawWave(&ttmBackgroundThread);
+        }
+#endif
 
         for (int i=0; i < MAX_TTM_THREADS; i++) {
 
@@ -793,6 +824,15 @@ void adsPlay(char *adsName, uint16 adsTag)
                 ttmPlay(&ttmThreads[i]);
 #ifdef PS1_BUILD
                 grCurrentThread = NULL;
+                /* ttmPlay may have reloaded BMPs. Invalidate drawnSprites
+                 * of other threads sharing the same ttmSlot to prevent
+                 * replay of freed sprite pointers. */
+                for (int k = 0; k < MAX_TTM_THREADS; k++) {
+                    if (k != i && ttmThreads[k].isRunning &&
+                        ttmThreads[k].ttmSlot == ttmThreads[i].ttmSlot) {
+                        ttmThreads[k].numDrawnSprites = 0;
+                    }
+                }
 #endif
             }
 #ifdef PS1_BUILD
@@ -1011,6 +1051,7 @@ void adsInitIsland()
 
 void adsReleaseIsland()
 {
+    islandClearWaveCache();
     ttmBackgroundThread.isRunning = 0;
     ttmResetSlot(&ttmBackgroundSlot);
 
@@ -1025,6 +1066,7 @@ void adsNoIsland()
 {
     grDx = grDy = 0;
     grInitEmptyBackground();
+    grSaveCleanBgTiles();
 }
 
 
@@ -1040,9 +1082,21 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
 
     walkInit(fromSpot, fromHdg, toSpot, toHdg);
 
+#ifdef PS1_BUILD
+    ttmThreads[0].numDrawnSprites = 0;
+    grCurrentThread = &ttmThreads[0];
+#endif
     ttmThreads[0].delay = walkAnimate(&ttmThreads[0], ttmBackgroundThread.ttmSlot);
+#ifdef PS1_BUILD
+    grCurrentThread = NULL;
+#endif
 
     while (ttmThreads[0].delay) {
+
+#ifdef PS1_BUILD
+        /* Restore clean background before compositing this frame */
+        grRestoreBgTiles();
+#endif
 
         // Call each thread which timer reaches 0
         if (!ttmBackgroundThread.timer) {
@@ -1050,12 +1104,38 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
             ttmBackgroundThread.timer = ttmBackgroundThread.delay;
             islandAnimate(&ttmBackgroundThread);
         }
+#ifdef PS1_BUILD
+        else if (ttmBackgroundThread.isRunning) {
+            islandRedrawWave(&ttmBackgroundThread);
+        }
+#endif
 
         if (!ttmThreads[0].timer) {
             debugMsg("    ------> Animate walking");
+#ifdef PS1_BUILD
+            ttmThreads[0].numDrawnSprites = 0;
+            grCurrentThread = &ttmThreads[0];
+#endif
             ttmThreads[0].timer = ttmThreads[0].delay =
                 walkAnimate(&ttmThreads[0], ttmBackgroundThread.ttmSlot);
+#ifdef PS1_BUILD
+            grCurrentThread = NULL;
+#endif
         }
+#ifdef PS1_BUILD
+        else {
+            /* Walk thread not firing - replay its last-drawn sprites */
+            for (int j = 0; j < ttmThreads[0].numDrawnSprites; j++) {
+                struct TDrawnSprite *ds = &ttmThreads[0].drawnSprites[j];
+                if (ds->sprite) {
+                    if (ds->flip)
+                        grCompositeToBackgroundFlip(ds->sprite, ds->x, ds->y);
+                    else
+                        grCompositeToBackground(ds->sprite, ds->x, ds->y);
+                }
+            }
+        }
+#endif
 
         // Refresh display
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);

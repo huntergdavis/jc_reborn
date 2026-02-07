@@ -49,6 +49,7 @@ int atoi(const char *str);
 #include <psxgpu.h>
 #include <psxgte.h>
 #include <psxcd.h>
+#include <psxapi.h>
 #include "graphics_ps1.h"
 #include "events_ps1.h"
 #include "sound_ps1.h"
@@ -292,6 +293,10 @@ int main(int argc, char **argv)
 
     /* Show title screen FIRST - instant visual feedback */
     loadTitleScreenEarly();
+
+    /* Seed random from PS1 root counter 2 (system clock / 8).
+     * Free-running counter provides good entropy since CD load times vary. */
+    srand(GetRCnt(RCntCNT2));
 
     /* Parse resource files from CD - needed for background and sprites */
     parseResourceFiles("RESOURCE.MAP");

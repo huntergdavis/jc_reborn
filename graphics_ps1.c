@@ -830,6 +830,9 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
     uint16 sprW = sprite->width;
     uint16 sprH = sprite->height;
 
+    /* Sanity check - prevent hang from corrupt/freed sprite data */
+    if (sprW == 0 || sprH == 0 || sprW > 640 || sprH > 480) return;
+
     /* Choose indexed or direct color path */
     int useIndexed = (sprite->indexedPixels != NULL);
 
@@ -1092,6 +1095,9 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
     uint16 sprW = sprite->width;
     uint16 sprH = sprite->height;
 
+    /* Sanity check - prevent hang from corrupt/freed sprite data */
+    if (sprW == 0 || sprH == 0 || sprW > 640 || sprH > 480) return;
+
     /* Choose indexed or direct color path */
     int useIndexed = (sprite->indexedPixels != NULL);
 
@@ -1344,16 +1350,27 @@ static PS1Surface *createEmptyBgTileRAM(uint16 width, uint16 height)
 void grInitEmptyBackground()
 {
     if (grBackgroundSfc != NULL) {
+        /* grLoadScreen sets grBackgroundSfc = bgTile0, so freeing it
+         * would leave bgTile0 as a dangling pointer. Null out any match. */
+        if (grBackgroundSfc == bgTile0) bgTile0 = NULL;
+        if (grBackgroundSfc == bgTile1) bgTile1 = NULL;
+        if (grBackgroundSfc == bgTile3) bgTile3 = NULL;
+        if (grBackgroundSfc == bgTile4) bgTile4 = NULL;
         grFreeLayer(grBackgroundSfc);
     }
 
     grBackgroundSfc = grNewEmptyBackground();
 
-    /* Create empty RAM tiles for sprite compositing (needed by grCompositeToBackground) */
+    /* Create empty RAM tiles for sprite compositing (needed by grCompositeToBackground)
+     * If tiles already exist (e.g. after grFadeOut darkened them), zero their pixels */
     if (bgTile0 == NULL) bgTile0 = createEmptyBgTileRAM(320, 240);
+    else memset(bgTile0->pixels, 0, 320 * 240 * 2);
     if (bgTile1 == NULL) bgTile1 = createEmptyBgTileRAM(320, 240);
+    else memset(bgTile1->pixels, 0, 320 * 240 * 2);
     if (bgTile3 == NULL) bgTile3 = createEmptyBgTileRAM(320, 240);
+    else memset(bgTile3->pixels, 0, 320 * 240 * 2);
     if (bgTile4 == NULL) bgTile4 = createEmptyBgTileRAM(320, 240);
+    else memset(bgTile4->pixels, 0, 320 * 240 * 2);
 }
 
 /*
@@ -1628,13 +1645,14 @@ static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
 void grLoadScreen(char *strArg)
 {
     struct TScrResource *scrResource = findScrResource(strArg);
+    if (scrResource == NULL) return;
 
     /* Load SCR data first to check dimensions before freeing tiles */
     if (scrResource->uncompressedData == NULL) {
         ps1_loadScrData(scrResource);
     }
     if (scrResource->uncompressedData == NULL) {
-        fatalError("grLoadScreen: Failed to load SCR from extracted file");
+        return;
     }
 
     uint16 srcHeight = scrResource->height;

@@ -43,6 +43,10 @@ extern int sprintf(char *str, const char *format, ...);
 
 struct TIslandState islandState = { 0, 0, 0, 0, 0, 0 };
 
+/* Track last-drawn wave sprite for replay on non-firing frames */
+static PS1Surface *lastWaveSprite = NULL;
+static sint16 lastWaveX = 0, lastWaveY = 0;
+
 
 void islandInit(struct TTtmThread *ttmThread)
 {
@@ -166,6 +170,8 @@ void islandAnimate(struct TTtmThread *ttmThread)
 
     struct TTtmSlot *ttmSlot = ttmThread->ttmSlot;
 
+    sint16 waveX = 0, waveY = 0;
+    uint16 waveSpriteNo = 0;
 
     grDx = islandState.xPos;
     grDy = islandState.yPos;
@@ -176,10 +182,10 @@ void islandAnimate(struct TTtmThread *ttmThread)
         counter2 %= 4;
 
         switch (counter2) {
-            case 0: grDrawSprite(grBackgroundSfc, ttmSlot, 129, 340, 39+counter1, 0); break;  // rock waves (40)
-            case 1: grDrawSprite(grBackgroundSfc, ttmSlot, 233, 323, 30+counter1, 0); break;  // low tide waves - left (31)
-            case 2: grDrawSprite(grBackgroundSfc, ttmSlot, 367, 356, 33+counter1, 0); break;  // low tide waves - center (33)
-            case 3: grDrawSprite(grBackgroundSfc, ttmSlot, 558, 323, 36+counter1, 0); break;  // low tide waves - right (36)
+            case 0: waveX = 129; waveY = 340; waveSpriteNo = 39+counter1; break;  // rock waves (40)
+            case 1: waveX = 233; waveY = 323; waveSpriteNo = 30+counter1; break;  // low tide waves - left (31)
+            case 2: waveX = 367; waveY = 356; waveSpriteNo = 33+counter1; break;  // low tide waves - center (33)
+            case 3: waveX = 558; waveY = 323; waveSpriteNo = 36+counter1; break;  // low tide waves - right (36)
         }
     }
     else {
@@ -188,16 +194,47 @@ void islandAnimate(struct TTtmThread *ttmThread)
         counter2 %= 3;
 
         switch (counter2) {
-            case 0: grDrawSprite(grBackgroundSfc, ttmSlot, 270, 306, 3+counter1, 0); break;  // high tide waves - left (3)
-            case 1: grDrawSprite(grBackgroundSfc, ttmSlot, 364, 319, 6+counter1, 0); break;  // high tide waves - center (6)
-            case 2: grDrawSprite(grBackgroundSfc, ttmSlot, 518, 303, 9+counter1, 0); break;  // high tide waves - right (9)
+            case 0: waveX = 270; waveY = 306; waveSpriteNo = 3+counter1; break;  // high tide waves - left (3)
+            case 1: waveX = 364; waveY = 319; waveSpriteNo = 6+counter1; break;  // high tide waves - center (6)
+            case 2: waveX = 518; waveY = 303; waveSpriteNo = 9+counter1; break;  // high tide waves - right (9)
         }
     }
+
+    grDrawSprite(grBackgroundSfc, ttmSlot, waveX, waveY, waveSpriteNo, 0);
+
+    /* Save last-drawn wave for replay on non-firing frames */
+    uint16 actualSpriteNo = waveSpriteNo % ttmSlot->numSprites[0];
+    lastWaveSprite = ttmSlot->sprites[0][actualSpriteNo];
+    lastWaveX = waveX + grDx;
+    lastWaveY = waveY + grDy;
 
     if (!counter2) {
         counter1++;
         counter1 %= 3;
     }
+}
+
+
+/*
+ * Replay last wave sprite on non-firing frames.
+ * Same pattern as the thread sprite replay system.
+ */
+void islandRedrawWave(struct TTtmThread *ttmThread)
+{
+    if (lastWaveSprite) {
+        grCompositeToBackground(lastWaveSprite, lastWaveX, lastWaveY);
+    }
+}
+
+
+/*
+ * Clear cached wave sprite pointer.
+ * Must be called before freeing the background slot's BMP sprites
+ * (e.g., in adsReleaseIsland) to prevent dangling pointer use.
+ */
+void islandClearWaveCache(void)
+{
+    lastWaveSprite = NULL;
 }
 
 

@@ -94,6 +94,13 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
 {
     struct TTtmResource *ttmResource = findTtmResource(ttmName);
 
+#ifdef PS1_BUILD
+    if (ttmResource == NULL) {
+        ttmSlot->data = NULL;
+        return;
+    }
+#endif
+
     debugMsg("---- Loading %s", ttmResource->resName);
 
     /* TTM lazy loading: Load TTM data on demand from extracted file if not already loaded */
@@ -102,9 +109,8 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
         /* PS1: Load from pre-extracted TTM file on CD */
         ps1_loadTtmData(ttmResource);
         if (ttmResource->uncompressedData == NULL) {
-            /* Fatal error - can't continue without TTM data.
-             * Screen will freeze at this point - visual indicator of failure */
-            while(1);  /* Hang on error */
+            ttmSlot->data = NULL;
+            return;
         }
 #else
         char extractedPath[512];

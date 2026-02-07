@@ -630,8 +630,13 @@ struct TAdsResource *findAdsResource(char *searchString)
             result = adsResources[i];
     }
 
-    if (result == NULL)
+    if (result == NULL) {
+#ifdef PS1_BUILD
+        return NULL;  /* Caller handles gracefully */
+#else
         fatalError("ADS resource %s not found.", searchString);
+#endif
+    }
 
     return result;
 }
@@ -669,8 +674,13 @@ struct TScrResource *findScrResource(char *searchString)
             result = scrResources[i];
     }
 
-    if (result == NULL)
+    if (result == NULL) {
+#ifdef PS1_BUILD
+        return NULL;  /* Caller handles gracefully */
+#else
         fatalError("SCR resource %s not found.", searchString);
+#endif
+    }
 
     return result;
 }
@@ -685,8 +695,13 @@ struct TTtmResource *findTtmResource(char *searchString)
             result = ttmResources[i];
     }
 
-    if (result == NULL)
+    if (result == NULL) {
+#ifdef PS1_BUILD
+        return NULL;  /* Caller handles gracefully */
+#else
         fatalError("TTM resource %s not found.", searchString);
+#endif
+    }
 
     return result;
 }

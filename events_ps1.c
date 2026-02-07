@@ -105,10 +105,14 @@ void eventsWaitTick(uint16 delay)
         }
     }
 
-    /* Frame timing */
+    /* Frame timing - match PC version where each delay tick = 20ms.
+     * PS1 VSync = 16.67ms (60Hz NTSC). grUpdateDisplay already calls VSync(0)
+     * once per frame, so subtract 1 from the target VSync count.
+     * Formula: targetVsyncs = round(delay * 20 / 16.67) - 1 */
     if (delay > 0 && !maxSpeed) {
-        /* Wait for specified number of V-Blanks */
-        for (int i = 0; i < delay; i++) {
+        int targetVsyncs = ((int)delay * 20 + 8) / 17;
+        if (targetVsyncs > 0) targetVsyncs--;  /* Account for VSync in grUpdateDisplay */
+        for (int i = 0; i < targetVsyncs; i++) {
             VSync(0);
         }
     }

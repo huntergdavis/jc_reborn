@@ -58,12 +58,19 @@ void fatalError(char *message, ... )
     va_list(args);
 
     va_start(args, message);
+#ifdef PS1_BUILD
+    printf("\n\n Fatal error : ");
+    vprintf(message, args);
+    printf("\n\n");
+    va_end(args);
+    while(1);  /* Halt — visual freeze indicates error */
+#else
     fprintf(stderr, "\n\n Fatal error : ");
     vfprintf(stderr, message, args);
     fprintf(stderr, "\n\n");
     va_end(args);
-
     exit(1);
+#endif
 }
 
 

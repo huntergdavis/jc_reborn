@@ -21,6 +21,9 @@
 #include <psxspu.h>
 #include <psxapi.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 /* Forward declare FILE to avoid utils.h compilation errors with -ffreestanding */
 typedef struct _FILE FILE;
@@ -29,51 +32,97 @@ typedef struct _FILE FILE;
 #include "sound_ps1.h"
 #include "config.h"
 #include "utils.h"
+#include "cdrom_ps1.h"
 
 /* Global variables */
 int soundDisabled = 0;
 
 /* SPU configuration */
 #define MAX_SOUND_EFFECTS 25
-#define SPU_RAM_BASE 0x1000  /* Start of SPU RAM for sound effects */
+#define SPU_DATA_START 0x1010  /* After SPU capture buffers + dummy block */
+#define VAG_HEADER_SIZE 48    /* Standard Sony VAG header size */
+#define NUM_CHANNELS 8        /* Use 8 channels for round-robin */
 
-/* Sound effect data (to be loaded from CD) */
+/* Sound effect data loaded into SPU RAM */
 static uint32_t soundAddresses[MAX_SOUND_EFFECTS];
 static uint32_t soundSizes[MAX_SOUND_EFFECTS];
+static uint16_t soundSampleRates[MAX_SOUND_EFFECTS];
 static int soundsLoaded = 0;
+static int nextChannel = 0;
+
+/* Read big-endian uint32 from VAG header */
+static uint32_t readBE32(const uint8_t *p)
+{
+    return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) |
+           ((uint32_t)p[2] << 8)  | (uint32_t)p[3];
+}
 
 /*
- * Initialize SPU audio system
+ * Initialize SPU audio system and load VAG files from CD into SPU RAM
  */
 void soundInit()
 {
     if (soundDisabled) {
-        if (debugMode) {
-            printf("Sound disabled\n");
-        }
+        printf("Sound disabled\n");
         return;
     }
 
     /* Initialize SPU */
     SpuInit();
 
-    /* Set master volume to max using macros (SpuCommonAttr is commented out in PSn00bSDK) */
+    /* Set master volume */
     SpuSetCommonMasterVolume(0x3FFF, 0x3FFF);
 
-    /* Note: SpuSetKey is for individual channels, not initialization */
-    /* Channels are enabled when we start playback */
-
-    /* TODO: Load sound effects from CD into SPU RAM */
-    /* For now, mark all sounds as not loaded */
+    /* Clear sound tables */
     for (int i = 0; i < MAX_SOUND_EFFECTS; i++) {
         soundAddresses[i] = 0;
         soundSizes[i] = 0;
+        soundSampleRates[i] = 0;
     }
 
-    soundsLoaded = 0;
+    /* Load VAG files from CD into SPU RAM */
+    uint32_t spuAddr = SPU_DATA_START;
+    int loaded = 0;
 
-    if (debugMode) {
-        printf("SPU initialized\n");
+    for (int i = 0; i < MAX_SOUND_EFFECTS; i++) {
+        char filename[32];
+        sprintf(filename, "\\SND\\SOUND%02d.VAG;1", i);
+
+        uint32_t vagSize = 0;
+        uint8_t *vagData = ps1_loadRawFile(filename, &vagSize);
+        if (!vagData) continue;
+
+        if (vagSize <= VAG_HEADER_SIZE) {
+            free(vagData);
+            continue;
+        }
+
+        /* Parse VAG header — sample rate is big-endian at offset 16 */
+        uint16_t sampleRate = (uint16_t)readBE32(vagData + 16);
+        uint32_t adpcmSize = vagSize - VAG_HEADER_SIZE;
+
+        /* Upload ADPCM data (skip VAG header) to SPU RAM */
+        SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
+        SpuSetTransferStartAddr(spuAddr);
+        SpuWrite((uint32_t *)(vagData + VAG_HEADER_SIZE), adpcmSize);
+        SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
+
+        soundAddresses[i] = spuAddr;
+        soundSizes[i] = adpcmSize;
+        soundSampleRates[i] = sampleRate;
+
+        /* Advance SPU address, 16-byte aligned */
+        spuAddr += (adpcmSize + 15) & ~15;
+
+        free(vagData);
+        loaded++;
+    }
+
+    if (loaded > 0) {
+        soundsLoaded = 1;
+        printf("SPU: loaded %d sounds\n", loaded);
+    } else {
+        printf("SPU: no VAG files found\n");
     }
 }
 
@@ -88,12 +137,10 @@ void soundEnd()
 
     /* Stop all SPU channels (0xFFFFFF = all 24 channels) */
     SpuSetKey(0, 0xFFFFFF);
-
-    /* Note: PSn00bSDK doesn't have SpuQuit() - no cleanup needed */
 }
 
 /*
- * Play sound effect by number
+ * Play sound effect by number using round-robin channel allocation
  */
 void soundPlay(int nb)
 {
@@ -102,54 +149,36 @@ void soundPlay(int nb)
     }
 
     if (nb < 0 || nb >= MAX_SOUND_EFFECTS) {
-        if (debugMode) {
-            printf("Invalid sound number: %d\n", nb);
-        }
         return;
     }
 
-    /* Check if sound is loaded */
     if (soundAddresses[nb] == 0) {
-        if (debugMode) {
-            printf("Sound %d not loaded\n", nb);
-        }
         return;
     }
 
-    /* TODO: Implement SPU playback
-     * 1. Find free SPU channel
-     * 2. Set voice attributes (pitch, volume, ADSR)
-     * 3. Set voice address to soundAddresses[nb]
-     * 4. Start playback with SpuSetKey()
-     */
+    int ch = nextChannel;
+    nextChannel = (nextChannel + 1) % NUM_CHANNELS;
 
-    if (debugMode) {
-        printf("Playing sound %d (not yet implemented)\n", nb);
-    }
+    /* Convert sample rate to SPU pitch (44100 Hz = 0x1000) */
+    uint16_t pitch = getSPUSampleRate(soundSampleRates[nb]);
+
+    /* Set voice parameters using PSn00bSDK macros */
+    SpuSetVoiceVolume(ch, 0x3FFF, 0x3FFF);
+    SpuSetVoicePitch(ch, pitch);
+    SpuSetVoiceStartAddr(ch, soundAddresses[nb]);
+    SpuSetVoiceADSR(ch, 0x7F, 0x0, 0x7F, 0x0, 0xF);
+
+    /* Start playback */
+    SpuSetKey(1, 1 << ch);
 }
 
 /*
- * Load sound effect into SPU RAM
- * This should be called during resource loading
+ * Load sound effect into SPU RAM (unused — loading happens in soundInit)
  */
 int soundLoad(int nb, void *data, uint32_t size)
 {
-    if (soundDisabled) {
-        return 0;
-    }
-
-    if (nb < 0 || nb >= MAX_SOUND_EFFECTS) {
-        return -1;
-    }
-
-    /* TODO: Upload sound data to SPU RAM
-     * 1. Convert WAV to PS1 ADPCM format if needed
-     * 2. Transfer to SPU RAM using SpuSetTransferMode()
-     * 3. Store address in soundAddresses[nb]
-     */
-
-    soundAddresses[nb] = SPU_RAM_BASE + (nb * 0x4000);  /* Placeholder */
-    soundSizes[nb] = size;
-
+    (void)nb;
+    (void)data;
+    (void)size;
     return 0;
 }

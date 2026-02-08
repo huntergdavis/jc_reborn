@@ -1415,6 +1415,18 @@ void grSaveCleanBgTiles(void)
 }
 
 /*
+ * Free clean tile copies to reclaim memory (~600KB).
+ * Called when switching to non-island (black) backgrounds where clean copies aren't needed.
+ */
+void grFreeCleanBgTiles(void)
+{
+    if (bgTile0Clean) { free(bgTile0Clean); bgTile0Clean = NULL; }
+    if (bgTile1Clean) { free(bgTile1Clean); bgTile1Clean = NULL; }
+    if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
+    if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
+}
+
+/*
  * Restore background tiles from clean copies (call at start of each frame).
  * This erases any previously composited sprites so new frame starts fresh.
  */

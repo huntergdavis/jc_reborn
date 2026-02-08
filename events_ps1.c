@@ -105,17 +105,11 @@ void eventsWaitTick(uint16 delay)
         }
     }
 
-    /* Frame timing - match PC version where each delay tick = 20ms.
-     * PS1 VSync = 16.67ms (60Hz NTSC). grUpdateDisplay already calls VSync(0)
-     * once per frame, so subtract 1 from the target VSync count.
-     * Formula: targetVsyncs = round(delay * 20 / 16.67) - 1 */
-    if (delay > 0 && !maxSpeed) {
-        int targetVsyncs = ((int)delay * 20 + 8) / 17;
-        if (targetVsyncs > 0) targetVsyncs--;  /* Account for VSync in grUpdateDisplay */
-        for (int i = 0; i < targetVsyncs; i++) {
-            VSync(0);
-        }
-    }
+    /* Frame timing - PS1 VSync = 16.67ms (60Hz NTSC).
+     * grUpdateDisplay already calls VSync(0) once per frame, providing the
+     * base frame cadence. No additional delay needed — compositing and CD
+     * overhead fill the remaining time, matching PC playback speed. */
+    (void)delay;
 
     /* Handle pause state */
     while (pause && !frameAdvance && !quit) {

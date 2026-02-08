@@ -789,6 +789,37 @@ uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size)
     return result;
 }
 
+/*
+ * Load an entire file from CD into a malloc'd buffer.
+ * Path should be a PS1 CD path like "\\SND\\SOUND00.VAG;1".
+ * Returns malloc'd buffer (caller must free), or NULL on error.
+ * Sets *outSize to the file size in bytes.
+ */
+uint8_t *ps1_loadRawFile(const char *path, uint32_t *outSize)
+{
+    CdlFILE fileInfo;
+    if (CdSearchFile(&fileInfo, (char *)path) == NULL) {
+        return NULL;
+    }
+
+    uint32_t fileSize = fileInfo.size;
+    int sectors = (fileSize + 2047) / 2048;
+    uint8_t *buf = (uint8_t *)malloc(sectors * 2048);
+    if (!buf) return NULL;
+
+    CdControl(CdlSetloc, (uint8_t *)&fileInfo.pos, NULL);
+    for (volatile int i = 0; i < 100000; i++);
+
+    CdRead(sectors, (uint32_t *)buf, CdlModeSpeed);
+    if (CdReadSync(0, NULL) < 0) {
+        free(buf);
+        return NULL;
+    }
+
+    *outSize = fileSize;
+    return buf;
+}
+
 /* ============================================================================
  * PS1 Resource Loading Test
  * Tests the complete PS1 resource loading system
@@ -935,27 +966,13 @@ struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName)
     adsResource->compressionMethod = ps1_readUint8(f);
     adsResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress essential ADS - prioritize STAND.ADS for Johnny */
-    static int adsDecompressCount = 0;
-    #define MAX_ADS_DECOMPRESS 3  /* Conservative limit to avoid memory crash */
-
-    /* Check if this is an essential ADS with Johnny animations */
-    int isEssentialAds = (strstr(resName, "STAND") != NULL) ||
-                         (strstr(resName, "JOHNNY") != NULL);
-
-    if (isEssentialAds || adsDecompressCount < MAX_ADS_DECOMPRESS) {
-        printf("Decompressing ADS: %s (%u bytes)%s\n", resName,
-               adsResource->uncompressedSize, isEssentialAds ? " [ESSENTIAL]" : "");
-        adsResource->uncompressedData = ps1_uncompress(f,
-                                            adsResource->compressionMethod,
-                                            adsResource->compressedSize,
-                                            adsResource->uncompressedSize);
-        if (!isEssentialAds) adsDecompressCount++;
-    } else {
-        /* Lazy loading: skip compressed data */
-        adsResource->uncompressedData = NULL;
-        ps1_fseek(f, adsResource->compressedSize, SEEK_CUR);
-    }
+    /* Decompress ALL ADS files at startup — they're tiny (~16KB total for all 10)
+     * and lazy loading from CD was unreliable, causing only walk scenes to play */
+    printf("Decompressing ADS: %s (%u bytes)\n", resName, adsResource->uncompressedSize);
+    adsResource->uncompressedData = ps1_uncompress(f,
+                                        adsResource->compressionMethod,
+                                        adsResource->compressedSize,
+                                        adsResource->uncompressedSize);
 
     /* Read "TAG:" header */
     buffer = ps1_readUint8Block(f, 4);

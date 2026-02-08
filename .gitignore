@@ -25,6 +25,7 @@ build-*/
 RESOURCE.MAP
 RESOURCE.001
 *.wav
+!jc_resources/sound*.wav
 dump/
 
 # macOS

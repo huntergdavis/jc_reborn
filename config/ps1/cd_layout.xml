@@ -213,6 +213,34 @@
                 <file name="WOULDBE.TTM" type="data" source="../../jc_resources/extracted/ttm/WOULDBE.TTM"/>
             </dir>
 
+            <!-- Pre-extracted sound effects (VAG format for SPU) -->
+            <!-- sound11 and sound13 don't exist in original game data -->
+            <dir name="SND">
+                <file name="SOUND00.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND00.VAG"/>
+                <file name="SOUND01.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND01.VAG"/>
+                <file name="SOUND02.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND02.VAG"/>
+                <file name="SOUND03.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND03.VAG"/>
+                <file name="SOUND04.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND04.VAG"/>
+                <file name="SOUND05.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND05.VAG"/>
+                <file name="SOUND06.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND06.VAG"/>
+                <file name="SOUND07.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND07.VAG"/>
+                <file name="SOUND08.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND08.VAG"/>
+                <file name="SOUND09.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND09.VAG"/>
+                <file name="SOUND10.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND10.VAG"/>
+                <file name="SOUND12.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND12.VAG"/>
+                <file name="SOUND14.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND14.VAG"/>
+                <file name="SOUND15.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND15.VAG"/>
+                <file name="SOUND16.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND16.VAG"/>
+                <file name="SOUND17.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND17.VAG"/>
+                <file name="SOUND18.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND18.VAG"/>
+                <file name="SOUND19.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND19.VAG"/>
+                <file name="SOUND20.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND20.VAG"/>
+                <file name="SOUND21.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND21.VAG"/>
+                <file name="SOUND22.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND22.VAG"/>
+                <file name="SOUND23.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND23.VAG"/>
+                <file name="SOUND24.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND24.VAG"/>
+            </dir>
+
             <!-- Pre-extracted ADS files (scene scripts) -->
             <dir name="ADS">
                 <file name="ACTIVITY.ADS" type="data" source="../../jc_resources/extracted/ads/ACTIVITY.ADS"/>

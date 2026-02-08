@@ -154,6 +154,7 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
 int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, sint16 x, sint16 y);
 void grInitEmptyBackground();
 void grSaveCleanBgTiles(void);
+void grFreeCleanBgTiles(void);
 void grRestoreBgTiles(void);
 extern struct TTtmThread *grCurrentThread;
 void grClearScreen(PS1Surface *sfc);

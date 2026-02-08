@@ -105,6 +105,11 @@ int ps1_fclose(PS1File* file);
  * Returns malloc'd buffer (caller must free), or NULL on error. */
 uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size);
 
+/* Load an entire file from CD into a malloc'd buffer.
+ * Path should be a PS1 CD path like "\\SND\\SOUND00.VAG;1".
+ * Returns malloc'd buffer (caller must free), or NULL on error. */
+uint8_t* ps1_loadRawFile(const char* path, uint32_t* outSize);
+
 /* Wrap a buffer as a PS1File for use with decompress functions */
 void ps1_wrapBuffer(PS1File* file, uint8_t* buffer, uint32_t size);
 

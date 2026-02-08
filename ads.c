@@ -879,7 +879,25 @@ void adsPlay(char *adsName, uint16 adsTag)
         }
 
         // Refresh display
+#ifdef PS1_BUILD
+        {
+            int anySpritesDrawn = 0;
+            for (int i = 0; i < MAX_TTM_THREADS; i++) {
+                if (ttmThreads[i].isRunning && ttmThreads[i].numDrawnSprites > 0) {
+                    anySpritesDrawn = 1;
+                    break;
+                }
+            }
+            if (anySpritesDrawn) {
+                grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
+            } else {
+                VSync(0);
+                eventsWaitTick(grUpdateDelay);
+            }
+        }
+#else
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
+#endif
 
         // Determine min timer through all threads
         uint16 mini = 300;
@@ -1066,7 +1084,14 @@ void adsNoIsland()
 {
     grDx = grDy = 0;
     grInitEmptyBackground();
+#ifdef PS1_BUILD
+    /* On PS1, don't save black tiles as clean copies — saves 600KB of RAM
+     * and prevents corrupting clean copies that island scenes need.
+     * Non-island scenes (JOHNNY.ADS intro/outro) don't need sprite erasing. */
+    grFreeCleanBgTiles();
+#else
     grSaveCleanBgTiles();
+#endif
 }
 
 
@@ -1138,7 +1163,25 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
 #endif
 
         // Refresh display
+#ifdef PS1_BUILD
+        {
+            int anySpritesDrawn = 0;
+            for (int i = 0; i < MAX_TTM_THREADS; i++) {
+                if (ttmThreads[i].isRunning && ttmThreads[i].numDrawnSprites > 0) {
+                    anySpritesDrawn = 1;
+                    break;
+                }
+            }
+            if (anySpritesDrawn) {
+                grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
+            } else {
+                VSync(0);
+                eventsWaitTick(grUpdateDelay);
+            }
+        }
+#else
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
+#endif
 
         // Determine min timer from the two threads
         uint16 mini = 300;

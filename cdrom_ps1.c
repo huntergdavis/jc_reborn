@@ -966,13 +966,10 @@ struct TAdsResource* ps1_parseAdsResource(PS1File *f, const char *resName)
     adsResource->compressionMethod = ps1_readUint8(f);
     adsResource->uncompressedSize = ps1_readUint32(f);
 
-    /* Decompress ALL ADS files at startup — they're tiny (~16KB total for all 10)
-     * and lazy loading from CD was unreliable, causing only walk scenes to play */
-    printf("Decompressing ADS: %s (%u bytes)\n", resName, adsResource->uncompressedSize);
-    adsResource->uncompressedData = ps1_uncompress(f,
-                                        adsResource->compressionMethod,
-                                        adsResource->compressedSize,
-                                        adsResource->uncompressedSize);
+    /* Skip decompression — load from pre-extracted ADS/ files on CD instead.
+     * This bypasses the buggy LZW decompressor (same approach used for TTM). */
+    adsResource->uncompressedData = NULL;
+    ps1_fseek(f, adsResource->compressedSize, SEEK_CUR);
 
     /* Read "TAG:" header */
     buffer = ps1_readUint8Block(f, 4);

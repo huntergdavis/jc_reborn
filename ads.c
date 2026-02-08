@@ -54,6 +54,9 @@ extern int printf(const char *format, ...);
 #include "walk.h"
 #include "bench.h"
 #include "ads.h"
+#ifdef PS1_BUILD
+#include "ps1_debug.h"
+#endif
 
 
 #define MAX_RANDOM_OPS        10
@@ -715,7 +718,9 @@ void adsPlay(char *adsName, uint16 adsTag)
     struct TAdsResource *adsResource = findAdsResource(adsName);
 
 #ifdef PS1_BUILD
-    if (adsResource == NULL) return;
+    if (adsResource == NULL) {
+        return;  /* Resource not found - skip scene silently */
+    }
 #endif
 
     debugMsg("\n\n========== Playing ADS: %s:%d ==========\n", adsResource->resName, adsTag);
@@ -726,8 +731,7 @@ void adsPlay(char *adsName, uint16 adsTag)
         /* PS1: Load from pre-extracted ADS file on CD */
         ps1_loadAdsData(adsResource);
         if (adsResource->uncompressedData == NULL) {
-            /* Error - can't continue without ADS data */
-            return;
+            return;  /* ADS data load failed - skip scene */
         }
 #else
         char extractedPath[512];

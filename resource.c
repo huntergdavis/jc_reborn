@@ -83,7 +83,11 @@ static struct TMapFile mapFile;
 /* LRU Cache globals */
 static uint32 globalTick = 0;
 static size_t totalMemoryUsed = 0;
-static size_t memoryBudget = 256 * 1024;  /* 256KB for <500KB target */
+#ifdef PS1_BUILD
+static size_t memoryBudget = 600 * 1024;  /* PS1: Use most available RAM (~700KB free) */
+#else
+static size_t memoryBudget = 256 * 1024;  /* PC: Conservative for responsiveness */
+#endif
 
 /* Load resource data from extracted file if available, otherwise decompress */
 static uint8 *loadOrUncompress(FILE *compressedFile,
@@ -548,6 +552,11 @@ static void parseResourceFile(char * filename)
     }
 
     ps1_fclose(f);
+
+    /* Init-time diagnostic: safe to printf here (before game loop) */
+    printf("Resources: %d ADS, %d TTM, %d BMP, %d SCR, %d PAL\n",
+           numAdsResources, numTtmResources, numBmpResources,
+           numScrResources, numPalResources);
 #else
     FILE *f;
 
@@ -654,8 +663,7 @@ struct TBmpResource *findBmpResource(char *searchString)
     if (result == NULL) {
 #ifdef PS1_BUILD
         /* On PS1, return NULL to allow graceful handling of missing resources.
-         * This prevents hangs when TTMs reference non-existent BMPs. */
-        printf("Warning: BMP resource %s not found\n", searchString);
+         * No printf here - it crashes PS1 in the game loop. */
 #else
         fatalError("BMP resource %s not found.", searchString);
 #endif
@@ -715,7 +723,8 @@ void initLRUCache(void) {
     globalTick = 0;
     totalMemoryUsed = 0;
     
-    /* Check for JC_MEM_BUDGET_MB environment variable */
+#ifndef PS1_BUILD
+    /* Check for JC_MEM_BUDGET_MB environment variable (PC only) */
     char *budgetEnv = getenv("JC_MEM_BUDGET_MB");
     if (budgetEnv != NULL) {
         int budgetMB = atoi(budgetEnv);
@@ -726,6 +735,7 @@ void initLRUCache(void) {
             }
         }
     }
+#endif
     
     /* Initialize all resource LRU fields */
     for (int i = 0; i < numAdsResources; i++) {
@@ -778,34 +788,40 @@ void touchResource(void *resource) {
 
 void pinResource(void *resource, uint32 size, const char *type) {
     touchResource(resource);
-    
-    /* Increment pin count */
+
+    /* Increment pin count; only add to memory tracking on first pin */
     for (int i = 0; i < numAdsResources; i++) {
         if (adsResources[i] == resource) {
-            adsResources[i]->pinCount++;
-            if (adsResources[i]->uncompressedData != NULL) {
+            if (adsResources[i]->pinCount == 0 && adsResources[i]->uncompressedData != NULL) {
                 totalMemoryUsed += size;
             }
+            adsResources[i]->pinCount++;
             return;
         }
     }
     for (int i = 0; i < numTtmResources; i++) {
         if (ttmResources[i] == resource) {
-            ttmResources[i]->pinCount++;
-            if (ttmResources[i]->uncompressedData != NULL) {
+            if (ttmResources[i]->pinCount == 0 && ttmResources[i]->uncompressedData != NULL) {
                 totalMemoryUsed += size;
             }
+            ttmResources[i]->pinCount++;
             return;
         }
     }
 }
 
 void unpinResource(void *resource, const char *type) {
-    /* Decrement pin count */
+    /* Decrement pin count; subtract from memory tracking when fully unpinned */
     for (int i = 0; i < numAdsResources; i++) {
         if (adsResources[i] == resource) {
             if (adsResources[i]->pinCount > 0) {
                 adsResources[i]->pinCount--;
+                if (adsResources[i]->pinCount == 0 && adsResources[i]->uncompressedData != NULL) {
+                    if (totalMemoryUsed >= adsResources[i]->uncompressedSize)
+                        totalMemoryUsed -= adsResources[i]->uncompressedSize;
+                    else
+                        totalMemoryUsed = 0;
+                }
             }
             return;
         }
@@ -814,6 +830,12 @@ void unpinResource(void *resource, const char *type) {
         if (ttmResources[i] == resource) {
             if (ttmResources[i]->pinCount > 0) {
                 ttmResources[i]->pinCount--;
+                if (ttmResources[i]->pinCount == 0 && ttmResources[i]->uncompressedData != NULL) {
+                    if (totalMemoryUsed >= ttmResources[i]->uncompressedSize)
+                        totalMemoryUsed -= ttmResources[i]->uncompressedSize;
+                    else
+                        totalMemoryUsed = 0;
+                }
             }
             return;
         }

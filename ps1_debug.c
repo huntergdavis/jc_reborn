@@ -171,6 +171,13 @@ void ps1DebugWait(void)
  */
 void ps1DebugError(const char *fmt, ...)
 {
+    /* Re-initialize GPU and font - the game overwrites font VRAM area */
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+    FntLoad(960, 0);
+    fontID = FntOpen(10, 10, SCREEN_WIDTH - 20, SCREEN_HEIGHT - 20, 0, 512);
+    SetDispMask(1);
+
     /* Set error background color (dark red) */
     bgR = 64;
     bgG = 0;

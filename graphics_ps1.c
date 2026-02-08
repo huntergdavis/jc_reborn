@@ -1659,16 +1659,14 @@ void grLoadScreen(char *strArg)
     struct TScrResource *scrResource = findScrResource(strArg);
     if (scrResource == NULL) return;
 
-    /* Load SCR data first to check dimensions before freeing tiles */
-    if (scrResource->uncompressedData == NULL) {
-        ps1_loadScrData(scrResource);
-    }
-    if (scrResource->uncompressedData == NULL) {
-        return;
-    }
-
+    /* Determine partial height from metadata (available without loading data) */
     uint16 srcHeight = scrResource->height;
     int isPartialHeight = (srcHeight < 480);
+
+    /* Free tiles and clean copies BEFORE loading SCR data to ensure
+     * enough RAM is available. On PS1 (2MB), tiles+clean copies use ~1.2MB,
+     * and the SCR load needs ~300KB temporarily. */
+    grFreeCleanBgTiles();
 
     /* Free top tiles always */
     freeBgTile(&bgTile0);
@@ -1690,6 +1688,22 @@ void grLoadScreen(char *strArg)
     if (grSavedZonesLayer != NULL) {
         grFreeLayer(grSavedZonesLayer);
         grSavedZonesLayer = NULL;
+    }
+
+    /* Now load SCR data with freed memory available */
+    if (scrResource->uncompressedData == NULL) {
+        ps1_loadScrData(scrResource);
+    }
+    if (scrResource->uncompressedData == NULL) {
+        /* Failed to load — recreate empty tiles so rendering doesn't crash */
+        bgTile0 = createEmptyBgTileRAM(320, 240);
+        bgTile1 = createEmptyBgTileRAM(320, 240);
+        if (!isPartialHeight) {
+            bgTile3 = createEmptyBgTileRAM(320, 240);
+            bgTile4 = createEmptyBgTileRAM(320, 240);
+        }
+        grBackgroundSfc = bgTile0;
+        return;
     }
 
     if ((scrResource->width % 2) == 1) {

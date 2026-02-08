@@ -1023,6 +1023,8 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
             ds->sprite = sprite;
             ds->x = x;
             ds->y = y;
+            ds->spriteNo = spriteNo;
+            ds->imageNo = imageNo;
             ds->flip = 0;
         }
         return;
@@ -1192,6 +1194,8 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
             ds->sprite = sprite;
             ds->x = x;
             ds->y = y;
+            ds->spriteNo = spriteNo;
+            ds->imageNo = imageNo;
             ds->flip = 1;
         }
         return;

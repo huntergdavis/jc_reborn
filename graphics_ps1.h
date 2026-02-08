@@ -79,8 +79,10 @@ struct TTtmTag {
 #define MAX_DRAWN_SPRITES 8
 
 struct TDrawnSprite {
-    PS1Surface *sprite;
+    PS1Surface *sprite;    /* Direct pointer (for current frame) */
     sint16 x, y;
+    uint16 spriteNo;       /* For safe re-lookup on replay */
+    uint16 imageNo;        /* For safe re-lookup on replay */
     uint8  flip;
 };
 

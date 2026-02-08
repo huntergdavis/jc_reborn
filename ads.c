@@ -828,27 +828,23 @@ void adsPlay(char *adsName, uint16 adsTag)
                 ttmPlay(&ttmThreads[i]);
 #ifdef PS1_BUILD
                 grCurrentThread = NULL;
-                /* ttmPlay may have reloaded BMPs. Invalidate drawnSprites
-                 * of other threads sharing the same ttmSlot to prevent
-                 * replay of freed sprite pointers. */
-                for (int k = 0; k < MAX_TTM_THREADS; k++) {
-                    if (k != i && ttmThreads[k].isRunning &&
-                        ttmThreads[k].ttmSlot == ttmThreads[i].ttmSlot) {
-                        ttmThreads[k].numDrawnSprites = 0;
-                    }
-                }
 #endif
             }
 #ifdef PS1_BUILD
             else if (ttmThreads[i].isRunning) {
-                /* Thread not firing - replay its last-drawn sprites */
+                /* Thread not firing - replay via safe re-lookup from ttmSlot */
                 for (int j = 0; j < ttmThreads[i].numDrawnSprites; j++) {
                     struct TDrawnSprite *ds = &ttmThreads[i].drawnSprites[j];
-                    if (ds->sprite) {
-                        if (ds->flip)
-                            grCompositeToBackgroundFlip(ds->sprite, ds->x, ds->y);
-                        else
-                            grCompositeToBackground(ds->sprite, ds->x, ds->y);
+                    uint16 imgNo = ds->imageNo;
+                    if (imgNo < MAX_BMP_SLOTS && ttmThreads[i].ttmSlot->numSprites[imgNo] > 0) {
+                        uint16 idx = ds->spriteNo % ttmThreads[i].ttmSlot->numSprites[imgNo];
+                        PS1Surface *sprite = ttmThreads[i].ttmSlot->sprites[imgNo][idx];
+                        if (sprite && (sprite->pixels || sprite->indexedPixels)) {
+                            if (ds->flip)
+                                grCompositeToBackgroundFlip(sprite, ds->x, ds->y);
+                            else
+                                grCompositeToBackground(sprite, ds->x, ds->y);
+                        }
                     }
                 }
             }

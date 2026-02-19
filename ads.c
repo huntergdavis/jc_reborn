@@ -255,8 +255,14 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 
     int i=0;
 
-    while (ttmThreads[i].isRunning)
+    while (i < MAX_TTM_THREADS && ttmThreads[i].isRunning)
         i++;
+
+    /* Guard against thread-pool overflow: avoid writing past ttmThreads[]. */
+    if (i >= MAX_TTM_THREADS) {
+        debugMsg("ADS: thread pool full, dropping add scene (%d,%d)\n", ttmSlotNo, ttmTag);
+        return;
+    }
 
     struct TTtmThread *ttmThread = &ttmThreads[i];
 
@@ -287,7 +293,8 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 
     ttmThread->ttmLayer = grNewLayer();
 
-    numThreads++;
+    if (numThreads < MAX_TTM_THREADS)
+        numThreads++;
 }
 
 
@@ -298,7 +305,8 @@ static void adsStopScene(int sceneNo)
 #ifdef PS1_BUILD
     ttmThreads[sceneNo].numDrawnSprites = 0;
 #endif
-    numThreads--;
+    if (numThreads > 0)
+        numThreads--;
 }
 
 
@@ -1149,14 +1157,19 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
         }
 #ifdef PS1_BUILD
         else {
-            /* Walk thread not firing - replay its last-drawn sprites */
+            /* Walk thread not firing - replay via safe re-lookup from ttmSlot */
             for (int j = 0; j < ttmThreads[0].numDrawnSprites; j++) {
                 struct TDrawnSprite *ds = &ttmThreads[0].drawnSprites[j];
-                if (ds->sprite) {
-                    if (ds->flip)
-                        grCompositeToBackgroundFlip(ds->sprite, ds->x, ds->y);
-                    else
-                        grCompositeToBackground(ds->sprite, ds->x, ds->y);
+                uint16 imgNo = ds->imageNo;
+                if (imgNo < MAX_BMP_SLOTS && ttmThreads[0].ttmSlot->numSprites[imgNo] > 0) {
+                    uint16 idx = ds->spriteNo % ttmThreads[0].ttmSlot->numSprites[imgNo];
+                    PS1Surface *sprite = ttmThreads[0].ttmSlot->sprites[imgNo][idx];
+                    if (sprite && (sprite->pixels || sprite->indexedPixels)) {
+                        if (ds->flip)
+                            grCompositeToBackgroundFlip(sprite, ds->x, ds->y);
+                        else
+                            grCompositeToBackground(sprite, ds->x, ds->y);
+                    }
                 }
             }
         }
@@ -1200,4 +1213,3 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
 
     adsStopScene(0);
 }
-

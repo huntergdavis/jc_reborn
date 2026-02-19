@@ -853,20 +853,20 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
             tileRight = bgTile4;
         }
 
-        for (uint16 sx = 0; sx < sprW; sx++) {
-            sint16 destX = screenX + sx;
+        uint16 *rowLeft = (tileLeft && tileLeft->pixels) ? (tileLeft->pixels + tileLocalY * tileLeft->width) : NULL;
+        uint16 *rowRight = (tileRight && tileRight->pixels) ? (tileRight->pixels + tileLocalY * tileRight->width) : NULL;
+
+        uint32 pixelIdx = (uint32)sy * (uint32)sprW;
+        sint16 destX = screenX;
+
+        for (uint16 sx = 0; sx < sprW; sx++, destX++, pixelIdx++) {
             if (destX < 0 || destX >= 640) continue;
 
             uint16 pixel;
             if (useIndexed) {
                 /* 4-bit indexed: high nibble = even pixel, low nibble = odd pixel */
-                uint32 pixelIdx = sy * sprW + sx;
-                uint8 palIndex;
-                if (pixelIdx & 1) {
-                    palIndex = sprite->indexedPixels[pixelIdx / 2] & 0x0F;
-                } else {
-                    palIndex = (sprite->indexedPixels[pixelIdx / 2] >> 4) & 0x0F;
-                }
+                uint8 packed = sprite->indexedPixels[pixelIdx >> 1];
+                uint8 palIndex = (pixelIdx & 1) ? (packed & 0x0F) : ((packed >> 4) & 0x0F);
                 pixel = ttmPalette[palIndex];
             } else {
                 pixel = sprite->pixels[sy * sprW + sx];
@@ -875,19 +875,10 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
             /* Skip transparent pixels (0x0000) */
             if (pixel == 0x0000) continue;
 
-            /* Determine which tile and write pixel */
-            PS1Surface *tile;
-            uint16 tileLocalX;
             if (destX < 320) {
-                tile = tileLeft;
-                tileLocalX = destX;
+                if (rowLeft) rowLeft[destX] = pixel;
             } else {
-                tile = tileRight;
-                tileLocalX = destX - 320;
-            }
-
-            if (tile && tile->pixels) {
-                tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
+                if (rowRight) rowRight[destX - 320] = pixel;
             }
         }
     }
@@ -1121,7 +1112,12 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
             tileRight = bgTile4;
         }
 
-        for (uint16 sx = 0; sx < sprW; sx++) {
+        uint16 *rowLeft = (tileLeft && tileLeft->pixels) ? (tileLeft->pixels + tileLocalY * tileLeft->width) : NULL;
+        uint16 *rowRight = (tileRight && tileRight->pixels) ? (tileRight->pixels + tileLocalY * tileRight->width) : NULL;
+
+        uint32 pixelIdx = (uint32)sy * (uint32)sprW;
+
+        for (uint16 sx = 0; sx < sprW; sx++, pixelIdx++) {
             /* Flip X coordinate */
             sint16 destX = screenX + (sprW - 1 - sx);
             if (destX < 0 || destX >= 640) continue;
@@ -1129,13 +1125,8 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
             uint16 pixel;
             if (useIndexed) {
                 /* 4-bit indexed: high nibble = even pixel, low nibble = odd pixel */
-                uint32 pixelIdx = sy * sprW + sx;
-                uint8 palIndex;
-                if (pixelIdx & 1) {
-                    palIndex = sprite->indexedPixels[pixelIdx / 2] & 0x0F;
-                } else {
-                    palIndex = (sprite->indexedPixels[pixelIdx / 2] >> 4) & 0x0F;
-                }
+                uint8 packed = sprite->indexedPixels[pixelIdx >> 1];
+                uint8 palIndex = (pixelIdx & 1) ? (packed & 0x0F) : ((packed >> 4) & 0x0F);
                 pixel = ttmPalette[palIndex];
             } else {
                 pixel = sprite->pixels[sy * sprW + sx];
@@ -1144,19 +1135,10 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
             /* Skip transparent pixels (0x0000) */
             if (pixel == 0x0000) continue;
 
-            /* Determine which tile and write pixel */
-            PS1Surface *tile;
-            uint16 tileLocalX;
             if (destX < 320) {
-                tile = tileLeft;
-                tileLocalX = destX;
+                if (rowLeft) rowLeft[destX] = pixel;
             } else {
-                tile = tileRight;
-                tileLocalX = destX - 320;
-            }
-
-            if (tile && tile->pixels) {
-                tile->pixels[tileLocalY * tile->width + tileLocalX] = pixel;
+                if (rowRight) rowRight[destX - 320] = pixel;
             }
         }
     }

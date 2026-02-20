@@ -311,7 +311,11 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0x1051:
                 debugMsg("    SET_BMP_SLOT %d", args[0]);
-                ttmThread->selectedBmpSlot = args[0];
+                if (args[0] < MAX_BMP_SLOTS) {
+                    ttmThread->selectedBmpSlot = args[0];
+                } else {
+                    ttmThread->selectedBmpSlot = (MAX_BMP_SLOTS - 1);
+                }
                 break;
 
             case 0x1061:
@@ -463,4 +467,3 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
     ttmThread->ip = offset;
 }
-

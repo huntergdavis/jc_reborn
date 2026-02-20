@@ -46,6 +46,7 @@ struct TAdsScene {
 typedef struct PS1Surface {
     uint16 *pixels;     /* 15-bit direct color pixel data (NULL if using indexedPixels) */
     uint8  *indexedPixels; /* 4-bit packed indexed pixel data (NULL if using pixels) */
+    uint8  indexedOwned; /* 1 if indexedPixels must be freed with this surface */
     uint16 width;       /* This tile's width (max 64) */
     uint16 height;      /* This tile's height (max 64) */
     uint16 x, y;        /* Position in VRAM */
@@ -76,7 +77,7 @@ struct TTtmTag {
     uint32 offset;
 };
 
-#define MAX_DRAWN_SPRITES 8
+#define MAX_DRAWN_SPRITES 32
 
 struct TDrawnSprite {
     PS1Surface *sprite;    /* Direct pointer (for current frame) */

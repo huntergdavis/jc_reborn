@@ -4,6 +4,23 @@ This document captures lessons learned while debugging the PlayStation 1 port of
 
 ## Memory Issues
 
+### Sprite Heap Fragmentation / Missing Body Parts (FIXED)
+
+**Symptom:** During long ADS sequences (notably fire/fish), Johnny's sprite disappears progressively (legs -> torso -> head) or eventually freezes/crashes after many scene transitions.
+
+**Root Cause:** `grLoadBmpRAM()` was allocating and copying a new `indexedPixels` buffer for every BMP frame load. Repeated LOAD_IMAGE churn fragmented PS1 heap and increased allocation pressure, causing unstable sprite availability over time.
+
+**Fix:** Switched to **zero-copy indexed sprite frames**:
+- `PS1Surface.indexedPixels` now points directly into the owning BMP resource's `uncompressedData` frame slice.
+- Removed per-frame `malloc+memcpy` for indexed sprite data.
+- Added `indexedOwned` to `PS1Surface` and made `grFreeLayer()` free `indexedPixels` only when ownership is explicit.
+
+**Why this works:** dramatically reduces heap churn and fragmentation during animation-heavy scenes, keeping sprite data stable over long runs.
+
+**Key files:**
+- `graphics_ps1.h` (`PS1Surface.indexedOwned`)
+- `graphics_ps1.c` (`grLoadBmpRAM()`, `grFreeLayer()`)
+
 ### Uninitialized nextTile Pointers (FIXED)
 
 **Symptom:** Invalid word read errors at addresses like `0x7C005418`, `0x54542E64` (ASCII-like patterns) occurring in `grReleaseBmp` or `grFreeLayer`.

@@ -391,6 +391,7 @@ PS1Surface *grNewEmptyBackground()
     sfc->y = nextVRAMY;
     sfc->pixels = NULL;  /* Will be allocated in VRAM */
     sfc->indexedPixels = NULL;
+    sfc->indexedOwned = 0;
     sfc->nextTile = NULL;
 
     /* Update VRAM allocation tracking */
@@ -418,7 +419,7 @@ void grFreeLayer(PS1Surface *sfc)
 {
     while (sfc != NULL) {
         PS1Surface *next = sfc->nextTile;
-        if (sfc->indexedPixels) free(sfc->indexedPixels);
+        if (sfc->indexedPixels && sfc->indexedOwned) free(sfc->indexedPixels);
         if (sfc->pixels) free(sfc->pixels);
         free(sfc);
         sfc = next;
@@ -576,6 +577,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->y = vramY;
         surface->pixels = copyBuf;
         surface->indexedPixels = NULL;
+        surface->indexedOwned = 0;
         surface->clutX = 640;
         surface->clutY = 0;
         /* Multi-tile fields */
@@ -624,6 +626,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
             bottomTile->y = bottomVramY;  /* Y=68 */
             bottomTile->pixels = bottomBuf;
             bottomTile->indexedPixels = NULL;
+            bottomTile->indexedOwned = 0;
             bottomTile->clutX = 640;
             bottomTile->clutY = 0;
             bottomTile->fullWidth = width;
@@ -724,16 +727,11 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->nextTile = NULL;
         surface->pixels = NULL;  /* Not using 15-bit direct color */
 
-        /* Allocate 4-bit indexed buffer (width*height/2 bytes) */
-        uint32 indexedSize = (width * height) / 2;
-        surface->indexedPixels = (uint8*)safe_malloc(indexedSize);
-        if (!surface->indexedPixels) {
-            free(surface);
-            break;
-        }
-
-        /* Copy raw 4-bit data directly - no conversion needed */
-        memcpy(surface->indexedPixels, srcPtr, indexedSize);
+        /* Zero-copy indexed frame: reference BMP resource memory directly.
+         * This removes per-frame malloc/memcpy churn and cuts fragmentation. */
+        uint32 indexedSize = ((uint32)width * (uint32)height + 1) / 2;
+        surface->indexedPixels = srcPtr;
+        surface->indexedOwned = 0;
 
         /* Advance source pointer for next frame */
         srcPtr += indexedSize;
@@ -1009,8 +1007,14 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackground(sprite, x, y);
         /* Record draw for frame replay */
-        if (grCurrentThread && grCurrentThread->numDrawnSprites < MAX_DRAWN_SPRITES) {
-            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[grCurrentThread->numDrawnSprites++];
+        if (grCurrentThread) {
+            uint16 recIdx;
+            if (grCurrentThread->numDrawnSprites < MAX_DRAWN_SPRITES) {
+                recIdx = grCurrentThread->numDrawnSprites++;
+            } else {
+                recIdx = MAX_DRAWN_SPRITES - 1; /* keep latest draw instead of dropping */
+            }
+            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[recIdx];
             ds->sprite = sprite;
             ds->x = x;
             ds->y = y;
@@ -1171,8 +1175,14 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackgroundFlip(sprite, x, y);
         /* Record draw for frame replay */
-        if (grCurrentThread && grCurrentThread->numDrawnSprites < MAX_DRAWN_SPRITES) {
-            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[grCurrentThread->numDrawnSprites++];
+        if (grCurrentThread) {
+            uint16 recIdx;
+            if (grCurrentThread->numDrawnSprites < MAX_DRAWN_SPRITES) {
+                recIdx = grCurrentThread->numDrawnSprites++;
+            } else {
+                recIdx = MAX_DRAWN_SPRITES - 1; /* keep latest draw instead of dropping */
+            }
+            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[recIdx];
             ds->sprite = sprite;
             ds->x = x;
             ds->y = y;
@@ -1321,6 +1331,7 @@ static PS1Surface *createEmptyBgTileRAM(uint16 width, uint16 height)
     tile->x = 0;
     tile->y = 0;
     tile->indexedPixels = NULL;
+    tile->indexedOwned = 0;
     tile->nextTile = NULL;
     tile->pixels = (uint16*)safe_malloc(width * height * 2);
     /* Fill with black (0x0000 = transparent/black) */
@@ -1524,6 +1535,7 @@ static PS1Surface *createBgTile(uint8 *src, uint16 srcWidth,
     tile->x = vramX;
     tile->y = vramY;
     tile->indexedPixels = NULL;
+    tile->indexedOwned = 0;
     tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */
@@ -1585,6 +1597,7 @@ static PS1Surface *createBgTileRAMPartial(uint8 *src, uint16 srcWidth, uint16 sr
     tile->x = 0;  /* Not in VRAM - just RAM */
     tile->y = 0;
     tile->indexedPixels = NULL;
+    tile->indexedOwned = 0;
     tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */

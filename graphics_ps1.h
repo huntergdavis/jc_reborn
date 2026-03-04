@@ -26,12 +26,13 @@
 
 /* Forward declaration for LRU cache */
 struct TTtmResource;
+struct TBmpResource;
 
 #define SCREEN_WIDTH        640
 #define SCREEN_HEIGHT       480
 
 #define MAX_BMP_SLOTS       6
-#define MAX_SPRITES_PER_BMP 120  /* Affordable now that sprites use 4-bit indexed format */
+#define MAX_SPRITES_PER_BMP 255
 #define MAX_TTM_SLOTS       10
 #define MAX_TTM_THREADS     10
 
@@ -68,6 +69,8 @@ struct TTtmSlot {
     struct      TTtmTag *tags;
     int         numTags;
     int         numSprites[MAX_BMP_SLOTS];
+    uint16      spriteGen[MAX_BMP_SLOTS];
+    struct TBmpResource *loadedBmp[MAX_BMP_SLOTS];
     PS1Surface  *sprites[MAX_BMP_SLOTS][MAX_SPRITES_PER_BMP];
     struct TTtmResource *ttmResource;  /* For LRU cache unpinning */
 };
@@ -77,13 +80,16 @@ struct TTtmTag {
     uint32 offset;
 };
 
-#define MAX_DRAWN_SPRITES 32
+#define MAX_DRAWN_SPRITES 255
 
 struct TDrawnSprite {
     PS1Surface *sprite;    /* Direct pointer (for current frame) */
+    struct TTtmSlot *sourceSlot; /* Slot used when this draw was recorded */
     sint16 x, y;
     uint16 spriteNo;       /* For safe re-lookup on replay */
     uint16 imageNo;        /* For safe re-lookup on replay */
+    uint16 slotGen;        /* BMP slot generation at record time */
+    uint16 sceneEpoch;     /* Thread scene epoch at record time */
     uint8  flip;
 };
 
@@ -102,6 +108,7 @@ struct TTtmThread {
     uint8  fgColor;
     uint8  bgColor;
     PS1Surface *ttmLayer;
+    uint16 sceneEpoch;
     /* Track composited sprites for frame replay */
     struct TDrawnSprite drawnSprites[MAX_DRAWN_SPRITES];
     uint8  numDrawnSprites;
@@ -158,6 +165,7 @@ int grDrawSpriteExt(unsigned long *extOT, char **nextPri, PS1Surface *sprite, si
 void grInitEmptyBackground();
 void grSaveCleanBgTiles(void);
 void grFreeCleanBgTiles(void);
+void grEnsureCleanBgTiles(void);
 void grRestoreBgTiles(void);
 extern struct TTtmThread *grCurrentThread;
 void grClearScreen(PS1Surface *sfc);
@@ -169,11 +177,19 @@ extern PS1Surface *bgTile3;
 extern PS1Surface *bgTile4;
 void grDrawBackground(void);
 void grFadeOut();
+void grPs1StatThreadDrop(void);
+void grPs1StatReplayDrop(void);
+void grPs1StatBmpFrameCap(uint16 requested, uint16 cap);
+void grPs1StatBmpShortLoad(uint16 requested, uint16 loaded);
 
 void grLoadPalette();
 void grLoadScreen(char *strArg);
 
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
+
+/* PS1 telemetry overlay toggle (intended to be wired to pause menu later). */
+void grSetPs1Telemetry(int enabled);
+extern int grPs1TelemetryEnabled;
 
 #endif /* GRAPHICS_PS1_H */

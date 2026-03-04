@@ -34,6 +34,7 @@ typedef struct _FILE FILE;
 #endif
 extern int rand(void);
 extern void *malloc(size_t size);
+extern void free(void *ptr);
 extern int fprintf(FILE *stream, const char *format, ...);
 extern int printf(const char *format, ...);
 #define stderr ((FILE*)2)
@@ -41,6 +42,7 @@ extern int printf(const char *format, ...);
 
 #include "mytypes.h"
 #include "utils.h"
+#include "events.h"
 #include "resource.h"
 /* Platform-specific graphics headers */
 #ifdef PS1_BUILD
@@ -106,6 +108,205 @@ static int    adsNumRandOps    = 0;
 
 static int    numThreads       = 0;
 static int    adsStopRequested = 0;
+int ps1AdsLastPlayLaunched = 0;
+
+static void adsStopScene(int sceneNo);
+
+#ifdef PS1_BUILD
+#define ADS_THREAD_RUNNING 1
+#define ADS_THREAD_TERMINATED 2
+
+/* Carry last valid actor draw set across thread/scene handoff to avoid blink-outs. */
+static struct TDrawnSprite gTransitionCarry[MAX_DRAWN_SPRITES];
+static uint8 gTransitionCarryCount = 0;
+static uint8 gTransitionCarryValid = 0;
+
+/* Persistent debug telemetry for freeze triage overlay. */
+uint16 ps1AdsDbgActiveThreads = 0;
+uint16 ps1AdsDbgMini = 0;
+uint16 ps1AdsDbgStalledFrames = 0;
+uint16 ps1AdsDbgProgressPulse = 0;
+uint16 ps1AdsDbgSceneSlot = 0;
+uint16 ps1AdsDbgSceneTag = 0;
+uint16 ps1AdsDbgReplayCount = 0;
+uint16 ps1AdsDbgRunningThreads = 0;
+uint16 ps1AdsDbgTerminatedThreads = 0;
+uint16 ps1AdsDbgThreadTimer = 0;
+uint16 ps1AdsDbgThreadDelay = 0;
+uint16 ps1AdsDbgReplayTryFrame = 0;
+uint16 ps1AdsDbgReplayDrawFrame = 0;
+uint16 ps1AdsDbgReplayRejectEpoch = 0;
+uint16 ps1AdsDbgReplayRejectGen = 0;
+uint16 ps1AdsDbgReplayRejectSlot = 0;
+uint16 ps1AdsDbgReplayRejectSprite = 0;
+uint16 ps1AdsDbgReplayFlipFrame = 0;
+uint16 ps1AdsDbgSceneSeq = 0;
+uint16 ps1AdsDbgSceneFrames = 0;
+uint16 ps1AdsDbgSceneTry = 0;
+uint16 ps1AdsDbgSceneDraw = 0;
+uint16 ps1AdsDbgSceneRejectEpoch = 0;
+uint16 ps1AdsDbgSceneRejectGen = 0;
+uint16 ps1AdsDbgSceneRejectSlot = 0;
+uint16 ps1AdsDbgSceneRejectSprite = 0;
+uint16 ps1AdsDbgSceneStallMax = 0;
+uint16 ps1AdsDbgNoDrawStreak = 0;
+#endif
+
+#ifdef PS1_BUILD
+static uint16 gReplayTryFrame = 0;
+static uint16 gReplayDrawFrame = 0;
+static uint16 gReplayRejectEpochFrame = 0;
+static uint16 gReplayRejectGenFrame = 0;
+static uint16 gReplayRejectSlotFrame = 0;
+static uint16 gReplayRejectSpriteFrame = 0;
+static uint16 gReplayFlipFrame = 0;
+static uint16 gSceneSig = 0xFFFFU;
+
+static uint16 adsSatAddU16(uint16 a, uint16 b)
+{
+    uint32 s = (uint32)a + (uint32)b;
+    return (uint16)((s > 0xFFFFU) ? 0xFFFFU : s);
+}
+
+static void adsResetSceneTelemetry(uint16 sceneSig)
+{
+    gSceneSig = sceneSig;
+    if (ps1AdsDbgSceneSeq < 0xFFFFU) ps1AdsDbgSceneSeq++;
+    ps1AdsDbgSceneFrames = 0;
+    ps1AdsDbgSceneTry = 0;
+    ps1AdsDbgSceneDraw = 0;
+    ps1AdsDbgSceneRejectEpoch = 0;
+    ps1AdsDbgSceneRejectGen = 0;
+    ps1AdsDbgSceneRejectSlot = 0;
+    ps1AdsDbgSceneRejectSprite = 0;
+    ps1AdsDbgSceneStallMax = 0;
+    ps1AdsDbgNoDrawStreak = 0;
+}
+
+static void adsResetReplayFrameTelemetry(void)
+{
+    gReplayTryFrame = 0;
+    gReplayDrawFrame = 0;
+    gReplayRejectEpochFrame = 0;
+    gReplayRejectGenFrame = 0;
+    gReplayRejectSlotFrame = 0;
+    gReplayRejectSpriteFrame = 0;
+    gReplayFlipFrame = 0;
+}
+
+static void adsPublishReplayFrameTelemetry(void)
+{
+    ps1AdsDbgReplayTryFrame = gReplayTryFrame;
+    ps1AdsDbgReplayDrawFrame = gReplayDrawFrame;
+    ps1AdsDbgReplayRejectEpoch = gReplayRejectEpochFrame;
+    ps1AdsDbgReplayRejectGen = gReplayRejectGenFrame;
+    ps1AdsDbgReplayRejectSlot = gReplayRejectSlotFrame;
+    ps1AdsDbgReplayRejectSprite = gReplayRejectSpriteFrame;
+    ps1AdsDbgReplayFlipFrame = gReplayFlipFrame;
+}
+
+static void adsAccumulateSceneTelemetry(uint16 stalledFrames)
+{
+    ps1AdsDbgSceneFrames = adsSatAddU16(ps1AdsDbgSceneFrames, 1);
+    ps1AdsDbgSceneTry = adsSatAddU16(ps1AdsDbgSceneTry, gReplayTryFrame);
+    ps1AdsDbgSceneDraw = adsSatAddU16(ps1AdsDbgSceneDraw, gReplayDrawFrame);
+    ps1AdsDbgSceneRejectEpoch = adsSatAddU16(ps1AdsDbgSceneRejectEpoch, gReplayRejectEpochFrame);
+    ps1AdsDbgSceneRejectGen = adsSatAddU16(ps1AdsDbgSceneRejectGen, gReplayRejectGenFrame);
+    ps1AdsDbgSceneRejectSlot = adsSatAddU16(ps1AdsDbgSceneRejectSlot, gReplayRejectSlotFrame);
+    ps1AdsDbgSceneRejectSprite = adsSatAddU16(ps1AdsDbgSceneRejectSprite, gReplayRejectSpriteFrame);
+    if (stalledFrames > ps1AdsDbgSceneStallMax) ps1AdsDbgSceneStallMax = stalledFrames;
+}
+
+static void adsCaptureTransitionCarry(struct TTtmThread *thread)
+{
+    if (!thread || thread->numDrawnSprites == 0) return;
+    uint8 count = thread->numDrawnSprites;
+    if (count > MAX_DRAWN_SPRITES) count = MAX_DRAWN_SPRITES;
+    for (uint8 i = 0; i < count; i++) {
+        gTransitionCarry[i] = thread->drawnSprites[i];
+    }
+    gTransitionCarryCount = count;
+    gTransitionCarryValid = 1;
+}
+
+static void adsSeedThreadFromTransitionCarry(struct TTtmThread *thread)
+{
+    if (!thread || !gTransitionCarryValid || gTransitionCarryCount == 0) return;
+    if (thread->numDrawnSprites != 0) return;
+    uint8 count = gTransitionCarryCount;
+    if (count > MAX_DRAWN_SPRITES) count = MAX_DRAWN_SPRITES;
+    for (uint8 i = 0; i < count; i++) {
+        thread->drawnSprites[i] = gTransitionCarry[i];
+        thread->drawnSprites[i].sceneEpoch = thread->sceneEpoch;
+    }
+    thread->numDrawnSprites = count;
+}
+
+static void adsReplayThreadSprites(struct TTtmThread *thread)
+{
+    if (!thread) return;
+    uint8 writeIdx = 0;
+    for (int j = 0; j < thread->numDrawnSprites; j++) {
+        struct TDrawnSprite *ds = &thread->drawnSprites[j];
+        if (gReplayTryFrame < 0xFFFFU) gReplayTryFrame++;
+        if (ds->sceneEpoch != thread->sceneEpoch) {
+            if (gReplayRejectEpochFrame < 0xFFFFU) gReplayRejectEpochFrame++;
+            continue;
+        }
+        struct TTtmSlot *srcSlot = ds->sourceSlot ? ds->sourceSlot : thread->ttmSlot;
+        if (!srcSlot) {
+            if (gReplayRejectSlotFrame < 0xFFFFU) gReplayRejectSlotFrame++;
+            continue;
+        }
+        uint16 imgNo = ds->imageNo;
+        if (imgNo >= MAX_BMP_SLOTS) {
+            if (gReplayRejectSlotFrame < 0xFFFFU) gReplayRejectSlotFrame++;
+            continue;
+        }
+        if (srcSlot->spriteGen[imgNo] != ds->slotGen) {
+            if (gReplayRejectGenFrame < 0xFFFFU) gReplayRejectGenFrame++;
+            continue;
+        }
+        if (srcSlot->numSprites[imgNo] <= 0) {
+            if (gReplayRejectSlotFrame < 0xFFFFU) gReplayRejectSlotFrame++;
+            continue;
+        }
+        uint16 idx = ds->spriteNo % srcSlot->numSprites[imgNo];
+        PS1Surface *sprite = srcSlot->sprites[imgNo][idx];
+        if (!sprite || (!sprite->pixels && !sprite->indexedPixels)) {
+            if (gReplayRejectSpriteFrame < 0xFFFFU) gReplayRejectSpriteFrame++;
+            continue;
+        }
+        if (ds->flip) {
+            grCompositeToBackgroundFlip(sprite, ds->x, ds->y);
+            if (gReplayFlipFrame < 0xFFFFU) gReplayFlipFrame++;
+        } else {
+            grCompositeToBackground(sprite, ds->x, ds->y);
+        }
+        if (gReplayDrawFrame < 0xFFFFU) gReplayDrawFrame++;
+
+        /* Keep only valid entries so stale records cannot poison later frames. */
+        if (writeIdx != (uint8)j) {
+            thread->drawnSprites[writeIdx] = *ds;
+        }
+        writeIdx++;
+    }
+    /* Keep prior records if this frame had only transient invalids.
+     * Purging to zero here amplifies blink/freeze at scene boundaries. */
+    if (writeIdx > 0) {
+        thread->numDrawnSprites = writeIdx;
+    }
+}
+#endif
+
+static void adsReapTerminatedThreads(void)
+{
+    for (int i = 0; i < MAX_TTM_THREADS; i++) {
+        if (ttmThreads[i].isRunning == 2) {
+            adsStopScene(i);
+        }
+    }
+}
 
 
 static void adsLoad(uint8 *data, uint32 dataSize, uint16 numTags, uint16 tag, uint32 *tagOffset)
@@ -240,6 +441,9 @@ static uint32 adsFindTag(uint16 reqdTag)
 
 static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 {
+    /* Reclaim any terminated threads before attempting to add a new one. */
+    adsReapTerminatedThreads();
+
     for (int i=0; i < MAX_TTM_THREADS; i++) {
 
         struct TTtmThread *ttmThread = &ttmThreads[i];
@@ -260,8 +464,11 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 
     /* Guard against thread-pool overflow: avoid writing past ttmThreads[]. */
     if (i >= MAX_TTM_THREADS) {
-        debugMsg("ADS: thread pool full, dropping add scene (%d,%d)\n", ttmSlotNo, ttmTag);
-        return;
+        fatalError("ADS thread overflow: add scene (%d,%d) with MAX_TTM_THREADS=%d",
+                   ttmSlotNo, ttmTag, MAX_TTM_THREADS);
+#ifdef PS1_BUILD
+        grPs1StatThreadDrop();
+#endif
     }
 
     struct TTtmThread *ttmThread = &ttmThreads[i];
@@ -278,6 +485,11 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
     ttmThread->selectedBmpSlot = 0;
     ttmThread->fgColor         = 0x0f;
     ttmThread->bgColor         = 0x0f;
+    ttmThread->sceneEpoch++;
+    ttmThread->numDrawnSprites = 0;
+#ifdef PS1_BUILD
+    adsSeedThreadFromTransitionCarry(ttmThread);
+#endif
 
     if (ttmSlotNo)
         ttmThread->ip = ttmFindTag(&ttmSlots[ttmSlotNo], ttmTag);
@@ -300,6 +512,9 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 
 static void adsStopScene(int sceneNo)
 {
+#ifdef PS1_BUILD
+    adsCaptureTransitionCarry(&ttmThreads[sceneNo]);
+#endif
     grFreeLayer(ttmThreads[sceneNo].ttmLayer);
     ttmThreads[sceneNo].isRunning = 0;
 #ifdef PS1_BUILD
@@ -469,8 +684,23 @@ void adsInit()    // Init slots and threads for TTM scripts  // TODO : rename
         ttmThreads[i].timer     = 0;
 #ifdef PS1_BUILD
         ttmThreads[i].numDrawnSprites = 0;
+        ttmThreads[i].sceneEpoch = 0;
 #endif
     }
+#ifdef PS1_BUILD
+    gTransitionCarryCount = 0;
+    gTransitionCarryValid = 0;
+    gSceneSig = 0xFFFFU;
+    ps1AdsDbgSceneSeq = 0;
+    ps1AdsDbgSceneFrames = 0;
+    ps1AdsDbgSceneTry = 0;
+    ps1AdsDbgSceneDraw = 0;
+    ps1AdsDbgSceneRejectEpoch = 0;
+    ps1AdsDbgSceneRejectGen = 0;
+    ps1AdsDbgSceneRejectSlot = 0;
+    ps1AdsDbgSceneRejectSprite = 0;
+    ps1AdsDbgSceneStallMax = 0;
+#endif
 
     grUpdateDelay = 0;
     ttmBackgroundThread.isRunning = 0;
@@ -798,16 +1028,83 @@ void adsPlay(char *adsName, uint16 adsTag)
     adsLoad(data, dataSize, adsResource->numTags, adsTag, &offset);
 
     adsStopRequested = 0;
+    ps1AdsLastPlayLaunched = 0;
     grUpdateDelay = 0;
+    uint32 lastProgressSig = 0;
+    uint16 stalledFrames = 0;
 
     // Play the first ADS chunk of the sequence
     adsPlayChunk(data, dataSize, offset);
 
+#ifdef PS1_BUILD
+    /* Recovery: some ADS control paths can parse without launching a scene
+     * (no ADD_SCENE emitted), which leaves PS1 on a static background.
+     * If that happens, retry one bookmarked chunk instead of idling. */
+    if (numThreads == 0 && !adsStopRequested && numAdsChunks > 0) {
+        int pick = rand() % numAdsChunks;
+        adsPlayChunk(data, dataSize, adsChunks[pick].offset);
+    }
+#endif
+    if (numThreads > 0) ps1AdsLastPlayLaunched = 1;
+
     // Main ADS loop
+#ifdef PS1_BUILD
+    grEnsureCleanBgTiles();
+#endif
     while (numThreads) {
+#ifdef PS1_BUILD
+        adsResetReplayFrameTelemetry();
+#endif
+        int runningCountFrame = 0;
+        /* Self-heal thread-count desync: trust actual running threads over numThreads counter. */
+        {
+            int activeRunning = 0;
+            int firstIdx = -1;
+            int runningCount = 0;
+            int terminatedCount = 0;
+            for (int i = 0; i < MAX_TTM_THREADS; i++) {
+                if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING ||
+                    ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
+                    activeRunning++;
+                    if (firstIdx < 0) firstIdx = i;
+                    if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) runningCount++;
+                    if (ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) terminatedCount++;
+                }
+            }
+            if (activeRunning == 0) {
+                numThreads = 0;
+                break;
+            }
+            numThreads = activeRunning;
+            runningCountFrame = runningCount;
+#ifdef PS1_BUILD
+            ps1AdsDbgActiveThreads = (uint16)activeRunning;
+            ps1AdsDbgRunningThreads = (uint16)runningCount;
+            ps1AdsDbgTerminatedThreads = (uint16)terminatedCount;
+            if (firstIdx >= 0) {
+                ps1AdsDbgSceneSlot = ttmThreads[firstIdx].sceneSlot;
+                ps1AdsDbgSceneTag  = ttmThreads[firstIdx].sceneTag;
+                ps1AdsDbgReplayCount = ttmThreads[firstIdx].numDrawnSprites;
+                ps1AdsDbgThreadTimer = ttmThreads[firstIdx].timer;
+                ps1AdsDbgThreadDelay = ttmThreads[firstIdx].delay;
+                {
+                    uint16 sceneSig = (uint16)(((ttmThreads[firstIdx].sceneSlot & 0x3F) << 10) |
+                                               (ttmThreads[firstIdx].sceneTag & 0x03FF));
+                    if (sceneSig != gSceneSig) {
+                        adsResetSceneTelemetry(sceneSig);
+                    }
+                }
+            } else {
+                ps1AdsDbgSceneSlot = 0;
+                ps1AdsDbgSceneTag  = 0;
+                ps1AdsDbgReplayCount = 0;
+                ps1AdsDbgThreadTimer = 0;
+                ps1AdsDbgThreadDelay = 0;
+            }
+#endif
+        }
 
 #ifdef PS1_BUILD
-        /* Restore clean background before compositing this frame */
         grRestoreBgTiles();
 #endif
 
@@ -825,39 +1122,58 @@ void adsPlay(char *adsName, uint16 adsTag)
         for (int i=0; i < MAX_TTM_THREADS; i++) {
 
             // Call ttmPlay() for each thread which timer reaches 0
-            if (ttmThreads[i].isRunning && ttmThreads[i].timer == 0) {
+            if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING && ttmThreads[i].timer == 0) {
                 debugMsg("    ------> Thread #%d", i);
                 ttmThreads[i].timer = ttmThreads[i].delay;
 #ifdef PS1_BUILD
-                /* Clear old draws - ttmPlay will record new ones */
-                ttmThreads[i].numDrawnSprites = 0;
+                uint8 prevCount = ttmThreads[i].numDrawnSprites;
+                struct TDrawnSprite prevDraws[MAX_DRAWN_SPRITES];
+                for (uint8 p = 0; p < prevCount; p++) {
+                    prevDraws[p] = ttmThreads[i].drawnSprites[p];
+                }
+                /* Do NOT clear drawnSprites here: many TTM scripts emit deltas and
+                 * rely on CLEAR_SCREEN opcode to define when frame state resets. */
                 grCurrentThread = &ttmThreads[i];
 #endif
                 ttmPlay(&ttmThreads[i]);
 #ifdef PS1_BUILD
                 grCurrentThread = NULL;
+                if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING &&
+                    ttmThreads[i].numDrawnSprites == 0 &&
+                    prevCount > 0) {
+                    for (uint8 p = 0; p < prevCount; p++) {
+                        ttmThreads[i].drawnSprites[p] = prevDraws[p];
+                    }
+                    ttmThreads[i].numDrawnSprites = prevCount;
+                }
+                /* Delta-style scripts may only update part of the pose on UPDATE ticks.
+                 * Re-composite full persistent state in the same frame to avoid
+                 * alternating-frame body dropouts. */
+                adsReplayThreadSprites(&ttmThreads[i]);
+                if (ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
+                    /* Terminated threads should hand off immediately, not replay stale frames. */
+                    ttmThreads[i].timer = 0;
+                }
 #endif
             }
 #ifdef PS1_BUILD
-            else if (ttmThreads[i].isRunning) {
-                /* Thread not firing - replay via safe re-lookup from ttmSlot */
-                for (int j = 0; j < ttmThreads[i].numDrawnSprites; j++) {
-                    struct TDrawnSprite *ds = &ttmThreads[i].drawnSprites[j];
-                    uint16 imgNo = ds->imageNo;
-                    if (imgNo < MAX_BMP_SLOTS && ttmThreads[i].ttmSlot->numSprites[imgNo] > 0) {
-                        uint16 idx = ds->spriteNo % ttmThreads[i].ttmSlot->numSprites[imgNo];
-                        PS1Surface *sprite = ttmThreads[i].ttmSlot->sprites[imgNo][idx];
-                        if (sprite && (sprite->pixels || sprite->indexedPixels)) {
-                            if (ds->flip)
-                                grCompositeToBackgroundFlip(sprite, ds->x, ds->y);
-                            else
-                                grCompositeToBackground(sprite, ds->x, ds->y);
-                        }
-                    }
-                }
+            else if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) {
+                adsReplayThreadSprites(&ttmThreads[i]);
             }
 #endif
         }
+#ifdef PS1_BUILD
+        adsPublishReplayFrameTelemetry();
+        if (runningCountFrame > 0) {
+            if (gReplayDrawFrame == 0) {
+                if (ps1AdsDbgNoDrawStreak < 0xFFFFU) ps1AdsDbgNoDrawStreak++;
+            } else {
+                ps1AdsDbgNoDrawStreak = 0;
+            }
+        } else {
+            ps1AdsDbgNoDrawStreak = 0;
+        }
+#endif
 
         if (debugMode) {
 
@@ -889,14 +1205,14 @@ void adsPlay(char *adsName, uint16 adsTag)
         // Refresh display
 #ifdef PS1_BUILD
         {
-            int anySpritesDrawn = 0;
+            int needsDisplayUpdate = (ttmBackgroundThread.isRunning || ttmHolidayThread.isRunning);
             for (int i = 0; i < MAX_TTM_THREADS; i++) {
-                if (ttmThreads[i].isRunning && ttmThreads[i].numDrawnSprites > 0) {
-                    anySpritesDrawn = 1;
+                if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING && ttmThreads[i].numDrawnSprites > 0) {
+                    needsDisplayUpdate = 1;
                     break;
                 }
             }
-            if (anySpritesDrawn) {
+            if (needsDisplayUpdate) {
                 grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
             } else {
                 VSync(0);
@@ -915,7 +1231,7 @@ void adsPlay(char *adsName, uint16 adsTag)
 
         for (int i=0; i < MAX_TTM_THREADS; i++) {
 
-            if (ttmThreads[i].isRunning) {
+            if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) {
 
                 if (ttmThreads[i].delay < mini)
                     mini = ttmThreads[i].delay;
@@ -925,12 +1241,25 @@ void adsPlay(char *adsName, uint16 adsTag)
             }
         }
 
+        /* Prevent zero-tick loops from starving progression and display updates. */
+        if (mini == 0) mini = 1;
+
         // Decrease all timers by the shortest one, and wait that amount of time
-        ttmBackgroundThread.timer -= mini;
+#ifdef PS1_BUILD
+        ps1AdsDbgMini = mini;
+#endif
+        if (ttmBackgroundThread.timer > mini)
+            ttmBackgroundThread.timer -= mini;
+        else
+            ttmBackgroundThread.timer = 0;
 
         for (int i=0; i < MAX_TTM_THREADS; i++)
-            if (ttmThreads[i].isRunning)
-                ttmThreads[i].timer -= mini;
+            if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) {
+                if (ttmThreads[i].timer > mini)
+                    ttmThreads[i].timer -= mini;
+                else
+                    ttmThreads[i].timer = 0;
+            }
 
         debugMsg(" ******* WAIT: %d ticks *******\n", mini);
         grUpdateDelay = mini;
@@ -938,7 +1267,7 @@ void adsPlay(char *adsName, uint16 adsTag)
         // Various threads processes
         for (int i=0; i < MAX_TTM_THREADS; i++) {
 
-            if (ttmThreads[i].isRunning && ttmThreads[i].timer == 0) {
+            if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING && ttmThreads[i].timer == 0) {
 
                 // Process jumps
                 if (ttmThreads[i].nextGotoOffset) {
@@ -950,28 +1279,81 @@ void adsPlay(char *adsName, uint16 adsTag)
                 if (ttmThreads[i].sceneTimer > 0) {
                     ttmThreads[i].sceneTimer -= ttmThreads[i].delay;
                     if (ttmThreads[i].sceneTimer <= 0)
-                        ttmThreads[i].isRunning = 2;
+                        ttmThreads[i].isRunning = ADS_THREAD_TERMINATED;
+                }
+            }
+
+            /* Free terminated threads immediately to avoid stale replay/timer side effects. */
+            if (ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
+
+                // Managing the numPlays which was indicated in ADD_SCENE arg3 (postive value)
+                if (ttmThreads[i].sceneIterations) {
+                    ttmThreads[i].sceneIterations--;
+                    ttmThreads[i].isRunning = ADS_THREAD_RUNNING;
+                    ttmThreads[i].sceneEpoch++;
+                    ttmThreads[i].numDrawnSprites = 0;
+                    ttmThreads[i].ip = ttmFindTag(&ttmSlots[ttmThreads[i].sceneSlot], ttmThreads[i].sceneTag);
+                    ttmThreads[i].timer = 0;
                 }
 
-                // Free terminated threads
-                if (ttmThreads[i].isRunning == 2) {
-
-                    // Managing the numPlays which was indicated in ADD_SCENE arg3 (postive value)
-                    if (ttmThreads[i].sceneIterations) {
-                        ttmThreads[i].sceneIterations--;
-                        ttmThreads[i].isRunning = 1;
-                        ttmThreads[i].ip = ttmFindTag(&ttmSlots[ttmThreads[i].sceneSlot], ttmThreads[i].sceneTag);
-                    }
-
-                    // Is there one (or more) IF_LASTPLAYED matching the terminated thread ?
-                    else {
-                        adsStopScene(i);
-                        if (!adsStopRequested)
-                            adsPlayTriggeredChunks(data, dataSize, ttmThreads[i].sceneSlot, ttmThreads[i].sceneTag);
-                    }
+                // Is there one (or more) IF_LASTPLAYED matching the terminated thread ?
+                else {
+                    uint16 endedSlot = ttmThreads[i].sceneSlot;
+                    uint16 endedTag = ttmThreads[i].sceneTag;
+                    adsStopScene(i);
+                    if (!adsStopRequested)
+                        adsPlayTriggeredChunks(data, dataSize, endedSlot, endedTag);
                 }
             }
         }
+
+#ifdef PS1_BUILD
+        /* Stall watchdog: if per-thread execution state stops changing for too long,
+         * force-exit this ADS to prevent indefinite frozen scenes. */
+        {
+            uint32 progressSig = 0x9E3779B9u;
+            int activeThreads = 0;
+
+            progressSig ^= (uint32)ttmBackgroundThread.timer;
+            progressSig ^= ((uint32)ttmBackgroundThread.isRunning << 20);
+
+            for (int i = 0; i < MAX_TTM_THREADS; i++) {
+                if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) {
+                    activeThreads++;
+                    progressSig ^= ((uint32)(ttmThreads[i].sceneSlot & 0x3F) << 0);
+                    progressSig ^= ((uint32)(ttmThreads[i].sceneTag  & 0x3FF) << 6);
+                    progressSig ^= ((uint32)(ttmThreads[i].timer & 0x3FF) << 16);
+                    progressSig ^= (uint32)(ttmThreads[i].ip * 2654435761u);
+                }
+            }
+
+            if (activeThreads > 0) {
+                if (progressSig == lastProgressSig) {
+                    if (stalledFrames < 0xFFFF) stalledFrames++;
+                } else {
+                    stalledFrames = 0;
+                    lastProgressSig = progressSig;
+                    if (ps1AdsDbgProgressPulse < 0xFFFFU) ps1AdsDbgProgressPulse++;
+                }
+                ps1AdsDbgStalledFrames = stalledFrames;
+
+                if (stalledFrames > 900) {
+                    /* ~15s at 60fps: recover by stopping active scene threads. */
+                    for (int i = 0; i < MAX_TTM_THREADS; i++) {
+                        if (ttmThreads[i].isRunning) {
+                            adsStopScene(i);
+                        }
+                    }
+                    break;
+                }
+            } else {
+                stalledFrames = 0;
+                lastProgressSig = 0;
+            }
+        }
+        adsAccumulateSceneTelemetry(stalledFrames);
+
+#endif
     }
 
     for (int i=0; i < MAX_TTM_SLOTS; i++)
@@ -1105,6 +1487,7 @@ void adsNoIsland()
 
 void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
 {
+    ps1AdsLastPlayLaunched = 1;
     adsAddScene(0,0,0);
     grLoadBmp(ttmSlots, 0, "JOHNWALK.BMP");
 
@@ -1122,9 +1505,15 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
     ttmThreads[0].delay = walkAnimate(&ttmThreads[0], ttmBackgroundThread.ttmSlot);
 #ifdef PS1_BUILD
     grCurrentThread = NULL;
+    grEnsureCleanBgTiles();
+    adsResetSceneTelemetry((uint16)(((ttmThreads[0].sceneSlot & 0x3F) << 10) |
+                                    (ttmThreads[0].sceneTag & 0x03FF)));
 #endif
 
     while (ttmThreads[0].delay) {
+#ifdef PS1_BUILD
+        adsResetReplayFrameTelemetry();
+#endif
 
 #ifdef PS1_BUILD
         /* Restore clean background before compositing this frame */
@@ -1146,6 +1535,11 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
         if (!ttmThreads[0].timer) {
             debugMsg("    ------> Animate walking");
 #ifdef PS1_BUILD
+            uint8 prevCount = ttmThreads[0].numDrawnSprites;
+            struct TDrawnSprite prevDraws[MAX_DRAWN_SPRITES];
+            for (uint8 p = 0; p < prevCount; p++) {
+                prevDraws[p] = ttmThreads[0].drawnSprites[p];
+            }
             ttmThreads[0].numDrawnSprites = 0;
             grCurrentThread = &ttmThreads[0];
 #endif
@@ -1153,39 +1547,35 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
                 walkAnimate(&ttmThreads[0], ttmBackgroundThread.ttmSlot);
 #ifdef PS1_BUILD
             grCurrentThread = NULL;
+            if (ttmThreads[0].numDrawnSprites == 0 && prevCount > 0) {
+                for (uint8 p = 0; p < prevCount; p++) {
+                    ttmThreads[0].drawnSprites[p] = prevDraws[p];
+                }
+                ttmThreads[0].numDrawnSprites = prevCount;
+                /* Avoid one-frame disappear during walk tick transitions. */
+                adsReplayThreadSprites(&ttmThreads[0]);
+            }
 #endif
         }
 #ifdef PS1_BUILD
         else {
-            /* Walk thread not firing - replay via safe re-lookup from ttmSlot */
-            for (int j = 0; j < ttmThreads[0].numDrawnSprites; j++) {
-                struct TDrawnSprite *ds = &ttmThreads[0].drawnSprites[j];
-                uint16 imgNo = ds->imageNo;
-                if (imgNo < MAX_BMP_SLOTS && ttmThreads[0].ttmSlot->numSprites[imgNo] > 0) {
-                    uint16 idx = ds->spriteNo % ttmThreads[0].ttmSlot->numSprites[imgNo];
-                    PS1Surface *sprite = ttmThreads[0].ttmSlot->sprites[imgNo][idx];
-                    if (sprite && (sprite->pixels || sprite->indexedPixels)) {
-                        if (ds->flip)
-                            grCompositeToBackgroundFlip(sprite, ds->x, ds->y);
-                        else
-                            grCompositeToBackground(sprite, ds->x, ds->y);
-                    }
-                }
-            }
+            adsReplayThreadSprites(&ttmThreads[0]);
         }
+        adsPublishReplayFrameTelemetry();
+        adsAccumulateSceneTelemetry(0);
 #endif
 
         // Refresh display
 #ifdef PS1_BUILD
         {
-            int anySpritesDrawn = 0;
+            int needsDisplayUpdate = (ttmBackgroundThread.isRunning || ttmHolidayThread.isRunning);
             for (int i = 0; i < MAX_TTM_THREADS; i++) {
                 if (ttmThreads[i].isRunning && ttmThreads[i].numDrawnSprites > 0) {
-                    anySpritesDrawn = 1;
+                    needsDisplayUpdate = 1;
                     break;
                 }
             }
-            if (anySpritesDrawn) {
+            if (needsDisplayUpdate) {
                 grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
             } else {
                 VSync(0);
@@ -1203,9 +1593,19 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
         else
             mini = ttmThreads[0].timer;
 
+        /* Prevent zero-tick walk loops which can lock animation progression. */
+        if (mini == 0) mini = 1;
+
         // Decrease all timers by the shortest one, and wait that amount of time
-        ttmBackgroundThread.timer -= mini;
-        ttmThreads[0].timer       -= mini;
+        if (ttmBackgroundThread.timer > mini)
+            ttmBackgroundThread.timer -= mini;
+        else
+            ttmBackgroundThread.timer = 0;
+
+        if (ttmThreads[0].timer > mini)
+            ttmThreads[0].timer -= mini;
+        else
+            ttmThreads[0].timer = 0;
 
         debugMsg(" ******* WAIT: %d ticks *******\n", mini);
         grUpdateDelay = mini;

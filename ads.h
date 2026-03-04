@@ -31,3 +31,5 @@ void adsPlayWalk();
 void adsPlaySingleTtm(char *ttmName);
 void adsPlayBench();  // TODO
 
+/* Set by adsPlay()/adsPlayWalk(): 1 if at least one scene thread launched. */
+extern int ps1AdsLastPlayLaunched;

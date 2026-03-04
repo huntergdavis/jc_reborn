@@ -51,6 +51,37 @@ extern int rand(void);
 
 static int storyCurrentDay = 1;
 
+#ifdef PS1_BUILD
+/* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
+uint16 ps1StoryDbgPhase = 0;
+uint16 ps1StoryDbgSceneTag = 0;
+uint16 ps1StoryDbgPrevSpot = 0;
+uint16 ps1StoryDbgPrevHdg = 0;
+uint16 ps1StoryDbgNextSpot = 0;
+uint16 ps1StoryDbgNextHdg = 0;
+uint16 ps1StoryDbgSeq = 0;
+#endif
+
+static int storyIsValidSpot(int spot)
+{
+    return (spot >= SPOT_A && spot <= SPOT_F);
+}
+
+static int storyIsValidHdg(int hdg)
+{
+    return (hdg >= HDG_S && hdg <= HDG_SE);
+}
+
+static int storyHasValidStart(struct TStoryScene *scene)
+{
+    return storyIsValidSpot(scene->spotStart) && storyIsValidHdg(scene->hdgStart);
+}
+
+static int storyHasValidEnd(struct TStoryScene *scene)
+{
+    return storyIsValidSpot(scene->spotEnd) && storyIsValidHdg(scene->hdgEnd);
+}
+
 
 static struct TStoryScene *storyPickScene(
                 uint16 wantedFlags, uint16 unwantedFlags)
@@ -208,18 +239,30 @@ void storyPlay()
 {
     uint16 wantedFlags   = 0;
     uint16 unwantedFlags = 0;
+    int firstSequence = 1;
 
 
     adsInit();
     adsPlayIntro();
 
     while (1) {
+#ifdef PS1_BUILD
+        if (ps1StoryDbgSeq < 0xFFFFU) ps1StoryDbgSeq++;
+        ps1StoryDbgPhase = 1;
+#endif
 
         storyUpdateCurrentDay();
         storyCalculateIslandFromDateAndTime();
         unwantedFlags = 0;
+        if (firstSequence)
+            unwantedFlags |= FIRST;
 
         struct TStoryScene *finalScene = storyPickScene(FINAL, unwantedFlags);
+        /* Transition invariant: if final scene needs a walk-in, it must have valid start metadata. */
+        if (!(finalScene->flags & FIRST)) {
+            for (int tryPick = 0; tryPick < 32 && !storyHasValidStart(finalScene); tryPick++)
+                finalScene = storyPickScene(FINAL, unwantedFlags);
+        }
 
         if (finalScene->flags & ISLAND) {
             storyCalculateIslandFromScene(finalScene);
@@ -231,6 +274,9 @@ void storyPlay()
 
         int prevSpot = -1;
         int prevHdg  = -1;
+        char lastAdsName[13];
+        int lastAdsTag = -1;
+        lastAdsName[0] = '\0';
 
         if (!(finalScene->flags & FIRST)) {
 
@@ -245,12 +291,31 @@ void storyPlay()
 
             for (int i=0; i < 6 + (rand() % 14); i++) {
 
-                struct TStoryScene *scene = storyPickScene(wantedFlags,
-                                                           unwantedFlags);
+                struct TStoryScene *scene = NULL;
+                for (int pickTry = 0; pickTry < 8; pickTry++) {
+                    scene = storyPickScene(wantedFlags, unwantedFlags);
+                    if (prevSpot != -1 && !storyHasValidStart(scene)) continue;
+                    if (!storyHasValidEnd(scene)) continue;
+                    if (lastAdsName[0] == '\0') break;
+                    if (strcmp(scene->adsName, lastAdsName) != 0) break;
+                    if (scene->adsTagNo != lastAdsTag) break;
+                }
 
                 if (prevSpot != -1)
+#ifdef PS1_BUILD
+                {
+                    ps1StoryDbgPhase = 3;
+                    ps1StoryDbgPrevSpot = (uint16)prevSpot;
+                    ps1StoryDbgPrevHdg = (uint16)prevHdg;
+                    ps1StoryDbgNextSpot = (uint16)scene->spotStart;
+                    ps1StoryDbgNextHdg = (uint16)scene->hdgStart;
                     adsPlayWalk(prevSpot, prevHdg,
                         scene->spotStart, scene->hdgStart);
+                }
+#else
+                    adsPlayWalk(prevSpot, prevHdg,
+                        scene->spotStart, scene->hdgStart);
+#endif
 
                 ttmDx = islandState.xPos
                             + (scene->flags & LEFT_ISLAND ? 272 : 0);
@@ -259,16 +324,46 @@ void storyPlay()
                 if (scene->dayNo)
                     soundPlay(0);
 
+#ifdef PS1_BUILD
+                ps1StoryDbgPhase = 2;
+                ps1StoryDbgSceneTag = (uint16)scene->adsTagNo;
+                ps1StoryDbgNextSpot = (uint16)scene->spotEnd;
+                ps1StoryDbgNextHdg = (uint16)scene->hdgEnd;
+#endif
                 adsPlay(scene->adsName, scene->adsTagNo);
+#ifdef PS1_BUILD
+                if (!ps1AdsLastPlayLaunched) {
+                    /* Skip dead scene selections that produced no ADS threads. */
+                    continue;
+                }
+#endif
+                strcpy(lastAdsName, scene->adsName);
+                lastAdsTag = scene->adsTagNo;
 
                 unwantedFlags |= FIRST;
-                prevSpot = scene->spotEnd;
-                prevHdg = scene->hdgEnd;
+                if (storyHasValidEnd(scene)) {
+                    prevSpot = scene->spotEnd;
+                    prevHdg = scene->hdgEnd;
+                } else {
+                    prevSpot = -1;
+                    prevHdg = -1;
+                }
             }
         }
 
-        if (prevSpot != -1)
+        if (prevSpot != -1 && storyHasValidStart(finalScene))
+#ifdef PS1_BUILD
+        {
+            ps1StoryDbgPhase = 4;
+            ps1StoryDbgPrevSpot = (uint16)prevSpot;
+            ps1StoryDbgPrevHdg = (uint16)prevHdg;
+            ps1StoryDbgNextSpot = (uint16)finalScene->spotStart;
+            ps1StoryDbgNextHdg = (uint16)finalScene->hdgStart;
             adsPlayWalk(prevSpot, prevHdg, finalScene->spotStart, finalScene->hdgStart);
+        }
+#else
+            adsPlayWalk(prevSpot, prevHdg, finalScene->spotStart, finalScene->hdgStart);
+#endif
 
         if (finalScene->flags & ISLAND) {
             ttmDx = islandState.xPos + (finalScene->flags & LEFT_ISLAND ? 272 : 0);
@@ -281,12 +376,31 @@ void storyPlay()
         if (finalScene->dayNo)
             soundPlay(0);
 
+#ifdef PS1_BUILD
+        ps1StoryDbgPhase = 5;
+        ps1StoryDbgSceneTag = (uint16)finalScene->adsTagNo;
+        ps1StoryDbgNextSpot = (uint16)finalScene->spotEnd;
+        ps1StoryDbgNextHdg = (uint16)finalScene->hdgEnd;
+#endif
         adsPlay(finalScene->adsName, finalScene->adsTagNo);
+#ifdef PS1_BUILD
+        if (!ps1AdsLastPlayLaunched) {
+            /* Retry a fresh sequence immediately instead of idling on static background. */
+            if (finalScene->flags & ISLAND)
+                adsReleaseIsland();
+            firstSequence = 0;
+            continue;
+        }
+#endif
 
+#ifdef PS1_BUILD
+        ps1StoryDbgPhase = 6;
+#endif
         grFadeOut();
 
         if (finalScene->flags & ISLAND)
             adsReleaseIsland();
+
+        firstSequence = 0;
     }
 }
-

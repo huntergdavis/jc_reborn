@@ -188,6 +188,8 @@ void ttmInitSlot(struct TTtmSlot *ttmSlot)
     ttmSlot->ttmResource = NULL;
     for (int i=0; i < MAX_BMP_SLOTS; i++) {
         ttmSlot->numSprites[i] = 0;
+        ttmSlot->spriteGen[i] = 0;
+        ttmSlot->loadedBmp[i] = NULL;
         /* Zero out sprite pointers to prevent garbage pointer access */
         for (int j=0; j < MAX_SPRITES_PER_BMP; j++) {
             ttmSlot->sprites[i][j] = NULL;
@@ -226,6 +228,7 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
     char strArg[20];
     int continueLoop = 1;
     struct TTtmSlot *ttmSlot;
+    uint32 opBudget = 8192;
 
 
     grDx = ttmDx;
@@ -260,6 +263,18 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 #endif
 
     while (continueLoop) {
+
+        if (opBudget == 0) {
+            /* Guard against infinite opcode loops inside one tick. */
+            ttmThread->isRunning = 2;
+            break;
+        }
+        opBudget--;
+
+        if (offset + 1 >= ttmSlot->dataSize) {
+            ttmThread->isRunning = 2;
+            break;
+        }
 
         opcode = peekUint16(data, &offset);
 
@@ -361,6 +376,8 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // Really, really not sure about this formula... but things
                 // do work not so bad like that
                 ttmThread->delay = ttmThread->timer = (args[0] + args[1]) / 2;
+                if (ttmThread->delay == 0) ttmThread->delay = 1;
+                if (ttmThread->timer == 0) ttmThread->timer = 1;
                 break;
 
             case 0x4004:
@@ -425,7 +442,12 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
             case 0xA601:
                 // arg : indicates the SAVE_IMAGE1 nb to be used ?
                 debugMsg("    CLEAR_SCREEN %d", args[0]);
+#ifdef PS1_BUILD
+                /* PS1 renderer composites directly into restored background tiles.
+                 * Full-screen clear here causes visible black-frame blinking. */
+#else
                 grClearScreen(ttmThread->ttmLayer);
+#endif
 #ifdef PS1_BUILD
                 ttmThread->numDrawnSprites = 0;
 #endif

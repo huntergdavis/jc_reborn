@@ -155,7 +155,13 @@ int walkAnimate(struct TTtmThread *ttmThread, struct TTtmSlot *ttmBgSlot)
             currentSpot, currentHdg, nextHdg,
             (*data)[0], (*data)[1], (*data)[2], (*data)[3]);
 
+#ifdef PS1_BUILD
+        /* PS1 composites directly into restored background tiles; clearing here
+         * wipes the whole scene to black and causes walk-phase blinking. */
+        (void)sfc;
+#else
         grClearScreen(sfc);
+#endif
 
         if ((*data)[0])
             grDrawSpriteFlip(sfc, ttmSlot,
@@ -181,4 +187,3 @@ int walkAnimate(struct TTtmThread *ttmThread, struct TTtmSlot *ttmBgSlot)
 
     return delay;
 }
-

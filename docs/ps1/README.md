@@ -117,6 +117,7 @@ mkpsxiso cd_layout.xml
 - **[Toolchain Setup](toolchain-setup.md)** - Development environment
 - **[Development Workflow](development-workflow.md)** - Build and test procedures
 - **[Project History](project-history.md)** - Journey and lessons learned
+- **[Research Package](research/README.md)** - 2026-03-17 offline-surface / scene-pack simplification research
 
 ## References
 

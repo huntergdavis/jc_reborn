@@ -1,0 +1,1637 @@
+Johnny Castaway PS1 Scene Resource Analyzer
+============================================
+
+Parsing RESOURCE.MAP...
+Found: 10 ADS, 117 BMP, 10 SCR, 41 TTM resources
+
+=== Scene 0: ACTIVITY.ADS tag 1 ===
+  Flags: FINAL ISLAND VARPOS 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 10 (slot1:tag12, slot1:tag13, slot1:tag8[rand w=1], slot1:tag7[rand w=1], slot1:tag9[rand w=1], slot1:tag14[rand w=5], slot1:tag11, slot1:tag11, slot2:tag2, slot1:tag13)
+  Max concurrent threads: 7
+  BMPs loaded: 3
+    MJDIVE.BMP        30 frames, max 120x98    39.2 KB indexed,   39.2 KB raw
+    GJDIVE.BMP        40 frames, max 216x134   81.3 KB indexed,   81.3 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   167.9 KB
+    BMP pixels (15-bit):  671.5 KB  (if not using indexed)
+    BMP raw data:         167.9 KB
+    TTM bytecode:           7.1 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 106
+  PEAK MEMORY (estimated):   335.7 KB / 600.0 KB budget
+
+=== Scene 1: ACTIVITY.ADS tag 12 ===
+  Flags: FINAL ISLAND VARPOS LOWTIDE 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 10 (slot4:tag110, slot4:tag24, slot4:tag113, slot4:tag98, slot4:tag100, slot4:tag101, slot4:tag105, slot4:tag106, slot4:tag103, slot4:tag107)
+  Max concurrent threads: 10
+  BMPs loaded: 10
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    ZZZZS.BMP          3 frames, max  16x12     0.2 KB indexed,    0.2 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+    GJGULL1A.BMP      49 frames, max  64x71    37.7 KB indexed,   37.7 KB raw
+    GJGULL3.BMP       25 frames, max  80x81    42.3 KB indexed,   42.3 KB raw
+    GJGULL3A.BMP      48 frames, max  88x103   55.5 KB indexed,   55.5 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   256.9 KB
+    BMP pixels (15-bit): 1027.7 KB  (if not using indexed)
+    BMP raw data:         256.9 KB
+    TTM bytecode:           8.6 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 244
+  PEAK MEMORY (estimated):   427.3 KB / 600.0 KB budget
+
+=== Scene 2: ACTIVITY.ADS tag 11 ===
+  Flags: FINAL FIRST ISLAND VARPOS 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 20 (slot5:tag42, slot5:tag20, slot5:tag30, slot5:tag3, slot5:tag19, slot5:tag21, slot5:tag12, slot5:tag11, slot5:tag9, slot5:tag17, slot5:tag14, slot5:tag22, slot5:tag23, slot5:tag24, slot5:tag25, slot5:tag26, slot5:tag28, slot5:tag15, slot5:tag10, slot5:tag16)
+  Max concurrent threads: 20
+  BMPs loaded: 6
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJBATH.BMP        37 frames, max 120x94    52.4 KB indexed,   52.4 KB raw
+    JCHANGE.BMP       12 frames, max  32x59     7.2 KB indexed,    7.2 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+    GJGULL2.BMP       49 frames, max  72x52    27.9 KB indexed,   27.9 KB raw
+    GJGULL2A.BMP      16 frames, max  56x53    13.8 KB indexed,   13.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   125.2 KB
+    BMP pixels (15-bit):  500.7 KB  (if not using indexed)
+    BMP raw data:         125.2 KB
+    TTM bytecode:           5.0 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 149
+  PEAK MEMORY (estimated):   291.2 KB / 600.0 KB budget
+
+=== Scene 3: ACTIVITY.ADS tag 10 ===
+  Flags: FINAL ISLAND VARPOS LOWTIDE 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 16 (slot4:tag110, slot4:tag24, slot4:tag113, slot4:tag114, slot4:tag108, slot4:tag92, slot4:tag93, slot4:tag109, slot4:tag84, slot4:tag96, slot4:tag85, slot4:tag112, slot4:tag118, slot4:tag119, slot4:tag82, slot4:tag116)
+  Max concurrent threads: 16
+  BMPs loaded: 10
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    ZZZZS.BMP          3 frames, max  16x12     0.2 KB indexed,    0.2 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+    GJGULL1A.BMP      49 frames, max  64x71    37.7 KB indexed,   37.7 KB raw
+    GJGULL3.BMP       25 frames, max  80x81    42.3 KB indexed,   42.3 KB raw
+    GJGULL3A.BMP      48 frames, max  88x103   55.5 KB indexed,   55.5 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   256.9 KB
+    BMP pixels (15-bit): 1027.7 KB  (if not using indexed)
+    BMP raw data:         256.9 KB
+    TTM bytecode:           8.6 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 244
+  PEAK MEMORY (estimated):   427.3 KB / 600.0 KB budget
+
+=== Scene 4: ACTIVITY.ADS tag 4 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 3 (slot2:tag1, slot2:tag3, slot2:tag2)
+  Max concurrent threads: 3
+  BMPs loaded: 2
+    MJDIVE.BMP        30 frames, max 120x98    39.2 KB indexed,   39.2 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    86.5 KB
+    BMP pixels (15-bit):  346.1 KB  (if not using indexed)
+    BMP raw data:          86.5 KB
+    TTM bytecode:           3.0 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 66
+  PEAK MEMORY (estimated):   249.9 KB / 600.0 KB budget
+
+=== Scene 5: ACTIVITY.ADS tag 5 ===
+  Flags: FINAL ISLAND VARPOS LOWTIDE 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 15 (slot6:tag7, slot6:tag19, slot6:tag20, slot6:tag21, slot6:tag22, slot6:tag23, slot6:tag29, slot6:tag34, slot6:tag25, slot6:tag26, slot6:tag30, slot6:tag31, slot6:tag32, slot6:tag33, slot6:tag28)
+  Max concurrent threads: 15
+  BMPs loaded: 7
+    GJHOT.BMP         23 frames, max 104x82    33.5 KB indexed,   33.5 KB raw
+    GJNAT1LI.BMP      19 frames, max 168x187   35.1 KB indexed,   35.1 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MEXCWALK.BMP       8 frames, max  48x79    11.4 KB indexed,   11.4 KB raw
+    JCHANGE.BMP       12 frames, max  32x59     7.2 KB indexed,    7.2 KB raw
+    GJNAT1.BMP        26 frames, max  80x93    52.4 KB indexed,   52.4 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   152.0 KB
+    BMP pixels (15-bit):  608.2 KB  (if not using indexed)
+    BMP raw data:         152.0 KB
+    TTM bytecode:           7.0 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 95
+  PEAK MEMORY (estimated):   319.7 KB / 600.0 KB budget
+
+=== Scene 6: ACTIVITY.ADS tag 6 ===
+  Flags: FINAL ISLAND VARPOS 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 16 (slot4:tag1, slot4:tag110, slot4:tag24, slot4:tag5[rand w=1], slot4:tag5[rand w=1], slot4:tag5[rand w=1], slot4:tag16, slot4:tag19[rand w=1], slot4:tag25[rand w=1], slot4:tag26, slot4:tag25[rand w=1], slot4:tag20[rand w=1], slot4:tag26, slot4:tag20, slot4:tag22[rand w=2], slot4:tag21[rand w=1])
+  Max concurrent threads: 8
+  BMPs loaded: 10
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    ZZZZS.BMP          3 frames, max  16x12     0.2 KB indexed,    0.2 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+    GJGULL1A.BMP      49 frames, max  64x71    37.7 KB indexed,   37.7 KB raw
+    GJGULL3.BMP       25 frames, max  80x81    42.3 KB indexed,   42.3 KB raw
+    GJGULL3A.BMP      48 frames, max  88x103   55.5 KB indexed,   55.5 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   256.9 KB
+    BMP pixels (15-bit): 1027.7 KB  (if not using indexed)
+    BMP raw data:         256.9 KB
+    TTM bytecode:           8.6 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 244
+  PEAK MEMORY (estimated):   427.3 KB / 600.0 KB budget
+
+=== Scene 7: ACTIVITY.ADS tag 7 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 16 (slot4:tag1, slot4:tag110, slot4:tag24, slot4:tag5[rand w=1], slot4:tag5[rand w=1], slot4:tag5[rand w=1], slot4:tag7, slot4:tag8[rand w=1], slot4:tag8[rand w=1], slot4:tag9, slot4:tag10, slot4:tag5[rand w=1], slot4:tag5[rand w=1], slot4:tag5[rand w=1], slot4:tag22, slot4:tag23)
+  Max concurrent threads: 9
+  BMPs loaded: 10
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    ZZZZS.BMP          3 frames, max  16x12     0.2 KB indexed,    0.2 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+    GJGULL1A.BMP      49 frames, max  64x71    37.7 KB indexed,   37.7 KB raw
+    GJGULL3.BMP       25 frames, max  80x81    42.3 KB indexed,   42.3 KB raw
+    GJGULL3A.BMP      48 frames, max  88x103   55.5 KB indexed,   55.5 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   256.9 KB
+    BMP pixels (15-bit): 1027.7 KB  (if not using indexed)
+    BMP raw data:         256.9 KB
+    TTM bytecode:           8.6 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 244
+  PEAK MEMORY (estimated):   427.3 KB / 600.0 KB budget
+
+=== Scene 8: ACTIVITY.ADS tag 8 ===
+  Flags: FIRST ISLAND VARPOS 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 14 (slot5:tag42, slot5:tag3, slot5:tag19, slot5:tag12, slot5:tag11, slot5:tag9, slot5:tag17, slot5:tag14, slot5:tag15, slot5:tag10, slot5:tag16, slot5:tag8, slot5:tag18, slot5:tag2)
+  Max concurrent threads: 14
+  BMPs loaded: 6
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJBATH.BMP        37 frames, max 120x94    52.4 KB indexed,   52.4 KB raw
+    JCHANGE.BMP       12 frames, max  32x59     7.2 KB indexed,    7.2 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+    GJGULL2.BMP       49 frames, max  72x52    27.9 KB indexed,   27.9 KB raw
+    GJGULL2A.BMP      16 frames, max  56x53    13.8 KB indexed,   13.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   125.2 KB
+    BMP pixels (15-bit):  500.7 KB  (if not using indexed)
+    BMP raw data:         125.2 KB
+    TTM bytecode:           5.0 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 149
+  PEAK MEMORY (estimated):   291.2 KB / 600.0 KB budget
+
+=== Scene 9: ACTIVITY.ADS tag 9 ===
+  Flags: FINAL ISLAND LOWTIDE 
+  TTM slots: 6 (GJDIVE.TTM[1], MJDIVE.TTM[2], MJREAD.TTM[4], MJBATH.TTM[5], GJNAT1.TTM[6], GJNAT3.TTM[7])
+  ADD_SCENE calls: 12 (slot6:tag30, slot6:tag31, slot7:tag9, slot7:tag13, slot7:tag12, slot7:tag11, slot7:tag16, slot7:tag18, slot7:tag17, slot7:tag14, slot7:tag15, slot7:tag19)
+  Max concurrent threads: 12
+  BMPs loaded: 9
+    GJHOT.BMP         23 frames, max 104x82    33.5 KB indexed,   33.5 KB raw
+    GJNAT1LI.BMP      19 frames, max 168x187   35.1 KB indexed,   35.1 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MEXCWALK.BMP       8 frames, max  48x79    11.4 KB indexed,   11.4 KB raw
+    JCHANGE.BMP       12 frames, max  32x59     7.2 KB indexed,    7.2 KB raw
+    GJNAT1.BMP        26 frames, max  80x93    52.4 KB indexed,   52.4 KB raw
+    GJNAT3.BMP        54 frames, max 104x109   78.0 KB indexed,   78.0 KB raw
+    BOAT.BMP           1 frames, max 248x61     7.4 KB indexed,    7.4 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   237.4 KB
+    BMP pixels (15-bit):  949.8 KB  (if not using indexed)
+    BMP raw data:         237.4 KB
+    TTM bytecode:          18.4 KB
+    ADS script:             2.5 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 150
+  PEAK MEMORY (estimated):   416.9 KB / 600.0 KB budget
+
+=== Scene 10: BUILDING.ADS tag 1 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 3 (MJSAND.TTM[1], GJGULIVR.TTM[2], MJFIRE.TTM[3])
+  ADD_SCENE calls: 11 (slot1:tag1, slot1:tag16, slot1:tag2, slot1:tag3, slot1:tag5, slot1:tag14, slot1:tag15, slot1:tag7, slot1:tag8, slot1:tag10, slot1:tag17)
+  Max concurrent threads: 11
+  BMPs loaded: 9
+    SANDCAST.BMP      15 frames, max 176x105   33.4 KB indexed,   33.4 KB raw
+    MJSANDC.BMP       11 frames, max  88x91    21.6 KB indexed,   21.6 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJCASTLE.BMP       8 frames, max  48x73     9.8 KB indexed,    9.8 KB raw
+    GJRUNAWA.BMP      14 frames, max 120x110   42.5 KB indexed,   42.5 KB raw
+    GJKINGKO.BMP      21 frames, max  96x113   41.9 KB indexed,   41.9 KB raw
+    SPLASH.BMP         7 frames, max 152x112   21.0 KB indexed,   21.0 KB raw
+    SHIPS.BMP         21 frames, max 168x136   42.3 KB indexed,   42.3 KB raw
+    GJBIPLAN.BMP      28 frames, max 120x55    24.8 KB indexed,   24.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   284.7 KB
+    BMP pixels (15-bit): 1138.8 KB  (if not using indexed)
+    BMP raw data:         284.7 KB
+    TTM bytecode:           8.5 KB
+    ADS script:             4.4 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 161
+  PEAK MEMORY (estimated):   432.2 KB / 600.0 KB budget
+
+=== Scene 11: BUILDING.ADS tag 4 ===
+  Flags: FINAL ISLAND VARPOS 
+  TTM slots: 3 (MJSAND.TTM[1], GJGULIVR.TTM[2], MJFIRE.TTM[3])
+  ADD_SCENE calls: 19 (slot2:tag14, slot2:tag15, slot2:tag2, slot2:tag6, slot2:tag58, slot2:tag12, slot2:tag52, slot2:tag53, slot2:tag54, slot2:tag61, slot2:tag66, slot2:tag68, slot2:tag65, slot2:tag63, slot2:tag64, slot2:tag68, slot2:tag69, slot2:tag60, slot2:tag67)
+  Max concurrent threads: 19
+  BMPs loaded: 9
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    STNDLAY.BMP       10 frames, max 136x101   18.5 KB indexed,   18.5 KB raw
+    ZZZZS.BMP          3 frames, max  16x12     0.2 KB indexed,    0.2 KB raw
+    SLEEP.BMP         17 frames, max 112x48    23.5 KB indexed,   23.5 KB raw
+    SHIPS.BMP         21 frames, max 168x136   42.3 KB indexed,   42.3 KB raw
+    GJBIPLAN.BMP      28 frames, max 120x55    24.8 KB indexed,   24.8 KB raw
+    LILIPUTS.BMP     102 frames, max  40x37    19.1 KB indexed,   19.1 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   199.7 KB
+    BMP pixels (15-bit):  798.7 KB  (if not using indexed)
+    BMP raw data:         199.7 KB
+    TTM bytecode:          15.6 KB
+    ADS script:             4.4 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 252
+  PEAK MEMORY (estimated):   355.0 KB / 600.0 KB budget
+
+=== Scene 12: BUILDING.ADS tag 3 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 3 (MJSAND.TTM[1], GJGULIVR.TTM[2], MJFIRE.TTM[3])
+  ADD_SCENE calls: 20 (slot2:tag14, slot2:tag15, slot2:tag2, slot2:tag6, slot2:tag58, slot2:tag12, slot2:tag9, slot2:tag4[rand w=1], slot2:tag5[rand w=1], slot2:tag8[rand w=1], slot2:tag13, slot2:tag10, slot2:tag5[rand w=1], slot2:tag58[rand w=1], slot2:tag17[rand w=1], slot2:tag12, slot2:tag58[rand w=1], slot2:tag4[rand w=1], slot2:tag16[rand w=1], slot2:tag12)
+  Max concurrent threads: 12
+  BMPs loaded: 9
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    STNDLAY.BMP       10 frames, max 136x101   18.5 KB indexed,   18.5 KB raw
+    ZZZZS.BMP          3 frames, max  16x12     0.2 KB indexed,    0.2 KB raw
+    SLEEP.BMP         17 frames, max 112x48    23.5 KB indexed,   23.5 KB raw
+    SHIPS.BMP         21 frames, max 168x136   42.3 KB indexed,   42.3 KB raw
+    GJBIPLAN.BMP      28 frames, max 120x55    24.8 KB indexed,   24.8 KB raw
+    LILIPUTS.BMP     102 frames, max  40x37    19.1 KB indexed,   19.1 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   199.7 KB
+    BMP pixels (15-bit):  798.7 KB  (if not using indexed)
+    BMP raw data:         199.7 KB
+    TTM bytecode:          15.6 KB
+    ADS script:             4.4 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 252
+  PEAK MEMORY (estimated):   355.0 KB / 600.0 KB budget
+
+=== Scene 13: BUILDING.ADS tag 2 ===
+  Flags: FINAL ISLAND VARPOS 
+  TTM slots: 3 (MJSAND.TTM[1], GJGULIVR.TTM[2], MJFIRE.TTM[3])
+  ADD_SCENE calls: 20 (slot1:tag1, slot1:tag16, slot1:tag2, slot1:tag3, slot1:tag5, slot1:tag40, slot1:tag35, slot1:tag41, slot1:tag37, slot1:tag48, slot1:tag49, slot1:tag36, slot1:tag53, slot1:tag83, slot1:tag42, slot1:tag42, slot1:tag84, slot1:tag57, slot1:tag58, slot1:tag59)
+  Max concurrent threads: 20
+  BMPs loaded: 9
+    SANDCAST.BMP      15 frames, max 176x105   33.4 KB indexed,   33.4 KB raw
+    MJSANDC.BMP       11 frames, max  88x91    21.6 KB indexed,   21.6 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJCASTLE.BMP       8 frames, max  48x73     9.8 KB indexed,    9.8 KB raw
+    GJRUNAWA.BMP      14 frames, max 120x110   42.5 KB indexed,   42.5 KB raw
+    GJKINGKO.BMP      21 frames, max  96x113   41.9 KB indexed,   41.9 KB raw
+    SPLASH.BMP         7 frames, max 152x112   21.0 KB indexed,   21.0 KB raw
+    SHIPS.BMP         21 frames, max 168x136   42.3 KB indexed,   42.3 KB raw
+    GJBIPLAN.BMP      28 frames, max 120x55    24.8 KB indexed,   24.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   284.7 KB
+    BMP pixels (15-bit): 1138.8 KB  (if not using indexed)
+    BMP raw data:         284.7 KB
+    TTM bytecode:           8.5 KB
+    ADS script:             4.4 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 161
+  PEAK MEMORY (estimated):   432.2 KB / 600.0 KB budget
+
+=== Scene 14: BUILDING.ADS tag 5 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 3 (MJSAND.TTM[1], GJGULIVR.TTM[2], MJFIRE.TTM[3])
+  ADD_SCENE calls: 20 (slot3:tag36, slot3:tag51, slot3:tag38, slot3:tag142, slot3:tag38[rand w=1], slot3:tag38[rand w=1], slot3:tag40[rand w=1], slot3:tag39, slot3:tag80, slot3:tag81, slot3:tag39, slot3:tag80, slot3:tag81, slot3:tag39, slot3:tag80, slot3:tag81, slot3:tag77, slot3:tag39, slot3:tag80, slot3:tag81)
+  Max concurrent threads: 18
+  BMPs loaded: 7
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    FIRE.BMP          34 frames, max  72x70    26.1 KB indexed,   26.1 KB raw
+    FIRE1.BMP         28 frames, max  40x46     8.0 KB indexed,    8.0 KB raw
+    FIRE3.BMP          3 frames, max  72x50     4.8 KB indexed,    4.8 KB raw
+    FIRE4.BMP         35 frames, max 104x63    36.0 KB indexed,   36.0 KB raw
+    FIRE2.BMP         25 frames, max  48x36     6.6 KB indexed,    6.6 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   136.0 KB
+    BMP pixels (15-bit):  544.2 KB  (if not using indexed)
+    BMP raw data:         136.0 KB
+    TTM bytecode:          10.3 KB
+    ADS script:             4.4 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 163
+  PEAK MEMORY (estimated):   285.4 KB / 600.0 KB budget
+
+=== Scene 15: BUILDING.ADS tag 7 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 3 (MJSAND.TTM[1], GJGULIVR.TTM[2], MJFIRE.TTM[3])
+  ADD_SCENE calls: 20 (slot3:tag36, slot3:tag51, slot3:tag38, slot3:tag142, slot3:tag38[rand w=1], slot3:tag38[rand w=1], slot3:tag40[rand w=1], slot3:tag39, slot3:tag80, slot3:tag81, slot3:tag39, slot3:tag80, slot3:tag81, slot3:tag39, slot3:tag80, slot3:tag81, slot3:tag77, slot3:tag39, slot3:tag80, slot3:tag81)
+  Max concurrent threads: 18
+  BMPs loaded: 7
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    FIRE.BMP          34 frames, max  72x70    26.1 KB indexed,   26.1 KB raw
+    FIRE1.BMP         28 frames, max  40x46     8.0 KB indexed,    8.0 KB raw
+    FIRE3.BMP          3 frames, max  72x50     4.8 KB indexed,    4.8 KB raw
+    FIRE4.BMP         35 frames, max 104x63    36.0 KB indexed,   36.0 KB raw
+    FIRE2.BMP         25 frames, max  48x36     6.6 KB indexed,    6.6 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   136.0 KB
+    BMP pixels (15-bit):  544.2 KB  (if not using indexed)
+    BMP raw data:         136.0 KB
+    TTM bytecode:          10.3 KB
+    ADS script:             4.4 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 163
+  PEAK MEMORY (estimated):   285.4 KB / 600.0 KB budget
+
+=== Scene 16: BUILDING.ADS tag 6 ===
+  Flags: FINAL ISLAND VARPOS 
+  TTM slots: 3 (MJSAND.TTM[1], GJGULIVR.TTM[2], MJFIRE.TTM[3])
+  ADD_SCENE calls: 17 (slot2:tag14, slot2:tag15, slot2:tag2, slot2:tag6, slot2:tag58, slot2:tag12, slot2:tag52, slot2:tag53, slot2:tag54, slot2:tag61, slot2:tag66, slot2:tag68, slot2:tag65, slot2:tag63, slot2:tag64, slot2:tag68, slot2:tag60)
+  Max concurrent threads: 17
+  BMPs loaded: 9
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    STNDLAY.BMP       10 frames, max 136x101   18.5 KB indexed,   18.5 KB raw
+    ZZZZS.BMP          3 frames, max  16x12     0.2 KB indexed,    0.2 KB raw
+    SLEEP.BMP         17 frames, max 112x48    23.5 KB indexed,   23.5 KB raw
+    SHIPS.BMP         21 frames, max 168x136   42.3 KB indexed,   42.3 KB raw
+    GJBIPLAN.BMP      28 frames, max 120x55    24.8 KB indexed,   24.8 KB raw
+    LILIPUTS.BMP     102 frames, max  40x37    19.1 KB indexed,   19.1 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    GJGULL1.BMP       33 frames, max  64x44    16.6 KB indexed,   16.6 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   199.7 KB
+    BMP pixels (15-bit):  798.7 KB  (if not using indexed)
+    BMP raw data:         199.7 KB
+    TTM bytecode:          15.6 KB
+    ADS script:             4.4 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 252
+  PEAK MEMORY (estimated):   355.0 KB / 600.0 KB budget
+
+=== Scene 17: FISHING.ADS tag 1 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 19 (slot1:tag1, slot1:tag18, slot1:tag10, slot1:tag38[rand w=5], slot1:tag21[rand w=3], slot1:tag22[rand w=3], slot1:tag23[rand w=3], slot1:tag14[rand w=2], slot1:tag15[rand w=1], slot1:tag13, slot1:tag32, slot1:tag33, slot1:tag12, slot1:tag27[rand w=1], slot1:tag31[rand w=1], slot1:tag24, slot1:tag10[rand w=1], slot1:tag20[rand w=1], slot1:tag39)
+  Max concurrent threads: 10
+  BMPs loaded: 7
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    LILFISH.BMP        9 frames, max  48x28     2.1 KB indexed,    2.1 KB raw
+    GJCATCH3.BMP      10 frames, max 120x69    13.1 KB indexed,   13.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   203.0 KB
+    BMP pixels (15-bit):  812.2 KB  (if not using indexed)
+    BMP raw data:         203.0 KB
+    TTM bytecode:          16.3 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 152
+  PEAK MEMORY (estimated):   371.6 KB / 600.0 KB budget
+
+=== Scene 18: FISHING.ADS tag 2 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 17 (slot1:tag1, slot1:tag18, slot1:tag10, slot1:tag38[rand w=5], slot1:tag21[rand w=3], slot1:tag22[rand w=3], slot1:tag23[rand w=3], slot1:tag15[rand w=1], slot1:tag13, slot1:tag28[rand w=1], slot1:tag32[rand w=1], slot1:tag35[rand w=1], slot1:tag36[rand w=1], slot1:tag37[rand w=1], slot1:tag30, slot1:tag34, slot1:tag39)
+  Max concurrent threads: 8
+  BMPs loaded: 7
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    LILFISH.BMP        9 frames, max  48x28     2.1 KB indexed,    2.1 KB raw
+    GJCATCH3.BMP      10 frames, max 120x69    13.1 KB indexed,   13.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   203.0 KB
+    BMP pixels (15-bit):  812.2 KB  (if not using indexed)
+    BMP raw data:         203.0 KB
+    TTM bytecode:          16.3 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 152
+  PEAK MEMORY (estimated):   371.6 KB / 600.0 KB budget
+
+=== Scene 19: FISHING.ADS tag 3 ===
+  Flags: FINAL ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 10 (slot1:tag1, slot1:tag18, slot1:tag10, slot1:tag43, slot1:tag44, slot1:tag48, slot1:tag13, slot1:tag15, slot2:tag1, slot2:tag2)
+  Max concurrent threads: 10
+  BMPs loaded: 12
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    LILFISH.BMP        9 frames, max  48x28     2.1 KB indexed,    2.1 KB raw
+    GJCATCH3.BMP      10 frames, max 120x69    13.1 KB indexed,   13.1 KB raw
+    GJCATCH2.BMP      40 frames, max 120x120  103.2 KB indexed,  103.2 KB raw
+    SPLASH.BMP         7 frames, max 152x112   21.0 KB indexed,   21.0 KB raw
+    FISHMAN.BMP        2 frames, max  96x72     6.8 KB indexed,    6.8 KB raw
+    SHKNFIST.BMP       4 frames, max  48x76     6.5 KB indexed,    6.5 KB raw
+    MJDIVE.BMP        30 frames, max 120x98    39.2 KB indexed,   39.2 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   379.7 KB
+    BMP pixels (15-bit): 1518.8 KB  (if not using indexed)
+    BMP raw data:         379.7 KB
+    TTM bytecode:          18.2 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 235
+  PEAK MEMORY (estimated):   550.9 KB / 600.0 KB budget
+
+=== Scene 20: FISHING.ADS tag 4 ===
+  Flags: FINAL ISLAND LEFT_ISLAND LOWTIDE 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 4 (slot4:tag43, slot4:tag17, slot4:tag2, slot4:tag42)
+  Max concurrent threads: 4
+  BMPs loaded: 6
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJCATCH1.BMP      21 frames, max 248x104   55.1 KB indexed,   55.1 KB raw
+  SCR backgrounds: ISLAND2.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   242.9 KB
+    BMP pixels (15-bit):  971.5 KB  (if not using indexed)
+    BMP raw data:         242.9 KB
+    TTM bytecode:           9.7 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 154
+  PEAK MEMORY (estimated):   404.9 KB / 600.0 KB budget
+
+=== Scene 21: FISHING.ADS tag 5 ===
+  Flags: FINAL ISLAND VARPOS 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 2 (slot5:tag19, slot3:tag1)
+  Max concurrent threads: 2
+  BMPs loaded: 4
+    GJFFFOOD.BMP      49 frames, max 208x110  135.3 KB indexed,  135.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   264.7 KB
+    BMP pixels (15-bit): 1058.7 KB  (if not using indexed)
+    BMP raw data:         264.7 KB
+    TTM bytecode:           2.4 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 117
+  PEAK MEMORY (estimated):   419.1 KB / 600.0 KB budget
+
+=== Scene 22: FISHING.ADS tag 6 ===
+  Flags: FINAL ISLAND LOWTIDE 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 6 (slot1:tag1, slot1:tag18, slot1:tag10, slot1:tag13, slot1:tag15, slot1:tag41)
+  Max concurrent threads: 6
+  BMPs loaded: 7
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    LILFISH.BMP        9 frames, max  48x28     2.1 KB indexed,    2.1 KB raw
+    GJCATCH3.BMP      10 frames, max 120x69    13.1 KB indexed,   13.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   203.0 KB
+    BMP pixels (15-bit):  812.2 KB  (if not using indexed)
+    BMP raw data:         203.0 KB
+    TTM bytecode:          16.3 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 152
+  PEAK MEMORY (estimated):   371.6 KB / 600.0 KB budget
+
+=== Scene 23: FISHING.ADS tag 7 ===
+  Flags: ISLAND LEFT_ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 19 (slot4:tag43, slot4:tag17, slot4:tag2, slot4:tag44[rand w=5], slot4:tag45[rand w=3], slot4:tag46[rand w=3], slot4:tag47[rand w=3], slot4:tag5[rand w=2], slot4:tag8[rand w=1], slot4:tag6, slot4:tag57, slot4:tag55, slot4:tag7, slot4:tag61[rand w=1], slot4:tag52[rand w=1], slot4:tag53, slot4:tag2[rand w=1], slot4:tag64[rand w=1], slot4:tag65)
+  Max concurrent threads: 10
+  BMPs loaded: 6
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJCATCH1.BMP      21 frames, max 248x104   55.1 KB indexed,   55.1 KB raw
+  SCR backgrounds: ISLAND2.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   242.9 KB
+    BMP pixels (15-bit):  971.5 KB  (if not using indexed)
+    BMP raw data:         242.9 KB
+    TTM bytecode:           9.7 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 154
+  PEAK MEMORY (estimated):   404.9 KB / 600.0 KB budget
+
+=== Scene 24: FISHING.ADS tag 8 ===
+  Flags: ISLAND LEFT_ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (MJFISH.TTM[1], GJCATCH2.TTM[2], GFFFOOD.TTM[3], MJFISHC.TTM[4], FISHWALK.TTM[5])
+  ADD_SCENE calls: 14 (slot4:tag43, slot4:tag17, slot4:tag2, slot4:tag44[rand w=5], slot4:tag45[rand w=1], slot4:tag46[rand w=2], slot4:tag47[rand w=2], slot4:tag8[rand w=1], slot4:tag6, slot4:tag58[rand w=1], slot4:tag57[rand w=1], slot4:tag62, slot4:tag63, slot4:tag65)
+  Max concurrent threads: 8
+  BMPs loaded: 6
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJCATCH1.BMP      21 frames, max 248x104   55.1 KB indexed,   55.1 KB raw
+  SCR backgrounds: ISLAND2.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   242.9 KB
+    BMP pixels (15-bit):  971.5 KB  (if not using indexed)
+    BMP raw data:         242.9 KB
+    TTM bytecode:           9.7 KB
+    ADS script:             1.7 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 154
+  PEAK MEMORY (estimated):   404.9 KB / 600.0 KB budget
+
+=== Scene 25: JOHNNY.ADS tag 1 ===
+  Flags: FINAL FIRST 
+  Story day: 11
+  TTM slots: 4 (THEEND.TTM[1], SJMSSGE.TTM[2], SJWORK.TTM[3], MEANWHIL.TTM[4])
+  ADD_SCENE calls: 8 (slot4:tag1, slot1:tag9, slot1:tag1, slot1:tag5, slot1:tag4, slot1:tag6, slot1:tag8, slot1:tag7)
+  Max concurrent threads: 8
+  BMPs loaded: 3
+    THEEND1.BMP       22 frames, max  72x67    15.4 KB indexed,   15.4 KB raw
+    ENDCRDTS.BMP       1 frames, max 248x62     7.5 KB indexed,    7.5 KB raw
+    MEANWHIL.BMP      17 frames, max  96x109    8.4 KB indexed,    8.4 KB raw
+  SCR backgrounds: THEEND.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    31.3 KB
+    BMP pixels (15-bit):  125.3 KB  (if not using indexed)
+    BMP raw data:          31.3 KB
+    TTM bytecode:           3.9 KB
+    ADS script:             1.1 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 40
+  PEAK MEMORY (estimated):   177.9 KB / 600.0 KB budget
+
+=== Scene 26: JOHNNY.ADS tag 2 ===
+  Flags: FINAL ISLAND VARPOS 
+  Story day: 2
+  TTM slots: 4 (THEEND.TTM[1], SJMSSGE.TTM[2], SJWORK.TTM[3], MEANWHIL.TTM[4])
+  ADD_SCENE calls: 15 (slot2:tag29, slot2:tag36, slot2:tag2, slot2:tag16, slot2:tag17, slot2:tag6, slot2:tag19, slot2:tag32, slot2:tag21, slot2:tag22, slot2:tag23, slot2:tag24, slot2:tag9, slot2:tag10, slot2:tag28)
+  Max concurrent threads: 15
+  BMPs loaded: 6
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    MJBOTTLE.BMP      51 frames, max  80x77    26.5 KB indexed,   26.5 KB raw
+    MJBTL2.BMP        38 frames, max 184x127   32.0 KB indexed,   32.0 KB raw
+    THNKBUBL.BMP       6 frames, max 184x127   52.2 KB indexed,   52.2 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   178.3 KB
+    BMP pixels (15-bit):  713.4 KB  (if not using indexed)
+    BMP raw data:         178.3 KB
+    TTM bytecode:           5.1 KB
+    ADS script:             1.1 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 174
+  PEAK MEMORY (estimated):   327.2 KB / 600.0 KB budget
+
+=== Scene 27: JOHNNY.ADS tag 3 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  Story day: 6
+  TTM slots: 4 (THEEND.TTM[1], SJMSSGE.TTM[2], SJWORK.TTM[3], MEANWHIL.TTM[4])
+  ADD_SCENE calls: 13 (slot2:tag29, slot2:tag35, slot2:tag17, slot2:tag6, slot2:tag19, slot2:tag32, slot2:tag20, slot2:tag25, slot2:tag32, slot2:tag33, slot2:tag9, slot2:tag10, slot2:tag28)
+  Max concurrent threads: 13
+  BMPs loaded: 6
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    MJBOTTLE.BMP      51 frames, max  80x77    26.5 KB indexed,   26.5 KB raw
+    MJBTL2.BMP        38 frames, max 184x127   32.0 KB indexed,   32.0 KB raw
+    THNKBUBL.BMP       6 frames, max 184x127   52.2 KB indexed,   52.2 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   178.3 KB
+    BMP pixels (15-bit):  713.4 KB  (if not using indexed)
+    BMP raw data:         178.3 KB
+    TTM bytecode:           5.1 KB
+    ADS script:             1.1 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 174
+  PEAK MEMORY (estimated):   327.2 KB / 600.0 KB budget
+
+=== Scene 28: JOHNNY.ADS tag 4 ===
+  Flags: ISLAND VARPOS 
+  TTM slots: 4 (THEEND.TTM[1], SJMSSGE.TTM[2], SJWORK.TTM[3], MEANWHIL.TTM[4])
+  ADD_SCENE calls: 8 (slot2:tag29, slot2:tag36, slot2:tag2, slot2:tag16, slot2:tag37, slot2:tag9, slot2:tag10, slot2:tag28)
+  Max concurrent threads: 8
+  BMPs loaded: 6
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    MJBOTTLE.BMP      51 frames, max  80x77    26.5 KB indexed,   26.5 KB raw
+    MJBTL2.BMP        38 frames, max 184x127   32.0 KB indexed,   32.0 KB raw
+    THNKBUBL.BMP       6 frames, max 184x127   52.2 KB indexed,   52.2 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   178.3 KB
+    BMP pixels (15-bit):  713.4 KB  (if not using indexed)
+    BMP raw data:         178.3 KB
+    TTM bytecode:           5.1 KB
+    ADS script:             1.1 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 174
+  PEAK MEMORY (estimated):   327.2 KB / 600.0 KB budget
+
+=== Scene 29: JOHNNY.ADS tag 5 ===
+  Flags: ISLAND VARPOS 
+  TTM slots: 4 (THEEND.TTM[1], SJMSSGE.TTM[2], SJWORK.TTM[3], MEANWHIL.TTM[4])
+  ADD_SCENE calls: 10 (slot2:tag29, slot2:tag35, slot2:tag17, slot2:tag6, slot2:tag19, slot2:tag32, slot2:tag24, slot2:tag9, slot2:tag10, slot2:tag28)
+  Max concurrent threads: 10
+  BMPs loaded: 6
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    MJBOTTLE.BMP      51 frames, max  80x77    26.5 KB indexed,   26.5 KB raw
+    MJBTL2.BMP        38 frames, max 184x127   32.0 KB indexed,   32.0 KB raw
+    THNKBUBL.BMP       6 frames, max 184x127   52.2 KB indexed,   52.2 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   178.3 KB
+    BMP pixels (15-bit):  713.4 KB  (if not using indexed)
+    BMP raw data:         178.3 KB
+    TTM bytecode:           5.1 KB
+    ADS script:             1.1 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 174
+  PEAK MEMORY (estimated):   327.2 KB / 600.0 KB budget
+
+=== Scene 30: JOHNNY.ADS tag 6 ===
+  Flags: FINAL FIRST 
+  Story day: 10
+  TTM slots: 4 (THEEND.TTM[1], SJMSSGE.TTM[2], SJWORK.TTM[3], MEANWHIL.TTM[4])
+  ADD_SCENE calls: 6 (slot4:tag1, slot3:tag9, slot3:tag3, slot3:tag4, slot3:tag7, slot3:tag8)
+  Max concurrent threads: 6
+  BMPs loaded: 3
+    SJWORK.BMP        12 frames, max  56x70    12.5 KB indexed,   12.5 KB raw
+    THNKBUBL.BMP       6 frames, max 184x127   52.2 KB indexed,   52.2 KB raw
+    MEANWHIL.BMP      17 frames, max  96x109    8.4 KB indexed,    8.4 KB raw
+  SCR backgrounds: JOFFICE.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    73.1 KB
+    BMP pixels (15-bit):  292.5 KB  (if not using indexed)
+    BMP raw data:          73.1 KB
+    TTM bytecode:           2.7 KB
+    ADS script:             1.1 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   218.5 KB / 600.0 KB budget
+
+=== Scene 31: MARY.ADS tag 1 ===
+  Flags: FINAL ISLAND VARPOS LOWTIDE 
+  Story day: 5
+  TTM slots: 5 (SJGLIMPS.TTM[2], SASKDATE.TTM[3], SMDATE.TTM[4], SBREAKUP.TTM[5], SJLEAVES.TTM[6])
+  ADD_SCENE calls: 20 (slot4:tag24, slot4:tag12, slot4:tag25[rand w=1], slot4:tag28[rand w=1], slot4:tag29[rand w=1], slot4:tag21[rand w=1], slot4:tag28[rand w=1], slot4:tag29[rand w=1], slot4:tag21[rand w=1], slot4:tag29[rand w=1], slot4:tag21[rand w=1], slot4:tag25[rand w=1], slot4:tag28[rand w=1], slot4:tag21[rand w=1], slot4:tag25[rand w=1], slot4:tag25[rand w=1], slot4:tag28[rand w=1], slot4:tag29[rand w=1], slot4:tag16[rand w=2], slot4:tag30)
+  Max concurrent threads: 4
+  BMPs loaded: 16
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    SMDATE2.BMP       13 frames, max  72x75    17.2 KB indexed,   17.2 KB raw
+    JCHANGE.BMP       12 frames, max  32x59     7.2 KB indexed,    7.2 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    SMDATE3.BMP       16 frames, max  64x85    31.1 KB indexed,   31.1 KB raw
+    SMDATE1.BMP       17 frames, max 168x117   19.2 KB indexed,   19.2 KB raw
+    SMDATE7.BMP        2 frames, max 104x62     4.2 KB indexed,    4.2 KB raw
+    SMDATE4.BMP        9 frames, max 128x123   35.0 KB indexed,   35.0 KB raw
+    SMDATE5.BMP       12 frames, max 120x107   47.1 KB indexed,   47.1 KB raw
+    SMDATE6.BMP       33 frames, max 112x75    28.8 KB indexed,   28.8 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    SMDATE8.BMP       13 frames, max 104x72    15.8 KB indexed,   15.8 KB raw
+    SMDATE9.BMP       15 frames, max 216x154   66.0 KB indexed,   66.0 KB raw
+    SMDATE12.BMP       3 frames, max 128x44     4.6 KB indexed,    4.6 KB raw
+    SMDATE10.BMP       7 frames, max 160x141   34.6 KB indexed,   34.6 KB raw
+    SMDATE11.BMP      24 frames, max  80x85    26.2 KB indexed,   26.2 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   396.8 KB
+    BMP pixels (15-bit): 1587.3 KB  (if not using indexed)
+    BMP raw data:         396.8 KB
+    TTM bytecode:           6.9 KB
+    ADS script:             1.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 219
+  PEAK MEMORY (estimated):   556.1 KB / 600.0 KB budget
+
+=== Scene 32: MARY.ADS tag 3 ===
+  Flags: FINAL FIRST ISLAND VARPOS 
+  Story day: 4
+  TTM slots: 5 (SJGLIMPS.TTM[2], SASKDATE.TTM[3], SMDATE.TTM[4], SBREAKUP.TTM[5], SJLEAVES.TTM[6])
+  ADD_SCENE calls: 20 (slot3:tag1, slot3:tag111, slot3:tag5, slot3:tag126, slot3:tag120, slot3:tag114, slot3:tag116, slot3:tag122, slot3:tag123, slot3:tag144, slot3:tag117, slot3:tag124, slot3:tag125, slot3:tag143, slot3:tag149, slot3:tag127, slot3:tag130, slot3:tag132, slot3:tag119, slot3:tag121)
+  Max concurrent threads: 20
+  BMPs loaded: 10
+    SMDATE1.BMP       17 frames, max 168x117   19.2 KB indexed,   19.2 KB raw
+    SMGLIMSE.BMP      23 frames, max 120x70    30.0 KB indexed,   30.0 KB raw
+    SMGIFT.BMP        47 frames, max  96x67    51.4 KB indexed,   51.4 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+    SJGFTJMP.BMP       7 frames, max  64x79     9.5 KB indexed,    9.5 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    SJGFTSHY.BMP      10 frames, max  56x77    14.7 KB indexed,   14.7 KB raw
+    SJGFTXCH.BMP      15 frames, max  96x84    29.1 KB indexed,   29.1 KB raw
+    SJGFTASK.BMP      14 frames, max 112x80    19.0 KB indexed,   19.0 KB raw
+    SMGFTWAV.BMP       9 frames, max  40x20     1.9 KB indexed,    1.9 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   224.1 KB
+    BMP pixels (15-bit):  896.3 KB  (if not using indexed)
+    BMP raw data:         224.1 KB
+    TTM bytecode:           5.9 KB
+    ADS script:             1.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 183
+  PEAK MEMORY (estimated):   382.1 KB / 600.0 KB budget
+
+=== Scene 33: MARY.ADS tag 2 ===
+  Flags: FINAL ISLAND VARPOS 
+  Story day: 1
+  TTM slots: 5 (SJGLIMPS.TTM[2], SASKDATE.TTM[3], SMDATE.TTM[4], SBREAKUP.TTM[5], SJLEAVES.TTM[6])
+  ADD_SCENE calls: 7 (slot2:tag104, slot2:tag17, slot2:tag2, slot2:tag106, slot2:tag105, slot2:tag107, slot2:tag108)
+  Max concurrent threads: 7
+  BMPs loaded: 8
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJFISH1.BMP       30 frames, max 152x118   74.8 KB indexed,   74.8 KB raw
+    MJFISH3.BMP       38 frames, max  48x55    15.3 KB indexed,   15.3 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    SMDATE1.BMP       17 frames, max 168x117   19.2 KB indexed,   19.2 KB raw
+    MJFISH2.BMP       27 frames, max 104x111   43.1 KB indexed,   43.1 KB raw
+    SMGLIMSE.BMP      23 frames, max 120x70    30.0 KB indexed,   30.0 KB raw
+    MEXCWALK.BMP       8 frames, max  48x79    11.4 KB indexed,   11.4 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   248.5 KB
+    BMP pixels (15-bit):  993.9 KB  (if not using indexed)
+    BMP raw data:         248.5 KB
+    TTM bytecode:           8.3 KB
+    ADS script:             1.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 181
+  PEAK MEMORY (estimated):   408.9 KB / 600.0 KB budget
+
+=== Scene 34: MARY.ADS tag 4 ===
+  Flags: FINAL ISLAND VARPOS 
+  Story day: 7
+  TTM slots: 5 (SJGLIMPS.TTM[2], SASKDATE.TTM[3], SMDATE.TTM[4], SBREAKUP.TTM[5], SJLEAVES.TTM[6])
+  ADD_SCENE calls: 9 (slot5:tag30, slot5:tag31, slot5:tag23, slot5:tag19, slot5:tag33, slot5:tag28, slot5:tag37, slot5:tag35, slot5:tag34)
+  Max concurrent threads: 9
+  BMPs loaded: 11
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    MEXCWALK.BMP       8 frames, max  48x79    11.4 KB indexed,   11.4 KB raw
+    MJRAFT2.BMP       46 frames, max 112x61    22.6 KB indexed,   22.6 KB raw
+    SJRAFT1.BMP       11 frames, max  88x75    12.9 KB indexed,   12.9 KB raw
+    SMDATE1.BMP       17 frames, max 168x117   19.2 KB indexed,   19.2 KB raw
+    SMGLIMSE.BMP      23 frames, max 120x70    30.0 KB indexed,   30.0 KB raw
+    SJBRAKUP.BMP       2 frames, max  48x80     2.0 KB indexed,    2.0 KB raw
+    SBREAKUP.BMP      35 frames, max 144x90    58.3 KB indexed,   58.3 KB raw
+    SJGFTSHY.BMP      10 frames, max  56x77    14.7 KB indexed,   14.7 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   230.9 KB
+    BMP pixels (15-bit):  923.5 KB  (if not using indexed)
+    BMP raw data:         230.9 KB
+    TTM bytecode:           5.3 KB
+    ADS script:             1.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 195
+  PEAK MEMORY (estimated):   388.4 KB / 600.0 KB budget
+
+=== Scene 35: MARY.ADS tag 5 ===
+  Flags: FINAL FIRST ISLAND LEFT_ISLAND VARPOS NORAFT 
+  Story day: 8
+  TTM slots: 5 (SJGLIMPS.TTM[2], SASKDATE.TTM[3], SMDATE.TTM[4], SBREAKUP.TTM[5], SJLEAVES.TTM[6])
+  ADD_SCENE calls: 4 (slot6:tag1, slot6:tag2, slot6:tag3, slot6:tag4)
+  Max concurrent threads: 4
+  BMPs loaded: 10
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    SLEVEJM1.BMP      11 frames, max 120x45    12.6 KB indexed,   12.6 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    SRAFT.BMP          2 frames, max 128x39     3.5 KB indexed,    3.5 KB raw
+    SLEVEJC1.BMP      12 frames, max  80x82    20.9 KB indexed,   20.9 KB raw
+    JCHANGE.BMP       12 frames, max  32x59     7.2 KB indexed,    7.2 KB raw
+    SLEVEJC2.BMP      14 frames, max  64x82    20.4 KB indexed,   20.4 KB raw
+    SLEVEJM2.BMP      21 frames, max 104x69    32.4 KB indexed,   32.4 KB raw
+    SLEVEJM3.BMP       8 frames, max 160x57    20.4 KB indexed,   20.4 KB raw
+    SLEVEJC3.BMP      12 frames, max 136x100   40.8 KB indexed,   40.8 KB raw
+  SCR backgrounds: ISLAND2.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   212.8 KB
+    BMP pixels (15-bit):  851.4 KB  (if not using indexed)
+    BMP raw data:         212.8 KB
+    TTM bytecode:           7.1 KB
+    ADS script:             1.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 130
+  PEAK MEMORY (estimated):   371.7 KB / 600.0 KB budget
+
+=== Scene 36: MISCGAG.ADS tag 1 ===
+  Flags: FINAL ISLAND VARPOS LOWTIDE 
+  TTM slots: 3 (GJHOT.TTM[1], SHARK1.TTM[2], GJGULL1.TTM[3])
+  ADD_SCENE calls: 14 (slot1:tag40, slot1:tag1, slot1:tag3, slot1:tag8[rand w=1], slot1:tag9[rand w=1], slot1:tag7[rand w=1], slot1:tag9[rand w=1], slot1:tag7[rand w=1], slot1:tag8[rand w=1], slot1:tag6[rand w=1], slot1:tag7[rand w=1], slot1:tag8[rand w=1], slot1:tag6[rand w=1], slot1:tag9[rand w=1])
+  Max concurrent threads: 4
+  BMPs loaded: 3
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    GJHOT.BMP         23 frames, max 104x82    33.5 KB indexed,   33.5 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    88.1 KB
+    BMP pixels (15-bit):  352.5 KB  (if not using indexed)
+    BMP raw data:          88.1 KB
+    TTM bytecode:           2.2 KB
+    ADS script:             0.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 61
+  PEAK MEMORY (estimated):   224.5 KB / 600.0 KB budget
+
+=== Scene 37: MISCGAG.ADS tag 2 ===
+  Flags: FINAL ISLAND VARPOS 
+  TTM slots: 3 (GJHOT.TTM[1], SHARK1.TTM[2], GJGULL1.TTM[3])
+  ADD_SCENE calls: 3 (slot2:tag1, slot2:tag2, slot2:tag3)
+  Max concurrent threads: 3
+  BMPs loaded: 4
+    SHARKWLK.BMP      14 frames, max  40x75     7.5 KB indexed,    7.5 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    SHARK.BMP         40 frames, max 200x93    89.0 KB indexed,   89.0 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   151.1 KB
+    BMP pixels (15-bit):  604.4 KB  (if not using indexed)
+    BMP raw data:         151.1 KB
+    TTM bytecode:           2.5 KB
+    ADS script:             0.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 92
+  PEAK MEMORY (estimated):   288.0 KB / 600.0 KB budget
+
+=== Scene 38: STAND.ADS tag 1 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag1[rand w=2], slot1:tag2[rand w=2], slot1:tag53[rand w=5], slot1:tag3[rand w=2], slot1:tag53, slot1:tag1[rand w=2], slot1:tag2[rand w=2], slot1:tag53[rand w=5], slot1:tag3[rand w=2], slot1:tag53, slot1:tag1[rand w=2], slot1:tag2[rand w=2], slot1:tag53[rand w=5], slot1:tag3[rand w=2], slot1:tag53, slot1:tag1[rand w=2], slot1:tag2[rand w=2], slot1:tag53[rand w=5], slot1:tag3[rand w=2], slot1:tag53)
+  Max concurrent threads: 5
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 39: STAND.ADS tag 2 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag33[rand w=2], slot1:tag34[rand w=2], slot1:tag35[rand w=2], slot1:tag36[rand w=2], slot1:tag61[rand w=5], slot1:tag61, slot1:tag33[rand w=2], slot1:tag34[rand w=2], slot1:tag35[rand w=2], slot1:tag36[rand w=2], slot1:tag61[rand w=5], slot1:tag61, slot1:tag33[rand w=2], slot1:tag34[rand w=2], slot1:tag35[rand w=2], slot1:tag36[rand w=2], slot1:tag61[rand w=5], slot1:tag61, slot1:tag33[rand w=2], slot1:tag34[rand w=2])
+  Max concurrent threads: 4
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 40: STAND.ADS tag 3 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag10[rand w=2], slot1:tag11[rand w=2], slot1:tag12[rand w=2], slot1:tag20[rand w=2], slot1:tag55[rand w=5], slot1:tag55, slot1:tag10[rand w=2], slot1:tag11[rand w=2], slot1:tag12[rand w=2], slot1:tag20[rand w=2], slot1:tag55[rand w=5], slot1:tag55, slot1:tag10[rand w=2], slot1:tag11[rand w=2], slot1:tag12[rand w=2], slot1:tag20[rand w=2], slot1:tag55[rand w=5], slot1:tag55, slot1:tag10[rand w=2], slot1:tag11[rand w=2])
+  Max concurrent threads: 4
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 41: STAND.ADS tag 4 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag4[rand w=3], slot1:tag5[rand w=3], slot1:tag52[rand w=5], slot1:tag6[rand w=3], slot1:tag52, slot1:tag4[rand w=3], slot1:tag5[rand w=3], slot1:tag52[rand w=5], slot1:tag6[rand w=3], slot1:tag52, slot1:tag4[rand w=3], slot1:tag5[rand w=3], slot1:tag52[rand w=5], slot1:tag6[rand w=3], slot1:tag52, slot1:tag4[rand w=3], slot1:tag5[rand w=3], slot1:tag52[rand w=5], slot1:tag6[rand w=3], slot1:tag52)
+  Max concurrent threads: 5
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 42: STAND.ADS tag 5 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag41[rand w=3], slot1:tag43[rand w=3], slot1:tag44[rand w=3], slot1:tag65[rand w=5], slot1:tag65, slot1:tag41[rand w=3], slot1:tag43[rand w=3], slot1:tag44[rand w=3], slot1:tag65[rand w=5], slot1:tag65, slot1:tag41[rand w=3], slot1:tag43[rand w=3], slot1:tag44[rand w=3], slot1:tag65[rand w=5], slot1:tag65, slot1:tag41[rand w=3], slot1:tag43[rand w=3], slot1:tag44[rand w=3], slot1:tag65[rand w=5], slot1:tag65)
+  Max concurrent threads: 5
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 43: STAND.ADS tag 6 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag7[rand w=3], slot1:tag8[rand w=3], slot1:tag9[rand w=3], slot1:tag54[rand w=5], slot1:tag54, slot1:tag7[rand w=3], slot1:tag8[rand w=3], slot1:tag9[rand w=3], slot1:tag54[rand w=5], slot1:tag54, slot1:tag7[rand w=3], slot1:tag8[rand w=3], slot1:tag9[rand w=3], slot1:tag54[rand w=5], slot1:tag54, slot1:tag7[rand w=3], slot1:tag8[rand w=3], slot1:tag9[rand w=3], slot1:tag54[rand w=5], slot1:tag54)
+  Max concurrent threads: 5
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 44: STAND.ADS tag 7 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag31[rand w=2], slot1:tag49[rand w=2], slot1:tag50[rand w=2], slot1:tag48[rand w=2], slot1:tag60[rand w=5], slot1:tag60, slot1:tag31[rand w=2], slot1:tag49[rand w=2], slot1:tag50[rand w=2], slot1:tag48[rand w=2], slot1:tag60[rand w=5], slot1:tag60, slot1:tag31[rand w=2], slot1:tag49[rand w=2], slot1:tag50[rand w=2], slot1:tag48[rand w=2], slot1:tag60[rand w=5], slot1:tag60, slot1:tag31[rand w=2], slot1:tag49[rand w=2])
+  Max concurrent threads: 4
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 45: STAND.ADS tag 8 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag37[rand w=2], slot1:tag38[rand w=2], slot1:tag39[rand w=2], slot1:tag40[rand w=2], slot1:tag62[rand w=5], slot1:tag62, slot1:tag37[rand w=2], slot1:tag38[rand w=2], slot1:tag39[rand w=2], slot1:tag40[rand w=2], slot1:tag62[rand w=5], slot1:tag62, slot1:tag37[rand w=2], slot1:tag38[rand w=2], slot1:tag39[rand w=2], slot1:tag40[rand w=2], slot1:tag62[rand w=5], slot1:tag62, slot1:tag37[rand w=2], slot1:tag38[rand w=2])
+  Max concurrent threads: 4
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 46: STAND.ADS tag 9 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag18[rand w=2], slot1:tag19[rand w=2], slot1:tag21[rand w=2], slot1:tag22[rand w=2], slot1:tag57[rand w=5], slot1:tag57, slot1:tag18[rand w=2], slot1:tag19[rand w=2], slot1:tag21[rand w=2], slot1:tag22[rand w=2], slot1:tag57[rand w=5], slot1:tag57, slot1:tag18[rand w=2], slot1:tag19[rand w=2], slot1:tag21[rand w=2], slot1:tag22[rand w=2], slot1:tag57[rand w=5], slot1:tag57, slot1:tag18[rand w=2], slot1:tag19[rand w=2])
+  Max concurrent threads: 4
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 47: STAND.ADS tag 10 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag27[rand w=2], slot1:tag28[rand w=2], slot1:tag29[rand w=2], slot1:tag30[rand w=2], slot1:tag59[rand w=5], slot1:tag59, slot1:tag27[rand w=2], slot1:tag28[rand w=2], slot1:tag29[rand w=2], slot1:tag30[rand w=2], slot1:tag59[rand w=5], slot1:tag59, slot1:tag27[rand w=2], slot1:tag28[rand w=2], slot1:tag29[rand w=2], slot1:tag30[rand w=2], slot1:tag59[rand w=5], slot1:tag59, slot1:tag27[rand w=2], slot1:tag28[rand w=2])
+  Max concurrent threads: 4
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 48: STAND.ADS tag 11 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag14[rand w=2], slot1:tag15[rand w=2], slot1:tag16[rand w=2], slot1:tag17[rand w=2], slot1:tag56[rand w=5], slot1:tag56, slot1:tag14[rand w=2], slot1:tag15[rand w=2], slot1:tag16[rand w=2], slot1:tag17[rand w=2], slot1:tag56[rand w=5], slot1:tag56, slot1:tag14[rand w=2], slot1:tag15[rand w=2], slot1:tag16[rand w=2], slot1:tag17[rand w=2], slot1:tag56[rand w=5], slot1:tag56, slot1:tag14[rand w=2], slot1:tag15[rand w=2])
+  Max concurrent threads: 4
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 49: STAND.ADS tag 12 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot1:tag45[rand w=3], slot1:tag46[rand w=3], slot1:tag47[rand w=3], slot1:tag64[rand w=5], slot1:tag64, slot1:tag45[rand w=3], slot1:tag46[rand w=3], slot1:tag47[rand w=3], slot1:tag64[rand w=5], slot1:tag64, slot1:tag45[rand w=3], slot1:tag46[rand w=3], slot1:tag47[rand w=3], slot1:tag64[rand w=5], slot1:tag64, slot1:tag45[rand w=3], slot1:tag46[rand w=3], slot1:tag47[rand w=3], slot1:tag64[rand w=5], slot1:tag64)
+  Max concurrent threads: 5
+  BMPs loaded: 1
+    MJ_AMB.BMP        35 frames, max  40x77    26.8 KB indexed,   26.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    26.8 KB
+    BMP pixels (15-bit):  107.4 KB  (if not using indexed)
+    BMP raw data:          26.8 KB
+    TTM bytecode:           7.6 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 35
+  PEAK MEMORY (estimated):   162.4 KB / 600.0 KB budget
+
+=== Scene 50: STAND.ADS tag 15 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot2:tag27, slot2:tag12, slot2:tag29[rand w=1], slot2:tag32[rand w=1], slot2:tag44[rand w=1], slot2:tag34[rand w=1], slot2:tag42[rand w=1], slot2:tag29[rand w=1], slot2:tag32[rand w=1], slot2:tag44[rand w=1], slot2:tag26[rand w=1], slot2:tag34[rand w=1], slot2:tag29[rand w=1], slot2:tag42[rand w=1], slot2:tag32[rand w=1], slot2:tag44[rand w=1], slot2:tag26[rand w=1], slot2:tag34[rand w=1], slot2:tag32[rand w=1], slot2:tag29[rand w=1])
+  Max concurrent threads: 3
+  BMPs loaded: 2
+    MJTELE.BMP        22 frames, max  64x75    23.3 KB indexed,   23.3 KB raw
+    MJTELE2.BMP        4 frames, max  64x74     7.2 KB indexed,    7.2 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    30.5 KB
+    BMP pixels (15-bit):  121.9 KB  (if not using indexed)
+    BMP raw data:          30.5 KB
+    TTM bytecode:           3.7 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 26
+  PEAK MEMORY (estimated):   162.1 KB / 600.0 KB budget
+
+=== Scene 51: STAND.ADS tag 16 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 2 (MJAMBWLK.TTM[1], MJTELE.TTM[2])
+  ADD_SCENE calls: 20 (slot2:tag27, slot2:tag13, slot2:tag35[rand w=1], slot2:tag36[rand w=1], slot2:tag37[rand w=1], slot2:tag38[rand w=1], slot2:tag36[rand w=1], slot2:tag37[rand w=1], slot2:tag35[rand w=1], slot2:tag43[rand w=1], slot2:tag41[rand w=1], slot2:tag38[rand w=1], slot2:tag37[rand w=1], slot2:tag36[rand w=1], slot2:tag35[rand w=1], slot2:tag43[rand w=1], slot2:tag41[rand w=1], slot2:tag38[rand w=1], slot2:tag36[rand w=1], slot2:tag35[rand w=1])
+  Max concurrent threads: 3
+  BMPs loaded: 2
+    MJTELE.BMP        22 frames, max  64x75    23.3 KB indexed,   23.3 KB raw
+    MJTELE2.BMP        4 frames, max  64x74     7.2 KB indexed,    7.2 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    30.5 KB
+    BMP pixels (15-bit):  121.9 KB  (if not using indexed)
+    BMP raw data:          30.5 KB
+    TTM bytecode:           3.7 KB
+    ADS script:             2.3 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 26
+  PEAK MEMORY (estimated):   162.1 KB / 600.0 KB budget
+
+=== Scene 52: SUZY.ADS tag 1 ===
+  Flags: FINAL FIRST 
+  Story day: 3
+  TTM slots: 3 (SUZYCITY.TTM[1], SJMSUZY.TTM[2], MEANWHIL.TTM[3])
+  ADD_SCENE calls: 11 (slot3:tag1, slot1:tag1, slot1:tag2, slot1:tag3, slot1:tag5, slot1:tag6, slot1:tag7, slot1:tag11, slot1:tag12, slot1:tag13, slot1:tag14)
+  Max concurrent threads: 11
+  BMPs loaded: 5
+    SSUZY1.BMP        12 frames, max 112x64    30.7 KB indexed,   30.7 KB raw
+    SSUZY2.BMP        18 frames, max  96x101   47.1 KB indexed,   47.1 KB raw
+    SSUZY3.BMP        33 frames, max 184x127   74.9 KB indexed,   74.9 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    MEANWHIL.BMP      17 frames, max  96x109    8.4 KB indexed,    8.4 KB raw
+  SCR backgrounds: SUZBEACH.SCR (150.0 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   166.2 KB
+    BMP pixels (15-bit):  664.7 KB  (if not using indexed)
+    BMP raw data:         166.2 KB
+    TTM bytecode:           6.4 KB
+    ADS script:             0.3 KB
+    SCR background:       150.0 KB
+    Total sprite frames: 85
+  PEAK MEMORY (estimated):   347.5 KB / 600.0 KB budget
+
+=== Scene 53: SUZY.ADS tag 2 ===
+  Flags: FINAL FIRST 
+  Story day: 9
+  TTM slots: 3 (SUZYCITY.TTM[1], SJMSUZY.TTM[2], MEANWHIL.TTM[3])
+  ADD_SCENE calls: 5 (slot3:tag1, slot2:tag6, slot2:tag7, slot2:tag3, slot2:tag4)
+  Max concurrent threads: 5
+  BMPs loaded: 7
+    SSUZY2.BMP        18 frames, max  96x101   47.1 KB indexed,   47.1 KB raw
+    SJMSUZY1.BMP      10 frames, max  96x59    15.8 KB indexed,   15.8 KB raw
+    SSUZY3.BMP        33 frames, max 184x127   74.9 KB indexed,   74.9 KB raw
+    MRAFT.BMP          7 frames, max 128x39    10.4 KB indexed,   10.4 KB raw
+    SJMSUZY2.BMP      14 frames, max  96x104   42.7 KB indexed,   42.7 KB raw
+    SJMSUZY3.BMP      18 frames, max 136x105   70.7 KB indexed,   70.7 KB raw
+    MEANWHIL.BMP      17 frames, max  96x109    8.4 KB indexed,    8.4 KB raw
+  SCR backgrounds: SUZBEACH.SCR (150.0 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   269.9 KB
+    BMP pixels (15-bit): 1079.5 KB  (if not using indexed)
+    BMP raw data:         269.9 KB
+    TTM bytecode:           5.1 KB
+    ADS script:             0.3 KB
+    SCR background:       150.0 KB
+    Total sprite frames: 117
+  PEAK MEMORY (estimated):   450.1 KB / 600.0 KB budget
+
+=== Scene 54: VISITOR.ADS tag 1 ===
+  Flags: ISLAND LOWTIDE 
+  TTM slots: 5 (GJVIS3.TTM[1], GJLILIPU.TTM[2], GJVIS6.TTM[3], MJCOCO.TTM[4], GJVIS5.TTM[5])
+  ADD_SCENE calls: 14 (slot1:tag44, slot1:tag52, slot1:tag56[rand w=1], slot1:tag53[rand w=1], slot1:tag60[rand w=1], slot1:tag50[rand w=1], slot1:tag61[rand w=1], slot1:tag61[rand w=1], slot1:tag59, slot1:tag62, slot1:tag57, slot1:tag62, slot1:tag62, slot1:tag63)
+  Max concurrent threads: 9
+  BMPs loaded: 4
+    MJTELE.BMP        22 frames, max  64x75    23.3 KB indexed,   23.3 KB raw
+    MJTELE2.BMP        4 frames, max  64x74     7.2 KB indexed,    7.2 KB raw
+    GJVIS3.BMP        12 frames, max 160x78    34.0 KB indexed,   34.0 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    71.7 KB
+    BMP pixels (15-bit):  286.8 KB  (if not using indexed)
+    BMP raw data:          71.7 KB
+    TTM bytecode:           7.5 KB
+    ADS script:             0.9 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 40
+  PEAK MEMORY (estimated):   229.8 KB / 600.0 KB budget
+
+=== Scene 55: VISITOR.ADS tag 3 ===
+  Flags: FINAL ISLAND HOLIDAY_NOK 
+  TTM slots: 5 (GJVIS3.TTM[1], GJLILIPU.TTM[2], GJVIS6.TTM[3], MJCOCO.TTM[4], GJVIS5.TTM[5])
+  ADD_SCENE calls: 7 (slot3:tag4, slot3:tag3, slot3:tag9, slot3:tag5, slot3:tag6, slot3:tag7, slot3:tag8)
+  Max concurrent threads: 7
+  BMPs loaded: 5
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJVIS6.BMP        18 frames, max 120x107   46.5 KB indexed,   46.5 KB raw
+    TANKER.BMP        14 frames, max  72x25    10.0 KB indexed,   10.0 KB raw
+    GJPROW.BMP         2 frames, max 144x169   19.9 KB indexed,   19.9 KB raw
+    GJVIS5.BMP        27 frames, max  88x118   45.8 KB indexed,   45.8 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   169.5 KB
+    BMP pixels (15-bit):  678.0 KB  (if not using indexed)
+    BMP raw data:         169.5 KB
+    TTM bytecode:           3.7 KB
+    ADS script:             0.9 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 97
+  PEAK MEMORY (estimated):   324.3 KB / 600.0 KB budget
+
+=== Scene 56: VISITOR.ADS tag 4 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (GJVIS3.TTM[1], GJLILIPU.TTM[2], GJVIS6.TTM[3], MJCOCO.TTM[4], GJVIS5.TTM[5])
+  ADD_SCENE calls: 7 (slot4:tag16, slot4:tag35, slot4:tag17, slot4:tag33, slot4:tag18, slot4:tag19[rand w=1], slot4:tag20[rand w=1])
+  Max concurrent threads: 6
+  BMPs loaded: 7
+    MJCOCO.BMP        47 frames, max  80x92    46.2 KB indexed,   46.2 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+    SPLASH.BMP         7 frames, max 152x112   21.0 KB indexed,   21.0 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    COCOHEAD.BMP      10 frames, max  40x55     3.9 KB indexed,    3.9 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   170.8 KB
+    BMP pixels (15-bit):  683.3 KB  (if not using indexed)
+    BMP raw data:         170.8 KB
+    TTM bytecode:           6.1 KB
+    ADS script:             0.9 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 145
+  PEAK MEMORY (estimated):   328.3 KB / 600.0 KB budget
+
+=== Scene 57: VISITOR.ADS tag 6 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (GJVIS3.TTM[1], GJLILIPU.TTM[2], GJVIS6.TTM[3], MJCOCO.TTM[4], GJVIS5.TTM[5])
+  ADD_SCENE calls: 9 (slot4:tag16, slot4:tag35, slot4:tag17, slot4:tag33, slot4:tag18, slot4:tag34, slot4:tag23, slot4:tag25, slot4:tag26)
+  Max concurrent threads: 9
+  BMPs loaded: 7
+    MJCOCO.BMP        47 frames, max  80x92    46.2 KB indexed,   46.2 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+    SPLASH.BMP         7 frames, max 152x112   21.0 KB indexed,   21.0 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    COCOHEAD.BMP      10 frames, max  40x55     3.9 KB indexed,    3.9 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   170.8 KB
+    BMP pixels (15-bit):  683.3 KB  (if not using indexed)
+    BMP raw data:         170.8 KB
+    TTM bytecode:           6.1 KB
+    ADS script:             0.9 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 145
+  PEAK MEMORY (estimated):   328.3 KB / 600.0 KB budget
+
+=== Scene 58: VISITOR.ADS tag 7 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (GJVIS3.TTM[1], GJLILIPU.TTM[2], GJVIS6.TTM[3], MJCOCO.TTM[4], GJVIS5.TTM[5])
+  ADD_SCENE calls: 8 (slot4:tag16, slot4:tag35, slot4:tag17, slot4:tag33, slot4:tag18, slot4:tag23, slot4:tag25, slot4:tag26)
+  Max concurrent threads: 8
+  BMPs loaded: 7
+    MJCOCO.BMP        47 frames, max  80x92    46.2 KB indexed,   46.2 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+    SPLASH.BMP         7 frames, max 152x112   21.0 KB indexed,   21.0 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    COCOHEAD.BMP      10 frames, max  40x55     3.9 KB indexed,    3.9 KB raw
+    MJREAD.BMP        36 frames, max  88x75    44.2 KB indexed,   44.2 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   170.8 KB
+    BMP pixels (15-bit):  683.3 KB  (if not using indexed)
+    BMP raw data:         170.8 KB
+    TTM bytecode:           6.1 KB
+    ADS script:             0.9 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 145
+  PEAK MEMORY (estimated):   328.3 KB / 600.0 KB budget
+
+=== Scene 59: VISITOR.ADS tag 5 ===
+  Flags: FINAL ISLAND LEFT_ISLAND VARPOS LOWTIDE 
+  TTM slots: 5 (GJVIS3.TTM[1], GJLILIPU.TTM[2], GJVIS6.TTM[3], MJCOCO.TTM[4], GJVIS5.TTM[5])
+  ADD_SCENE calls: 7 (slot5:tag1, slot5:tag8, slot5:tag7, slot5:tag9, slot5:tag10, slot5:tag3, slot5:tag5)
+  Max concurrent threads: 7
+  BMPs loaded: 5
+    GJVIS5.BMP        27 frames, max  88x118   45.8 KB indexed,   45.8 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    GJVIS52.BMP       18 frames, max 128x125   47.7 KB indexed,   47.7 KB raw
+    MJCOCO.BMP        47 frames, max  80x92    46.2 KB indexed,   46.2 KB raw
+    COCONUTS.BMP       7 frames, max  24x18     0.8 KB indexed,    0.8 KB raw
+  SCR backgrounds: ISLAND2.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   187.8 KB
+    BMP pixels (15-bit):  751.3 KB  (if not using indexed)
+    BMP raw data:         187.8 KB
+    TTM bytecode:           4.3 KB
+    ADS script:             0.9 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 135
+  PEAK MEMORY (estimated):   343.5 KB / 600.0 KB budget
+
+=== Scene 60: WALKSTUF.ADS tag 1 ===
+  Flags: FINAL ISLAND LOWTIDE 
+  TTM slots: 3 (WOULDBE.TTM[1], MJRAFT.TTM[2], MJJOG.TTM[3])
+  ADD_SCENE calls: 13 (slot1:tag1, slot1:tag2, slot1:tag4, slot1:tag14, slot1:tag6, slot1:tag13, slot1:tag7, slot1:tag8, slot1:tag9, slot1:tag16, slot1:tag15, slot1:tag11, slot1:tag12)
+  Max concurrent threads: 13
+  BMPs loaded: 7
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    WOULDBE.BMP       55 frames, max 160x58    56.7 KB indexed,   56.7 KB raw
+    BOAT.BMP           1 frames, max 248x61     7.4 KB indexed,    7.4 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    LITEBULB.BMP       5 frames, max  48x80     5.1 KB indexed,    5.1 KB raw
+    JOHNWOUL.BMP      17 frames, max  88x107   22.1 KB indexed,   22.1 KB raw
+    DRUNKJON.BMP      24 frames, max  96x145   40.1 KB indexed,   40.1 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   186.0 KB
+    BMP pixels (15-bit):  744.0 KB  (if not using indexed)
+    BMP raw data:         186.0 KB
+    TTM bytecode:          12.9 KB
+    ADS script:             0.6 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 140
+  PEAK MEMORY (estimated):   333.9 KB / 600.0 KB budget
+
+=== Scene 61: WALKSTUF.ADS tag 2 ===
+  Flags: ISLAND VARPOS 
+  TTM slots: 3 (WOULDBE.TTM[1], MJRAFT.TTM[2], MJJOG.TTM[3])
+  ADD_SCENE calls: 7 (slot2:tag9, slot2:tag3, slot2:tag4, slot2:tag7, slot2:tag6, slot2:tag15, slot2:tag17)
+  Max concurrent threads: 7
+  BMPs loaded: 4
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    MJRAFT2.BMP       46 frames, max 112x61    22.6 KB indexed,   22.6 KB raw
+    SJRAFT1.BMP       11 frames, max  88x75    12.9 KB indexed,   12.9 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):    90.1 KB
+    BMP pixels (15-bit):  360.5 KB  (if not using indexed)
+    BMP raw data:          90.1 KB
+    TTM bytecode:           1.1 KB
+    ADS script:             0.6 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 95
+  PEAK MEMORY (estimated):   225.9 KB / 600.0 KB budget
+
+=== Scene 62: WALKSTUF.ADS tag 3 ===
+  Flags: ISLAND VARPOS LOWTIDE 
+  TTM slots: 3 (WOULDBE.TTM[1], MJRAFT.TTM[2], MJJOG.TTM[3])
+  ADD_SCENE calls: 13 (slot3:tag1, slot3:tag2, slot3:tag3, slot3:tag13, slot3:tag14, slot3:tag17, slot3:tag4, slot3:tag5, slot3:tag10, slot3:tag12, slot3:tag15, slot3:tag16, slot3:tag18)
+  Max concurrent threads: 13
+  BMPs loaded: 5
+    JOHNWALK.BMP      36 frames, max  48x78    47.3 KB indexed,   47.3 KB raw
+    TRUNK.BMP          2 frames, max 152x145    7.3 KB indexed,    7.3 KB raw
+    MJJOG2.BMP        24 frames, max  56x79    36.0 KB indexed,   36.0 KB raw
+    JCHANGE.BMP       12 frames, max  32x59     7.2 KB indexed,    7.2 KB raw
+    MJJOG1.BMP        15 frames, max  72x80    29.3 KB indexed,   29.3 KB raw
+  SCR backgrounds: ISLETEMP.SCR (109.4 KB)
+  Memory breakdown:
+    BMP pixels (4-bit):   127.1 KB
+    BMP pixels (15-bit):  508.3 KB  (if not using indexed)
+    BMP raw data:         127.1 KB
+    TTM bytecode:           4.7 KB
+    ADS script:             0.6 KB
+    SCR background:       109.4 KB
+    Total sprite frames: 89
+  PEAK MEMORY (estimated):   266.5 KB / 600.0 KB budget
+
+================================================================
+                     GLOBAL SUMMARY
+================================================================
+
+PS1 Memory Budget: 600.0 KB
+
+Heaviest scene (peak memory):
+  Scene 31: MARY.ADS tag 1 = 556.1 KB
+
+Most sprite frames in memory:
+  Scene 11: BUILDING.ADS tag 4 = 252 frames
+
+Most concurrent threads:
+  Scene 2: ACTIVITY.ADS tag 11 = 20 threads
+
+Largest BMP pixel memory (4-bit indexed):
+  Scene 31: MARY.ADS tag 1 = 396.8 KB
+
+Budget violations: 0 / 63 scenes
+
+--- Top 10 Heaviest Scenes (by peak memory) ---
+   1. MARY.ADS       tag  1:  556.1 KB peak | 219 frames | 4 threads | 16 BMPs
+   2. FISHING.ADS    tag  3:  550.9 KB peak | 235 frames | 10 threads | 12 BMPs
+   3. SUZY.ADS       tag  2:  450.1 KB peak | 117 frames | 5 threads | 7 BMPs
+   4. BUILDING.ADS   tag  2:  432.2 KB peak | 161 frames | 20 threads | 9 BMPs
+   5. BUILDING.ADS   tag  1:  432.2 KB peak | 161 frames | 11 threads | 9 BMPs
+   6. ACTIVITY.ADS   tag 10:  427.3 KB peak | 244 frames | 16 threads | 10 BMPs
+   7. ACTIVITY.ADS   tag  6:  427.3 KB peak | 244 frames | 8 threads | 10 BMPs
+   8. ACTIVITY.ADS   tag  7:  427.3 KB peak | 244 frames | 9 threads | 10 BMPs
+   9. ACTIVITY.ADS   tag 12:  427.3 KB peak | 244 frames | 10 threads | 10 BMPs
+  10. FISHING.ADS    tag  5:  419.1 KB peak | 117 frames | 2 threads | 4 BMPs
+
+--- Complete BMP Inventory (all scenes combined) ---
+  Name             Frames   WxH  Indexed      Raw Scenes
+  ----             ------   ---  -------      --- ------
+  GJFFFOOD.BMP         49 208x110  135.3 KB  135.3 KB      1
+  GJCATCH2.BMP         40 120x120  103.2 KB  103.2 KB      1
+  SHARK.BMP            40 200x93   89.0 KB   89.0 KB      1
+  GJDIVE.BMP           40 216x134   81.3 KB   81.3 KB      1
+  GJNAT3.BMP           54 104x109   78.0 KB   78.0 KB      1
+  SSUZY3.BMP           33 184x127   74.9 KB   74.9 KB      2
+  MJFISH1.BMP          30 152x118   74.8 KB   74.8 KB      9
+  SJMSUZY3.BMP         18 136x105   70.7 KB   70.7 KB      1
+  SMDATE9.BMP          15 216x154   66.0 KB   66.0 KB      1
+  SBREAKUP.BMP         35 144x90   58.3 KB   58.3 KB      1
+  WOULDBE.BMP          55 160x58   56.7 KB   56.7 KB      1
+  GJGULL3A.BMP         48 88x103   55.5 KB   55.5 KB      4
+  GJCATCH1.BMP         21 248x104   55.1 KB   55.1 KB      3
+  MJBATH.BMP           37 120x94   52.4 KB   52.4 KB      2
+  GJNAT1.BMP           26 80x93   52.4 KB   52.4 KB      2
+  THNKBUBL.BMP          6 184x127   52.2 KB   52.2 KB      5
+  SMGIFT.BMP           47 96x67   51.4 KB   51.4 KB      1
+  GJVIS52.BMP          18 128x125   47.7 KB   47.7 KB      1
+  JOHNWALK.BMP         36 48x78   47.3 KB   47.3 KB     39
+  SMDATE5.BMP          12 120x107   47.1 KB   47.1 KB      1
+  SSUZY2.BMP           18 96x101   47.1 KB   47.1 KB      2
+  GJVIS6.BMP           18 120x107   46.5 KB   46.5 KB      1
+  MJCOCO.BMP           47 80x92   46.2 KB   46.2 KB      4
+  GJVIS5.BMP           27 88x118   45.8 KB   45.8 KB      2
+  MJREAD.BMP           36 88x75   44.2 KB   44.2 KB      8
+  MJFISH2.BMP          27 104x111   43.1 KB   43.1 KB      8
+  SJMSUZY2.BMP         14 96x104   42.7 KB   42.7 KB      1
+  GJRUNAWA.BMP         14 120x110   42.5 KB   42.5 KB      2
+  SHIPS.BMP            21 168x136   42.3 KB   42.3 KB      5
+  GJGULL3.BMP          25 80x81   42.3 KB   42.3 KB      4
+  GJKINGKO.BMP         21 96x113   41.9 KB   41.9 KB      2
+  SLEVEJC3.BMP         12 136x100   40.8 KB   40.8 KB      1
+  DRUNKJON.BMP         24 96x145   40.1 KB   40.1 KB      1
+  MJDIVE.BMP           30 120x98   39.2 KB   39.2 KB      3
+  GJGULL1A.BMP         49 64x71   37.7 KB   37.7 KB      4
+  MJJOG2.BMP           24 56x79   36.0 KB   36.0 KB      1
+  FIRE4.BMP            35 104x63   36.0 KB   36.0 KB      2
+  GJNAT1LI.BMP         19 168x187   35.1 KB   35.1 KB      2
+  SMDATE4.BMP           9 128x123   35.0 KB   35.0 KB      1
+  SMDATE10.BMP          7 160x141   34.6 KB   34.6 KB      1
+  GJVIS3.BMP           12 160x78   34.0 KB   34.0 KB      1
+  GJHOT.BMP            23 104x82   33.5 KB   33.5 KB      3
+  SANDCAST.BMP         15 176x105   33.4 KB   33.4 KB      2
+  SLEVEJM2.BMP         21 104x69   32.4 KB   32.4 KB      1
+  MJBTL2.BMP           38 184x127   32.0 KB   32.0 KB      4
+  SMDATE3.BMP          16 64x85   31.1 KB   31.1 KB      1
+  SSUZY1.BMP           12 112x64   30.7 KB   30.7 KB      1
+  SMGLIMSE.BMP         23 120x70   30.0 KB   30.0 KB      3
+  MJJOG1.BMP           15 72x80   29.3 KB   29.3 KB      1
+  SJGFTXCH.BMP         15 96x84   29.1 KB   29.1 KB      1
+  SMDATE6.BMP          33 112x75   28.8 KB   28.8 KB      1
+  GJGULL2.BMP          49 72x52   27.9 KB   27.9 KB      2
+  MJ_AMB.BMP           35 40x77   26.8 KB   26.8 KB     12
+  MJBOTTLE.BMP         51 80x77   26.5 KB   26.5 KB      4
+  SMDATE11.BMP         24 80x85   26.2 KB   26.2 KB      1
+  FIRE.BMP             34 72x70   26.1 KB   26.1 KB      2
+  GJBIPLAN.BMP         28 120x55   24.8 KB   24.8 KB      5
+  SLEEP.BMP            17 112x48   23.5 KB   23.5 KB      3
+  MJTELE.BMP           22 64x75   23.3 KB   23.3 KB      3
+  MJRAFT2.BMP          46 112x61   22.6 KB   22.6 KB      2
+  JOHNWOUL.BMP         17 88x107   22.1 KB   22.1 KB      1
+  MJSANDC.BMP          11 88x91   21.6 KB   21.6 KB      2
+  SPLASH.BMP            7 152x112   21.0 KB   21.0 KB      6
+  SLEVEJC1.BMP         12 80x82   20.9 KB   20.9 KB      1
+  SLEVEJC2.BMP         14 64x82   20.4 KB   20.4 KB      1
+  SLEVEJM3.BMP          8 160x57   20.4 KB   20.4 KB      1
+  GJPROW.BMP            2 144x169   19.9 KB   19.9 KB      1
+  SMDATE1.BMP          17 168x117   19.2 KB   19.2 KB      4
+  LILIPUTS.BMP        102 40x37   19.1 KB   19.1 KB      3
+  SJGFTASK.BMP         14 112x80   19.0 KB   19.0 KB      1
+  STNDLAY.BMP          10 136x101   18.5 KB   18.5 KB      3
+  SMDATE2.BMP          13 72x75   17.2 KB   17.2 KB      1
+  GJGULL1.BMP          33 64x44   16.6 KB   16.6 KB      9
+  SMDATE8.BMP          13 104x72   15.8 KB   15.8 KB      1
+  SJMSUZY1.BMP         10 96x59   15.8 KB   15.8 KB      1
+  THEEND1.BMP          22 72x67   15.4 KB   15.4 KB      1
+  MJFISH3.BMP          38 48x55   15.3 KB   15.3 KB     12
+  SJGFTSHY.BMP         10 56x77   14.7 KB   14.7 KB      2
+  GJGULL2A.BMP         16 56x53   13.8 KB   13.8 KB      2
+  GJCATCH3.BMP         10 120x69   13.1 KB   13.1 KB      4
+  SJRAFT1.BMP          11 88x75   12.9 KB   12.9 KB      2
+  SLEVEJM1.BMP         11 120x45   12.6 KB   12.6 KB      1
+  SJWORK.BMP           12 56x70   12.5 KB   12.5 KB      1
+  MEXCWALK.BMP          8 48x79   11.4 KB   11.4 KB      4
+  MRAFT.BMP             7 128x39   10.4 KB   10.4 KB      1
+  TANKER.BMP           14 72x25   10.0 KB   10.0 KB      1
+  GJCASTLE.BMP          8 48x73    9.8 KB    9.8 KB      2
+  SJGFTJMP.BMP          7 64x79    9.5 KB    9.5 KB      1
+  MEANWHIL.BMP         17 96x109    8.4 KB    8.4 KB      4
+  FIRE1.BMP            28 40x46    8.0 KB    8.0 KB      2
+  SHARKWLK.BMP         14 40x75    7.5 KB    7.5 KB      1
+  ENDCRDTS.BMP          1 248x62    7.5 KB    7.5 KB      1
+  BOAT.BMP              1 248x61    7.4 KB    7.4 KB      2
+  TRUNK.BMP             2 152x145    7.3 KB    7.3 KB     34
+  JCHANGE.BMP          12 32x59    7.2 KB    7.2 KB      7
+  MJTELE2.BMP           4 64x74    7.2 KB    7.2 KB      3
+  FISHMAN.BMP           2 96x72    6.8 KB    6.8 KB      1
+  FIRE2.BMP            25 48x36    6.6 KB    6.6 KB      2
+  SHKNFIST.BMP          4 48x76    6.5 KB    6.5 KB      1
+  LITEBULB.BMP          5 48x80    5.1 KB    5.1 KB     15
+  FIRE3.BMP             3 72x50    4.8 KB    4.8 KB      2
+  SMDATE12.BMP          3 128x44    4.6 KB    4.6 KB      1
+  SMDATE7.BMP           2 104x62    4.2 KB    4.2 KB      1
+  COCOHEAD.BMP         10 40x55    3.9 KB    3.9 KB      3
+  SRAFT.BMP             2 128x39    3.5 KB    3.5 KB      1
+  LILFISH.BMP           9 48x28    2.1 KB    2.1 KB      4
+  SJBRAKUP.BMP          2 48x80    2.0 KB    2.0 KB      1
+  SMGFTWAV.BMP          9 40x20    1.9 KB    1.9 KB      1
+  COCONUTS.BMP          7 24x18    0.8 KB    0.8 KB      8
+  ZZZZS.BMP             3 16x12    0.2 KB    0.2 KB      7
+  TOTAL                         3302.6 KB
+  Unique BMPs used across all scenes: 110 / 117 total in resources
+
+--- TTM Inventory ---
+  GJDIVE.TTM              4.1 KB  (used by 10 scenes)
+  MJDIVE.TTM              3.0 KB  (used by 10 scenes)
+  MJREAD.TTM              8.6 KB  (used by 10 scenes)
+  MJBATH.TTM              5.0 KB  (used by 10 scenes)
+  GJNAT1.TTM              7.0 KB  (used by 10 scenes)
+  GJNAT3.TTM             11.4 KB  (used by 10 scenes)
+  MJSAND.TTM              8.5 KB  (used by 7 scenes)
+  GJGULIVR.TTM           15.6 KB  (used by 7 scenes)
+  MJFIRE.TTM             10.3 KB  (used by 7 scenes)
+  MJFISH.TTM             16.3 KB  (used by 8 scenes)
+  GJCATCH2.TTM            2.0 KB  (used by 8 scenes)
+  GFFFOOD.TTM             1.5 KB  (used by 8 scenes)
+  MJFISHC.TTM             9.7 KB  (used by 8 scenes)
+  FISHWALK.TTM            0.9 KB  (used by 8 scenes)
+  THEEND.TTM              2.0 KB  (used by 6 scenes)
+  SJMSSGE.TTM             5.1 KB  (used by 6 scenes)
+  SJWORK.TTM              0.9 KB  (used by 6 scenes)
+  MEANWHIL.TTM            1.8 KB  (used by 8 scenes)
+  SJGLIMPS.TTM            8.3 KB  (used by 5 scenes)
+  SASKDATE.TTM            5.9 KB  (used by 5 scenes)
+  SMDATE.TTM              6.9 KB  (used by 5 scenes)
+  SBREAKUP.TTM            5.3 KB  (used by 5 scenes)
+  SJLEAVES.TTM            7.1 KB  (used by 5 scenes)
+  GJHOT.TTM               2.2 KB  (used by 2 scenes)
+  SHARK1.TTM              2.5 KB  (used by 2 scenes)
+  GJGULL1.TTM             2.0 KB  (used by 2 scenes)
+  MJAMBWLK.TTM            7.6 KB  (used by 14 scenes)
+  MJTELE.TTM              3.7 KB  (used by 14 scenes)
+  SUZYCITY.TTM            4.6 KB  (used by 2 scenes)
+  SJMSUZY.TTM             3.3 KB  (used by 2 scenes)
+  GJVIS3.TTM              7.5 KB  (used by 6 scenes)
+  GJLILIPU.TTM            2.7 KB  (used by 6 scenes)
+  GJVIS6.TTM              3.7 KB  (used by 6 scenes)
+  MJCOCO.TTM              6.1 KB  (used by 6 scenes)
+  GJVIS5.TTM              4.3 KB  (used by 6 scenes)
+  WOULDBE.TTM            12.9 KB  (used by 3 scenes)
+  MJRAFT.TTM              1.1 KB  (used by 3 scenes)
+  MJJOG.TTM               4.7 KB  (used by 3 scenes)
+  Total unique TTM bytecode: 216.1 KB
+
+================================================================
+Analysis complete. 63 scenes analyzed.

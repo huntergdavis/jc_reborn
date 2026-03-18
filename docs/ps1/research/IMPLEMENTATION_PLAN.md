@@ -521,6 +521,20 @@ Current status:
   authored scene behavior in `MEANWHIL.TTM` (`SET_COLORS 5 5`,
   `DRAW_RECT 0 0 640 350`, then repeated clock sprite draws), not to the new
   restore/prefetch/pack path
+- the next ranked candidate is now emitted as a checked-in pilot spec too:
+  `WALKSTUF.ADS tag 2`, covering `MJJOG.TTM`, `MJRAFT.TTM`, and `WOULDBE.TTM`
+  with a wider union rect and a two-region clear/save contract for `WOULDBE`
+- the generated pilot specs now carry explicit scene resource lists
+  (`bmps/scrs/ttms`), and the PS1 runtime primes those scene-scoped resources
+  before play through `ps1_restore_pilots.h` + `ads.c`; this is the first
+  offline-generated preload contract for the pilot routes
+- fallback telemetry is now real instead of stale: counters reset on pack
+  activation and increment only on extracted-file fallback reads
+- `STAND.ADS` still validates with `pilot_pack ... fallbacks=0` after that
+  correction, while `WALKSTUF.ADS 2` still shows real post-ADS fallbacks even
+  though `WALKSTUF.PAK` contains byte-identical copies of the missing assets;
+  that narrows the remaining gap to the runtime pack-read path, not the
+  manifest/compiler side
 
 Deliverables:
 

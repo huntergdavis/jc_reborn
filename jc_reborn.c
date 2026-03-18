@@ -505,6 +505,9 @@ int main(int argc, char **argv)
     else if (argAds && numArgs >= 2) {
         adsInit();
 
+#ifdef PS1_BUILD
+        ps1_pilotPrearmPackForAds(args[0]);
+#endif
         if (argIsland)
             adsInitIsland();
         else

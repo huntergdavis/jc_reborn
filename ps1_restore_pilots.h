@@ -25,6 +25,12 @@ struct TPs1RestorePilot {
     struct TPs1RestorePilotRect unionRect;
     uint16 adsTagCount;
     const uint16 *adsTags;
+    uint16 bmpCount;
+    const char *const *bmps;
+    uint16 scrCount;
+    const char *const *scrs;
+    uint16 sceneTtmCount;
+    const char *const *sceneTtms;
     uint16 rectCount;
     const struct TPs1RestorePilotRect *rects;
     uint16 ttmCount;
@@ -32,6 +38,19 @@ struct TPs1RestorePilot {
 };
 
 static const uint16 gPs1RestorePilot0AdsTags[3] = { 1u, 2u, 3u };
+
+static const char *const gPs1RestorePilot0Bmps[1] = {
+    "MJ_AMB.BMP",
+};
+
+static const char *const gPs1RestorePilot0Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot0SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
 
 static const struct TPs1RestorePilotRect gPs1RestorePilot0Rects[2] = {
     { 248u, 196u, 344u, 139u },
@@ -43,16 +62,33 @@ static const struct TPs1RestorePilotTtm gPs1RestorePilot0Ttms[2] = {
     { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot0 = { "STAND.ADS", 1u, 38u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot0AdsTags, 2u, gPs1RestorePilot0Rects, 2u, gPs1RestorePilot0Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot0 = { "STAND.ADS", 1u, 38u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot0AdsTags, 1u, gPs1RestorePilot0Bmps, 1u, gPs1RestorePilot0Scrs, 2u, gPs1RestorePilot0SceneTtms, 2u, gPs1RestorePilot0Rects, 2u, gPs1RestorePilot0Ttms };
 
-static const uint16 gPs1RestorePilot1AdsTags[1] = { 1u };
+static const uint16 gPs1RestorePilot1AdsTags[2] = { 1u, 6u };
+
+static const char *const gPs1RestorePilot1Bmps[3] = {
+    "THEEND1.BMP",
+    "ENDCRDTS.BMP",
+    "MEANWHIL.BMP",
+};
+
+static const char *const gPs1RestorePilot1Scrs[1] = {
+    "THEEND.SCR",
+};
+
+static const char *const gPs1RestorePilot1SceneTtms[4] = {
+    "THEEND.TTM",
+    "SJMSSGE.TTM",
+    "SJWORK.TTM",
+    "MEANWHIL.TTM",
+};
 
 static const struct TPs1RestorePilotRect gPs1RestorePilot1Rects[5] = {
-    { 224u, 90u, 160u, 134u },
+    { 224u, 91u, 160u, 131u },
+    { 232u, 90u, 144u, 134u },
     { 0u, 147u, 448u, 203u },
     { 192u, 199u, 264u, 142u },
     { 144u, 87u, 384u, 152u },
-    { 0u, 199u, 312u, 151u },
 };
 
 static const struct TPs1RestorePilotTtm gPs1RestorePilot1Ttms[4] = {
@@ -62,13 +98,48 @@ static const struct TPs1RestorePilotTtm gPs1RestorePilot1Ttms[4] = {
     { "THEEND.TTM", 0u, 0u, { 144u, 87u, 384u, 152u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot1 = { "JOHNNY.ADS", 1u, 25u, { 0u, 87u, 528u, 263u }, 1u, gPs1RestorePilot1AdsTags, 5u, gPs1RestorePilot1Rects, 4u, gPs1RestorePilot1Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot1 = { "JOHNNY.ADS", 1u, 25u, { 0u, 87u, 528u, 263u }, 2u, gPs1RestorePilot1AdsTags, 3u, gPs1RestorePilot1Bmps, 1u, gPs1RestorePilot1Scrs, 4u, gPs1RestorePilot1SceneTtms, 5u, gPs1RestorePilot1Rects, 4u, gPs1RestorePilot1Ttms };
 
-#define PS1_RESTORE_PILOT_COUNT 2u
+static const uint16 gPs1RestorePilot2AdsTags[1] = { 2u };
+
+static const char *const gPs1RestorePilot2Bmps[4] = {
+    "TRUNK.BMP",
+    "JOHNWALK.BMP",
+    "MJRAFT2.BMP",
+    "SJRAFT1.BMP",
+};
+
+static const char *const gPs1RestorePilot2Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot2SceneTtms[3] = {
+    "WOULDBE.TTM",
+    "MJRAFT.TTM",
+    "MJJOG.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot2Rects[4] = {
+    { 280u, 200u, 304u, 150u },
+    { 232u, 125u, 408u, 225u },
+    { 96u, 102u, 544u, 217u },
+    { 0u, 91u, 104u, 154u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot2Ttms[3] = {
+    { "MJJOG.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
+    { "MJRAFT.TTM", 0u, 0u, { 232u, 125u, 408u, 225u } },
+    { "WOULDBE.TTM", 0u, 0u, { 0u, 91u, 640u, 228u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot2 = { "WALKSTUF.ADS", 2u, 61u, { 0u, 91u, 640u, 259u }, 1u, gPs1RestorePilot2AdsTags, 4u, gPs1RestorePilot2Bmps, 1u, gPs1RestorePilot2Scrs, 3u, gPs1RestorePilot2SceneTtms, 4u, gPs1RestorePilot2Rects, 3u, gPs1RestorePilot2Ttms };
+
+#define PS1_RESTORE_PILOT_COUNT 3u
 
 static const struct TPs1RestorePilot gPs1RestorePilots[PS1_RESTORE_PILOT_COUNT] = {
     gPs1RestorePilot0,
     gPs1RestorePilot1,
+    gPs1RestorePilot2,
 };
 
 #endif

@@ -13,6 +13,12 @@ Selected pilot: `STAND.ADS tag 1` from `stand-ads`
 - unique rects: `2`
 - TTM owners: `MJAMBWLK.TTM, MJTELE.TTM`
 
+## Scene resources
+
+- BMPs: `MJ_AMB.BMP`
+- SCRs: `ISLETEMP.SCR`
+- TTMs: `MJAMBWLK.TTM, MJTELE.TTM`
+
 ## Runtime scope
 
 - Keep pack path authoritative; do not reintroduce extracted fallback.

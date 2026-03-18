@@ -80,6 +80,13 @@
     "heuristic": "transition_churn_then_ads_family_union",
     "confidence": "low"
   },
+  "dirty_region_templates": {
+    "path": "docs/ps1/research/compiled_packs_2026-03-17/suzy-ads/dirty_region_templates.json",
+    "source_path": "docs/ps1/research/dirty_region_templates_2026-03-18/suzy-ads.json",
+    "available": true,
+    "candidate_scene_indices": [],
+    "restore_candidate_ttm_count": 0
+  },
   "payload": {
     "path": "docs/ps1/research/compiled_packs_2026-03-17/suzy-ads/pack_payload.bin",
     "alignment_bytes": 2048,

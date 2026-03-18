@@ -138,5 +138,6 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource);
 void ps1_loadScrData(struct TScrResource *scrResource);
 void ps1_loadTtmData(struct TTtmResource *ttmResource);
 void ps1_loadAdsData(struct TAdsResource *adsResource);
+void ps1_pilotPrearmPackForAds(const char *adsName);
 
 #endif /* CDROM_PS1_H */

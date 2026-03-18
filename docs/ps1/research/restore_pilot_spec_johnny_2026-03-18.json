@@ -26,21 +26,41 @@
     ],
     "restore_score": 113
   },
-  "scene_flags": 1,
+  "scene_flags": [
+    "FINAL",
+    "FIRST"
+  ],
   "memory": {
-    "peak_bytes": 182032,
-    "bmp_bytes": 69062,
-    "scr_bytes": 0,
-    "ttm_bytes": 104746,
-    "ads_bytes": 620,
-    "pointer_overhead_bytes": 760,
-    "thread_overhead_bytes": 6844
+    "bmp_indexed_bytes": 32076,
+    "bmp_15bit_bytes": 128304,
+    "bmp_raw_bytes": 32076,
+    "ttm_bytes": 3948,
+    "ads_bytes": 1080,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 160,
+    "ttm_slot_overhead_bytes": 32768,
+    "peak_memory_bytes": 182032
   },
   "resource_counts": {
-    "bmp": 3,
-    "scr": 0,
-    "ttm": 4,
-    "ads": 1
+    "bmps": 3,
+    "scrs": 1,
+    "ttms": 4
+  },
+  "scene_resources": {
+    "bmps": [
+      "THEEND1.BMP",
+      "ENDCRDTS.BMP",
+      "MEANWHIL.BMP"
+    ],
+    "scrs": [
+      "THEEND.SCR"
+    ],
+    "ttms": [
+      "THEEND.TTM",
+      "SJMSSGE.TTM",
+      "SJWORK.TTM",
+      "MEANWHIL.TTM"
+    ]
   },
   "restore_template": {
     "union_rect": {
@@ -52,8 +72,14 @@
     "unique_rects": [
       {
         "x": 224,
-        "y": 90,
+        "y": 91,
         "width": 160,
+        "height": 131
+      },
+      {
+        "x": 232,
+        "y": 90,
+        "width": 144,
         "height": 134
       },
       {
@@ -73,12 +99,6 @@
         "y": 87,
         "width": 384,
         "height": 152
-      },
-      {
-        "x": 0,
-        "y": 199,
-        "width": 312,
-        "height": 151
       }
     ],
     "clear_screen_count": 289,
@@ -101,8 +121,14 @@
       "unique_rects": [
         {
           "x": 224,
-          "y": 90,
+          "y": 91,
           "width": 160,
+          "height": 131
+        },
+        {
+          "x": 232,
+          "y": 90,
+          "width": 144,
           "height": 134
         }
       ],
@@ -188,12 +214,6 @@
           "y": 87,
           "width": 384,
           "height": 152
-        },
-        {
-          "x": 0,
-          "y": 199,
-          "width": 312,
-          "height": 151
         }
       ],
       "clear_region_ids": [
@@ -212,10 +232,12 @@
   "recommended_runtime_scope": {
     "ads_name": "JOHNNY.ADS",
     "ads_tags": [
-      1
+      1,
+      6
     ],
     "scene_indices": [
-      25
+      25,
+      30
     ],
     "ttm_names": [
       "MEANWHIL.TTM",

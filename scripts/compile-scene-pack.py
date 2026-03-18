@@ -38,6 +38,15 @@ RESOURCE_TYPES = {
 }
 
 RESOURCE_ORDER = ("ads", "scrs", "ttms", "bmps")
+ISLAND_SHARED_RESOURCES: Sequence[Tuple[str, str]] = (
+    ("scrs", "OCEAN00.SCR"),
+    ("scrs", "OCEAN01.SCR"),
+    ("scrs", "OCEAN02.SCR"),
+    ("scrs", "NIGHT.SCR"),
+    ("bmps", "MRAFT.BMP"),
+    ("bmps", "BACKGRND.BMP"),
+    ("bmps", "HOLIDAY.BMP"),
+)
 
 
 def load_json(path: Path) -> dict:
@@ -75,14 +84,30 @@ def encode_name(name: str) -> bytes:
 
 def collect_resource_entries(manifest: dict, extracted_root: Path) -> List[Tuple[str, str, Path]]:
     entries: List[Tuple[str, str, Path]] = []
+    seen: set[Tuple[str, str]] = set()
     resources = manifest.get("resources", {})
+    scenes = manifest.get("scenes", [])
+    has_island_scene = any("ISLAND" in scene.get("flags", []) for scene in scenes)
 
     for kind in RESOURCE_ORDER:
         for name in resources.get(kind, []):
             source_path = extracted_root / RESOURCE_DIRS[kind] / name
             if not source_path.is_file():
                 raise FileNotFoundError(f"missing resource for {kind}:{name}: {source_path}")
-            entries.append((RESOURCE_TYPES[kind], name, source_path))
+            key = (RESOURCE_TYPES[kind], name)
+            if key not in seen:
+                entries.append((RESOURCE_TYPES[kind], name, source_path))
+                seen.add(key)
+
+    if has_island_scene:
+        for kind, name in ISLAND_SHARED_RESOURCES:
+            source_path = extracted_root / RESOURCE_DIRS[kind] / name
+            if not source_path.is_file():
+                raise FileNotFoundError(f"missing shared island resource for {kind}:{name}: {source_path}")
+            key = (RESOURCE_TYPES[kind], name)
+            if key not in seen:
+                entries.append((RESOURCE_TYPES[kind], name, source_path))
+                seen.add(key)
 
     return entries
 

@@ -871,6 +871,8 @@ static void ps1PilotResetActivePack(void)
 {
     ps1PilotResetPack(&ps1PilotActivePack);
     ps1PilotDbgActivePack = 0;
+    ps1PilotDbgHits = 0;
+    ps1PilotDbgFallbacks = 0;
 }
 
 static int ps1PilotBuildPackFile(const char *adsName, char *outPath, size_t outPathSize)
@@ -986,6 +988,8 @@ static void ps1PilotSetActivePackForAds(const char *adsName)
     }
 
     ps1PilotDbgActivePack = ps1PilotActivePack.packId;
+    ps1PilotDbgHits = 0;
+    ps1PilotDbgFallbacks = 0;
 
     if (ps1PilotActivePack.prefetchedAdsName[0] != '\0') {
         if (strcmp(ps1PilotPrefetchPack.adsName, ps1PilotActivePack.prefetchedAdsName) != 0)
@@ -993,6 +997,13 @@ static void ps1PilotSetActivePackForAds(const char *adsName)
     } else {
         ps1PilotResetPack(&ps1PilotPrefetchPack);
     }
+}
+
+void ps1_pilotPrearmPackForAds(const char *adsName)
+{
+    if (adsName == NULL || adsName[0] == '\0')
+        return;
+    ps1PilotSetActivePackForAds(adsName);
 }
 
 static const struct TPs1PackedResourceEntry *ps1PilotFindEntry(const char *resourceType, const char *name)
@@ -1873,6 +1884,8 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource)
     snprintf(path, sizeof(path), "BMP\\%s", bmpResource->resName);
 
     /* Read entire file from CD - already decompressed, no processing needed */
+    if (ps1PilotDbgFallbacks < 0xFFFFU)
+        ps1PilotDbgFallbacks++;
     bmpResource->uncompressedData = ps1_streamRead(path, 0, readSize);
 
     /* Update uncompressedSize to match what we actually read */
@@ -1915,6 +1928,8 @@ void ps1_loadScrData(struct TScrResource *scrResource)
 
     /* Read entire file from CD - already decompressed, no processing needed
      * Trust the metadata uncompressedSize - the extracted files should match */
+    if (ps1PilotDbgFallbacks < 0xFFFFU)
+        ps1PilotDbgFallbacks++;
     scrResource->uncompressedData = ps1_streamRead(path, 0, scrResource->uncompressedSize);
 }
 
@@ -1949,6 +1964,8 @@ void ps1_loadTtmData(struct TTtmResource *ttmResource)
     snprintf(path, sizeof(path), "TTM\\%s", ttmResource->resName);
 
     /* Read entire file from CD - already decompressed bytecode */
+    if (ps1PilotDbgFallbacks < 0xFFFFU)
+        ps1PilotDbgFallbacks++;
     ttmResource->uncompressedData = ps1_streamRead(path, 0, ttmResource->uncompressedSize);
 }
 
@@ -1985,5 +2002,7 @@ void ps1_loadAdsData(struct TAdsResource *adsResource)
     snprintf(path, sizeof(path), "ADS\\%s", adsResource->resName);
 
     /* Read entire file from CD - already decompressed bytecode */
+    if (ps1PilotDbgFallbacks < 0xFFFFU)
+        ps1PilotDbgFallbacks++;
     adsResource->uncompressedData = ps1_streamRead(path, 0, adsResource->uncompressedSize);
 }

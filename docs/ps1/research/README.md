@@ -75,6 +75,8 @@ Right now the active narrow targets are:
   `352x140` restore envelope
 - `JOHNNY.ADS tag 1`, which reuses the same generated-contract path through the
   `MEANWHIL.TTM`, `SJMSSGE.TTM`, `SJWORK.TTM`, and `THEEND.TTM` cluster
+- `WALKSTUF.ADS tag 2`, which exercises `MJJOG.TTM`, `MJRAFT.TTM`, and
+  `WOULDBE.TTM`, including a two-region clear/save contract in `WOULDBE.TTM`
 
 Those pilots now have a generated C-side artifact:
 
@@ -117,6 +119,28 @@ One useful validation note from that route: the black-backed clock in the
 `MEANWHIL.TTM` script explicitly issues `DRAW_RECT 0 0 640 350` after
 `SET_COLORS 5 5`, then repeatedly draws the clock backing sprite. So that card
 is authored scene behavior, not a pack-path failure.
+
+The next generated pilot now exists too:
+
+- [restore_pilot_spec_walkstuf_2026-03-18.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_pilot_spec_walkstuf_2026-03-18.json)
+
+That keeps the runtime work on the same rails: expand the generated pilot table
+one scene-scoped contract at a time instead of adding another family-wide
+special case.
+
+The pilot specs now carry explicit scene resource lists too, and the PS1
+runtime primes those scene-scoped resources before play through
+[ps1_restore_pilots.h](/home/hunter/workspace/jc_reborn/ps1_restore_pilots.h)
+and [ads.c](/home/hunter/workspace/jc_reborn/ads.c). That is the first real
+offline-to-runtime link beyond dirty-rect policy: the generated spec now drives
+which BMP/SCR/TTM assets get warmed for a pilot route.
+
+One current validation note: the pack fallback telemetry is now wired to real
+extracted-file reads instead of stale counters. `STAND.ADS` still validates with
+`pilot_pack ... fallbacks=0`, but `WALKSTUF.ADS 2` still shows real post-ADS
+fallbacks even though the compiled pack contains byte-perfect copies of the
+missing resources. So the remaining `WALKSTUF` gap is narrowed to the runtime
+pack-read path, not the offline compiler output.
 
 ## Current facts from the repo
 

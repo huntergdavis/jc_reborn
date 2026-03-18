@@ -13,6 +13,12 @@ Selected pilot: `JOHNNY.ADS tag 1` from `johnny-ads`
 - unique rects: `5`
 - TTM owners: `MEANWHIL.TTM, SJMSSGE.TTM, SJWORK.TTM, THEEND.TTM`
 
+## Scene resources
+
+- BMPs: `THEEND1.BMP, ENDCRDTS.BMP, MEANWHIL.BMP`
+- SCRs: `THEEND.SCR`
+- TTMs: `THEEND.TTM, SJMSSGE.TTM, SJWORK.TTM, MEANWHIL.TTM`
+
 ## Runtime scope
 
 - Keep pack path authoritative; do not reintroduce extracted fallback.

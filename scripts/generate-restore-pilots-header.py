@@ -11,6 +11,7 @@ from pathlib import Path
 DEFAULT_SPECS = [
     Path("docs/ps1/research/restore_pilot_spec_2026-03-18.json"),
     Path("docs/ps1/research/restore_pilot_spec_johnny_2026-03-18.json"),
+    Path("docs/ps1/research/restore_pilot_spec_walkstuf_2026-03-18.json"),
 ]
 DEFAULT_HEADER = Path("ps1_restore_pilots.h")
 
@@ -65,6 +66,12 @@ def build_header(specs: list[dict]) -> str:
         "    struct TPs1RestorePilotRect unionRect;",
         "    uint16 adsTagCount;",
         "    const uint16 *adsTags;",
+        "    uint16 bmpCount;",
+        "    const char *const *bmps;",
+        "    uint16 scrCount;",
+        "    const char *const *scrs;",
+        "    uint16 sceneTtmCount;",
+        "    const char *const *sceneTtms;",
         "    uint16 rectCount;",
         "    const struct TPs1RestorePilotRect *rects;",
         "    uint16 ttmCount;",
@@ -79,9 +86,25 @@ def build_header(specs: list[dict]) -> str:
         rects = spec["restore_template"]["unique_rects"]
         ttm_details = spec["ttm_details"]
         ads_tags = spec["recommended_runtime_scope"]["ads_tags"]
+        scene_resources = spec["scene_resources"]
         prefix = f"gPs1RestorePilot{idx}"
 
         lines.append(f"static const uint16 {prefix}AdsTags[{len(ads_tags)}] = {{ {', '.join(f'{tag}u' for tag in ads_tags)} }};")
+        lines.append("")
+        lines.append(f"static const char *const {prefix}Bmps[{len(scene_resources['bmps'])}] = {{")
+        for name in scene_resources["bmps"]:
+            lines.append(f"    {c_string(name)},")
+        lines.append("};")
+        lines.append("")
+        lines.append(f"static const char *const {prefix}Scrs[{len(scene_resources['scrs'])}] = {{")
+        for name in scene_resources["scrs"]:
+            lines.append(f"    {c_string(name)},")
+        lines.append("};")
+        lines.append("")
+        lines.append(f"static const char *const {prefix}SceneTtms[{len(scene_resources['ttms'])}] = {{")
+        for name in scene_resources["ttms"]:
+            lines.append(f"    {c_string(name)},")
+        lines.append("};")
         lines.append("")
         lines.append(f"static const struct TPs1RestorePilotRect {prefix}Rects[{len(rects)}] = {{")
         for row in rects:
@@ -111,7 +134,11 @@ def build_header(specs: list[dict]) -> str:
             + "{ "
             + f"{rect['x']}u, {rect['y']}u, {rect['width']}u, {rect['height']}u"
             + " }, "
-            + f"{len(ads_tags)}u, {prefix}AdsTags, {len(rects)}u, {prefix}Rects, {len(ttm_details)}u, {prefix}Ttms"
+            + f"{len(ads_tags)}u, {prefix}AdsTags, "
+            + f"{len(scene_resources['bmps'])}u, {prefix}Bmps, "
+            + f"{len(scene_resources['scrs'])}u, {prefix}Scrs, "
+            + f"{len(scene_resources['ttms'])}u, {prefix}SceneTtms, "
+            + f"{len(rects)}u, {prefix}Rects, {len(ttm_details)}u, {prefix}Ttms"
             + " };"
         )
         lines.append("")

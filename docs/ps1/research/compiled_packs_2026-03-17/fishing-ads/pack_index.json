@@ -78,13 +78,29 @@
     "heuristic": "transition_churn_then_ads_family_union",
     "confidence": "low"
   },
+  "dirty_region_templates": {
+    "path": "docs/ps1/research/compiled_packs_2026-03-17/fishing-ads/dirty_region_templates.json",
+    "source_path": "docs/ps1/research/dirty_region_templates_2026-03-18/fishing-ads.json",
+    "available": true,
+    "candidate_scene_indices": [
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "restore_candidate_ttm_count": 2
+  },
   "payload": {
     "path": "docs/ps1/research/compiled_packs_2026-03-17/fishing-ads/pack_payload.bin",
     "alignment_bytes": 2048,
-    "payload_bytes": 862208,
-    "resource_count": 22,
-    "padding_bytes": 19540,
-    "header_bytes": 652,
+    "payload_bytes": 1593344,
+    "resource_count": 29,
+    "padding_bytes": 24112,
+    "header_bytes": 848,
     "first_resource_offset": 2048,
     "staged_path": "jc_resources/packs/FISHING.PAK",
     "staged_filename": "FISHING.PAK",
@@ -334,6 +350,83 @@
       "sector_index": 410,
       "sector_count": 11,
       "sha256": "eb6da85f7a6b5bdfed4cdc3e314f1d22451bcfce4d4546e4bac4c849984d4cec"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN00.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN00.SCR",
+      "offset_bytes": 862208,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 421,
+      "sector_count": 75,
+      "sha256": "377867e13fa5683d36d5bdedd1e55b0f1a26fe4e1271a7eab7401f2a7a452491"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN01.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN01.SCR",
+      "offset_bytes": 1015808,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 496,
+      "sector_count": 75,
+      "sha256": "06551ef375aaf9eb31d2d48a22aedfb2448727ffd4827e47d0bc154c3961422a"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN02.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN02.SCR",
+      "offset_bytes": 1169408,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 571,
+      "sector_count": 75,
+      "sha256": "9657e21fdc3bc36e847031cd5f743c9e36adb42b0cb9fe9b59be6ba815fe82db"
+    },
+    {
+      "resource_type": "scr",
+      "name": "NIGHT.SCR",
+      "source_path": "jc_resources/extracted/scr/NIGHT.SCR",
+      "offset_bytes": 1323008,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 646,
+      "sector_count": 75,
+      "sha256": "55da5ef584269b47aa49d5c97e747c26834cd1a45c2f75da1fecaf227b368271"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MRAFT.BMP",
+      "source_path": "jc_resources/extracted/bmp/MRAFT.BMP",
+      "offset_bytes": 1476608,
+      "size_bytes": 10616,
+      "aligned_size_bytes": 12288,
+      "sector_index": 721,
+      "sector_count": 6,
+      "sha256": "011cd73e41dc5ead9d3d43b3e07778cd9d4b4e763f1bb996406de30ce06689e9"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "BACKGRND.BMP",
+      "source_path": "jc_resources/extracted/bmp/BACKGRND.BMP",
+      "offset_bytes": 1488896,
+      "size_bytes": 92656,
+      "aligned_size_bytes": 94208,
+      "sector_index": 727,
+      "sector_count": 46,
+      "sha256": "7a4485d04b7105b144f0afaf9736abfc2139c1428f4b1a3265118e6ee59978de"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "HOLIDAY.BMP",
+      "source_path": "jc_resources/extracted/bmp/HOLIDAY.BMP",
+      "offset_bytes": 1583104,
+      "size_bytes": 8892,
+      "aligned_size_bytes": 10240,
+      "sector_index": 773,
+      "sector_count": 5,
+      "sha256": "3e24345bcef307aeb121d8a77261cee99237689a9e0a840d06daec5b5865436a"
     }
   ]
 }

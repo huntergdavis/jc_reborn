@@ -45,6 +45,18 @@
     "scrs": 1,
     "ttms": 2
   },
+  "scene_resources": {
+    "bmps": [
+      "MJ_AMB.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ]
+  },
   "restore_template": {
     "union_rect": {
       "x": 248,

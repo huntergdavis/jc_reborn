@@ -76,13 +76,26 @@
     "heuristic": "transition_churn_then_ads_family_union",
     "confidence": "low"
   },
+  "dirty_region_templates": {
+    "path": "docs/ps1/research/compiled_packs_2026-03-17/mary-ads/dirty_region_templates.json",
+    "source_path": "docs/ps1/research/dirty_region_templates_2026-03-18/mary-ads.json",
+    "available": true,
+    "candidate_scene_indices": [
+      31,
+      32,
+      33,
+      34,
+      35
+    ],
+    "restore_candidate_ttm_count": 4
+  },
   "payload": {
     "path": "docs/ps1/research/compiled_packs_2026-03-17/mary-ads/pack_payload.bin",
     "alignment_bytes": 2048,
-    "payload_bytes": 1323008,
-    "resource_count": 47,
-    "padding_bytes": 49542,
-    "header_bytes": 1352,
+    "payload_bytes": 2054144,
+    "resource_count": 54,
+    "padding_bytes": 54114,
+    "header_bytes": 1548,
     "first_resource_offset": 2048,
     "staged_path": "jc_resources/packs/MARY.PAK",
     "staged_filename": "MARY.PAK",
@@ -607,6 +620,83 @@
       "sector_index": 644,
       "sector_count": 2,
       "sha256": "b4d59dbe8bfca6141d6715baaec3b0bb569483f854ce79efe71336f8e6eda04c"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN00.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN00.SCR",
+      "offset_bytes": 1323008,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 646,
+      "sector_count": 75,
+      "sha256": "377867e13fa5683d36d5bdedd1e55b0f1a26fe4e1271a7eab7401f2a7a452491"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN01.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN01.SCR",
+      "offset_bytes": 1476608,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 721,
+      "sector_count": 75,
+      "sha256": "06551ef375aaf9eb31d2d48a22aedfb2448727ffd4827e47d0bc154c3961422a"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN02.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN02.SCR",
+      "offset_bytes": 1630208,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 796,
+      "sector_count": 75,
+      "sha256": "9657e21fdc3bc36e847031cd5f743c9e36adb42b0cb9fe9b59be6ba815fe82db"
+    },
+    {
+      "resource_type": "scr",
+      "name": "NIGHT.SCR",
+      "source_path": "jc_resources/extracted/scr/NIGHT.SCR",
+      "offset_bytes": 1783808,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 871,
+      "sector_count": 75,
+      "sha256": "55da5ef584269b47aa49d5c97e747c26834cd1a45c2f75da1fecaf227b368271"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MRAFT.BMP",
+      "source_path": "jc_resources/extracted/bmp/MRAFT.BMP",
+      "offset_bytes": 1937408,
+      "size_bytes": 10616,
+      "aligned_size_bytes": 12288,
+      "sector_index": 946,
+      "sector_count": 6,
+      "sha256": "011cd73e41dc5ead9d3d43b3e07778cd9d4b4e763f1bb996406de30ce06689e9"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "BACKGRND.BMP",
+      "source_path": "jc_resources/extracted/bmp/BACKGRND.BMP",
+      "offset_bytes": 1949696,
+      "size_bytes": 92656,
+      "aligned_size_bytes": 94208,
+      "sector_index": 952,
+      "sector_count": 46,
+      "sha256": "7a4485d04b7105b144f0afaf9736abfc2139c1428f4b1a3265118e6ee59978de"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "HOLIDAY.BMP",
+      "source_path": "jc_resources/extracted/bmp/HOLIDAY.BMP",
+      "offset_bytes": 2043904,
+      "size_bytes": 8892,
+      "aligned_size_bytes": 10240,
+      "sector_index": 998,
+      "sector_count": 5,
+      "sha256": "3e24345bcef307aeb121d8a77261cee99237689a9e0a840d06daec5b5865436a"
     }
   ]
 }

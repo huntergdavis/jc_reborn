@@ -171,6 +171,34 @@ static int adsUseRestorePilotReplayPolicy(void)
 }
 
 #ifdef PS1_BUILD
+static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
+{
+    uint16 i;
+
+    if (pilot == NULL)
+        return;
+
+    for (i = 0; i < pilot->scrCount; i++) {
+        struct TScrResource *scrResource = findScrResource((char *)pilot->scrs[i]);
+        if (scrResource != NULL && scrResource->uncompressedData == NULL)
+            ps1_loadScrData(scrResource);
+    }
+
+    for (i = 0; i < pilot->sceneTtmCount; i++) {
+        struct TTtmResource *ttmResource = findTtmResource((char *)pilot->sceneTtms[i]);
+        if (ttmResource != NULL && ttmResource->uncompressedData == NULL)
+            ps1_loadTtmData(ttmResource);
+    }
+
+    for (i = 0; i < pilot->bmpCount; i++) {
+        struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
+        if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
+            ps1_loadBmpData(bmpResource);
+    }
+}
+#endif
+
+#ifdef PS1_BUILD
 #define ADS_THREAD_RUNNING 1
 #define ADS_THREAD_TERMINATED 2
 
@@ -1151,6 +1179,7 @@ void adsPlay(char *adsName, uint16 adsTag)
         if (adsResource->uncompressedData == NULL) {
             return;  /* ADS data load failed - skip scene */
         }
+        adsPrimeRestorePilotResources(adsFindActiveRestorePilot());
 #else
         char extractedPath[512];
         snprintf(extractedPath, sizeof(extractedPath), "extracted/ads/%s",

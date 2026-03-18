@@ -499,8 +499,8 @@ Current status:
   `STAND.ADS tags 1-3` cluster (`scene_index 38` origin), selected from the
   restore-candidate report with a `352x140` union rect owned by
   `MJAMBWLK.TTM` and `MJTELE.TTM`
-- that scene-level pilot now has a generated runtime-facing header
-  (`ps1_restore_pilot_spec.h`) derived from the offline pilot spec
+- the scene-level pilots now have a generated runtime-facing table
+  (`ps1_restore_pilots.h`) derived from the offline pilot specs
 - the first scene-scoped runtime consumer now exists in `ttm.c`: on
   the `STAND.ADS tags 1-3` pilot cluster, `CLEAR_SCREEN` can restore only the
   matching pilot-TTM rect for `MJAMBWLK.TTM` / `MJTELE.TTM`, rather than
@@ -514,6 +514,13 @@ Current status:
 - on that same `STAND.ADS tags 1-3` route, `ads.c` now disables replay merge,
   actor recovery, and handoff carry/injection so the pilot depends on the new
   restore contract rather than legacy replay continuity
+- that same scene-scoped pilot path is now generalized enough to cover
+  `JOHNNY.ADS tag 1` through the generated pilot table, and a forced
+  `JOHNNY.ADS 1` run still validates with `pilot_pack ... fallbacks=0`
+- the black-backed `MEANWHIL` clock card on the `JOHNNY` route was traced to
+  authored scene behavior in `MEANWHIL.TTM` (`SET_COLORS 5 5`,
+  `DRAW_RECT 0 0 640 350`, then repeated clock sprite draws), not to the new
+  restore/prefetch/pack path
 
 Deliverables:
 

@@ -60,7 +60,7 @@ extern void *memcpy(void *dest, const void *src, size_t n);
 #include "ads.h"
 #ifdef PS1_BUILD
 #include "ps1_debug.h"
-#include "ps1_restore_pilot_spec.h"
+#include "ps1_restore_pilots.h"
 #endif
 
 
@@ -138,22 +138,36 @@ static int adsStringEquals(const char *a, const char *b)
     return (*a == '\0' && *b == '\0');
 }
 
-static int adsIsRestorePilotAdsTag(uint16 adsTag)
+static int adsPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
 {
     int i;
-    for (i = 0; i < PS1_RESTORE_PILOT_ADS_TAG_COUNT; i++) {
-        if (gPs1RestorePilotAdsTags[i] == adsTag)
+    if (pilot == NULL)
+        return 0;
+    for (i = 0; i < pilot->adsTagCount; i++) {
+        if (pilot->adsTags[i] == adsTag)
             return 1;
     }
     return 0;
 }
 
+static const struct TPs1RestorePilot *adsFindActiveRestorePilot(void)
+{
+    int i;
+
+    for (i = 0; i < PS1_RESTORE_PILOT_COUNT; i++) {
+        const struct TPs1RestorePilot *pilot = &gPs1RestorePilots[i];
+        if (!adsStringEquals(ps1AdsCurrentName, pilot->adsName))
+            continue;
+        if (adsPilotContainsAdsTag(pilot, ps1AdsCurrentTag))
+            return pilot;
+    }
+
+    return NULL;
+}
+
 static int adsUseRestorePilotReplayPolicy(void)
 {
-    if (!adsStringEquals(ps1AdsCurrentName, PS1_RESTORE_PILOT_ADS_NAME))
-        return 0;
-
-    return adsIsRestorePilotAdsTag(ps1AdsCurrentTag);
+    return adsFindActiveRestorePilot() != NULL;
 }
 
 #ifdef PS1_BUILD

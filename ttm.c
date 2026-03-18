@@ -45,7 +45,7 @@ extern int fprintf(FILE *stream, const char *format, ...);
 #include "sound_ps1.h"
 #include "cdrom_ps1.h"
 #include "ads.h"
-#include "ps1_restore_pilot_spec.h"
+#include "ps1_restore_pilots.h"
 #else
 #include "graphics.h"
 #include "sound.h"
@@ -70,43 +70,63 @@ static int ttmStringEquals(const char *a, const char *b)
     return a[i] == b[i];
 }
 
-static const struct TPs1RestorePilotTtm *ttmFindRestorePilotTtm(const char *ttmName)
+static int ttmPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
 {
     uint16 i;
-    for (i = 0; i < PS1_RESTORE_PILOT_TTM_COUNT; i++) {
-        if (ttmStringEquals(gPs1RestorePilotTtms[i].ttmName, ttmName))
-            return &gPs1RestorePilotTtms[i];
-    }
-    return NULL;
-}
-
-static int ttmIsRestorePilotAdsTag(uint16 adsTag)
-{
-    uint16 i;
-    for (i = 0; i < PS1_RESTORE_PILOT_ADS_TAG_COUNT; i++) {
-        if (gPs1RestorePilotAdsTags[i] == adsTag)
+    if (pilot == NULL)
+        return 0;
+    for (i = 0; i < pilot->adsTagCount; i++) {
+        if (pilot->adsTags[i] == adsTag)
             return 1;
     }
     return 0;
 }
 
+static const struct TPs1RestorePilot *ttmFindActiveRestorePilot(void)
+{
+    uint16 i;
+
+    for (i = 0; i < PS1_RESTORE_PILOT_COUNT; i++) {
+        const struct TPs1RestorePilot *pilot = &gPs1RestorePilots[i];
+        if (!ttmStringEquals(ps1AdsCurrentName, pilot->adsName))
+            continue;
+        if (ttmPilotContainsAdsTag(pilot, ps1AdsCurrentTag))
+            return pilot;
+    }
+
+    return NULL;
+}
+
+static const struct TPs1RestorePilotTtm *ttmFindRestorePilotTtm(const struct TPs1RestorePilot *pilot,
+                                                                const char *ttmName)
+{
+    uint16 i;
+    if (pilot == NULL)
+        return NULL;
+    for (i = 0; i < pilot->ttmCount; i++) {
+        if (ttmStringEquals(pilot->ttms[i].ttmName, ttmName))
+            return &pilot->ttms[i];
+    }
+    return NULL;
+}
+
 static int ttmApplyRestorePilotClear(struct TTtmThread *ttmThread, uint16 regionId)
 {
     const struct TTtmResource *ttmResource;
+    const struct TPs1RestorePilot *pilot;
     const struct TPs1RestorePilotTtm *pilotTtm;
 
     if (ttmThread == NULL || ttmThread->ttmSlot == NULL)
         return 0;
-    if (!ttmStringEquals(ps1AdsCurrentName, PS1_RESTORE_PILOT_ADS_NAME))
-        return 0;
-    if (!ttmIsRestorePilotAdsTag(ps1AdsCurrentTag))
+    pilot = ttmFindActiveRestorePilot();
+    if (pilot == NULL)
         return 0;
 
     ttmResource = ttmThread->ttmSlot->ttmResource;
     if (ttmResource == NULL || ttmResource->resName == NULL)
         return 0;
 
-    pilotTtm = ttmFindRestorePilotTtm(ttmResource->resName);
+    pilotTtm = ttmFindRestorePilotTtm(pilot, ttmResource->resName);
     if (pilotTtm == NULL || pilotTtm->clearRegionId != regionId)
         return 0;
 
@@ -121,21 +141,21 @@ static int ttmApplyRestorePilotClear(struct TTtmThread *ttmThread, uint16 region
 static int ttmApplyRestorePilotSaveImage1(struct TTtmThread *ttmThread)
 {
     const struct TTtmResource *ttmResource;
+    const struct TPs1RestorePilot *pilot;
     const struct TPs1RestorePilotTtm *pilotTtm;
 
     if (ttmThread == NULL || ttmThread->ttmSlot == NULL)
         return 0;
-    if (!ttmStringEquals(ps1AdsCurrentName, PS1_RESTORE_PILOT_ADS_NAME))
-        return 0;
-    if (!ttmIsRestorePilotAdsTag(ps1AdsCurrentTag))
+    pilot = ttmFindActiveRestorePilot();
+    if (pilot == NULL)
         return 0;
 
     ttmResource = ttmThread->ttmSlot->ttmResource;
     if (ttmResource == NULL || ttmResource->resName == NULL)
         return 0;
 
-    pilotTtm = ttmFindRestorePilotTtm(ttmResource->resName);
-    if (pilotTtm == NULL || pilotTtm->clearRegionId != ttmThread->currentRegionId)
+    pilotTtm = ttmFindRestorePilotTtm(pilot, ttmResource->resName);
+    if (pilotTtm == NULL || pilotTtm->saveImageRegionId != ttmThread->currentRegionId)
         return 0;
 
     grSaveImage1(ttmThread->ttmLayer,

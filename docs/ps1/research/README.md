@@ -69,17 +69,21 @@ The current scene-level pilot picked from that process is now documented in:
 - [restore_candidate_report_2026-03-18.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_candidate_report_2026-03-18.json)
 - [restore_pilot_spec_2026-03-18.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_pilot_spec_2026-03-18.json)
 
-Right now the strongest narrow target is the compatible `STAND.ADS tags 1-3`
-cluster, which has only one BMP, two TTM owners, and a `352x140` restore
-envelope.
+Right now the active narrow targets are:
 
-That pilot now also has a generated C-side artifact:
+- `STAND.ADS tags 1-3`, which has only one BMP, two TTM owners, and a
+  `352x140` restore envelope
+- `JOHNNY.ADS tag 1`, which reuses the same generated-contract path through the
+  `MEANWHIL.TTM`, `SJMSSGE.TTM`, `SJWORK.TTM`, and `THEEND.TTM` cluster
 
-- [ps1_restore_pilot_spec.h](/home/hunter/workspace/jc_reborn/ps1_restore_pilot_spec.h)
+Those pilots now have a generated C-side artifact:
 
-It is emitted from [generate-restore-pilot-header.py](/home/hunter/workspace/jc_reborn/scripts/generate-restore-pilot-header.py)
-using the JSON pilot spec, so the next runtime slice can consume checked-in
-constants instead of reaching back into research JSON by hand.
+- [ps1_restore_pilots.h](/home/hunter/workspace/jc_reborn/ps1_restore_pilots.h)
+
+It is emitted from [generate-restore-pilots-header.py](/home/hunter/workspace/jc_reborn/scripts/generate-restore-pilots-header.py)
+using the checked-in JSON pilot specs, so the runtime can consume a small table
+of validated scene contracts instead of reaching back into research JSON by
+hand.
 
 That next slice is now in place in narrowly-scoped form: `ttm.c` has a
 scene-scoped `CLEAR_SCREEN` pilot hook for the `STAND.ADS tags 1-3` pilot
@@ -103,6 +107,16 @@ recovery, or handoff carry/injection as a correctness mechanism. A fresh forced
 this is the first route where the scene-scoped restore contract is beginning to
 replace the older replay-resurrection model instead of merely coexisting with
 it.
+
+That same replay-policy cut now also goes through the `JOHNNY.ADS tag 1`
+pilot via the shared generated pilot table. A fresh forced
+`JOHNNY.ADS 1` run still held with `pilot_pack ... fallbacks=0`.
+
+One useful validation note from that route: the black-backed clock in the
+`MEANWHIL` sequence is not a new restore regression. The original
+`MEANWHIL.TTM` script explicitly issues `DRAW_RECT 0 0 640 350` after
+`SET_COLORS 5 5`, then repeatedly draws the clock backing sprite. So that card
+is authored scene behavior, not a pack-path failure.
 
 ## Current facts from the repo
 

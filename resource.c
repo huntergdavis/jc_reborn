@@ -918,3 +918,7 @@ void checkMemoryBudget(void) {
 size_t getTotalMemoryUsed(void) {
     return totalMemoryUsed;
 }
+
+size_t getMemoryBudget(void) {
+    return memoryBudget;
+}

@@ -1,0 +1,434 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "compiled_scene_pack",
+  "pack_id": "activity-ads",
+  "source_manifest": "docs/ps1/research/scene_pack_manifests_2026-03-17/activity-ads.json",
+  "pack_strategy": "ads_cluster",
+  "cluster_key": "ACTIVITY.ADS",
+  "ads_names": [
+    "ACTIVITY.ADS"
+  ],
+  "scene_indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "runtime_requirements": {
+    "max_concurrent_threads": 20,
+    "max_sprite_frames": 244,
+    "peak_memory_bytes": 436592,
+    "memory_components": {
+      "bmp_indexed_bytes": 263096,
+      "ttm_bytes": 18862,
+      "ads_bytes": 2558,
+      "scr_bytes": 112000,
+      "sprite_pointer_bytes": 976,
+      "ttm_slot_overhead_bytes": 49152
+    }
+  },
+  "transition_hints": {
+    "likely_next_pack_ids": [
+      "building-ads"
+    ],
+    "high_churn_transitions": [
+      {
+        "from_scene_index": 9,
+        "to_scene_index": 10,
+        "to_pack_id": "building-ads",
+        "total_resource_churn": 27,
+        "peak_memory_delta_bytes": 15672
+      }
+    ],
+    "transition_budget_notes": "Derived from analyzer post-processing; not runtime-validated."
+  },
+  "prefetch_hints": {
+    "candidate_scene_indices": [
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16
+    ],
+    "additional_bmps": [
+      "FIRE.BMP",
+      "FIRE1.BMP",
+      "FIRE2.BMP",
+      "FIRE3.BMP",
+      "FIRE4.BMP",
+      "GJBIPLAN.BMP",
+      "GJCASTLE.BMP",
+      "GJKINGKO.BMP",
+      "GJRUNAWA.BMP",
+      "LILIPUTS.BMP",
+      "MJSANDC.BMP",
+      "SANDCAST.BMP",
+      "SHIPS.BMP",
+      "SLEEP.BMP",
+      "SPLASH.BMP",
+      "STNDLAY.BMP"
+    ],
+    "additional_scrs": [],
+    "additional_ttms": [
+      "GJGULIVR.TTM",
+      "MJFIRE.TTM",
+      "MJSAND.TTM"
+    ],
+    "heuristic": "transition_churn_then_ads_family_union",
+    "confidence": "low"
+  },
+  "payload": {
+    "path": "docs/ps1/research/compiled_packs_2026-03-17/activity-ads/pack_payload.bin",
+    "alignment_bytes": 2048,
+    "payload_bytes": 901120,
+    "resource_count": 30,
+    "padding_bytes": 31116,
+    "header_bytes": 876,
+    "first_resource_offset": 2048,
+    "staged_path": "jc_resources/packs/ACTIVITY.PAK",
+    "staged_filename": "ACTIVITY.PAK",
+    "prefetch_ads_names": [
+      "BUILDING.ADS"
+    ]
+  },
+  "entries": [
+    {
+      "resource_type": "ads",
+      "name": "ACTIVITY.ADS",
+      "source_path": "jc_resources/extracted/ads/ACTIVITY.ADS",
+      "offset_bytes": 2048,
+      "size_bytes": 2558,
+      "aligned_size_bytes": 4096,
+      "sector_index": 1,
+      "sector_count": 2,
+      "sha256": "61f45e0c9c092a9eecf0d3344b41d232376e3ecd997fd64934a80cf2779cbab9"
+    },
+    {
+      "resource_type": "scr",
+      "name": "ISLETEMP.SCR",
+      "source_path": "jc_resources/extracted/scr/ISLETEMP.SCR",
+      "offset_bytes": 6144,
+      "size_bytes": 112000,
+      "aligned_size_bytes": 112640,
+      "sector_index": 3,
+      "sector_count": 55,
+      "sha256": "656b9ac4e65fe5baf1d980b5c35fdcd966094f24123e1cf34d988eaefa14bf2d"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "GJDIVE.TTM",
+      "source_path": "jc_resources/extracted/ttm/GJDIVE.TTM",
+      "offset_bytes": 118784,
+      "size_bytes": 4244,
+      "aligned_size_bytes": 6144,
+      "sector_index": 58,
+      "sector_count": 3,
+      "sha256": "00e9497dd38cb4f07c8cba1bddc0cc7060e8985bab04aa53b8833977cdbea16c"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "GJNAT1.TTM",
+      "source_path": "jc_resources/extracted/ttm/GJNAT1.TTM",
+      "offset_bytes": 124928,
+      "size_bytes": 7186,
+      "aligned_size_bytes": 8192,
+      "sector_index": 61,
+      "sector_count": 4,
+      "sha256": "54587e398cdcfdf1a675ddf785a76e1fdf108ac846970c7766a8bf755ccf51bf"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "GJNAT3.TTM",
+      "source_path": "jc_resources/extracted/ttm/GJNAT3.TTM",
+      "offset_bytes": 133120,
+      "size_bytes": 11676,
+      "aligned_size_bytes": 12288,
+      "sector_index": 65,
+      "sector_count": 6,
+      "sha256": "bbe532eb8192ce5a0a18c31902afc56fc2db62847b0190b3ea56e341e589157f"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJBATH.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJBATH.TTM",
+      "offset_bytes": 145408,
+      "size_bytes": 5108,
+      "aligned_size_bytes": 6144,
+      "sector_index": 71,
+      "sector_count": 3,
+      "sha256": "ec4b034c0ee7fd758f6861ac68e1544302e1ab0901c73449ebc7c40c61d10f07"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJDIVE.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJDIVE.TTM",
+      "offset_bytes": 151552,
+      "size_bytes": 3034,
+      "aligned_size_bytes": 4096,
+      "sector_index": 74,
+      "sector_count": 2,
+      "sha256": "ea9bec31eb19cd9b6603750fd76f3bed9fa99337a4003c441d7444395b63d1cc"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJREAD.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJREAD.TTM",
+      "offset_bytes": 155648,
+      "size_bytes": 8810,
+      "aligned_size_bytes": 10240,
+      "sector_index": 76,
+      "sector_count": 5,
+      "sha256": "09035b35f526ca4e6bc76dd392999860ecd749c61ddaf00b2ada829d63e55c85"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "TRUNK.BMP",
+      "source_path": "jc_resources/extracted/bmp/TRUNK.BMP",
+      "offset_bytes": 165888,
+      "size_bytes": 7440,
+      "aligned_size_bytes": 8192,
+      "sector_index": 81,
+      "sector_count": 4,
+      "sha256": "6cdb78f47f0de158ea1fd143dfcca32cc42312a2e48a6ccba9b1259ecebc3afa"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJGULL1.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJGULL1.BMP",
+      "offset_bytes": 174080,
+      "size_bytes": 17000,
+      "aligned_size_bytes": 18432,
+      "sector_index": 85,
+      "sector_count": 9,
+      "sha256": "6eea8f9aba19fdd7bdfc51aa9d00c0c082dd845b846fb311a9bc9c53a184a3e7"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "JOHNWALK.BMP",
+      "source_path": "jc_resources/extracted/bmp/JOHNWALK.BMP",
+      "offset_bytes": 192512,
+      "size_bytes": 48476,
+      "aligned_size_bytes": 49152,
+      "sector_index": 94,
+      "sector_count": 24,
+      "sha256": "02685f6036438814ef61e71554883c538428878c61841f1035af14c051ff09f4"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "LITEBULB.BMP",
+      "source_path": "jc_resources/extracted/bmp/LITEBULB.BMP",
+      "offset_bytes": 241664,
+      "size_bytes": 5216,
+      "aligned_size_bytes": 6144,
+      "sector_index": 118,
+      "sector_count": 3,
+      "sha256": "c9bf50e00a0fa27145419bedb8d8bf045f3a14e62c080ebc78f9dcd157f374f8"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "COCONUTS.BMP",
+      "source_path": "jc_resources/extracted/bmp/COCONUTS.BMP",
+      "offset_bytes": 247808,
+      "size_bytes": 852,
+      "aligned_size_bytes": 2048,
+      "sector_index": 121,
+      "sector_count": 1,
+      "sha256": "f125acd70bb63257e65763151f4dc85fd1173d08d874dd0c4450d09186ab52e5"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJGULL1A.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJGULL1A.BMP",
+      "offset_bytes": 249856,
+      "size_bytes": 38568,
+      "aligned_size_bytes": 38912,
+      "sector_index": 122,
+      "sector_count": 19,
+      "sha256": "8c052a9e2d8fa608e5105a76f88e08d5dbe32d7d746f7d763d23474d6848838b"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJGULL3.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJGULL3.BMP",
+      "offset_bytes": 288768,
+      "size_bytes": 43268,
+      "aligned_size_bytes": 45056,
+      "sector_index": 141,
+      "sector_count": 22,
+      "sha256": "0b5236371aae5829cc66779d107d0f831a093a4991c65cf1114ea34b2413a3f4"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJGULL3A.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJGULL3A.BMP",
+      "offset_bytes": 333824,
+      "size_bytes": 56808,
+      "aligned_size_bytes": 57344,
+      "sector_index": 163,
+      "sector_count": 28,
+      "sha256": "81cdf5b7e0b83a4058b955647b359f98704538fde6e4bbea4f503e1e6709afed"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "JCHANGE.BMP",
+      "source_path": "jc_resources/extracted/bmp/JCHANGE.BMP",
+      "offset_bytes": 391168,
+      "size_bytes": 7400,
+      "aligned_size_bytes": 8192,
+      "sector_index": 191,
+      "sector_count": 4,
+      "sha256": "da5468e7febe0047cad002b64e2b07a0553cb0cbcfa98d7dd792c1c48dd277d0"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJREAD.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJREAD.BMP",
+      "offset_bytes": 399360,
+      "size_bytes": 45272,
+      "aligned_size_bytes": 47104,
+      "sector_index": 195,
+      "sector_count": 23,
+      "sha256": "5c32363e79322c20f189ecdf3b43e63d55a7408c2a85618abcb5c8e339be52eb"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "ZZZZS.BMP",
+      "source_path": "jc_resources/extracted/bmp/ZZZZS.BMP",
+      "offset_bytes": 446464,
+      "size_bytes": 196,
+      "aligned_size_bytes": 2048,
+      "sector_index": 218,
+      "sector_count": 1,
+      "sha256": "bb7990ddead6ad74e33a04c3e4562415069387e259518fbcdd3e4f8aae9d231c"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJGULL2.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJGULL2.BMP",
+      "offset_bytes": 448512,
+      "size_bytes": 28548,
+      "aligned_size_bytes": 28672,
+      "sector_index": 219,
+      "sector_count": 14,
+      "sha256": "8606296298512e73f3c80b5c9c1970ef4d09cb54ddd4e70006402e2165bfc300"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJGULL2A.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJGULL2A.BMP",
+      "offset_bytes": 477184,
+      "size_bytes": 14128,
+      "aligned_size_bytes": 14336,
+      "sector_index": 233,
+      "sector_count": 7,
+      "sha256": "ea087e6eb23c1d77861d254c61e269f680b1233116c1e77b900a4a1f7f545b99"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJHOT.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJHOT.BMP",
+      "offset_bytes": 491520,
+      "size_bytes": 34312,
+      "aligned_size_bytes": 34816,
+      "sector_index": 240,
+      "sector_count": 17,
+      "sha256": "88dfd3ec9e23369abd1a4a2ed27e0b4e18d452d8d4eaa6c1937b47257c98169d"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJNAT1.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJNAT1.BMP",
+      "offset_bytes": 526336,
+      "size_bytes": 53652,
+      "aligned_size_bytes": 55296,
+      "sector_index": 257,
+      "sector_count": 27,
+      "sha256": "e548e2640a6732a202bd5913f21928c24966ba1e81e0b6bd7aaa068fe16c985a"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJNAT1LI.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJNAT1LI.BMP",
+      "offset_bytes": 581632,
+      "size_bytes": 35952,
+      "aligned_size_bytes": 36864,
+      "sector_index": 284,
+      "sector_count": 18,
+      "sha256": "c3835101cb62b4710f2843290eb61f104af8ff0d13ecb4352aca3bdb27379eb3"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MEXCWALK.BMP",
+      "source_path": "jc_resources/extracted/bmp/MEXCWALK.BMP",
+      "offset_bytes": 618496,
+      "size_bytes": 11716,
+      "aligned_size_bytes": 12288,
+      "sector_index": 302,
+      "sector_count": 6,
+      "sha256": "fc07db64fc1e22bd6e5561da494513ffe2ca715cfaf101f31d326e4d039efdb4"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJBATH.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJBATH.BMP",
+      "offset_bytes": 630784,
+      "size_bytes": 53664,
+      "aligned_size_bytes": 55296,
+      "sector_index": 308,
+      "sector_count": 27,
+      "sha256": "678821184e81e03d6bbc38e6d00897ff1df86911d0dc1fb7295611bef36adf2e"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJDIVE.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJDIVE.BMP",
+      "offset_bytes": 686080,
+      "size_bytes": 40128,
+      "aligned_size_bytes": 40960,
+      "sector_index": 335,
+      "sector_count": 20,
+      "sha256": "e1e4818f67d1bf0dc5816e571c2b58f93dadb1c8d70b37f4354107e3ed4b791d"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "BOAT.BMP",
+      "source_path": "jc_resources/extracted/bmp/BOAT.BMP",
+      "offset_bytes": 727040,
+      "size_bytes": 7564,
+      "aligned_size_bytes": 8192,
+      "sector_index": 355,
+      "sector_count": 4,
+      "sha256": "9cd0bf9bf9e3c932e78239994dc9e3908b3782c0206a0bc489c3d0f1630f8e58"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJDIVE.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJDIVE.BMP",
+      "offset_bytes": 735232,
+      "size_bytes": 83296,
+      "aligned_size_bytes": 83968,
+      "sector_index": 359,
+      "sector_count": 41,
+      "sha256": "cf814972cb7de465af735d2589ba88d0c3a9aa0dbdf6a5b277a3896a6478e444"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "GJNAT3.BMP",
+      "source_path": "jc_resources/extracted/bmp/GJNAT3.BMP",
+      "offset_bytes": 819200,
+      "size_bytes": 79884,
+      "aligned_size_bytes": 81920,
+      "sector_index": 400,
+      "sector_count": 40,
+      "sha256": "6e13f69b8618ccc9fc738b6bc38a46e2f851ec1d35e750071879d9d385d9b9be"
+    }
+  ]
+}

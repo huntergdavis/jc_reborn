@@ -27,19 +27,33 @@
 #include "mytypes.h"
 #include "utils.h"
 #include "config.h"
+extern int rand(void);
 
-/* PS1: No config file persistence - just use defaults */
+/* PS1: Keep config in-memory for this process lifetime. */
+static struct TConfig ps1ConfigState = { 1, 180 };
+static int ps1ConfigInitialized = 0;
+
 void cfgFileWrite(struct TConfig *cfg)
 {
-    /* No-op on PS1 - no writable filesystem */
-    (void)cfg;
+    if (cfg == NULL)
+        return;
+
+    ps1ConfigState = *cfg;
+    ps1ConfigInitialized = 1;
 }
 
 void cfgFileRead(struct TConfig *cfg)
 {
-    /* Return defaults on PS1 */
-    cfg->currentDay = 1;  /* Start on day 1 of the story */
-    cfg->date       = 180;  /* Mid-year (matches getDayOfYear) */
+    if (cfg == NULL)
+        return;
+
+    if (!ps1ConfigInitialized) {
+        ps1ConfigState.currentDay = 1 + (rand() % 11);
+        ps1ConfigState.date = getDayOfYear();
+        ps1ConfigInitialized = 1;
+    }
+
+    *cfg = ps1ConfigState;
 }
 
 #else
@@ -128,4 +142,3 @@ void cfgFileRead(struct TConfig *cfg)
     }
 }
 #endif
-

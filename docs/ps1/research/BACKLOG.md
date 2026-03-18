@@ -10,6 +10,12 @@ Goal:
 Turn the existing scene analyzer into a machine-readable build input for offline
 compilation decisions.
 
+Current first consumer:
+
+- [scripts/plan-scene-packs.py](/home/hunter/workspace/jc_reborn/scripts/plan-scene-packs.py)
+- [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_plan_2026-03-17.json)
+- [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_manifests_2026-03-17)
+
 Deliverables:
 
 - `--json` or `--csv` output mode for:
@@ -95,6 +101,7 @@ Deliverables:
 - pack manifest schema
 - CD layout strategy
 - transition and prefetch metadata fields
+- post-processing tool for analyzer-derived transition/prefetch planning output
 
 Pack contents should likely include:
 
@@ -104,6 +111,12 @@ Pack contents should likely include:
 - thread maxima
 - residency envelope
 - likely next-pack links
+
+Useful current artifacts:
+
+- [scene-transition-prefetch-report.py](/home/hunter/workspace/jc_reborn/scripts/scene-transition-prefetch-report.py)
+- [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.json)
+- [TRANSITION_PREFETCH_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/TRANSITION_PREFETCH_SCHEMA.md)
 
 ## Track 5: Streaming and CD layout study
 

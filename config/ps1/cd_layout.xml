@@ -23,6 +23,7 @@
 
             <!-- Title screen - raw 15-bit pixels for early loading -->
             <file name="TITLE.RAW" type="data" source="../../TITLE.RAW"/>
+            <file name="BOOTMODE.TXT" type="data" source="../../config/ps1/BOOTMODE.TXT"/>
 
             <!-- Original Sierra resource files (for metadata parsing) -->
             <file name="RESOURCE.MAP" type="data" source="../../jc_resources/RESOURCE.MAP"/>
@@ -239,6 +240,20 @@
                 <file name="SOUND22.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND22.VAG"/>
                 <file name="SOUND23.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND23.VAG"/>
                 <file name="SOUND24.VAG" type="data" source="../../jc_resources/extracted/snd/SOUND24.VAG"/>
+            </dir>
+
+            <!-- Compiled scene packs -->
+            <dir name="PACKS">
+                <file name="ACTIVITY.PAK" type="data" source="../../jc_resources/packs/ACTIVITY.PAK"/>
+                <file name="BUILDING.PAK" type="data" source="../../jc_resources/packs/BUILDING.PAK"/>
+                <file name="FISHING.PAK" type="data" source="../../jc_resources/packs/FISHING.PAK"/>
+                <file name="JOHNNY.PAK" type="data" source="../../jc_resources/packs/JOHNNY.PAK"/>
+                <file name="MARY.PAK" type="data" source="../../jc_resources/packs/MARY.PAK"/>
+                <file name="MISCGAG.PAK" type="data" source="../../jc_resources/packs/MISCGAG.PAK"/>
+                <file name="STAND.PAK" type="data" source="../../jc_resources/packs/STAND.PAK"/>
+                <file name="SUZY.PAK" type="data" source="../../jc_resources/packs/SUZY.PAK"/>
+                <file name="VISITOR.PAK" type="data" source="../../jc_resources/packs/VISITOR.PAK"/>
+                <file name="WALKSTUF.PAK" type="data" source="../../jc_resources/packs/WALKSTUF.PAK"/>
             </dir>
 
             <!-- Pre-extracted ADS files (scene scripts) -->

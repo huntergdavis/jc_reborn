@@ -32,6 +32,7 @@ typedef struct _FILE FILE;
 
 #include "utils.h"
 #include "graphics_ps1.h"
+#include "ads.h"
 #include "resource.h"
 #include "events_ps1.h"
 #include "cdrom_ps1.h"
@@ -82,6 +83,16 @@ static uint16 *bgTile1Clean = NULL;
 static uint16 *bgTile3Clean = NULL;
 static uint16 *bgTile4Clean = NULL;
 
+struct TPs1SavedZone {
+    uint16 x;
+    uint16 y;
+    uint16 width;
+    uint16 height;
+    uint8 valid;
+};
+
+static struct TPs1SavedZone grPs1SavedZone = {0, 0, 0, 0, 0};
+
 /* Global variables matching original implementation */
 int grDx = 0;
 int grDy = 0;
@@ -102,7 +113,6 @@ int grPs1TelemetryEnabled = 1;
 
 /* Persistent debug counters for sprite/frame clipping diagnostics. */
 static uint32 gStatThreadDrops = 0;
-static uint32 gStatReplayDrops = 0;
 static uint32 gStatBmpFrameCapHits = 0;
 static uint32 gStatBmpShortLoads = 0;
 static uint16 gStatBmpMaxRequested = 0;
@@ -121,41 +131,24 @@ extern uint16 ps1StoryDbgNextHdg;
 extern uint16 ps1StoryDbgSeq;
 extern uint16 ps1AdsDbgActiveThreads;
 extern uint16 ps1AdsDbgMini;
-extern uint16 ps1AdsDbgStalledFrames;
-extern uint16 ps1AdsDbgProgressPulse;
+extern uint16 ps1AdsDbgRunningThreads;
+extern uint16 ps1AdsDbgTerminatedThreads;
 extern uint16 ps1AdsDbgSceneSlot;
 extern uint16 ps1AdsDbgSceneTag;
 extern uint16 ps1AdsDbgReplayCount;
-extern uint16 ps1AdsDbgRunningThreads;
-extern uint16 ps1AdsDbgTerminatedThreads;
-extern uint16 ps1AdsDbgThreadTimer;
-extern uint16 ps1AdsDbgThreadDelay;
 extern uint16 ps1AdsDbgReplayTryFrame;
 extern uint16 ps1AdsDbgReplayDrawFrame;
-extern uint16 ps1AdsDbgReplayRejectEpoch;
-extern uint16 ps1AdsDbgReplayRejectGen;
-extern uint16 ps1AdsDbgReplayRejectSlot;
-extern uint16 ps1AdsDbgReplayRejectSprite;
-extern uint16 ps1AdsDbgReplayFlipFrame;
-extern uint16 ps1AdsDbgSceneSeq;
-extern uint16 ps1AdsDbgSceneFrames;
-extern uint16 ps1AdsDbgSceneTry;
-extern uint16 ps1AdsDbgSceneDraw;
-extern uint16 ps1AdsDbgSceneRejectEpoch;
-extern uint16 ps1AdsDbgSceneRejectGen;
-extern uint16 ps1AdsDbgSceneRejectSlot;
-extern uint16 ps1AdsDbgSceneRejectSprite;
-extern uint16 ps1AdsDbgSceneStallMax;
-extern uint16 ps1AdsDbgNoDrawStreak;
+extern uint16 ps1AdsDbgMergeCarryFrame;
+extern uint16 ps1AdsDbgNoDrawThreadsFrame;
+extern uint16 ps1AdsDbgPlayedThreadsFrame;
+extern uint16 ps1AdsDbgRecordedSpritesFrame;
+extern uint16 ps1PilotDbgActivePack;
+extern uint16 ps1PilotDbgHits;
+extern uint16 ps1PilotDbgFallbacks;
 
 void grPs1StatThreadDrop(void)
 {
     if (gStatThreadDrops < 0xFFFFFFFFU) gStatThreadDrops++;
-}
-
-void grPs1StatReplayDrop(void)
-{
-    if (gStatReplayDrops < 0xFFFFFFFFU) gStatReplayDrops++;
 }
 
 void grPs1StatBmpFrameCap(uint16 requested, uint16 cap)
@@ -213,16 +206,14 @@ static void grRefreshLoadedResourceCounters(void)
 static void grDrawDropDiagnostics(void)
 {
     /* Visual overlay (top-left) so long-run screenshots can confirm clipping/drops:
-     * red=thread drops, yellow=replay drops, magenta=BMP frame caps, cyan=short loads. */
+     * red=thread drops, magenta=BMP frame caps, cyan=short loads. */
     grDrawCounterBar(2, 2, 148, 16, 0x0000); /* black panel */
 
     int w0 = (gStatThreadDrops > 140U) ? 140 : (int)gStatThreadDrops;
-    int w1 = (gStatReplayDrops > 140U) ? 140 : (int)gStatReplayDrops;
     int w2 = (gStatBmpFrameCapHits > 140U) ? 140 : (int)gStatBmpFrameCapHits;
     int w3 = (gStatBmpShortLoads > 140U) ? 140 : (int)gStatBmpShortLoads;
 
     if (w0) grDrawCounterBar(6, 4, w0, 2, 0x001F);
-    if (w1) grDrawCounterBar(6, 7, w1, 2, 0x03FF);
     if (w2) grDrawCounterBar(6, 10, w2, 2, 0x7C1F);
     if (w3) grDrawCounterBar(6, 13, w3, 2, 0x7FE0);
 
@@ -282,6 +273,7 @@ static void grDrawMemoryDiagnostics(void)
     grDrawCounterBar(x + 2, y + 16, budgetScaled, rowH, 0x4210);
 }
 
+
 static void grDrawStoryDiagnostics(void)
 {
     /* Bottom-left persistent transition state panel:
@@ -308,73 +300,60 @@ static void grDrawStoryDiagnostics(void)
     }
 }
 
+static void grDrawPilotPackDiagnostics(void)
+{
+    /* Top-left pilot compiled-pack panel, below the drop diagnostics with a gap:
+     * row0 white: active pilot pack id
+     * row1 green: cumulative pack hits
+     * row2 red  : cumulative fallback loads after pack-first lookup */
+    int x = 2;
+    int y = 30;
+    int panelW = 96;
+    int rowH = 3;
+
+    grDrawCounterBar(x, y, panelW, 12, 0x0000);
+    grDrawCounterBar(x + 2, y + 1, (ps1PilotDbgActivePack & 0x3F), rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 4, (ps1PilotDbgHits & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 7, (ps1PilotDbgFallbacks & 0x3F), rowH, 0x001F);
+}
+
 static void grDrawAdsFreezeDiagnostics(void)
 {
-    /* Mid-left ADS telemetry:
-     * row0 blue  : active threads
-     * row1 white : mini timer
-     * row2 red   : stalled frames
-     * row3 green : progress pulse
-     * row4 yellow: scene slot/tag signature
-     * row5 magenta: replay count
-     * row6 cyan   : running thread count
-     * row7 red    : terminated thread count
-     * row8 white  : first active timer
-     * row9 gray   : first active delay
-     * row10 green : grUpdateDelay (frame wait)
-     * row11 white : replay attempts (this frame)
-     * row12 green : replay draws applied (this frame)
-     * row13 red   : replay epoch rejects (this frame)
-     * row14 magenta: replay slotGen rejects (this frame)
-     * row15 cyan  : replay slot rejects (this frame)
-     * row16 yellow: replay sprite-null rejects (this frame)
-     * row17 blue  : replay flipped draws (this frame)
-     * row18 gray  : scene sequence id
-     * row19 white : scene frames
-     * row20 cyan  : scene replay tries
-     * row21 green : scene replay draws
-     * row22 red   : scene epoch rejects
-     * row23 magenta: scene slotGen rejects
-     * row24 cyan  : scene slot rejects
-     * row25 yellow: scene sprite rejects
-     * row26 white : scene max stall frames
-     * row27 red   : no-draw streak */
+    /* Mid-left ADS telemetry (kept globals only):
+     * row0 blue   : active threads
+     * row1 white  : mini timer
+     * row2 yellow : scene slot/tag signature
+     * row3 magenta: replay count
+     * row4 cyan   : running thread count
+     * row5 green  : grUpdateDelay (frame wait)
+     * row6 white  : replay tries this frame
+     * row7 green  : replay draws this frame
+     * row8 magenta: merged carry-forward draws
+     * row9 red    : played threads with zero draws
+     * row10 cyan  : threads played this frame
+     * row11 yellow: total recorded sprites this frame
+     * row12 red   : terminated thread count */
     int x = 2;
     int y = 90;
     int panelW = 96;
     int rowH = 3;
 
-    grDrawCounterBar(x, y, panelW, 86, 0x0000);
+    grDrawCounterBar(x, y, panelW, 41, 0x0000);
     grDrawCounterBar(x + 2, y + 1,  (ps1AdsDbgActiveThreads & 0x3F), rowH, 0x03FF);
     grDrawCounterBar(x + 2, y + 4,  (ps1AdsDbgMini & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 7,  ((ps1AdsDbgStalledFrames >> 2) & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 10, (ps1AdsDbgProgressPulse & 0x3F), rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 13,
+    grDrawCounterBar(x + 2, y + 7,
                      (((ps1AdsDbgSceneSlot & 0x7) << 3) | (ps1AdsDbgSceneTag & 0x7)) & 0x3F,
                      rowH, 0x03FF);
-    grDrawCounterBar(x + 2, y + 16, (ps1AdsDbgReplayCount & 0x3F), rowH, 0x7C1F);
-    grDrawCounterBar(x + 2, y + 19, (ps1AdsDbgRunningThreads & 0x3F), rowH, 0x03FF);
-    grDrawCounterBar(x + 2, y + 22, (ps1AdsDbgTerminatedThreads & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 25, (ps1AdsDbgThreadTimer & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 28, (ps1AdsDbgThreadDelay & 0x3F), rowH, 0x4210);
-    grDrawCounterBar(x + 2, y + 31, (grUpdateDelay & 0x3F), rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 34, (ps1AdsDbgReplayTryFrame & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 37, (ps1AdsDbgReplayDrawFrame & 0x3F), rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 40, (ps1AdsDbgReplayRejectEpoch & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 43, (ps1AdsDbgReplayRejectGen & 0x3F), rowH, 0x7C1F);
-    grDrawCounterBar(x + 2, y + 46, (ps1AdsDbgReplayRejectSlot & 0x3F), rowH, 0x03FF);
-    grDrawCounterBar(x + 2, y + 49, (ps1AdsDbgReplayRejectSprite & 0x3F), rowH, 0x7FE0);
-    grDrawCounterBar(x + 2, y + 52, (ps1AdsDbgReplayFlipFrame & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 55, (ps1AdsDbgSceneSeq & 0x3F), rowH, 0x4210);
-    grDrawCounterBar(x + 2, y + 58, (ps1AdsDbgSceneFrames & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 61, (ps1AdsDbgSceneTry & 0x3F), rowH, 0x03FF);
-    grDrawCounterBar(x + 2, y + 64, (ps1AdsDbgSceneDraw & 0x3F), rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 67, (ps1AdsDbgSceneRejectEpoch & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 70, (ps1AdsDbgSceneRejectGen & 0x3F), rowH, 0x7C1F);
-    grDrawCounterBar(x + 2, y + 73, (ps1AdsDbgSceneRejectSlot & 0x3F), rowH, 0x03FF);
-    grDrawCounterBar(x + 2, y + 76, (ps1AdsDbgSceneRejectSprite & 0x3F), rowH, 0x7FE0);
-    grDrawCounterBar(x + 2, y + 79, ((ps1AdsDbgSceneStallMax >> 2) & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 82, ((ps1AdsDbgNoDrawStreak >> 1) & 0x3F), rowH, 0x001F);
+    grDrawCounterBar(x + 2, y + 10, (ps1AdsDbgReplayCount & 0x3F), rowH, 0x7C1F);
+    grDrawCounterBar(x + 2, y + 13, (ps1AdsDbgRunningThreads & 0x3F), rowH, 0x03FF);
+    grDrawCounterBar(x + 2, y + 16, (grUpdateDelay & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 19, (ps1AdsDbgReplayTryFrame & 0x3F), rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 22, (ps1AdsDbgReplayDrawFrame & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 25, (ps1AdsDbgMergeCarryFrame & 0x3F), rowH, 0x7C1F);
+    grDrawCounterBar(x + 2, y + 28, (ps1AdsDbgNoDrawThreadsFrame & 0x3F), rowH, 0x001F);
+    grDrawCounterBar(x + 2, y + 31, (ps1AdsDbgPlayedThreadsFrame & 0x3F), rowH, 0x03FF);
+    grDrawCounterBar(x + 2, y + 34, (ps1AdsDbgRecordedSpritesFrame & 0x3F), rowH, 0x7FE0);
+    grDrawCounterBar(x + 2, y + 37, (ps1AdsDbgTerminatedThreads & 0x3F), rowH, 0x001F);
 }
 
 /* VRAM allocation tracking
@@ -386,6 +365,55 @@ static void grDrawAdsFreezeDiagnostics(void)
  */
 static uint16 nextVRAMX = 640;  /* Start to the right of framebuffer */
 static uint16 nextVRAMY = 4;    /* Below CLUTs */
+
+/* VRAM scratch allocator for per-frame GPU sprite textures.
+ * Scratch area: (640,4) to (1023,511) — right of framebuffer, below CLUT.
+ * Reset each frame by grBeginFrame(). */
+static uint16 scratchX = 640;
+static uint16 scratchY = 4;
+static uint16 scratchRowH = 0;
+
+static void grResetScratch(void)
+{
+    scratchX = 640;
+    scratchY = 4;
+    scratchRowH = 0;
+}
+
+/* Allocate a VRAM rectangle for a 4-bit texture.
+ * vramW = width in VRAM pixels (= sprite pixel width / 4, rounded up).
+ * Returns 0 on success (outX/outY set), -1 if VRAM scratch is full. */
+static int grAllocScratch(uint16 vramW, uint16 h, uint16 *outX, uint16 *outY)
+{
+    /* Ensure sprite fits within current texture page (64 VRAM pixels wide) */
+    uint16 pageEnd = ((scratchX / 64) + 1) * 64;
+    if (scratchX + vramW > pageEnd)
+        scratchX = pageEnd;
+
+    /* Horizontal overflow → advance to next row */
+    if (scratchX + vramW > 1024) {
+        scratchY += scratchRowH;
+        scratchX = 640;
+        scratchRowH = 0;
+    }
+
+    /* Ensure V coordinate won't overflow uint8 within the 256-line bank */
+    if ((scratchY & 0xFF) + h > 255) {
+        scratchY = ((scratchY >> 8) + 1) << 8;
+        scratchX = 640;
+        scratchRowH = 0;
+    }
+
+    /* Vertical bounds check */
+    if (scratchY + h > 512)
+        return -1;
+
+    *outX = scratchX;
+    *outY = scratchY;
+    scratchX += vramW;
+    if (h > scratchRowH) scratchRowH = h;
+    return 0;
+}
 
 /*
  * Initialize PS1 graphics subsystem
@@ -630,6 +658,148 @@ void grToggleFullScreen()
     grWindowed = !grWindowed;  /* Keep variable for compatibility */
 }
 
+/* Batched swap buffer for nibble-swapped sprite data during GPU upload.
+ * Each sprite's swapped data is placed at a running offset so multiple
+ * LoadImage calls can be queued WITHOUT per-sprite DrawSync.
+ * 32KB supports ~10-15 sprites per frame.  Overflow falls back to software.
+ * Must be 4-byte aligned for DMA (LoadImage reads uint32 words). */
+#define GPU_SWAP_BUF_SIZE 32768
+static uint32 gpuSwapBuf32[GPU_SWAP_BUF_SIZE / 4];
+static uint32 gpuSwapOffset = 0;  /* Running byte offset into swap buffer */
+
+/* Set to 1 by grBeginFrame(); cleared after DrawOTag in grUpdateDisplay.
+ * Prevents DrawOTag on a stale/uninitialized OT when grBeginFrame was
+ * not called (e.g. intro screens). */
+static int gpuFrameReady = 0;
+
+/*
+ * Per-frame initialisation: clear OT, reset primitive buffer and VRAM scratch.
+ * Must be called before any sprite draws in a frame.
+ */
+void grBeginFrame(void)
+{
+    /* Reset OT and primitive buffer each frame.
+     * Required because VRAM-based sprites (from grLoadBmp) still emit
+     * GPU primitives into the OT — without reset the buffer overflows. */
+    ClearOTagR(ot[0], OT_LENGTH);
+    nextPrimitive[0] = primitiveBuffer[0];
+    primitiveIndex[0] = 0;
+}
+
+/*
+ * Upload an indexed sprite to VRAM scratch space and emit GPU primitives.
+ * - Nibble-swaps Sierra format (HIGH=even) → PS1 format (LOW=pixel0)
+ * - Allocates temporary VRAM rectangle via scratch allocator
+ * - Emits DR_TPAGE + SPRT (normal) or POLY_FT4 (flip) into ot[0]
+ * Returns 0 on success, -1 on failure (caller should fall back to software).
+ */
+static int grUploadAndDrawGpuSprite(const uint8 *indexedPixels, uint16 w, uint16 h,
+                                     sint16 screenX, sint16 screenY, int flip)
+{
+    if (!gpuFrameReady) return -1;
+    if (w > 256 || w == 0 || h == 0) return -1;
+
+    uint32 indexedSize = ((uint32)w * (uint32)h + 1) / 2;
+    /* Round up to 4-byte alignment for DMA */
+    uint32 alignedSize = (indexedSize + 3) & ~3u;
+
+    /* Check swap buffer has room for this sprite */
+    if (gpuSwapOffset + alignedSize > GPU_SWAP_BUF_SIZE) return -1;
+
+    /* VRAM width for 4-bit texture (1 VRAM pixel = 4 texture pixels) */
+    uint16 vramW = (w + 3) / 4;
+
+    uint16 vramX, vramY;
+    if (grAllocScratch(vramW, h, &vramX, &vramY) < 0) return -1;
+
+    /* Nibble-swap into swap buffer at current offset.
+     * Sierra: HIGH nibble = even pixel.  PS1: LOW nibble = pixel 0. */
+    uint8 *dst = (uint8 *)gpuSwapBuf32 + gpuSwapOffset;
+    for (uint32 i = 0; i < indexedSize; i++) {
+        uint8 b = indexedPixels[i];
+        dst[i] = ((b & 0x0F) << 4) | ((b >> 4) & 0x0F);
+    }
+
+    /* Upload to VRAM scratch — NO DrawSync here, all uploads batched */
+    RECT r;
+    setRECT(&r, vramX, vramY, vramW, h);
+    LoadImage(&r, (uint32 *)dst);
+
+    /* Advance offset for next sprite */
+    gpuSwapOffset += alignedSize;
+
+    /* Texture page and UV coordinates */
+    uint16 tpX = (vramX / 64) * 64;
+    uint16 tpY = (vramY / 256) * 256;
+    uint8 u0 = ((vramX % 64) * 4) & 0xFF;
+    uint8 v0 = (vramY % 256) & 0xFF;
+
+    if (!flip) {
+        /* Non-flip: SPRT + DR_TPAGE */
+        uint32 needed = sizeof(DR_TPAGE) + sizeof(SPRT);
+        if (primitiveIndex[0] + needed > PRIMITIVE_BUFFER_SIZE) return -1;
+
+        SPRT *sp = (SPRT *)nextPrimitive[0];
+        nextPrimitive[0] += sizeof(SPRT);
+        primitiveIndex[0] += sizeof(SPRT);
+        setSprt(sp);
+        setXY0(sp, screenX, screenY);
+        setWH(sp, w, h);
+        setUV0(sp, u0, v0);
+        setClut(sp, 640, 0);
+        setRGB0(sp, 128, 128, 128);
+        addPrim(&ot[0][0], sp);
+
+        DR_TPAGE *tp = (DR_TPAGE *)nextPrimitive[0];
+        nextPrimitive[0] += sizeof(DR_TPAGE);
+        primitiveIndex[0] += sizeof(DR_TPAGE);
+        setDrawTPage(tp, 0, 0, getTPage(0, 0, tpX, tpY));
+        addPrim(&ot[0][0], tp);
+    } else {
+        /* Flip: POLY_FT4 (has built-in tpage field) */
+        uint32 needed = sizeof(POLY_FT4);
+        if (primitiveIndex[0] + needed > PRIMITIVE_BUFFER_SIZE) return -1;
+
+        POLY_FT4 *poly = (POLY_FT4 *)nextPrimitive[0];
+        nextPrimitive[0] += sizeof(POLY_FT4);
+        primitiveIndex[0] += sizeof(POLY_FT4);
+        setPolyFT4(poly);
+        setXY4(poly,
+               screenX, screenY,
+               screenX + w, screenY,
+               screenX, screenY + h,
+               screenX + w, screenY + h);
+        poly->tpage = getTPage(0, 0, tpX, tpY);
+        /* Reversed U for horizontal flip */
+        uint8 u1 = u0 + (uint8)w;
+        uint8 v1 = v0 + (uint8)h;
+        setUV4(poly, u1, v0, u0, v0, u1, v1, u0, v1);
+        setClut(poly, 640, 0);
+        setRGB0(poly, 128, 128, 128);
+        addPrim(&ot[0][0], poly);
+    }
+
+    return 0;
+}
+
+/*
+ * Replay a previously-drawn sprite via GPU upload.
+ * Falls back to software composite if GPU path fails.
+ */
+void grReplaySprite(struct TDrawnSprite *ds)
+{
+    if (!ds || !ds->indexedPixels) return;
+
+    PS1Surface tmpSfc = {0};
+    tmpSfc.indexedPixels = ds->indexedPixels;
+    tmpSfc.width = ds->width;
+    tmpSfc.height = ds->height;
+    if (ds->flip)
+        grCompositeToBackgroundFlip(&tmpSfc, ds->x, ds->y);
+    else
+        grCompositeToBackground(&tmpSfc, ds->x, ds->y);
+}
+
 /*
  * Update display with all layers
  */
@@ -650,15 +820,15 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
         grDrawDropDiagnostics();
         grDrawMemoryDiagnostics();
         grDrawStoryDiagnostics();
+        grDrawPilotPackDiagnostics();
         grDrawAdsFreezeDiagnostics();
     }
 
-    /* CRITICAL: Wait for VSync BEFORE uploading to framebuffer.
-     * This ensures we write during vertical blank when display isn't scanning.
-     * Writing during active scan causes visible tearing/flickering. */
+    /* Wait for VSync BEFORE uploading to framebuffer.
+     * This ensures we write during vertical blank when display isn't scanning. */
     VSync(0);
 
-    /* Upload background tiles (with sprites composited) to framebuffer */
+    /* Upload background tiles (with sprites composited in software) to framebuffer */
     grDrawBackground();
 
     /* Handle frame timing */
@@ -1325,69 +1495,54 @@ void grDrawPixel(PS1Surface *sfc, sint16 x, sint16 y, uint8 color)
 }
 
 /*
- * Draw line
+ * Draw line — software composite to background tiles.
+ * (GPU primitives are reserved for the sprite OT rendered by DrawOTag.)
  */
 void grDrawLine(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2, uint8 color)
 {
-    /* Allocate from primitive buffer, not malloc */
-    if (primitiveIndex[db] + sizeof(LINE_F2) > PRIMITIVE_BUFFER_SIZE) {
-        return;  /* Buffer full */
-    }
-
-    LINE_F2 *line = (LINE_F2*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(LINE_F2);
-    primitiveIndex[db] += sizeof(LINE_F2);
-
-    setLineF2(line);
-    setXY2(line, x1, y1, x2, y2);
-
-    /* Convert palette color to RGB */
-    uint8 r = (ttmPalette[color & 0xF] & 0x1F) << 3;
-    uint8 g = ((ttmPalette[color & 0xF] >> 5) & 0x1F) << 3;
-    uint8 b = ((ttmPalette[color & 0xF] >> 10) & 0x1F) << 3;
-    setRGB0(line, r, g, b);
-
-    /* Add to ordering table */
-    addPrim(&ot[db][0], line);
+    /* Stub — TTM line draws are rare and cosmetic (e.g. fishing line).
+     * Previously these GPU primitives were silently accumulated but never
+     * rendered (no DrawOTag).  TODO: implement software line rasterizer. */
+    (void)sfc; (void)x1; (void)y1; (void)x2; (void)y2; (void)color;
 }
 
 /*
- * Draw filled rectangle using two triangles (TILE primitive doesn't work on PS1)
+ * Draw filled rectangle — software composite to background tiles.
+ * Used by TTM DRAW_RECT opcode for screen clears and overlays.
  */
 void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height, uint8 color)
 {
-    /* Need space for 2 triangles */
-    if (primitiveIndex[db] + 2 * sizeof(POLY_F3) > PRIMITIVE_BUFFER_SIZE) {
-        return;  /* Buffer full */
+    /* Software fill directly into bgTile buffers (matching composite approach).
+     * This replaces the GPU POLY_F3 path that was never rendered before. */
+    uint16 bgColor = ttmPalette[color & 0xF];
+    sint16 x2 = x + (sint16)width;
+    sint16 y2 = y + (sint16)height;
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x2 > 640) x2 = 640;
+    if (y2 > 480) y2 = 480;
+    if (x >= x2 || y >= y2) return;
+
+    for (sint16 py = y; py < y2; py++) {
+        PS1Surface *tile;
+        int tileLocalY;
+        if (py < 240) {
+            tileLocalY = py;
+        } else {
+            tileLocalY = py - 240;
+        }
+        for (sint16 px = x; px < x2; px++) {
+            if (px < 320) {
+                tile = (py < 240) ? bgTile0 : bgTile3;
+                if (tile && tile->pixels)
+                    tile->pixels[tileLocalY * (int)tile->width + px] = bgColor;
+            } else {
+                tile = (py < 240) ? bgTile1 : bgTile4;
+                if (tile && tile->pixels)
+                    tile->pixels[tileLocalY * (int)tile->width + (px - 320)] = bgColor;
+            }
+        }
     }
-
-    /* Convert palette color to RGB */
-    uint8 r = (ttmPalette[color & 0xF] & 0x1F) << 3;
-    uint8 g = ((ttmPalette[color & 0xF] >> 5) & 0x1F) << 3;
-    uint8 b = ((ttmPalette[color & 0xF] >> 10) & 0x1F) << 3;
-
-    sint16 x2 = x + width;
-    sint16 y2 = y + height;
-
-    /* Top-left triangle */
-    POLY_F3 *tri1 = (POLY_F3*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(POLY_F3);
-    primitiveIndex[db] += sizeof(POLY_F3);
-
-    setPolyF3(tri1);
-    setXY3(tri1, x, y, x2, y, x, y2);
-    setRGB0(tri1, r, g, b);
-    addPrim(&ot[db][0], tri1);
-
-    /* Bottom-right triangle */
-    POLY_F3 *tri2 = (POLY_F3*)nextPrimitive[db];
-    nextPrimitive[db] += sizeof(POLY_F3);
-    primitiveIndex[db] += sizeof(POLY_F3);
-
-    setPolyF3(tri2);
-    setXY3(tri2, x2, y, x2, y2, x, y2);
-    setRGB0(tri2, r, g, b);
-    addPrim(&ot[db][0], tri2);
 }
 
 /*
@@ -1403,6 +1558,54 @@ void grDrawCircle(PS1Surface *sfc, sint16 x1, sint16 y1, uint16 width, uint16 he
 /*
  * Draw sprite from BMP slot
  */
+static void grRecordReplaySprite(struct TTtmThread *thread,
+                                 PS1Surface *sprite, sint16 x, sint16 y,
+                                 uint16 spriteNo, uint16 imageNo, uint8 flip)
+{
+    if (!thread || !sprite || !sprite->indexedPixels) return;
+
+    /* Deduplicate exact same draw within the frame.
+     * Multiple actors can share imageNo/spriteNo; keep distinct positions. */
+    for (uint16 i = 0; i < thread->numDrawnSprites; i++) {
+        struct TDrawnSprite *ds = &thread->drawnSprites[i];
+        if (ds->imageNo == imageNo &&
+            ds->spriteNo == spriteNo &&
+            ds->flip == flip &&
+            ds->x == x &&
+            ds->y == y &&
+            ds->sceneEpoch == thread->sceneEpoch) {
+            ds->indexedPixels = sprite->indexedPixels;
+            ds->width = sprite->width;
+            ds->height = sprite->height;
+            return;
+        }
+    }
+
+    uint16 recIdx;
+    if (thread->numDrawnSprites >= MAX_DRAWN_SPRITES) {
+        /* Keep most recent draws when scene density exceeds replay capacity.
+         * Dropping new records causes actor vanish (Johnny lost behind props). */
+        recIdx = thread->replayWriteCursor;
+        thread->replayWriteCursor++;
+        if (thread->replayWriteCursor >= MAX_DRAWN_SPRITES)
+            thread->replayWriteCursor = 0;
+    } else {
+        recIdx = thread->numDrawnSprites++;
+    }
+
+    struct TDrawnSprite *ds = &thread->drawnSprites[recIdx];
+    ds->indexedPixels = sprite->indexedPixels;
+    ds->width = sprite->width;
+    ds->height = sprite->height;
+    ds->x = x;
+    ds->y = y;
+    ds->spriteNo = spriteNo;
+    ds->imageNo = imageNo;
+    ds->sceneEpoch = thread->sceneEpoch;
+    ds->flip = flip;
+    ds->pad = 0;
+}
+
 void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
                   uint16 spriteNo, uint16 imageNo)
 {
@@ -1422,30 +1625,10 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
-    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data.
-     * Composite directly to background tiles - avoids OT/primitive buffer issues. */
+    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackground(sprite, x, y);
-        /* Record draw for frame replay */
-        if (grCurrentThread) {
-            uint16 recIdx = grCurrentThread->numDrawnSprites;
-            if (recIdx >= MAX_DRAWN_SPRITES) {
-                grPs1StatReplayDrop();
-                recIdx = MAX_DRAWN_SPRITES - 1;
-            } else {
-                grCurrentThread->numDrawnSprites++;
-            }
-            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[recIdx];
-            ds->sprite = sprite;
-            ds->sourceSlot = ttmSlot;
-            ds->x = x;
-            ds->y = y;
-            ds->spriteNo = spriteNo;
-            ds->imageNo = imageNo;
-            ds->slotGen = ttmSlot->spriteGen[imageNo];
-            ds->sceneEpoch = grCurrentThread->sceneEpoch;
-            ds->flip = 0;
-        }
+        grRecordReplaySprite(grCurrentThread, sprite, x, y, spriteNo, imageNo, 0);
         return;
     }
 
@@ -1634,30 +1817,10 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
         return;
     }
 
-    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data.
-     * Composite directly to background tiles with flip - avoids OT/primitive buffer issues. */
+    /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackgroundFlip(sprite, x, y);
-        /* Record draw for frame replay */
-        if (grCurrentThread) {
-            uint16 recIdx = grCurrentThread->numDrawnSprites;
-            if (recIdx >= MAX_DRAWN_SPRITES) {
-                grPs1StatReplayDrop();
-                recIdx = MAX_DRAWN_SPRITES - 1;
-            } else {
-                grCurrentThread->numDrawnSprites++;
-            }
-            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[recIdx];
-            ds->sprite = sprite;
-            ds->sourceSlot = ttmSlot;
-            ds->x = x;
-            ds->y = y;
-            ds->spriteNo = spriteNo;
-            ds->imageNo = imageNo;
-            ds->slotGen = ttmSlot->spriteGen[imageNo];
-            ds->sceneEpoch = grCurrentThread->sceneEpoch;
-            ds->flip = 1;
-        }
+        grRecordReplaySprite(grCurrentThread, sprite, x, y, spriteNo, imageNo, 1);
         return;
     }
 
@@ -1922,6 +2085,150 @@ void grRestoreBgTiles(void)
     if (bgTile4Clean && bgTile4 && bgTile4->pixels) {
         memcpy(bgTile4->pixels, bgTile4Clean, tileSize);
     }
+}
+
+static void grRestoreTileRect(PS1Surface *dstTile,
+                              const uint16 *srcClean,
+                              int tileScreenX,
+                              int tileScreenY,
+                              int rectX,
+                              int rectY,
+                              int rectW,
+                              int rectH)
+{
+    int copyStartX;
+    int copyStartY;
+    int copyEndX;
+    int copyEndY;
+    int row;
+
+    if (dstTile == NULL || dstTile->pixels == NULL || srcClean == NULL)
+        return;
+    if (rectW <= 0 || rectH <= 0)
+        return;
+
+    copyStartX = (rectX > tileScreenX) ? rectX : tileScreenX;
+    copyStartY = (rectY > tileScreenY) ? rectY : tileScreenY;
+    copyEndX = rectX + rectW;
+    copyEndY = rectY + rectH;
+
+    if (copyEndX > tileScreenX + (int)dstTile->width)
+        copyEndX = tileScreenX + (int)dstTile->width;
+    if (copyEndY > tileScreenY + (int)dstTile->height)
+        copyEndY = tileScreenY + (int)dstTile->height;
+
+    if (copyStartX >= copyEndX || copyStartY >= copyEndY)
+        return;
+
+    for (row = copyStartY; row < copyEndY; row++) {
+        int tileRow = row - tileScreenY;
+        int tileCol = copyStartX - tileScreenX;
+        int copyWidth = copyEndX - copyStartX;
+        uint16 *dst = dstTile->pixels + (tileRow * dstTile->width) + tileCol;
+        const uint16 *src = srcClean + (tileRow * dstTile->width) + tileCol;
+        memcpy(dst, src, (size_t)copyWidth * sizeof(uint16));
+    }
+}
+
+static void grRestoreRectFromCleanBg(int x, int y, int width, int height)
+{
+    if (width <= 0 || height <= 0)
+        return;
+
+    if (x < 0) {
+        width += x;
+        x = 0;
+    }
+    if (y < 0) {
+        height += y;
+        y = 0;
+    }
+    if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
+        return;
+    if (x + width > SCREEN_WIDTH)
+        width = SCREEN_WIDTH - x;
+    if (y + height > SCREEN_HEIGHT)
+        height = SCREEN_HEIGHT - y;
+    if (width <= 0 || height <= 0)
+        return;
+
+    grEnsureCleanBgTiles();
+    grRestoreTileRect(bgTile0, bgTile0Clean, 0, 0, x, y, width, height);
+    grRestoreTileRect(bgTile1, bgTile1Clean, 320, 0, x, y, width, height);
+    grRestoreTileRect(bgTile3, bgTile3Clean, 0, 240, x, y, width, height);
+    grRestoreTileRect(bgTile4, bgTile4Clean, 320, 240, x, y, width, height);
+}
+
+static void grCommitTileRectToClean(PS1Surface *srcTile,
+                                    uint16 *dstClean,
+                                    int tileScreenX,
+                                    int tileScreenY,
+                                    int rectX,
+                                    int rectY,
+                                    int rectW,
+                                    int rectH)
+{
+    int copyStartX;
+    int copyStartY;
+    int copyEndX;
+    int copyEndY;
+    int row;
+
+    if (srcTile == NULL || srcTile->pixels == NULL || dstClean == NULL)
+        return;
+    if (rectW <= 0 || rectH <= 0)
+        return;
+
+    copyStartX = (rectX > tileScreenX) ? rectX : tileScreenX;
+    copyStartY = (rectY > tileScreenY) ? rectY : tileScreenY;
+    copyEndX = rectX + rectW;
+    copyEndY = rectY + rectH;
+
+    if (copyEndX > tileScreenX + (int)srcTile->width)
+        copyEndX = tileScreenX + (int)srcTile->width;
+    if (copyEndY > tileScreenY + (int)srcTile->height)
+        copyEndY = tileScreenY + (int)srcTile->height;
+
+    if (copyStartX >= copyEndX || copyStartY >= copyEndY)
+        return;
+
+    for (row = copyStartY; row < copyEndY; row++) {
+        int tileRow = row - tileScreenY;
+        int tileCol = copyStartX - tileScreenX;
+        int copyWidth = copyEndX - copyStartX;
+        const uint16 *src = srcTile->pixels + (tileRow * srcTile->width) + tileCol;
+        uint16 *dst = dstClean + (tileRow * srcTile->width) + tileCol;
+        memcpy(dst, src, (size_t)copyWidth * sizeof(uint16));
+    }
+}
+
+static void grCommitRectToCleanBg(int x, int y, int width, int height)
+{
+    if (width <= 0 || height <= 0)
+        return;
+
+    if (x < 0) {
+        width += x;
+        x = 0;
+    }
+    if (y < 0) {
+        height += y;
+        y = 0;
+    }
+    if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
+        return;
+    if (x + width > SCREEN_WIDTH)
+        width = SCREEN_WIDTH - x;
+    if (y + height > SCREEN_HEIGHT)
+        height = SCREEN_HEIGHT - y;
+    if (width <= 0 || height <= 0)
+        return;
+
+    grEnsureCleanBgTiles();
+    grCommitTileRectToClean(bgTile0, bgTile0Clean, 0, 0, x, y, width, height);
+    grCommitTileRectToClean(bgTile1, bgTile1Clean, 320, 0, x, y, width, height);
+    grCommitTileRectToClean(bgTile3, bgTile3Clean, 0, 240, x, y, width, height);
+    grCommitTileRectToClean(bgTile4, bgTile4Clean, 320, 240, x, y, width, height);
 }
 
 /*
@@ -2319,12 +2626,88 @@ void grLoadScreen(char *strArg)
 }
 
 /*
- * Copy zone operations - stubbed for now
+ * Copy zone operations - minimal PS1 implementation.
  */
-void grCopyZoneToBg(PS1Surface *sfc, uint16 arg0, uint16 arg1, uint16 arg2, uint16 arg3) {}
-void grSaveImage1(PS1Surface *sfc, uint16 arg0, uint16 arg1, uint16 arg2, uint16 arg3) {}
-void grSaveZone(PS1Surface *sfc, uint16 arg0, uint16 arg1, uint16 arg2, uint16 arg3) {}
-void grRestoreZone(PS1Surface *sfc, uint16 arg0, uint16 arg1, uint16 arg2, uint16 arg3) {}
+void grCopyZoneToBg(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 height)
+{
+    int screenX;
+    int screenY;
+
+    (void)sfc;
+
+    screenX = (int)x + grDx;
+    screenY = (int)y + grDy;
+
+    /* PS1 draws directly into the composited background tiles instead of
+     * keeping a separate saved-zones overlay layer. Treat COPY_ZONE_TO_BG as
+     * committing the current rectangle into the clean restore baseline. */
+    grCommitRectToCleanBg(screenX, screenY, (int)width + 2, height);
+}
+void grSaveImage1(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 height)
+{
+    /* Johnny's current use of SAVE_IMAGE1 is the same class of operation as
+     * COPY_ZONE_TO_BG: define a bounded region that should survive subsequent
+     * frame restores. Keep the PS1 behavior explicit and deterministic by
+     * committing the current rectangle into the clean background baseline. */
+    grCopyZoneToBg(sfc, x, y, width, height);
+}
+void grSaveZone(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 height)
+{
+    int screenX;
+    int screenY;
+
+    (void)sfc;
+
+    if (width == 0 || height == 0) {
+        grPs1SavedZone.valid = 0;
+        return;
+    }
+
+    screenX = (int)x + grDx;
+    screenY = (int)y + grDy;
+    if (screenX < 0) {
+        width = (screenX + (int)width > 0) ? (uint16)(screenX + (int)width) : 0;
+        screenX = 0;
+    }
+    if (screenY < 0) {
+        height = (screenY + (int)height > 0) ? (uint16)(screenY + (int)height) : 0;
+        screenY = 0;
+    }
+    if (width == 0 || height == 0) {
+        grPs1SavedZone.valid = 0;
+        return;
+    }
+
+    grPs1SavedZone.x = (uint16)screenX;
+    grPs1SavedZone.y = (uint16)screenY;
+    grPs1SavedZone.width = width;
+    grPs1SavedZone.height = height;
+    grPs1SavedZone.valid = 1;
+}
+
+void grRestoreZone(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 height)
+{
+    int screenX;
+    int screenY;
+
+    (void)sfc;
+
+    if (grPs1SavedZone.valid) {
+        grRestoreRectFromCleanBg(grPs1SavedZone.x,
+                                 grPs1SavedZone.y,
+                                 grPs1SavedZone.width,
+                                 grPs1SavedZone.height);
+        grPs1SavedZone.valid = 0;
+        return;
+    }
+
+    if (width == 0 || height == 0)
+        return;
+
+    screenX = (int)x + grDx;
+    screenY = (int)y + grDy;
+    grRestoreRectFromCleanBg(screenX, screenY, width, height);
+}
 
 /*
  * Frame capture (not implemented on PS1)

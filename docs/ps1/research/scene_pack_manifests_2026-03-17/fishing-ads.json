@@ -1,0 +1,1267 @@
+{
+  "schema_version": 1,
+  "manifest_kind": "scene_pack_manifest",
+  "pack_id": "fishing-ads",
+  "cluster_key": "FISHING.ADS",
+  "pack_strategy": "ads_cluster",
+  "scene_indices": [
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+  ],
+  "scene_count": 8,
+  "ads_names": [
+    "FISHING.ADS"
+  ],
+  "resources": {
+    "ads": [
+      "FISHING.ADS"
+    ],
+    "bmps": [
+      "JOHNWALK.BMP",
+      "MJFISH1.BMP",
+      "TRUNK.BMP",
+      "MJFISH2.BMP",
+      "MJFISH3.BMP",
+      "GJCATCH3.BMP",
+      "LILFISH.BMP",
+      "GJCATCH1.BMP",
+      "FISHMAN.BMP",
+      "GJCATCH2.BMP",
+      "GJFFFOOD.BMP",
+      "MJDIVE.BMP",
+      "SHKNFIST.BMP",
+      "SPLASH.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR",
+      "ISLAND2.SCR"
+    ],
+    "ttms": [
+      "FISHWALK.TTM",
+      "GFFFOOD.TTM",
+      "GJCATCH2.TTM",
+      "MJFISH.TTM",
+      "MJFISHC.TTM"
+    ],
+    "shared_candidates": [
+      "FISHWALK.TTM",
+      "GFFFOOD.TTM",
+      "GJCATCH1.BMP",
+      "GJCATCH2.TTM",
+      "GJCATCH3.BMP",
+      "ISLAND2.SCR",
+      "ISLETEMP.SCR",
+      "JOHNWALK.BMP",
+      "LILFISH.BMP",
+      "MJDIVE.BMP",
+      "MJFISH.TTM",
+      "MJFISH1.BMP",
+      "MJFISH2.BMP",
+      "MJFISH3.BMP",
+      "MJFISHC.TTM",
+      "SPLASH.BMP",
+      "TRUNK.BMP"
+    ]
+  },
+  "runtime_requirements": {
+    "max_concurrent_threads": 10,
+    "max_sprite_frames": 235,
+    "peak_memory_bytes": 563168,
+    "memory_components": {
+      "bmp_indexed_bytes": 388808,
+      "ttm_bytes": 18682,
+      "ads_bytes": 1778,
+      "scr_bytes": 112000,
+      "sprite_pointer_bytes": 940,
+      "ttm_slot_overhead_bytes": 40960
+    }
+  },
+  "transition_hints": {
+    "likely_next_pack_ids": [
+      "johnny-ads"
+    ],
+    "high_churn_transitions": [
+      {
+        "from_scene_index": 24,
+        "to_scene_index": 25,
+        "to_pack_id": "johnny-ads",
+        "total_resource_churn": 20,
+        "peak_memory_delta_bytes": 231970
+      }
+    ],
+    "transition_budget_notes": "Derived from analyzer post-processing; not runtime-validated."
+  },
+  "prefetch_hints": {
+    "candidate_scene_indices": [
+      25,
+      26,
+      27,
+      28,
+      29,
+      30
+    ],
+    "additional_bmps": [
+      "ENDCRDTS.BMP",
+      "LITEBULB.BMP",
+      "MEANWHIL.BMP",
+      "MJBOTTLE.BMP",
+      "MJBTL2.BMP",
+      "SJWORK.BMP",
+      "THEEND1.BMP",
+      "THNKBUBL.BMP"
+    ],
+    "additional_scrs": [
+      "JOFFICE.SCR",
+      "THEEND.SCR"
+    ],
+    "additional_ttms": [
+      "MEANWHIL.TTM",
+      "SJMSSGE.TTM",
+      "SJWORK.TTM",
+      "THEEND.TTM"
+    ],
+    "heuristic": "transition_churn_then_ads_family_union",
+    "confidence": "low"
+  },
+  "scenes": [
+    {
+      "scene_index": 17,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 1,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 207912,
+        "bmp_15bit_bytes": 831648,
+        "bmp_raw_bytes": 207912,
+        "ttm_bytes": 16660,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 608,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 379918
+      },
+      "resource_counts": {
+        "bmps": 7,
+        "scrs": 1,
+        "ttms": 5
+      }
+    },
+    {
+      "scene_index": 18,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 2,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 207912,
+        "bmp_15bit_bytes": 831648,
+        "bmp_raw_bytes": 207912,
+        "ttm_bytes": 16660,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 608,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 379918
+      },
+      "resource_counts": {
+        "bmps": 7,
+        "scrs": 1,
+        "ttms": 5
+      }
+    },
+    {
+      "scene_index": 19,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 3,
+      "story_day": 0,
+      "flags": [
+        "FINAL",
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 388808,
+        "bmp_15bit_bytes": 1555232,
+        "bmp_raw_bytes": 388808,
+        "ttm_bytes": 18682,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 940,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 563168
+      },
+      "resource_counts": {
+        "bmps": 12,
+        "scrs": 1,
+        "ttms": 5
+      }
+    },
+    {
+      "scene_index": 20,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 4,
+      "story_day": 0,
+      "flags": [
+        "FINAL",
+        "ISLAND",
+        "LEFT_ISLAND",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 248704,
+        "bmp_15bit_bytes": 994816,
+        "bmp_raw_bytes": 248704,
+        "ttm_bytes": 9944,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 616,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 414002
+      },
+      "resource_counts": {
+        "bmps": 6,
+        "scrs": 1,
+        "ttms": 5
+      }
+    },
+    {
+      "scene_index": 21,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 5,
+      "story_day": 0,
+      "flags": [
+        "FINAL",
+        "ISLAND",
+        "VARPOS_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 271036,
+        "bmp_15bit_bytes": 1084144,
+        "bmp_raw_bytes": 271036,
+        "ttm_bytes": 2492,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 468,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 428734
+      },
+      "resource_counts": {
+        "bmps": 4,
+        "scrs": 1,
+        "ttms": 5
+      }
+    },
+    {
+      "scene_index": 22,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 6,
+      "story_day": 0,
+      "flags": [
+        "FINAL",
+        "ISLAND",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 207912,
+        "bmp_15bit_bytes": 831648,
+        "bmp_raw_bytes": 207912,
+        "ttm_bytes": 16660,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 608,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 379918
+      },
+      "resource_counts": {
+        "bmps": 7,
+        "scrs": 1,
+        "ttms": 5
+      }
+    },
+    {
+      "scene_index": 23,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 7,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "LEFT_ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 248704,
+        "bmp_15bit_bytes": 994816,
+        "bmp_raw_bytes": 248704,
+        "ttm_bytes": 9944,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 616,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 414002
+      },
+      "resource_counts": {
+        "bmps": 6,
+        "scrs": 1,
+        "ttms": 5
+      }
+    },
+    {
+      "scene_index": 24,
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 8,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "LEFT_ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 248704,
+        "bmp_15bit_bytes": 994816,
+        "bmp_raw_bytes": 248704,
+        "ttm_bytes": 9944,
+        "ads_bytes": 1778,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 616,
+        "ttm_slot_overhead_bytes": 40960,
+        "peak_memory_bytes": 414002
+      },
+      "resource_counts": {
+        "bmps": 6,
+        "scrs": 1,
+        "ttms": 5
+      }
+    }
+  ],
+  "shared_bank": {
+    "bmps": [
+      {
+        "name": "JOHNWALK.BMP",
+        "global_scene_ref_count": 39,
+        "pack_scene_ref_count": 8,
+        "bytes": 48476,
+        "raw_bytes": 48476,
+        "indexed_bytes": 48476
+      },
+      {
+        "name": "MJFISH1.BMP",
+        "global_scene_ref_count": 9,
+        "pack_scene_ref_count": 8,
+        "bytes": 76596,
+        "raw_bytes": 76596,
+        "indexed_bytes": 76596
+      },
+      {
+        "name": "TRUNK.BMP",
+        "global_scene_ref_count": 34,
+        "pack_scene_ref_count": 8,
+        "bytes": 7440,
+        "raw_bytes": 7440,
+        "indexed_bytes": 7440
+      },
+      {
+        "name": "MJFISH2.BMP",
+        "global_scene_ref_count": 8,
+        "pack_scene_ref_count": 7,
+        "bytes": 44168,
+        "raw_bytes": 44168,
+        "indexed_bytes": 44168
+      },
+      {
+        "name": "MJFISH3.BMP",
+        "global_scene_ref_count": 12,
+        "pack_scene_ref_count": 7,
+        "bytes": 15632,
+        "raw_bytes": 15632,
+        "indexed_bytes": 15632
+      },
+      {
+        "name": "GJCATCH3.BMP",
+        "global_scene_ref_count": 4,
+        "pack_scene_ref_count": 4,
+        "bytes": 13440,
+        "raw_bytes": 13440,
+        "indexed_bytes": 13440
+      },
+      {
+        "name": "LILFISH.BMP",
+        "global_scene_ref_count": 4,
+        "pack_scene_ref_count": 4,
+        "bytes": 2160,
+        "raw_bytes": 2160,
+        "indexed_bytes": 2160
+      },
+      {
+        "name": "GJCATCH1.BMP",
+        "global_scene_ref_count": 3,
+        "pack_scene_ref_count": 3,
+        "bytes": 56392,
+        "raw_bytes": 56392,
+        "indexed_bytes": 56392
+      },
+      {
+        "name": "MJDIVE.BMP",
+        "global_scene_ref_count": 3,
+        "pack_scene_ref_count": 1,
+        "bytes": 40128,
+        "raw_bytes": 40128,
+        "indexed_bytes": 40128
+      },
+      {
+        "name": "SPLASH.BMP",
+        "global_scene_ref_count": 6,
+        "pack_scene_ref_count": 1,
+        "bytes": 21512,
+        "raw_bytes": 21512,
+        "indexed_bytes": 21512
+      }
+    ],
+    "scrs": [
+      {
+        "name": "ISLETEMP.SCR",
+        "global_scene_ref_count": 54,
+        "pack_scene_ref_count": 5,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "ISLAND2.SCR",
+        "global_scene_ref_count": 5,
+        "pack_scene_ref_count": 3,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ],
+    "ttms": [
+      {
+        "name": "FISHWALK.TTM",
+        "global_scene_ref_count": 8,
+        "pack_scene_ref_count": 8,
+        "bytes": 968,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "GFFFOOD.TTM",
+        "global_scene_ref_count": 8,
+        "pack_scene_ref_count": 8,
+        "bytes": 1524,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "GJCATCH2.TTM",
+        "global_scene_ref_count": 8,
+        "pack_scene_ref_count": 8,
+        "bytes": 2022,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "MJFISH.TTM",
+        "global_scene_ref_count": 8,
+        "pack_scene_ref_count": 8,
+        "bytes": 16660,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "MJFISHC.TTM",
+        "global_scene_ref_count": 8,
+        "pack_scene_ref_count": 8,
+        "bytes": 9944,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ]
+  },
+  "resource_details": {
+    "bmps": [
+      {
+        "name": "JOHNWALK.BMP",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 39,
+        "bytes": 48476,
+        "raw_bytes": 48476,
+        "indexed_bytes": 48476,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "num_frames": 36,
+          "max_width": 48,
+          "max_height": 78,
+          "bindings": [
+            {
+              "scene_index": 17,
+              "ttm_slot": 1,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 18,
+              "ttm_slot": 1,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 19,
+              "ttm_slot": 1,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 20,
+              "ttm_slot": 4,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 21,
+              "ttm_slot": 5,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 22,
+              "ttm_slot": 1,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 23,
+              "ttm_slot": 4,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 24,
+              "ttm_slot": 4,
+              "bmp_slot": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "MJFISH1.BMP",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 9,
+        "bytes": 76596,
+        "raw_bytes": 76596,
+        "indexed_bytes": 76596,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "num_frames": 30,
+          "max_width": 152,
+          "max_height": 118,
+          "bindings": [
+            {
+              "scene_index": 17,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 18,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 19,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 20,
+              "ttm_slot": 4,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 21,
+              "ttm_slot": 5,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 22,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 23,
+              "ttm_slot": 4,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 24,
+              "ttm_slot": 4,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "TRUNK.BMP",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 34,
+        "bytes": 7440,
+        "raw_bytes": 7440,
+        "indexed_bytes": 7440,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "num_frames": 2,
+          "max_width": 152,
+          "max_height": 145,
+          "bindings": [
+            {
+              "scene_index": 17,
+              "ttm_slot": 1,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 18,
+              "ttm_slot": 1,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 19,
+              "ttm_slot": 1,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 20,
+              "ttm_slot": 4,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 21,
+              "ttm_slot": 5,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 22,
+              "ttm_slot": 1,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 23,
+              "ttm_slot": 4,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 24,
+              "ttm_slot": 4,
+              "bmp_slot": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "MJFISH2.BMP",
+        "pack_scene_ref_count": 7,
+        "global_scene_ref_count": 8,
+        "bytes": 44168,
+        "raw_bytes": 44168,
+        "indexed_bytes": 44168,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "num_frames": 27,
+          "max_width": 104,
+          "max_height": 111,
+          "bindings": [
+            {
+              "scene_index": 17,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 18,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 19,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 20,
+              "ttm_slot": 4,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 22,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 23,
+              "ttm_slot": 4,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 24,
+              "ttm_slot": 4,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "MJFISH3.BMP",
+        "pack_scene_ref_count": 7,
+        "global_scene_ref_count": 12,
+        "bytes": 15632,
+        "raw_bytes": 15632,
+        "indexed_bytes": 15632,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "num_frames": 38,
+          "max_width": 48,
+          "max_height": 55,
+          "bindings": [
+            {
+              "scene_index": 17,
+              "ttm_slot": 1,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 18,
+              "ttm_slot": 1,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 19,
+              "ttm_slot": 1,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 20,
+              "ttm_slot": 4,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 22,
+              "ttm_slot": 1,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 23,
+              "ttm_slot": 4,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 24,
+              "ttm_slot": 4,
+              "bmp_slot": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJCATCH3.BMP",
+        "pack_scene_ref_count": 4,
+        "global_scene_ref_count": 4,
+        "bytes": 13440,
+        "raw_bytes": 13440,
+        "indexed_bytes": 13440,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          22
+        ],
+        "metadata": {
+          "num_frames": 10,
+          "max_width": 120,
+          "max_height": 69,
+          "bindings": [
+            {
+              "scene_index": 17,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 18,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 19,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 22,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "LILFISH.BMP",
+        "pack_scene_ref_count": 4,
+        "global_scene_ref_count": 4,
+        "bytes": 2160,
+        "raw_bytes": 2160,
+        "indexed_bytes": 2160,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          22
+        ],
+        "metadata": {
+          "num_frames": 9,
+          "max_width": 48,
+          "max_height": 28,
+          "bindings": [
+            {
+              "scene_index": 17,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 18,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 19,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 22,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJCATCH1.BMP",
+        "pack_scene_ref_count": 3,
+        "global_scene_ref_count": 3,
+        "bytes": 56392,
+        "raw_bytes": 56392,
+        "indexed_bytes": 56392,
+        "source_scene_indices": [
+          20,
+          23,
+          24
+        ],
+        "metadata": {
+          "num_frames": 21,
+          "max_width": 248,
+          "max_height": 104,
+          "bindings": [
+            {
+              "scene_index": 20,
+              "ttm_slot": 4,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 23,
+              "ttm_slot": 4,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 24,
+              "ttm_slot": 4,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "FISHMAN.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 6912,
+        "raw_bytes": 6912,
+        "indexed_bytes": 6912,
+        "source_scene_indices": [
+          19
+        ],
+        "metadata": {
+          "num_frames": 2,
+          "max_width": 96,
+          "max_height": 72,
+          "bindings": [
+            {
+              "scene_index": 19,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJCATCH2.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 105656,
+        "raw_bytes": 105656,
+        "indexed_bytes": 105656,
+        "source_scene_indices": [
+          19
+        ],
+        "metadata": {
+          "num_frames": 40,
+          "max_width": 120,
+          "max_height": 120,
+          "bindings": [
+            {
+              "scene_index": 19,
+              "ttm_slot": 2,
+              "bmp_slot": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJFFFOOD.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 138524,
+        "raw_bytes": 138524,
+        "indexed_bytes": 138524,
+        "source_scene_indices": [
+          21
+        ],
+        "metadata": {
+          "num_frames": 49,
+          "max_width": 208,
+          "max_height": 110,
+          "bindings": [
+            {
+              "scene_index": 21,
+              "ttm_slot": 3,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "MJDIVE.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 3,
+        "bytes": 40128,
+        "raw_bytes": 40128,
+        "indexed_bytes": 40128,
+        "source_scene_indices": [
+          19
+        ],
+        "metadata": {
+          "num_frames": 30,
+          "max_width": 120,
+          "max_height": 98,
+          "bindings": [
+            {
+              "scene_index": 19,
+              "ttm_slot": 2,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "SHKNFIST.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 6688,
+        "raw_bytes": 6688,
+        "indexed_bytes": 6688,
+        "source_scene_indices": [
+          19
+        ],
+        "metadata": {
+          "num_frames": 4,
+          "max_width": 48,
+          "max_height": 76,
+          "bindings": [
+            {
+              "scene_index": 19,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "SPLASH.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 6,
+        "bytes": 21512,
+        "raw_bytes": 21512,
+        "indexed_bytes": 21512,
+        "source_scene_indices": [
+          19
+        ],
+        "metadata": {
+          "num_frames": 7,
+          "max_width": 152,
+          "max_height": 112,
+          "bindings": [
+            {
+              "scene_index": 19,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            }
+          ]
+        }
+      }
+    ],
+    "scrs": [
+      {
+        "name": "ISLETEMP.SCR",
+        "pack_scene_ref_count": 5,
+        "global_scene_ref_count": 54,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          21,
+          22
+        ],
+        "metadata": {
+          "bytes": 112000
+        }
+      },
+      {
+        "name": "ISLAND2.SCR",
+        "pack_scene_ref_count": 3,
+        "global_scene_ref_count": 5,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          20,
+          23,
+          24
+        ],
+        "metadata": {
+          "bytes": 112000
+        }
+      }
+    ],
+    "ttms": [
+      {
+        "name": "FISHWALK.TTM",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 8,
+        "bytes": 968,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "slot_ids": [
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5,
+            5
+          ]
+        }
+      },
+      {
+        "name": "GFFFOOD.TTM",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 8,
+        "bytes": 1524,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "slot_ids": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ]
+        }
+      },
+      {
+        "name": "GJCATCH2.TTM",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 8,
+        "bytes": 2022,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "slot_ids": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ]
+        }
+      },
+      {
+        "name": "MJFISH.TTM",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 8,
+        "bytes": 16660,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "slot_ids": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      },
+      {
+        "name": "MJFISHC.TTM",
+        "pack_scene_ref_count": 8,
+        "global_scene_ref_count": 8,
+        "bytes": 9944,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24
+        ],
+        "metadata": {
+          "slot_ids": [
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4,
+            4
+          ]
+        }
+      }
+    ]
+  },
+  "prefetch": {
+    "heuristic": "transition_churn_then_ads_family_union",
+    "candidate_pack_ids": [
+      "johnny-ads"
+    ],
+    "secondary_candidate_pack_ids": []
+  },
+  "max_peak_memory_bytes": 563168,
+  "total_peak_memory_bytes": 3373662
+}

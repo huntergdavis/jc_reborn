@@ -1,0 +1,410 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_candidate_report",
+  "scene_count": 63,
+  "top_candidates": [
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 1,
+      "scene_index": 38,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 2,
+      "scene_index": 39,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 3,
+      "scene_index": 40,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 4,
+      "scene_index": 41,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 5,
+      "scene_index": 42,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 6,
+      "scene_index": 43,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 7,
+      "scene_index": 44,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 8,
+      "scene_index": 45,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 9,
+      "scene_index": 46,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 10,
+      "scene_index": 47,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 11,
+      "scene_index": 48,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 12,
+      "scene_index": 49,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    }
+  ],
+  "recommended_pilots": [
+    {
+      "pack_id": "stand-ads",
+      "ads_name": "STAND.ADS",
+      "ads_tag": 1,
+      "scene_index": 38,
+      "peak_memory_bytes": 166164,
+      "bmp_count": 1,
+      "ttm_count": 2,
+      "restore_candidate": true,
+      "clear_screen_count": 394,
+      "unique_rect_count": 2,
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "restore_score": 118
+    },
+    {
+      "pack_id": "johnny-ads",
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 1,
+      "scene_index": 25,
+      "peak_memory_bytes": 182032,
+      "bmp_count": 3,
+      "ttm_count": 4,
+      "restore_candidate": true,
+      "clear_screen_count": 289,
+      "unique_rect_count": 5,
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "restore_score": 113
+    },
+    {
+      "pack_id": "walkstuf-ads",
+      "ads_name": "WALKSTUF.ADS",
+      "ads_tag": 2,
+      "scene_index": 61,
+      "peak_memory_bytes": 230988,
+      "bmp_count": 4,
+      "ttm_count": 3,
+      "restore_candidate": true,
+      "clear_screen_count": 536,
+      "unique_rect_count": 4,
+      "union_rect": {
+        "x": 0,
+        "y": 91,
+        "width": 640,
+        "height": 259
+      },
+      "ttm_names": [
+        "MJJOG.TTM",
+        "MJRAFT.TTM",
+        "WOULDBE.TTM"
+      ],
+      "restore_score": 108
+    },
+    {
+      "pack_id": "activity-ads",
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 4,
+      "scene_index": 4,
+      "peak_memory_bytes": 255612,
+      "bmp_count": 2,
+      "ttm_count": 6,
+      "restore_candidate": true,
+      "clear_screen_count": 1076,
+      "unique_rect_count": 9,
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "restore_score": 100
+    },
+    {
+      "pack_id": "fishing-ads",
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 1,
+      "scene_index": 17,
+      "peak_memory_bytes": 379918,
+      "bmp_count": 7,
+      "ttm_count": 5,
+      "restore_candidate": true,
+      "clear_screen_count": 756,
+      "unique_rect_count": 4,
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "restore_score": 95
+    }
+  ]
+}

@@ -20,6 +20,8 @@ build-*/
 /extract_resources
 /test_bmp_memory
 /test_disk_streaming
+/scene_analyzer
+/scene_analysis_output.txt
 
 # Resource files (not distributed)
 RESOURCE.MAP

@@ -27,11 +27,18 @@
 #include <stdio.h>
 #include <stdlib.h>  /* Provides exit(), atoi(), malloc(), etc. */
 #include <string.h>
+#ifndef _FILE_DEFINED
+#define _FILE_DEFINED
+typedef struct _FILE FILE;
+#endif
 #define stderr ((FILE*)2)  /* PSn00bSDK doesn't define stderr */
 #define fprintf(stream, ...) printf(__VA_ARGS__)  /* Redirect to printf */
 /* Declare functions implemented in ps1_stubs.c */
 void exit(int status);
 int atoi(const char *str);
+FILE *fopen(const char *pathname, const char *mode);
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
+int fclose(FILE *stream);
 #else
 /* Standard SDL build */
 #include <stdlib.h>
@@ -65,6 +72,27 @@ int atoi(const char *str);
 #include "ads.h"
 #include "story.h"
 
+/* Root counters are exposed by PSn00bSDK on PS1 builds. */
+#ifdef PS1_BUILD
+static void ps1SeedRandom(void)
+{
+    uint32 seed = 0x9e3779b9u;
+
+    for (int i = 0; i < 32; i++) {
+        uint32 t0 = (uint32)GetRCnt(RCntCNT0);
+        uint32 t1 = (uint32)GetRCnt(RCntCNT1);
+        uint32 t2 = (uint32)GetRCnt(RCntCNT2);
+        seed ^= (t0 << (i & 7)) ^ (t1 << ((i + 3) & 7)) ^ (t2 << ((i + 5) & 7));
+        seed = (seed << 5) | (seed >> 27);
+        seed += 0x7f4a7c15u + (uint32)i;
+    }
+
+    if (seed == 0)
+        seed = 1;
+    srand(seed);
+}
+#endif
+
 
 static int  argDump     = 0;
 static int  argBench    = 0;
@@ -77,6 +105,141 @@ static char *args[3];
 static int  numArgs  = 0;
 
 #ifdef PS1_BUILD
+#define PS1_BOOT_OVERRIDE_FILE "BOOTMODE.TXT"
+
+static char ps1BootArgStorage[3][32];
+
+static int ps1IsSpace(char c)
+{
+    return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
+static void ps1ResetBootArgs(void)
+{
+    argDump = 0;
+    argBench = 0;
+    argTtm = 0;
+    argAds = 0;
+    argPlayAll = 1;
+    argIsland = 0;
+    numArgs = 0;
+
+    for (int i = 0; i < 3; i++) {
+        args[i] = NULL;
+        ps1BootArgStorage[i][0] = '\0';
+    }
+}
+
+static int ps1CopyBootArg(int index, const char *src)
+{
+    if (index < 0 || index >= 3 || !src) {
+        return 0;
+    }
+
+    strncpy(ps1BootArgStorage[index], src, sizeof(ps1BootArgStorage[index]) - 1);
+    ps1BootArgStorage[index][sizeof(ps1BootArgStorage[index]) - 1] = '\0';
+    args[index] = ps1BootArgStorage[index];
+    return 1;
+}
+
+static void ps1ApplyBootOverride(char *buffer)
+{
+    char *tokens[4];
+    int tokenCount = 0;
+    char *cursor = buffer;
+    int tokenBase = 0;
+
+    while (*cursor && tokenCount < 4) {
+        while (*cursor && ps1IsSpace(*cursor)) {
+            cursor++;
+        }
+
+        if (*cursor == '\0' || *cursor == '#') {
+            break;
+        }
+
+        tokens[tokenCount++] = cursor;
+
+        while (*cursor && !ps1IsSpace(*cursor) && *cursor != '#') {
+            cursor++;
+        }
+
+        if (*cursor == '#') {
+            *cursor = '\0';
+            break;
+        }
+
+        if (*cursor == '\0') {
+            break;
+        }
+
+        *cursor = '\0';
+        cursor++;
+    }
+
+    if (tokenCount == 0) {
+        return;
+    }
+
+    if (!strcmp(tokens[0], "story")) {
+        return;
+    }
+
+    if (!strcmp(tokens[0], "island")) {
+        argIsland = 1;
+        tokenBase = 1;
+    }
+
+    if (tokenBase >= tokenCount) {
+        return;
+    }
+
+    if (!strcmp(tokens[tokenBase], "bench")) {
+        argBench = 1;
+        argPlayAll = 0;
+        return;
+    }
+
+    if (!strcmp(tokens[tokenBase], "ttm") && (tokenBase + 1) < tokenCount) {
+        if (ps1CopyBootArg(0, tokens[tokenBase + 1])) {
+            numArgs = 1;
+            argTtm = 1;
+            argPlayAll = 0;
+        }
+        return;
+    }
+
+    if (!strcmp(tokens[tokenBase], "ads") && (tokenBase + 2) < tokenCount) {
+        if (ps1CopyBootArg(0, tokens[tokenBase + 1]) &&
+            ps1CopyBootArg(1, tokens[tokenBase + 2])) {
+            numArgs = 2;
+            argAds = 1;
+            argPlayAll = 0;
+        }
+        return;
+    }
+}
+
+static void ps1LoadBootOverride(void)
+{
+    uint32 rawSize = 0;
+    uint8 *rawData;
+    char buffer[128];
+    size_t readCount = 0;
+
+    ps1ResetBootArgs();
+
+    rawData = ps1_loadRawFile("\\BOOTMODE.TXT;1", &rawSize);
+    if (rawData != NULL) {
+        readCount = (rawSize < (sizeof(buffer) - 1)) ? rawSize : (sizeof(buffer) - 1);
+        memcpy(buffer, rawData, readCount);
+        free(rawData);
+        buffer[readCount] = '\0';
+        ps1ApplyBootOverride(buffer);
+        return;
+    }
+}
+
 /* Load and display title screen from raw file on CD */
 /* This runs BEFORE resource parsing for instant visual feedback */
 static void loadTitleScreenEarly(void)
@@ -294,12 +457,14 @@ int main(int argc, char **argv)
     /* Show title screen FIRST - instant visual feedback */
     loadTitleScreenEarly();
 
-    /* Seed random from PS1 root counter 2 (system clock / 8).
-     * Free-running counter provides good entropy since CD load times vary. */
-    srand(GetRCnt(RCntCNT2));
-
     /* Parse resource files from CD - needed for background and sprites */
     parseResourceFiles("RESOURCE.MAP");
+
+    /* Seed RNG after CD/resource setup to avoid deterministic startup scenes. */
+    ps1SeedRandom();
+
+    /* Optional on-disc boot override for targeted validation runs. */
+    ps1LoadBootOverride();
 #else
     /* Non-PS1: normal flow */
     parseArgs(argc, argv);
@@ -328,7 +493,28 @@ int main(int argc, char **argv)
         grLoadPalette(palResources[0]);
     }
 
-    storyPlay();
+    if (argPlayAll) {
+        storyPlay();
+    }
+    else if (argBench) {
+        adsPlayBench();
+    }
+    else if (argTtm && numArgs >= 1) {
+        adsPlaySingleTtm(args[0]);
+    }
+    else if (argAds && numArgs >= 2) {
+        adsInit();
+
+        if (argIsland)
+            adsInitIsland();
+        else
+            adsNoIsland();
+
+        adsPlay(args[0], atoi(args[1]));
+    }
+    else {
+        storyPlay();
+    }
 
     soundEnd();
     graphicsEnd();
@@ -420,4 +606,3 @@ int main(int argc, char **argv)
 
     return 0;
 }
-

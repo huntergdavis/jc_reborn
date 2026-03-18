@@ -12,4 +12,6 @@ CMakeFiles/jcreborn.dir/graphics_ps1.c.obj: /project/graphics_ps1.c \
  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/setjmp.h \
  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/hwregs_c.h \
  /project/mytypes.h /project/utils.h /project/graphics_ps1.h \
- /project/resource.h /project/events_ps1.h
+ /project/ads.h /project/resource.h /project/events_ps1.h \
+ /project/cdrom_ps1.h \
+ /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/psxcd.h

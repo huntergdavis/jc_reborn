@@ -44,6 +44,8 @@ extern int fprintf(FILE *stream, const char *format, ...);
 #include "graphics_ps1.h"
 #include "sound_ps1.h"
 #include "cdrom_ps1.h"
+#include "ads.h"
+#include "ps1_restore_pilot_spec.h"
 #else
 #include "graphics.h"
 #include "sound.h"
@@ -53,6 +55,97 @@ extern int fprintf(FILE *stream, const char *format, ...);
 
 int ttmDx = 0;
 int ttmDy = 0;
+
+#ifdef PS1_BUILD
+static int ttmStringEquals(const char *a, const char *b)
+{
+    int i = 0;
+    if (a == NULL || b == NULL)
+        return 0;
+    while (a[i] != '\0' && b[i] != '\0') {
+        if (a[i] != b[i])
+            return 0;
+        i++;
+    }
+    return a[i] == b[i];
+}
+
+static const struct TPs1RestorePilotTtm *ttmFindRestorePilotTtm(const char *ttmName)
+{
+    uint16 i;
+    for (i = 0; i < PS1_RESTORE_PILOT_TTM_COUNT; i++) {
+        if (ttmStringEquals(gPs1RestorePilotTtms[i].ttmName, ttmName))
+            return &gPs1RestorePilotTtms[i];
+    }
+    return NULL;
+}
+
+static int ttmIsRestorePilotAdsTag(uint16 adsTag)
+{
+    uint16 i;
+    for (i = 0; i < PS1_RESTORE_PILOT_ADS_TAG_COUNT; i++) {
+        if (gPs1RestorePilotAdsTags[i] == adsTag)
+            return 1;
+    }
+    return 0;
+}
+
+static int ttmApplyRestorePilotClear(struct TTtmThread *ttmThread, uint16 regionId)
+{
+    const struct TTtmResource *ttmResource;
+    const struct TPs1RestorePilotTtm *pilotTtm;
+
+    if (ttmThread == NULL || ttmThread->ttmSlot == NULL)
+        return 0;
+    if (!ttmStringEquals(ps1AdsCurrentName, PS1_RESTORE_PILOT_ADS_NAME))
+        return 0;
+    if (!ttmIsRestorePilotAdsTag(ps1AdsCurrentTag))
+        return 0;
+
+    ttmResource = ttmThread->ttmSlot->ttmResource;
+    if (ttmResource == NULL || ttmResource->resName == NULL)
+        return 0;
+
+    pilotTtm = ttmFindRestorePilotTtm(ttmResource->resName);
+    if (pilotTtm == NULL || pilotTtm->clearRegionId != regionId)
+        return 0;
+
+    grRestoreZone(ttmThread->ttmLayer,
+                  pilotTtm->rect.x,
+                  pilotTtm->rect.y,
+                  pilotTtm->rect.width,
+                  pilotTtm->rect.height);
+    return 1;
+}
+
+static int ttmApplyRestorePilotSaveImage1(struct TTtmThread *ttmThread)
+{
+    const struct TTtmResource *ttmResource;
+    const struct TPs1RestorePilotTtm *pilotTtm;
+
+    if (ttmThread == NULL || ttmThread->ttmSlot == NULL)
+        return 0;
+    if (!ttmStringEquals(ps1AdsCurrentName, PS1_RESTORE_PILOT_ADS_NAME))
+        return 0;
+    if (!ttmIsRestorePilotAdsTag(ps1AdsCurrentTag))
+        return 0;
+
+    ttmResource = ttmThread->ttmSlot->ttmResource;
+    if (ttmResource == NULL || ttmResource->resName == NULL)
+        return 0;
+
+    pilotTtm = ttmFindRestorePilotTtm(ttmResource->resName);
+    if (pilotTtm == NULL || pilotTtm->clearRegionId != ttmThread->currentRegionId)
+        return 0;
+
+    grSaveImage1(ttmThread->ttmLayer,
+                 pilotTtm->rect.x,
+                 pilotTtm->rect.y,
+                 pilotTtm->rect.width,
+                 pilotTtm->rect.height);
+    return 1;
+}
+#endif
 
 
 static uint32 ttmFindPreviousTag(struct TTtmSlot *ttmSlot, uint32 offset)
@@ -228,7 +321,6 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
     char strArg[20];
     int continueLoop = 1;
     struct TTtmSlot *ttmSlot;
-    uint32 opBudget = 8192;
 
 
     grDx = ttmDx;
@@ -263,14 +355,6 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 #endif
 
     while (continueLoop) {
-
-        if (opBudget == 0) {
-            /* Guard against infinite opcode loops inside one tick. */
-            ttmThread->isRunning = 2;
-            break;
-        }
-        opBudget--;
-
         if (offset + 1 >= ttmSlot->dataSize) {
             ttmThread->isRunning = 2;
             break;
@@ -350,6 +434,7 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // for further use by CLEAR_SCREEN
                 // (see WOULDBE.TTM for a nice example)
                 debugMsg("    TTM_UNKNOWN_1 %d", args[0]);
+                ttmThread->currentRegionId = args[0];
                 break;
 
             case 0x1201:
@@ -394,7 +479,12 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // defines the zone to be redrawn at each update ?
                 // but seems not used in the original
                 debugMsg("    SAVE_IMAGE1 %d %d %d %d", args[0], args[1], args[2], args[3]);
+ #ifdef PS1_BUILD
+                if (!ttmApplyRestorePilotSaveImage1(ttmThread))
+                    grSaveImage1(ttmThread->ttmLayer, args[0], args[1], args[2], args[3]);
+ #else
                 grSaveImage1(ttmThread->ttmLayer, args[0], args[1], args[2], args[3]);
+ #endif
                 break;
 
             case 0xA002:
@@ -443,13 +533,18 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // arg : indicates the SAVE_IMAGE1 nb to be used ?
                 debugMsg("    CLEAR_SCREEN %d", args[0]);
 #ifdef PS1_BUILD
-                /* PS1 renderer composites directly into restored background tiles.
-                 * Full-screen clear here causes visible black-frame blinking. */
+                if (ttmApplyRestorePilotClear(ttmThread, args[0]))
+                    break;
+
+                /* Default PS1 path still suppresses generic clears. The pilot
+                 * hook above is intentionally scene-scoped and TTM-scoped. */
 #else
                 grClearScreen(ttmThread->ttmLayer);
 #endif
 #ifdef PS1_BUILD
-                ttmThread->numDrawnSprites = 0;
+                /* Keep replay records on PS1. CLEAR_SCREEN semantics are tied to
+                 * SDL layer clears; wiping records here causes Johnny to vanish
+                 * during delayed scene ticks (e.g. fire-building sequence). */
 #endif
                 break;
 

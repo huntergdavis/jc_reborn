@@ -8,6 +8,11 @@
 # This script:
 #   1. Runs the full rebuild
 #   2. Increments the patch version (e.g., 0.3.0 -> 0.3.1)
+
+if [ "$(id -u)" = "0" ]; then
+    echo "ERROR: Do not run this script as root/sudo." >&2
+    exit 1
+fi
 #   3. Copies build artifacts to release/ folder
 #   4. Commits changes and creates a git tag
 #   5. Pushes to GitHub

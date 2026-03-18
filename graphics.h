@@ -32,7 +32,7 @@ struct TTtmResource;
 #define MAX_BMP_SLOTS       6
 #define MAX_SPRITES_PER_BMP 120
 #define MAX_TTM_SLOTS       10
-#define MAX_TTM_THREADS     10
+#define MAX_TTM_THREADS     20
 
 
 struct TAdsScene {
@@ -71,6 +71,7 @@ struct TTtmThread {
     uint8  selectedBmpSlot;
     uint8  fgColor;
     uint8  bgColor;
+    uint16 currentRegionId;
     SDL_Surface *ttmLayer;
 };
 
@@ -121,4 +122,3 @@ void grLoadScreen(char *strArg);
 
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
-

@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "compiled_scene_pack",
+  "pack_id": "stand-ads",
+  "source_manifest": "docs/ps1/research/scene_pack_manifests_2026-03-17/stand-ads.json",
+  "pack_strategy": "ads_cluster",
+  "cluster_key": "STAND.ADS",
+  "ads_names": [
+    "STAND.ADS"
+  ],
+  "scene_indices": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "runtime_requirements": {
+    "max_concurrent_threads": 5,
+    "max_sprite_frames": 35,
+    "peak_memory_bytes": 166164,
+    "memory_components": {
+      "bmp_indexed_bytes": 31200,
+      "ttm_bytes": 7760,
+      "ads_bytes": 2396,
+      "scr_bytes": 112000,
+      "sprite_pointer_bytes": 140,
+      "ttm_slot_overhead_bytes": 16384
+    }
+  },
+  "transition_hints": {
+    "likely_next_pack_ids": [
+      "suzy-ads"
+    ],
+    "high_churn_transitions": [
+      {
+        "from_scene_index": 51,
+        "to_scene_index": 52,
+        "to_pack_id": "suzy-ads",
+        "total_resource_churn": 14,
+        "peak_memory_delta_bytes": 189598
+      }
+    ],
+    "transition_budget_notes": "Derived from analyzer post-processing; not runtime-validated."
+  },
+  "prefetch_hints": {
+    "candidate_scene_indices": [
+      52,
+      53
+    ],
+    "additional_bmps": [
+      "LITEBULB.BMP",
+      "MEANWHIL.BMP",
+      "MRAFT.BMP",
+      "SJMSUZY1.BMP",
+      "SJMSUZY2.BMP",
+      "SJMSUZY3.BMP",
+      "SSUZY1.BMP",
+      "SSUZY2.BMP",
+      "SSUZY3.BMP"
+    ],
+    "additional_scrs": [
+      "SUZBEACH.SCR"
+    ],
+    "additional_ttms": [
+      "MEANWHIL.TTM",
+      "SJMSUZY.TTM",
+      "SUZYCITY.TTM"
+    ],
+    "heuristic": "transition_churn_then_ads_family_union",
+    "confidence": "low"
+  },
+  "payload": {
+    "path": "docs/ps1/research/compiled_packs_2026-03-17/stand-ads/pack_payload.bin",
+    "alignment_bytes": 2048,
+    "payload_bytes": 192512,
+    "resource_count": 7,
+    "padding_bytes": 5798,
+    "header_bytes": 232,
+    "first_resource_offset": 2048,
+    "staged_path": "jc_resources/packs/STAND.PAK",
+    "staged_filename": "STAND.PAK",
+    "prefetch_ads_names": [
+      "SUZY.ADS"
+    ]
+  },
+  "entries": [
+    {
+      "resource_type": "ads",
+      "name": "STAND.ADS",
+      "source_path": "jc_resources/extracted/ads/STAND.ADS",
+      "offset_bytes": 2048,
+      "size_bytes": 2396,
+      "aligned_size_bytes": 4096,
+      "sector_index": 1,
+      "sector_count": 2,
+      "sha256": "ae2af07205b1f276ba3f5e80f86d8c1da82d49333154d0d672459f3da0cc0680"
+    },
+    {
+      "resource_type": "scr",
+      "name": "ISLETEMP.SCR",
+      "source_path": "jc_resources/extracted/scr/ISLETEMP.SCR",
+      "offset_bytes": 6144,
+      "size_bytes": 112000,
+      "aligned_size_bytes": 112640,
+      "sector_index": 3,
+      "sector_count": 55,
+      "sha256": "656b9ac4e65fe5baf1d980b5c35fdcd966094f24123e1cf34d988eaefa14bf2d"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJAMBWLK.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJAMBWLK.TTM",
+      "offset_bytes": 118784,
+      "size_bytes": 7760,
+      "aligned_size_bytes": 8192,
+      "sector_index": 58,
+      "sector_count": 4,
+      "sha256": "e59d27c19b38134b92f31a73572a6f373a7198cd71053e2d36590a7d763c3344"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJTELE.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJTELE.TTM",
+      "offset_bytes": 126976,
+      "size_bytes": 3826,
+      "aligned_size_bytes": 4096,
+      "sector_index": 62,
+      "sector_count": 2,
+      "sha256": "24da79d25bb513aad5091ed49e5683c046375287306a7ecb8d56391095c7967b"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJ_AMB.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJ_AMB.BMP",
+      "offset_bytes": 131072,
+      "size_bytes": 27484,
+      "aligned_size_bytes": 28672,
+      "sector_index": 64,
+      "sector_count": 14,
+      "sha256": "c7150307b7cb3b008c46522ab4aeaedf9be9e4504c03ec318660d54912d307ac"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJTELE.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJTELE.BMP",
+      "offset_bytes": 159744,
+      "size_bytes": 23824,
+      "aligned_size_bytes": 24576,
+      "sector_index": 78,
+      "sector_count": 12,
+      "sha256": "57fea5d102a0a0d6d972185dc39e8bcf1876bbbbb18a697da79e904762f0035e"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJTELE2.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJTELE2.BMP",
+      "offset_bytes": 184320,
+      "size_bytes": 7376,
+      "aligned_size_bytes": 8192,
+      "sector_index": 90,
+      "sector_count": 4,
+      "sha256": "32310e5504d1f9fa0f29627b9722315d72e4322d88f70ddb9e53db36535ab341"
+    }
+  ]
+}

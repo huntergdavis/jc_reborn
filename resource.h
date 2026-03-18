@@ -191,4 +191,4 @@ void unpinResource(void *resource, const char *type);
 void touchResource(void *resource);
 void checkMemoryBudget(void);
 size_t getTotalMemoryUsed(void);
-
+size_t getMemoryBudget(void);

@@ -5,6 +5,11 @@
 
 set -e
 
+if [ "$(id -u)" = "0" ]; then
+    echo "ERROR: Do not run this script as root/sudo." >&2
+    exit 1
+fi
+
 cd "$(dirname "$0")/.."  # Change to project root
 
 ELF_FILE="${1:-build-ps1/jcreborn.elf}"

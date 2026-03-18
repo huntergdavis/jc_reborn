@@ -24,6 +24,13 @@
 
 /* PS1 CD-ROM sector size */
 #define CD_SECTOR_SIZE 2048
+#define PS1_PACK_MAGIC 0x4B415053u
+#define PS1_PACK_VERSION 1u
+#define PS1_PACK_NAME_BYTES 16
+#define PS1_PACK_PREFETCH_MAX 1
+#define PS1_PACK_HEADER_SIZE 20
+#define PS1_PACK_ENTRY_SIZE 28
+#define PS1_PACK_FILE_MAX 32
 
 /*
  * Build 28: Test different file path formats with debug output
@@ -234,6 +241,28 @@ static uint32 cdFilePos[MAX_CD_FILES];  /* Current position in bytes */
 static uint8 *cdReadBuffer = NULL;
 static uint32 cdReadBufferPos = 0;
 static uint32 cdReadBufferSize = 0;
+
+struct TPs1PackedResourceEntry {
+    uint8 resourceTypeCode;
+    char name[PS1_PACK_NAME_BYTES];
+    uint32 offsetBytes;
+    uint32 sizeBytes;
+};
+
+struct TPs1ActivePack {
+    char adsName[PS1_PACK_NAME_BYTES];
+    char packFile[PS1_PACK_FILE_MAX];
+    char prefetchedAdsName[PS1_PACK_NAME_BYTES];
+    uint16 packId;
+    uint16 entryCount;
+    struct TPs1PackedResourceEntry *entries;
+};
+
+static struct TPs1ActivePack ps1PilotActivePack = {"", "", "", 0, 0, NULL};
+static struct TPs1ActivePack ps1PilotPrefetchPack = {"", "", "", 0, 0, NULL};
+uint16 ps1PilotDbgActivePack = 0;
+uint16 ps1PilotDbgHits = 0;
+uint16 ps1PilotDbgFallbacks = 0;
 
 /* CD-ROM read buffer (1KB static buffer - minimal size for testing) */
 /* Must be 4-byte aligned for DMA operations! */
@@ -787,6 +816,219 @@ uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size)
 
     free(sectorBuffer);
     return result;
+}
+
+static uint32 ps1ReadLe32(const uint8_t *ptr)
+{
+    return ((uint32)ptr[0])
+        | ((uint32)ptr[1] << 8)
+        | ((uint32)ptr[2] << 16)
+        | ((uint32)ptr[3] << 24);
+}
+
+static uint8 ps1PilotResourceTypeCode(const char *resourceType)
+{
+    if (resourceType == NULL) return 0;
+    if (strcmp(resourceType, "ads") == 0) return 1;
+    if (strcmp(resourceType, "scr") == 0) return 2;
+    if (strcmp(resourceType, "ttm") == 0) return 3;
+    if (strcmp(resourceType, "bmp") == 0) return 4;
+    return 0;
+}
+
+static uint16 ps1PilotPackDebugId(const char *adsName)
+{
+    uint32 hash = 0;
+    int i;
+
+    if (adsName == NULL || adsName[0] == '\0')
+        return 0;
+
+    for (i = 0; adsName[i] != '\0'; i++)
+        hash = (hash * 33U) + (uint8)adsName[i];
+
+    return (uint16)((hash % 63U) + 1U);
+}
+
+static void ps1PilotResetPack(struct TPs1ActivePack *pack)
+{
+    if (pack == NULL)
+        return;
+
+    if (pack->entries != NULL) {
+        free(pack->entries);
+        pack->entries = NULL;
+    }
+
+    pack->adsName[0] = '\0';
+    pack->packFile[0] = '\0';
+    pack->prefetchedAdsName[0] = '\0';
+    pack->packId = 0;
+    pack->entryCount = 0;
+}
+
+static void ps1PilotResetActivePack(void)
+{
+    ps1PilotResetPack(&ps1PilotActivePack);
+    ps1PilotDbgActivePack = 0;
+}
+
+static int ps1PilotBuildPackFile(const char *adsName, char *outPath, size_t outPathSize)
+{
+    char stem[PS1_PACK_NAME_BYTES];
+    int i;
+
+    if (adsName == NULL || outPath == NULL || outPathSize == 0)
+        return 0;
+
+    for (i = 0; i < (PS1_PACK_NAME_BYTES - 1) && adsName[i] != '\0' && adsName[i] != '.'; i++)
+        stem[i] = adsName[i];
+    stem[i] = '\0';
+
+    if (stem[0] == '\0')
+        return 0;
+
+    snprintf(outPath, outPathSize, "PACKS\\%s.PAK", stem);
+    return 1;
+}
+
+static int ps1PilotLoadPackIndex(const char *adsName, struct TPs1ActivePack *outPack)
+{
+    uint8_t *headerData;
+    uint32 magic;
+    uint32 version;
+    uint32 entryCount;
+    uint32 firstResourceOffset;
+    uint32 prefetchCount;
+    struct TPs1PackedResourceEntry *entries;
+    char packFile[PS1_PACK_FILE_MAX];
+    uint32 entryBytes;
+    uint32 i;
+
+    if (adsName == NULL || adsName[0] == '\0' || outPack == NULL)
+        return 0;
+
+    if (!ps1PilotBuildPackFile(adsName, packFile, sizeof(packFile)))
+        return 0;
+
+    headerData = ps1_streamRead(packFile, 0, PS1_PACK_HEADER_SIZE);
+    if (headerData == NULL)
+        return 0;
+
+    magic = ps1ReadLe32(headerData + 0);
+    version = ps1ReadLe32(headerData + 4);
+    entryCount = ps1ReadLe32(headerData + 8);
+    firstResourceOffset = ps1ReadLe32(headerData + 12);
+    prefetchCount = ps1ReadLe32(headerData + 16);
+    free(headerData);
+
+    if (magic != PS1_PACK_MAGIC || version != PS1_PACK_VERSION || entryCount == 0)
+        return 0;
+
+    entryBytes = entryCount * PS1_PACK_ENTRY_SIZE;
+    if (firstResourceOffset < PS1_PACK_HEADER_SIZE + entryBytes + (PS1_PACK_PREFETCH_MAX * PS1_PACK_NAME_BYTES))
+        return 0;
+
+    headerData = ps1_streamRead(packFile, 0, firstResourceOffset);
+    if (headerData == NULL)
+        return 0;
+
+    entries = (struct TPs1PackedResourceEntry *)malloc(entryCount * sizeof(*entries));
+    if (entries == NULL) {
+        free(headerData);
+        return 0;
+    }
+
+    for (i = 0; i < entryCount; i++) {
+        const uint8_t *src = headerData + PS1_PACK_HEADER_SIZE + (i * PS1_PACK_ENTRY_SIZE);
+        entries[i].resourceTypeCode = src[0];
+        memcpy(entries[i].name, src + 12, PS1_PACK_NAME_BYTES);
+        entries[i].name[PS1_PACK_NAME_BYTES - 1] = '\0';
+        entries[i].offsetBytes = ps1ReadLe32(src + 4);
+        entries[i].sizeBytes = ps1ReadLe32(src + 8);
+    }
+
+    ps1PilotResetPack(outPack);
+    strncpy(outPack->adsName, adsName, sizeof(outPack->adsName) - 1);
+    outPack->adsName[sizeof(outPack->adsName) - 1] = '\0';
+    strncpy(outPack->packFile, packFile, sizeof(outPack->packFile) - 1);
+    outPack->packFile[sizeof(outPack->packFile) - 1] = '\0';
+    outPack->packId = ps1PilotPackDebugId(adsName);
+    outPack->entryCount = (uint16)entryCount;
+    outPack->entries = entries;
+    outPack->prefetchedAdsName[0] = '\0';
+
+    if (prefetchCount > 0) {
+        const uint8_t *prefetchBase = headerData + PS1_PACK_HEADER_SIZE + entryBytes;
+        memcpy(outPack->prefetchedAdsName, prefetchBase, PS1_PACK_NAME_BYTES);
+        outPack->prefetchedAdsName[PS1_PACK_NAME_BYTES - 1] = '\0';
+    }
+
+    free(headerData);
+    return 1;
+}
+
+static void ps1PilotSetActivePackForAds(const char *adsName)
+{
+    struct TPs1ActivePack tempPack;
+
+    memset(&tempPack, 0, sizeof(tempPack));
+
+    if (adsName != NULL && ps1PilotPrefetchPack.entries != NULL
+        && strcmp(ps1PilotPrefetchPack.adsName, adsName) == 0) {
+        tempPack = ps1PilotActivePack;
+        ps1PilotActivePack = ps1PilotPrefetchPack;
+        ps1PilotPrefetchPack = tempPack;
+    } else if (!ps1PilotLoadPackIndex(adsName, &ps1PilotActivePack)) {
+        ps1PilotResetActivePack();
+        ps1PilotResetPack(&ps1PilotPrefetchPack);
+        return;
+    }
+
+    ps1PilotDbgActivePack = ps1PilotActivePack.packId;
+
+    if (ps1PilotActivePack.prefetchedAdsName[0] != '\0') {
+        if (strcmp(ps1PilotPrefetchPack.adsName, ps1PilotActivePack.prefetchedAdsName) != 0)
+            ps1PilotLoadPackIndex(ps1PilotActivePack.prefetchedAdsName, &ps1PilotPrefetchPack);
+    } else {
+        ps1PilotResetPack(&ps1PilotPrefetchPack);
+    }
+}
+
+static const struct TPs1PackedResourceEntry *ps1PilotFindEntry(const char *resourceType, const char *name)
+{
+    uint8 typeCode = ps1PilotResourceTypeCode(resourceType);
+    int i;
+
+    if (ps1PilotActivePack.entries == NULL || typeCode == 0 || name == NULL)
+        return NULL;
+
+    for (i = 0; i < ps1PilotActivePack.entryCount; i++) {
+        const struct TPs1PackedResourceEntry *entry = &ps1PilotActivePack.entries[i];
+        if (entry->resourceTypeCode == typeCode && strcmp(entry->name, name) == 0)
+            return entry;
+    }
+
+    return NULL;
+}
+
+static uint8_t *ps1PilotLoadResource(const char *resourceType, const char *name, uint32 *inOutSize)
+{
+    const struct TPs1PackedResourceEntry *entry = ps1PilotFindEntry(resourceType, name);
+    uint8_t *data;
+
+    if (entry == NULL)
+        return NULL;
+
+    data = ps1_streamRead(ps1PilotActivePack.packFile, entry->offsetBytes, entry->sizeBytes);
+    if (data != NULL) {
+        if (inOutSize != NULL)
+            *inOutSize = entry->sizeBytes;
+        if (ps1PilotDbgHits < 0xFFFFU)
+            ps1PilotDbgHits++;
+    }
+
+    return data;
 }
 
 /*
@@ -1593,9 +1835,23 @@ uint8 *ps1_uncompress(PS1File *f, uint8 compressionMethod, uint32 inSize, uint32
  */
 void ps1_loadBmpData(struct TBmpResource *bmpResource)
 {
+    uint32 readSize;
+
     if (bmpResource == NULL) return;
     if (bmpResource->uncompressedData != NULL) return;  /* Already loaded */
     if (bmpResource->uncompressedSize == 0) return;  /* No data to read */
+
+    readSize = bmpResource->uncompressedSize;
+    bmpResource->uncompressedData = ps1PilotLoadResource("bmp", bmpResource->resName, &readSize);
+    if (bmpResource->uncompressedData != NULL) {
+        bmpResource->uncompressedSize = readSize;
+        return;
+    }
+
+    /* Once an ADS-family pack is active, BMP payloads are also authoritative.
+     * The callers already handle a missing BMP by skipping sprite load cleanly. */
+    if (ps1PilotActivePack.entries != NULL)
+        return;
 
     /* Build path to pre-extracted file */
     char path[64];
@@ -1611,7 +1867,7 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource)
     uint32 fileSize = cdfile.size;
 
     /* Use the smaller of file size and metadata size */
-    uint32 readSize = (fileSize < bmpResource->uncompressedSize) ? fileSize : bmpResource->uncompressedSize;
+    readSize = (fileSize < bmpResource->uncompressedSize) ? fileSize : bmpResource->uncompressedSize;
 
     /* Build path for ps1_streamRead (without leading backslash and ;1) */
     snprintf(path, sizeof(path), "BMP\\%s", bmpResource->resName);
@@ -1634,9 +1890,23 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource)
  */
 void ps1_loadScrData(struct TScrResource *scrResource)
 {
+    uint32 readSize;
+
     if (scrResource == NULL) return;
     if (scrResource->uncompressedData != NULL) return;  /* Already loaded */
     if (scrResource->uncompressedSize == 0) return;  /* No data to read */
+
+    readSize = scrResource->uncompressedSize;
+    scrResource->uncompressedData = ps1PilotLoadResource("scr", scrResource->resName, &readSize);
+    if (scrResource->uncompressedData != NULL) {
+        scrResource->uncompressedSize = readSize;
+        return;
+    }
+
+    /* Once an ADS-family pack is active, the scene-root SCR payload is also
+     * authoritative. Keep fallback only for more dynamic secondary assets. */
+    if (ps1PilotActivePack.entries != NULL)
+        return;
 
     /* Build path to pre-extracted file: "SCR/OCEAN00.SCR" etc.
      * ps1_streamRead will prepend backslash and append ";1" */
@@ -1655,9 +1925,23 @@ void ps1_loadScrData(struct TScrResource *scrResource)
  */
 void ps1_loadTtmData(struct TTtmResource *ttmResource)
 {
+    uint32 readSize;
+
     if (ttmResource == NULL) return;
     if (ttmResource->uncompressedData != NULL) return;  /* Already loaded */
     if (ttmResource->uncompressedSize == 0) return;  /* No data to read */
+
+    readSize = ttmResource->uncompressedSize;
+    ttmResource->uncompressedData = ps1PilotLoadResource("ttm", ttmResource->resName, &readSize);
+    if (ttmResource->uncompressedData != NULL) {
+        ttmResource->uncompressedSize = readSize;
+        return;
+    }
+
+    /* Once an ADS-family pack is active, TTM bytecode should come from the pack.
+     * Keep extracted-file fallback only for BMP during rollout validation. */
+    if (ps1PilotActivePack.entries != NULL)
+        return;
 
     /* Build path to pre-extracted file: "TTM/FISHWALK.TTM" etc.
      * ps1_streamRead will prepend backslash and append ";1" */
@@ -1675,9 +1959,25 @@ void ps1_loadTtmData(struct TTtmResource *ttmResource)
  */
 void ps1_loadAdsData(struct TAdsResource *adsResource)
 {
+    uint32 readSize;
+
     if (adsResource == NULL) return;
     if (adsResource->uncompressedData != NULL) return;  /* Already loaded */
     if (adsResource->uncompressedSize == 0) return;  /* No data to read */
+
+    ps1PilotSetActivePackForAds(adsResource->resName);
+    readSize = adsResource->uncompressedSize;
+    adsResource->uncompressedData = ps1PilotLoadResource("ads", adsResource->resName, &readSize);
+    if (adsResource->uncompressedData != NULL) {
+        adsResource->uncompressedSize = readSize;
+        return;
+    }
+
+    /* Once an ADS-family pack is active, the ADS payload itself is authoritative.
+     * Keep fallback only for secondary assets (BMP/SCR/TTM) while validating pack
+     * coverage; if the ADS root record is missing, fail the scene load cleanly. */
+    if (ps1PilotActivePack.entries != NULL)
+        return;
 
     /* Build path to pre-extracted file: "ADS/STAND.ADS" etc.
      * ps1_streamRead will prepend backslash and append ";1" */

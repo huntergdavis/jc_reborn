@@ -1,295 +1,499 @@
-__text_start T ffffffff80010000 	/project/jc_reborn.c:279
-main T ffffffff80010000 900	/project/jc_reborn.c:278
-fatalError T ffffffff80010900 5c	/project/utils.c:56
-safe_malloc T ffffffff8001095c 38	/project/utils.c:82
-parseResourceFiles T ffffffff80010994 3e8	/project/resource.c:617
-findBmpResource T ffffffff80010d7c e0	/project/resource.c:640
-findScrResource T ffffffff80010e5c e0	/project/resource.c:656
-initLRUCache T ffffffff80010f3c 130	/project/resource.c:692
-createBgTileRAM.constprop.0 t ffffffff8001106c 12c	/project/graphics_ps1.c:1486
-grLoadPalette T ffffffff80011198 108	/project/graphics_ps1.c:279
-grReleaseBmp T ffffffff800112a0 c4	/project/graphics_ps1.c:744
-grLoadBmpRAM T ffffffff80011364 1f0	/project/graphics_ps1.c:766
-grCompositeToBackground T ffffffff80011554 1ec	/project/graphics_ps1.c:903
-grDrawSpriteExt T ffffffff80011740 270	/project/graphics_ps1.c:1222
-grSaveCleanBgTiles T ffffffff800119b0 124	/project/graphics_ps1.c:1322
-grDrawBackground T ffffffff80011ad4 e8	/project/graphics_ps1.c:1381
-grLoadScreen T ffffffff80011bbc 60c	/project/graphics_ps1.c:1529
-ps1_getByte.part.0 t ffffffff800121c8 54	/project/cdrom_ps1.c:1434
-ps1_getBits.part.0 t ffffffff8001221c 13c	/project/cdrom_ps1.c:1454
-cdromInit T ffffffff80012358 54	/project/cdrom_ps1.c:246
-cdromResetState T ffffffff800123ac 88	/project/cdrom_ps1.c:534
-ps1_fopen T ffffffff80012434 228	/project/cdrom_ps1.c:554
-ps1_fread T ffffffff8001265c cc	/project/cdrom_ps1.c:633
-ps1_fseek T ffffffff80012728 78	/project/cdrom_ps1.c:657
-ps1_fclose T ffffffff800127a0 64	/project/cdrom_ps1.c:694
-ps1_streamRead T ffffffff80012804 16c	/project/cdrom_ps1.c:728
-ps1_readUint8 T ffffffff80012970 48	/project/cdrom_ps1.c:798
-ps1_readUint16 T ffffffff800129b8 48	/project/cdrom_ps1.c:806
-ps1_readUint32 T ffffffff80012a00 48	/project/cdrom_ps1.c:814
-ps1_getString T ffffffff80012a48 10c	/project/cdrom_ps1.c:822
-ps1_readUint16Block T ffffffff80012b54 14c	/project/cdrom_ps1.c:835
-ps1_readUint8Block T ffffffff80012ca0 74	/project/cdrom_ps1.c:844
-ps1_parsePalResource T ffffffff80012d14 32c	/project/cdrom_ps1.c:1084
-ps1_uncompressLZW T ffffffff80013040 320	/project/cdrom_ps1.c:1513
-ps1_uncompressRLE T ffffffff80013360 204	/project/cdrom_ps1.c:1636
-ps1_parseAdsResource T ffffffff80013564 854	/project/cdrom_ps1.c:858
-ps1_parseTtmResource T ffffffff80013db8 69c	/project/cdrom_ps1.c:1276
-ps1_parseScrResource T ffffffff80014454 4cc	/project/cdrom_ps1.c:1140
-ps1_parseBmpResource T ffffffff80014920 55c	/project/cdrom_ps1.c:987
-ps1_loadBmpData T ffffffff80014e7c 104	/project/cdrom_ps1.c:1692
-ps1DebugInit T ffffffff80014f80 80	/project/ps1_debug.c:43
-ps1DebugPrint T ffffffff80015000 6c	/project/ps1_debug.c:78
-ps1DebugFlush T ffffffff8001506c c8	/project/ps1_debug.c:95
-ps1DebugWait T ffffffff80015134 13c	/project/ps1_debug.c:119
-ps1DebugError T ffffffff80015270 b8	/project/ps1_debug.c:172
-vprintf T ffffffff80015328 48	/project/ps1_stubs.c:21
-fprintf T ffffffff80015370 4c	/project/ps1_stubs.c:133
-vfprintf T ffffffff800153bc 20	/project/ps1_stubs.c:145
-exit T ffffffff800153dc 20	/project/ps1_stubs.c:174
-atoi T ffffffff800153fc c0	/project/ps1_stubs.c:186
-getenv T ffffffff800154bc 8	/project/ps1_stubs.c:216
-_vblank_handler t ffffffff800154c4 28	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:40
-_process_drawop t ffffffff800154ec a8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:47
-_gpu_irq_handler t ffffffff80015594 30	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:68
-_gpu_dma_handler t ffffffff800155c4 24	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:75
-_default_vsync_halt t ffffffff800155e8 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:131
-ResetGraph T ffffffff80015640 12c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:82
-VSync T ffffffff8001576c 170	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:143
-SetDrawOpType T ffffffff800158dc 10	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:195
-EnqueueDrawOp T ffffffff800158ec c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:199
-DrawSync T ffffffff800159b4 cc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:239
-_send_linked_list T ffffffff80015a80 78	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:15
-DrawOTag T ffffffff80015af8 18	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:43
-ClearOTagR T ffffffff80015b10 5c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:120
-_build_drawenv_ot t ffffffff80015b6c 1f0	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:37
-SetDefDrawEnv T ffffffff80015d5c 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:81
-PutDrawEnv T ffffffff80015db0 38	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:129
-SetDefDispEnv T ffffffff80015de8 34	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:149
-PutDispEnv T ffffffff80015e1c 18c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:169
-SetVideoMode T ffffffff80015fa8 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:259
-SetDispMask T ffffffff80015ffc 1c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:276
-FntLoad T ffffffff80016018 164	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:27
-FntOpen T ffffffff8001617c f8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:71
-FntPrint T ffffffff80016274 a0	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:104
-FntFlush T ffffffff80016314 2c0	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:131
-_dma_transfer t ffffffff800165d4 16c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/image.c:30
-LoadImage T ffffffff80016740 70	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/image.c:72
-GetTimInfo T ffffffff800167b0 84	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/image.c:186
-InitGeom T ffffffff80016834 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgte/initgeom.s:11
-_sector_callback t ffffffff80016898 f4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:35
-_poll_retry t ffffffff8001698c d8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:56
-CdReadRetry T ffffffff80016a64 168	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:91
-CdRead T ffffffff80016bcc 8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:119
-CdReadSync T ffffffff80016bd4 10c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:128
-_cd_irq_handler t ffffffff80016ce0 2d4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:101
-CdInit T ffffffff80016fb4 3a4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:205
-CdCommandF T ffffffff80017358 140	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:249
-CdCommand T ffffffff80017498 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:298
-CdControlF T ffffffff800174f0 a8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:321
-CdControl T ffffffff80017598 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:347
-CdSync T ffffffff800175f0 8c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:377
-CdLastPos T ffffffff8001767c 8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:403
-CdStatus T ffffffff80017684 c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:411
-_CdReadIsoDescriptor t ffffffff80017690 1c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:35
-get_pathtable_entry t ffffffff80017858 114	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:298
-resolve_pathtable_path t ffffffff8001796c 98	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:350
-_CdReadIsoDirectory.isra.0 t ffffffff80017a04 14c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:136
-CdSearchFile T ffffffff80017b50 358	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:465
-CdGetSector T ffffffff80017ea8 4c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:35
-CdIntToPos T ffffffff80017ef4 e4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:79
-CdPosToInt T ffffffff80017fd8 90	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:88
-CdMix T ffffffff80018068 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:207
-_global_dma_handler t ffffffff800180bc cc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:79
-_global_isr t ffffffff80018188 bc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:57
-RestartCallback.part.0 t ffffffff80018244 88	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:203
-InterruptCallback T ffffffff800182cc 64	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:103
-DMACallback T ffffffff80018330 ec	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:125
-SetDMAPriority T ffffffff8001841c 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:160
-ResetCallback T ffffffff80018474 b4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:183
-EnterCriticalSection T ffffffff80018528 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/_syscalls.s:13
-ExitCriticalSection T ffffffff80018538 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/_syscalls.s:24
-_96_remove T ffffffff80018548 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/drivers.s:31
-printf T ffffffff80018554 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/stdio.s:119
-InitPAD T ffffffff80018560 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:241
-StartPAD T ffffffff8001856c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:249
-StopPAD T ffffffff80018578 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:257
-ReturnFromException T ffffffff80018584 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:265
-HookEntryInt T ffffffff80018590 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:281
-ChangeClearPAD T ffffffff8001859c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:313
-ChangeClearRCnt T ffffffff800185a8 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:355
-_start W ffffffff800185b4 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/_start.s:16
-InitHeap W ffffffff800185c4 28	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:40
-sbrk W ffffffff800185ec 3c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:53
-TrackHeapUsage W ffffffff80018628 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:64
-malloc W ffffffff80018654 1c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:98
-free W ffffffff8001881c 10c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:236
-memset T ffffffff80018928 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/memset.s:13
-_start_inner T ffffffff80018a78 118	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/start.c:73
-toupper T ffffffff80018b90 1c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:48
-memcpy T ffffffff80018bac 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:68
-memcmp T ffffffff80018bd8 3c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:116
-strcpy T ffffffff80018c14 30	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:143
-strncpy T ffffffff80018c44 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:153
-strcmp T ffffffff80018c98 48	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:164
-strchr T ffffffff80018ce0 40	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:186
-strstr T ffffffff80018d20 84	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:220
-strlen T ffffffff80018da4 3c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:234
-strcat T ffffffff80018de0 64	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:253
-get_arg_in_size T ffffffff80018e44 b8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:102
-vsnprintf T ffffffff80018efc dfc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:376
-vsprintf T ffffffff80019cf8 10	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:783
-_command_flags r ffffffff8001a2f0 1f
-_isr_jmp_buf r ffffffff8001a318 30
-__CTOR_LIST__ D ffffffff8001a4d0 
-__CTOR_END__ D ffffffff8001a4d8 
-__DTOR_LIST__ D ffffffff8001a4e0 
-__DTOR_END__ D ffffffff8001a4e8 
-_gpu_debug_font D ffffffff8001a4e8 840
-_gpu_debug_font_end d ffffffff8001ad28 
-memoryBudget d ffffffff8001ad28 4
-bgB d ffffffff8001ad2c 4
-bgG d ffffffff8001ad30 4
-bgR d ffffffff8001ad34 4
-fontID D ffffffff8001ad38 4
-_vsync_halt_func d ffffffff8001ad3c 4
-__bss_start B ffffffff8001ad44 
-savedX.0 b ffffffff8001ad44 4
-savedY.1 b ffffffff8001ad48 4
-savedH.2 b ffffffff8001ad4c 4
-savedW.3 b ffffffff8001ad50 4
-savedSpriteArea.6 b ffffffff8001ad54 4
-debugMode B ffffffff8001ad58 4
-totalMemoryUsed b ffffffff8001ad5c 4
-globalTick b ffffffff8001ad60 4
-numTtmResources B ffffffff8001ad64 4
-numScrResources B ffffffff8001ad68 4
-numPalResources B ffffffff8001ad6c 4
-numBmpResources B ffffffff8001ad70 4
-numAdsResources B ffffffff8001ad74 4
-palResources B ffffffff8001ad78 4
-grDy B ffffffff8001ad7c 4
-grDx B ffffffff8001ad80 4
-bgTile4Clean b ffffffff8001ad84 4
-bgTile3Clean b ffffffff8001ad88 4
-bgTile1Clean b ffffffff8001ad8c 4
-bgTile0Clean b ffffffff8001ad90 4
-bgTile5b b ffffffff8001ad94 4
-bgTile5a b ffffffff8001ad98 4
-bgTile4 B ffffffff8001ad9c 4
-bgTile3 B ffffffff8001ada0 4
-bgTile2b b ffffffff8001ada4 4
-bgTile2a b ffffffff8001ada8 4
-bgTile1 B ffffffff8001adac 4
-bgTile0 B ffffffff8001adb0 4
-grBackgroundSfc B ffffffff8001adb4 4
-grSavedZonesLayer b ffffffff8001adb8 4
-ttmDecompressCount.0 b ffffffff8001adbc 4
-bmpDecompressCount.3 b ffffffff8001adc0 4
-adsDecompressCount.4 b ffffffff8001adc4 4
-ps1_lzwNC1_curBytes B ffffffff8001adc8 2
-ps1_lzwNC1_result B ffffffff8001adca 2
-ps1_lzwNC1_inputNb B ffffffff8001adcc 1
-ps1_lzwNC1_inputCur B ffffffff8001adcd 1
-ps1_lzwGetBitsCallCount B ffffffff8001add0 4
-ps1_lzwNextbitAfterOldcode B ffffffff8001add4 1
-ps1_lzwCurrentAfterOldcode B ffffffff8001add5 1
-ps1_lzwByteCount B ffffffff8001add8 4
-ps1_lzwReturnedBytes B ffffffff8001addc 8
-ps1_lzwBufBytes B ffffffff8001ade4 4
-ps1_lzwFirstByte B ffffffff8001ade8 1
-ps1_lzwLoopCount B ffffffff8001adec 4
-ps1_lzwDebugCodes B ffffffff8001adf0 8
-ps1_lzwFirstCode B ffffffff8001adf8 2
-ps1_lzwSize b ffffffff8001adfc 4
-ps1_lzwPos b ffffffff8001ae00 4
-ps1_lzwBuffer b ffffffff8001ae04 4
-ps1_maxInOffset b ffffffff8001ae08 4
-ps1_inOffset b ffffffff8001ae0c 4
-ps1_current b ffffffff8001ae10 1
-ps1_nextbit b ffffffff8001ae14 4
-introScrLoaded b ffffffff8001ae18 4
-scrDecompressCount b ffffffff8001ae1c 4
-cdFileInUse b ffffffff8001ae20 8
-numDebugLines b ffffffff8001ae28 4
-_last_hblank b ffffffff8001ae2c 2
-_last_vblank b ffffffff8001ae30 4
-_vblank_counter b ffffffff8001ae34 4
-_drawop_type b ffffffff8001ae38 1
-_queue_length b ffffffff8001ae39 1
-_queue_tail b ffffffff8001ae3a 1
-_queue_head b ffffffff8001ae3b 1
-_drawsync_callback b ffffffff8001ae3c 4
-_vsync_callback b ffffffff8001ae40 4
-_gpu_video_mode B ffffffff8001ae44 4
-_font_clut B ffffffff8001ae48 2
-_font_tpage B ffffffff8001ae4a 2
-_nstreams b ffffffff8001ae4c 4
-_next_saved_rect b ffffffff8001ae50 4
-_pending_sectors b ffffffff8001ae54 4
-_pending_attempts b ffffffff8001ae58 4
-_read_timeout b ffffffff8001ae5c 4
-_read_addr b ffffffff8001ae60 4
-_read_result b ffffffff8001ae64 4
-_sector_size b ffffffff8001ae68 4
-_total_sectors b ffffffff8001ae6c 4
-_read_callback b ffffffff8001ae70 4
-_cd_media_changed B ffffffff8001ae74 4
-_cd_override_callback B ffffffff8001ae78 4
-_sync_pending b ffffffff8001ae7c 1
-_ack_pending b ffffffff8001ae7d 1
-_last_error b ffffffff8001ae7e 1
-_last_irq b ffffffff8001ae7f 1
-_last_status b ffffffff8001ae80 1
-_last_pos b ffffffff8001ae84 4
-_last_mode b ffffffff8001ae88 1
-_last_command b ffffffff8001ae89 1
-_result_ptr b ffffffff8001ae8c 4
-_pause_callback b ffffffff8001ae90 4
-_sync_callback b ffffffff8001ae94 4
-_ready_callback b ffffffff8001ae98 4
-_cd_iso_error b ffffffff8001ae9c 4
-_cd_iso_directory_len b ffffffff8001aea0 4
-_cd_iso_directory_buff b ffffffff8001aea4 4
-_cd_iso_pathtable_buff b ffffffff8001aea8 4
-_cd_iso_last_dir_lba b ffffffff8001aeac 4
-_isr_installed b ffffffff8001aeb0 4
-_saved_dma_dicr b ffffffff8001aeb4 4
-_saved_dma_dpcr b ffffffff8001aeb8 4
-_saved_irq_mask b ffffffff8001aebc 2
-_num_dma_handlers b ffffffff8001aec0 4
-_alloc_tail b ffffffff8001aec4 4
-_alloc_head b ffffffff8001aec8 4
-_alloc_start b ffffffff8001aecc 4
-_heap_alloc_max b ffffffff8001aed0 4
-_heap_alloc b ffffffff8001aed4 4
-_heap_limit b ffffffff8001aed8 4
-_heap_end b ffffffff8001aedc 4
-_heap_start b ffffffff8001aee0 4
-__argv B ffffffff8001aee4 4
-__argc B ffffffff8001aee8 4
-gamePrimBuf.4 b ffffffff8001aeec 2000
-gameOT.5 b ffffffff8001ceec 20
-islandSlot.7 b ffffffff8001cf0c b6c
-gameTtmSlot.8 b ffffffff8001da78 b6c
-mapFile b ffffffff8001e5e4 14
-ttmResources B ffffffff8001e5f8 190
-scrResources B ffffffff8001e788 50
-bmpResources B ffffffff8001e7d8 320
-adsResources B ffffffff8001eaf8 190
-ttmPalette B ffffffff8001ec88 20
-ps1_lzwNC1_bits B ffffffff8001eca8 9
-ps1_decodeStack b ffffffff8001ecb4 1000
-ps1_codeTable b ffffffff8001fcb4 4000
-_gp d ffffffff80022d20 
-ps1FilePool b ffffffff80023cb4 120
-cdFilePos b ffffffff80023dd4 20
-debugLines b ffffffff80023df4 640
-_draw_queue b ffffffff80024434 100
-_stream b ffffffff80024534 e0
-_saved_rects b ffffffff80024614 80
-_cd_iso_descriptor_buff b ffffffff80024694 800
-_isr_stack b ffffffff80024e94 1000
-_dma_handlers b ffffffff80025e94 1c
-_irq_handlers b ffffffff80025eb0 2c
-_end B ffffffff80025edc 
+__text_start T ffffffff80010000 	/project/jc_reborn.c:443
+main T ffffffff80010000 710	/project/jc_reborn.c:442
+fatalError T ffffffff80010710 50	/project/utils.c:56
+debugMsg T ffffffff80010760 54	/project/utils.c:77
+safe_malloc T ffffffff800107b4 38	/project/utils.c:89
+peekUint16 T ffffffff800107ec 38	/project/utils.c:183
+peekUint16Block T ffffffff80010824 58	/project/utils.c:194
+getDayOfYear T ffffffff8001087c 8	/project/utils.c:220
+getHour T ffffffff80010884 8	/project/utils.c:236
+getMonthAndDay T ffffffff8001088c 8	/project/utils.c:252
+parseResourceFiles T ffffffff80010894 414	/project/resource.c:626
+findAdsResource T ffffffff80010ca8 b4	/project/resource.c:633
+findBmpResource T ffffffff80010d5c b4	/project/resource.c:654
+findScrResource T ffffffff80010e10 b4	/project/resource.c:676
+findTtmResource T ffffffff80010ec4 b4	/project/resource.c:697
+initLRUCache T ffffffff80010f78 cc	/project/resource.c:722
+touchResource T ffffffff80011044 100	/project/resource.c:759
+pinResource T ffffffff80011144 108	/project/resource.c:789
+unpinResource T ffffffff8001124c 100	/project/resource.c:813
+checkMemoryBudget T ffffffff8001134c 38c	/project/resource.c:845
+getTotalMemoryUsed T ffffffff800116d8 c	/project/resource.c:918
+getMemoryBudget T ffffffff800116e4 c	/project/resource.c:922
+storyPickScene t ffffffff800116f0 d4	/project/story.c:86
+storyPlay T ffffffff800117c4 8f4	/project/story.c:238
+walkInit T ffffffff800120b8 104	/project/walk.c:50
+walkAnimate T ffffffff800121bc 440	/project/walk.c:77
+calcPathRecurse t ffffffff800125fc 194	/project/calcpath.c:50
+calcPath T ffffffff80012790 1fc	/project/calcpath.c:81
+adsActorNearMatch t ffffffff8001298c cc	/project/ads.c:202
+adsUseRestorePilotReplayPolicy t ffffffff80012a58 78	/project/ads.c:151
+adsCaptureHandoffReplay t ffffffff80012ad0 114	/project/ads.c:343
+adsStopScene t ffffffff80012be4 80	/project/ads.c:664
+adsAddScene t ffffffff80012c64 350	/project/ads.c:590
+adsMergeReplayByProximity.part.0.constprop.0 t ffffffff80012fb4 2fc	/project/ads.c:266
+adsCaptureReplayRecords t ffffffff800132b0 24c	/project/ads.c:217
+adsRecoverMissingActor.constprop.0 t ffffffff800134fc 2e4	/project/ads.c:398
+adsPlayChunk t ffffffff800137e0 994	/project/ads.c:899
+adsInit T ffffffff80014174 148	/project/ads.c:809
+adsPlaySingleTtm T ffffffff800142bc 100	/project/ads.c:868
+adsPlay T ffffffff800143bc 1084	/project/ads.c:1112
+adsPlayBench T ffffffff80015440 1b4	/project/ads.c:1476
+adsPlayIntro T ffffffff800155f4 48	/project/ads.c:1524
+adsInitIsland T ffffffff8001563c 74	/project/ads.c:1534
+adsReleaseIsland T ffffffff800156b0 60	/project/ads.c:1565
+adsNoIsland T ffffffff80015710 2c	/project/ads.c:1578
+adsPlayWalk T ffffffff8001573c 460	/project/ads.c:1593
+ttmFindTag T ffffffff80015b9c 84	/project/ttm.c:166
+ttmLoadTtm T ffffffff80015c20 210	/project/ttm.c:186
+ttmInitSlot T ffffffff80015e30 54	/project/ttm.c:278
+ttmResetSlot T ffffffff80015e84 ac	/project/ttm.c:294
+ttmPlay T ffffffff80015f30 fb0	/project/ttm.c:314
+islandAnimate T ffffffff80016ee0 264	/project/island.c:166
+islandInit T ffffffff80017144 514	/project/island.c:51
+islandRedrawWave T ffffffff80017658 28	/project/island.c:222
+islandClearWaveCache T ffffffff80017680 8	/project/island.c:235
+islandInitHoliday T ffffffff80017688 168	/project/island.c:241
+benchInit T ffffffff800177f0 3c	/project/bench.c:34
+benchPlay T ffffffff8001782c 88	/project/bench.c:41
+cfgFileWrite T ffffffff800178b4 28	/project/config.c:36
+cfgFileRead T ffffffff800178dc a4	/project/config.c:45
+grDrawCounterBar t ffffffff80017980 dc	/project/graphics_ps1.c:168
+grRecordReplaySprite t ffffffff80017a5c 198	/project/graphics_ps1.c:1561
+grCommitTileRectToClean t ffffffff80017bf4 1a4	/project/graphics_ps1.c:2162
+grRestoreTileRect t ffffffff80017d98 1a0	/project/graphics_ps1.c:2090
+createBgTileRAMPartial.constprop.0 t ffffffff80017f38 138	/project/graphics_ps1.c:2376
+createEmptyBgTileRAM.constprop.0 t ffffffff80018070 7c	/project/graphics_ps1.c:1957
+grPs1StatThreadDrop T ffffffff800180ec 1c	/project/graphics_ps1.c:149
+graphicsInit T ffffffff80018108 4b0	/project/graphics_ps1.c:421
+grLoadPalette T ffffffff800185b8 108	/project/graphics_ps1.c:589
+grBeginFrame T ffffffff800186c0 30	/project/graphics_ps1.c:679
+grNewEmptyBackground T ffffffff800186f0 90	/project/graphics_ps1.c:843
+grNewLayer T ffffffff80018780 8	/project/graphics_ps1.c:872
+grFreeLayer T ffffffff80018788 98	/project/graphics_ps1.c:880
+graphicsEnd T ffffffff80018820 48	/project/graphics_ps1.c:570
+grReleaseBmp T ffffffff80018868 b4	/project/graphics_ps1.c:1121
+grLoadBmpRAM T ffffffff8001891c 234	/project/graphics_ps1.c:1147
+grLoadBmp T ffffffff80018b50 8	/project/graphics_ps1.c:894
+grCompositeToBackground T ffffffff80018b58 760	/project/graphics_ps1.c:1369
+grSetClipZone T ffffffff800192b8 44	/project/graphics_ps1.c:1478
+grDrawPixel T ffffffff800192fc 8	/project/graphics_ps1.c:1491
+grDrawLine T ffffffff80019304 8	/project/graphics_ps1.c:1501
+grDrawRect T ffffffff8001930c 218	/project/graphics_ps1.c:1513
+grDrawCircle T ffffffff80019524 8	/project/graphics_ps1.c:1551
+grDrawSprite T ffffffff8001952c 338	/project/graphics_ps1.c:1609
+grCompositeToBackgroundFlip T ffffffff80019864 7dc	/project/graphics_ps1.c:1694
+grReplaySprite T ffffffff8001a040 a0	/project/graphics_ps1.c:789
+grDrawSpriteFlip T ffffffff8001a0e0 368	/project/graphics_ps1.c:1801
+grInitEmptyBackground T ffffffff8001a448 184	/project/graphics_ps1.c:1978
+grSaveCleanBgTiles T ffffffff8001a5cc 1bc	/project/graphics_ps1.c:2011
+grRestoreRectFromCleanBg.part.0 t ffffffff8001a788 20c	/project/graphics_ps1.c:2133
+grCommitRectToCleanBg t ffffffff8001a994 1fc	/project/graphics_ps1.c:2205
+grFreeCleanBgTiles T ffffffff8001ab90 80	/project/graphics_ps1.c:2049
+grEnsureCleanBgTiles T ffffffff8001ac10 50	/project/graphics_ps1.c:2060
+grRestoreBgTiles T ffffffff8001ac60 104	/project/graphics_ps1.c:2072
+grClearScreen T ffffffff8001ad64 34	/project/graphics_ps1.c:2237
+grDrawBackground T ffffffff8001ad98 118	/project/graphics_ps1.c:2248
+grUpdateDisplay T ffffffff8001aeb0 75c	/project/graphics_ps1.c:806
+grFadeOut T ffffffff8001b60c 100	/project/graphics_ps1.c:2282
+grLoadScreen T ffffffff8001b70c 688	/project/graphics_ps1.c:2442
+grCopyZoneToBg T ffffffff8001bd94 28	/project/graphics_ps1.c:2631
+grSaveImage1 T ffffffff8001bdbc 28	/project/graphics_ps1.c:2646
+grSaveZone T ffffffff8001bde4 d8	/project/graphics_ps1.c:2654
+grRestoreZone T ffffffff8001bebc ac	/project/graphics_ps1.c:2688
+soundInit T ffffffff8001bf68 1dc	/project/sound_ps1.c:63
+soundEnd T ffffffff8001c144 28	/project/sound_ps1.c:132
+soundPlay T ffffffff8001c16c 12c	/project/sound_ps1.c:145
+eventsInit T ffffffff8001c298 3c	/project/events_ps1.c:44
+eventsWaitTick T ffffffff8001c2d4 1e8	/project/events_ps1.c:59
+cdromInit T ffffffff8001c4bc 54	/project/cdrom_ps1.c:275
+cdromResetState T ffffffff8001c510 88	/project/cdrom_ps1.c:563
+ps1_fopen T ffffffff8001c598 228	/project/cdrom_ps1.c:583
+ps1_fread T ffffffff8001c7c0 cc	/project/cdrom_ps1.c:662
+ps1_fseek T ffffffff8001c88c 78	/project/cdrom_ps1.c:686
+ps1_fclose T ffffffff8001c904 64	/project/cdrom_ps1.c:723
+ps1_streamRead T ffffffff8001c968 16c	/project/cdrom_ps1.c:757
+ps1PilotLoadResource t ffffffff8001cad4 1bc	/project/cdrom_ps1.c:1015
+ps1PilotLoadPackIndex t ffffffff8001cc90 2e8	/project/cdrom_ps1.c:895
+ps1_loadRawFile T ffffffff8001cf78 f8	/project/cdrom_ps1.c:1040
+ps1_readUint8 T ffffffff8001d070 48	/project/cdrom_ps1.c:1071
+ps1_readUint16 T ffffffff8001d0b8 48	/project/cdrom_ps1.c:1079
+ps1_readUint32 T ffffffff8001d100 48	/project/cdrom_ps1.c:1087
+ps1_getString T ffffffff8001d148 10c	/project/cdrom_ps1.c:1095
+ps1_readUint16Block T ffffffff8001d254 14c	/project/cdrom_ps1.c:1108
+ps1_readUint8Block T ffffffff8001d3a0 74	/project/cdrom_ps1.c:1117
+ps1_parseAdsResource T ffffffff8001d414 798	/project/cdrom_ps1.c:1131
+ps1_parseBmpResource T ffffffff8001dbac 3f8	/project/cdrom_ps1.c:1243
+ps1_parsePalResource T ffffffff8001dfa4 32c	/project/cdrom_ps1.c:1312
+ps1_parseScrResource T ffffffff8001e2d0 40c	/project/cdrom_ps1.c:1368
+ps1_parseTtmResource T ffffffff8001e6dc 62c	/project/cdrom_ps1.c:1430
+ps1_loadBmpData T ffffffff8001ed08 14c	/project/cdrom_ps1.c:1836
+ps1_loadScrData T ffffffff8001ee54 b0	/project/cdrom_ps1.c:1891
+ps1_loadTtmData T ffffffff8001ef04 b0	/project/cdrom_ps1.c:1926
+ps1_loadAdsData T ffffffff8001efb4 2b4	/project/cdrom_ps1.c:1960
+ps1DebugInit T ffffffff8001f268 80	/project/ps1_debug.c:43
+ps1DebugPrint T ffffffff8001f2e8 6c	/project/ps1_debug.c:78
+ps1DebugFlush T ffffffff8001f354 c8	/project/ps1_debug.c:95
+ps1DebugWait T ffffffff8001f41c 13c	/project/ps1_debug.c:119
+ps1DebugError T ffffffff8001f558 100	/project/ps1_debug.c:172
+vprintf T ffffffff8001f658 48	/project/ps1_stubs.c:21
+fprintf T ffffffff8001f6a0 4c	/project/ps1_stubs.c:133
+atoi T ffffffff8001f6ec c0	/project/ps1_stubs.c:186
+SDL_GetTicks T ffffffff8001f7ac 14	/project/ps1_stubs.c:248
+__muldf3 T ffffffff8001f7c0 6b0	/home/runner/work/PSn00bSDK/PSn00bSDK/gcc_linux/mipsel-none-elf/soft-float/libgcc/../../../../gcc-12.3.0/libgcc/soft-fp/muldf3.c:35
+__floatunsidf T ffffffff8001fe70 c4	/home/runner/work/PSn00bSDK/PSn00bSDK/gcc_linux/mipsel-none-elf/soft-float/libgcc/../../../../gcc-12.3.0/libgcc/soft-fp/floatunsidf.c:36
+__clzsi2 T ffffffff8001ff34 90	/home/runner/work/PSn00bSDK/PSn00bSDK/gcc_linux/mipsel-none-elf/soft-float/libgcc/../../../../gcc-12.3.0/libgcc/libgcc2.c:686
+_vblank_handler t ffffffff8001ffc4 28	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:40
+_process_drawop t ffffffff8001ffec a8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:47
+_gpu_irq_handler t ffffffff80020094 30	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:68
+_gpu_dma_handler t ffffffff800200c4 24	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:75
+_default_vsync_halt t ffffffff800200e8 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:131
+ResetGraph T ffffffff80020140 12c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:82
+VSync T ffffffff8002026c 170	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:143
+SetDrawOpType T ffffffff800203dc 10	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:195
+EnqueueDrawOp T ffffffff800203ec c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:199
+DrawSync T ffffffff800204b4 cc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/common.c:239
+_send_linked_list T ffffffff80020580 78	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:15
+DrawOTag T ffffffff800205f8 18	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:43
+ClearOTagR T ffffffff80020610 5c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/drawing.c:120
+_build_drawenv_ot t ffffffff8002066c 1f0	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:37
+SetDefDrawEnv T ffffffff8002085c 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:81
+PutDrawEnv T ffffffff800208b0 38	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:129
+SetDefDispEnv T ffffffff800208e8 34	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:149
+PutDispEnv T ffffffff8002091c 18c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:169
+SetVideoMode T ffffffff80020aa8 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:259
+SetDispMask T ffffffff80020afc 1c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/env.c:276
+FntLoad T ffffffff80020b18 164	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:27
+FntOpen T ffffffff80020c7c f8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:71
+FntPrint T ffffffff80020d74 a0	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:104
+FntFlush T ffffffff80020e14 2c0	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/font.c:131
+_dma_transfer t ffffffff800210d4 16c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/image.c:30
+LoadImage T ffffffff80021240 70	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/image.c:72
+GetTimInfo T ffffffff800212b0 84	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgpu/image.c:186
+InitGeom T ffffffff80021334 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxgte/initgeom.s:11
+_dma_transfer t ffffffff80021398 138	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxspu/common.c:38
+_manual_write t ffffffff800214d0 10c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxspu/common.c:74
+SpuInit T ffffffff800215dc 170	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxspu/common.c:111
+SpuWrite T ffffffff8002174c 64	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxspu/common.c:172
+SpuSetTransferMode T ffffffff800217b0 c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxspu/common.c:196
+SpuSetTransferStartAddr T ffffffff800217bc 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxspu/common.c:205
+SpuIsTransferCompleted T ffffffff800217e8 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxspu/common.c:217
+_sector_callback t ffffffff8002183c f4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:35
+_poll_retry t ffffffff80021930 d8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:56
+CdReadRetry T ffffffff80021a08 168	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:91
+CdRead T ffffffff80021b70 8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:119
+CdReadSync T ffffffff80021b78 10c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/cdread.c:128
+_cd_irq_handler t ffffffff80021c84 2d4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:101
+CdInit T ffffffff80021f58 3a4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:205
+CdCommandF T ffffffff800222fc 140	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:249
+CdCommand T ffffffff8002243c 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:298
+CdControlF T ffffffff80022494 a8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:321
+CdControl T ffffffff8002253c 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:347
+CdSync T ffffffff80022594 8c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:377
+CdLastPos T ffffffff80022620 8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:403
+CdStatus T ffffffff80022628 c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/common.c:411
+_CdReadIsoDescriptor t ffffffff80022634 1c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:35
+get_pathtable_entry t ffffffff800227fc 114	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:298
+resolve_pathtable_path t ffffffff80022910 98	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:350
+_CdReadIsoDirectory.isra.0 t ffffffff800229a8 14c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:136
+CdSearchFile T ffffffff80022af4 358	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/isofs.c:465
+CdGetSector T ffffffff80022e4c 4c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:35
+CdIntToPos T ffffffff80022e98 e4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:79
+CdPosToInt T ffffffff80022f7c 90	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:88
+CdMix T ffffffff8002300c 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxcd/misc.c:207
+_global_dma_handler t ffffffff80023060 cc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:79
+_global_isr t ffffffff8002312c bc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:57
+RestartCallback.part.0 t ffffffff800231e8 88	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:203
+InterruptCallback T ffffffff80023270 64	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:103
+DMACallback T ffffffff800232d4 ec	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:125
+SetDMAPriority T ffffffff800233c0 58	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:160
+ResetCallback T ffffffff80023418 b4	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxetc/interrupts.c:183
+EnterCriticalSection T ffffffff800234cc 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/_syscalls.s:13
+ExitCriticalSection T ffffffff800234dc 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/_syscalls.s:24
+_96_remove T ffffffff800234ec 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/drivers.s:31
+putchar T ffffffff800234f8 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/stdio.s:95
+printf T ffffffff80023504 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/stdio.s:119
+GetRCnt T ffffffff80023510 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:129
+InitPAD T ffffffff8002351c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:241
+StartPAD T ffffffff80023528 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:249
+StopPAD T ffffffff80023534 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:257
+ReturnFromException T ffffffff80023540 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:265
+HookEntryInt T ffffffff8002354c 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:281
+ChangeClearPAD T ffffffff80023558 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:313
+ChangeClearRCnt T ffffffff80023564 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/psxapi/sys.s:355
+_start W ffffffff80023570 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/_start.s:16
+InitHeap W ffffffff80023580 28	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:40
+sbrk W ffffffff800235a8 3c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:53
+TrackHeapUsage W ffffffff800235e4 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:64
+malloc W ffffffff80023610 1c8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:98
+free W ffffffff800237d8 10c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/malloc.c:236
+memset T ffffffff800238e4 	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/memset.s:13
+rand T ffffffff80023a34 28	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/misc.c:44
+srand T ffffffff80023a5c 8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/misc.c:51
+_start_inner T ffffffff80023a64 118	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/start.c:73
+toupper T ffffffff80023b7c 1c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:48
+memcpy T ffffffff80023b98 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:68
+memcmp T ffffffff80023bc4 3c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:116
+strcpy T ffffffff80023c00 30	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:143
+strncpy T ffffffff80023c30 54	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:153
+strcmp T ffffffff80023c84 48	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:164
+strchr T ffffffff80023ccc 40	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:186
+strlen T ffffffff80023d0c 3c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:234
+strcat T ffffffff80023d48 64	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/string.c:253
+get_arg_in_size T ffffffff80023dac b8	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:102
+vsnprintf T ffffffff80023e64 dfc	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:376
+vsprintf T ffffffff80024c60 10	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:783
+sprintf T ffffffff80024c70 38	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:788
+snprintf T ffffffff80024ca8 2c	/home/runner/work/PSn00bSDK/PSn00bSDK/sdk/libpsn00b/libc/vsprintf.c:803
+walkDataEndHeadings r ffffffff80024f88 90
+walkDataStartHeadings r ffffffff80025018 90
+walkDataBookmarksTurns r ffffffff800250a8 18
+walkDataBookmarks r ffffffff800250c0 90
+walkMatrix r ffffffff800251d8 3f0
+gPs1RestorePilotTtms r ffffffff80025e0c 20
+__clz_tab R ffffffff80026358 100
+_dummy_block r ffffffff80026458 10
+_command_flags r ffffffff80026480 1f
+_isr_jmp_buf r ffffffff800264a8 30
+__CTOR_LIST__ D ffffffff80026660 
+__CTOR_END__ D ffffffff80026668 
+__DTOR_LIST__ D ffffffff80026670 
+__DTOR_END__ D ffffffff80026678 
+storyScenes d ffffffff80026678 ad4
+walkData d ffffffff8002714c f48
+_gpu_debug_font D ffffffff80028094 840
+_gpu_debug_font_end d ffffffff800288d4 
+result.0 d ffffffff800288d8 5
+storyCurrentDay d ffffffff800288f8 4
+x.0 d ffffffff800288fc 4
+ps1ConfigState d ffffffff80028900 8
+nextVRAMY d ffffffff80028908 2
+nextVRAMX d ffffffff8002890a 2
+gStatBmpMinLoaded d ffffffff8002890c 2
+grPs1TelemetryEnabled D ffffffff80028910 4
+bgB d ffffffff80028914 4
+bgG d ffffffff80028918 4
+bgR d ffffffff8002891c 4
+fontID D ffffffff80028920 4
+_vsync_halt_func d ffffffff80028924 4
+_transfer_addr d ffffffff80028928 2
+__bss_start B ffffffff80028930 
+numArgs b ffffffff80028930 4
+argIsland b ffffffff80028934 4
+argPlayAll b ffffffff80028938 4
+argAds b ffffffff8002893c 4
+argTtm b ffffffff80028940 4
+argBench b ffffffff80028944 4
+debugMode B ffffffff80028948 4
+totalMemoryUsed b ffffffff8002894c 4
+globalTick b ffffffff80028950 4
+numTtmResources B ffffffff80028954 4
+numScrResources B ffffffff80028958 4
+numPalResources B ffffffff8002895c 4
+numBmpResources B ffffffff80028960 4
+numAdsResources B ffffffff80028964 4
+palResources B ffffffff80028968 4
+ps1StoryDbgSeq B ffffffff8002896c 2
+ps1StoryDbgNextHdg B ffffffff8002896e 2
+ps1StoryDbgNextSpot B ffffffff80028970 2
+ps1StoryDbgPrevHdg B ffffffff80028972 2
+ps1StoryDbgPrevSpot B ffffffff80028974 2
+ps1StoryDbgSceneTag B ffffffff80028976 2
+ps1StoryDbgPhase B ffffffff80028978 2
+data.0 b ffffffff8002897c 4
+isBehindTree b ffffffff80028980 4
+hasArrived b ffffffff80028984 4
+lastTurn b ffffffff80028988 4
+increment b ffffffff8002898c 4
+finalHdg b ffffffff80028990 4
+finalSpot b ffffffff80028994 4
+nextHdg b ffffffff80028998 4
+nextSpot b ffffffff8002899c 4
+currentHdg b ffffffff800289a0 4
+currentSpot b ffffffff800289a4 4
+walkPath b ffffffff800289a8 4
+pathLen b ffffffff800289ac 4
+dstNode b ffffffff800289b0 4
+numPaths b ffffffff800289b4 4
+gHandoffReplayValid b ffffffff800289b8 1
+gHandoffReplayCount b ffffffff800289b9 1
+ps1AdsDbgRecordedSpritesFrame B ffffffff800289ba 2
+ps1AdsDbgPlayedThreadsFrame B ffffffff800289bc 2
+ps1AdsDbgNoDrawThreadsFrame B ffffffff800289be 2
+ps1AdsDbgMergeCarryFrame B ffffffff800289c0 2
+ps1AdsDbgReplayDrawFrame B ffffffff800289c2 2
+ps1AdsDbgReplayTryFrame B ffffffff800289c4 2
+ps1AdsDbgReplayCount B ffffffff800289c6 2
+ps1AdsDbgSceneTag B ffffffff800289c8 2
+ps1AdsDbgSceneSlot B ffffffff800289ca 2
+ps1AdsDbgTerminatedThreads B ffffffff800289cc 2
+ps1AdsDbgRunningThreads B ffffffff800289ce 2
+ps1AdsDbgMini B ffffffff800289d0 2
+ps1AdsDbgActiveThreads B ffffffff800289d2 2
+ps1AdsCurrentTag B ffffffff800289d4 2
+ps1AdsLastPlayLaunched B ffffffff800289d8 4
+adsStopRequested b ffffffff800289dc 4
+numThreads b ffffffff800289e0 4
+adsNumRandOps b ffffffff800289e4 4
+adsNumTags b ffffffff800289e8 4
+adsTags b ffffffff800289ec 4
+ttmThreads b ffffffff800289f0 4
+ttmSlots b ffffffff800289f4 4
+numAdsChunksLocal b ffffffff800289f8 4
+numAdsChunks b ffffffff800289fc 4
+verifyDone.1 b ffffffff80028a00 4
+ttmDy B ffffffff80028a04 4
+ttmDx B ffffffff80028a08 4
+counter1.0 b ffffffff80028a0c 4
+counter2.1 b ffffffff80028a10 4
+lastWaveY b ffffffff80028a14 2
+lastWaveX b ffffffff80028a16 2
+lastWaveSprite b ffffffff80028a18 4
+ps1ConfigInitialized b ffffffff80028a1c 4
+gStatLoadedAds b ffffffff80028a20 2
+gStatLoadedTtm b ffffffff80028a22 2
+gStatLoadedBmp b ffffffff80028a24 2
+gStatBmpMaxRequested b ffffffff80028a26 2
+gStatBmpShortLoads b ffffffff80028a28 4
+gStatBmpFrameCapHits b ffffffff80028a2c 4
+gStatThreadDrops b ffffffff80028a30 4
+grCurrentThread B ffffffff80028a34 4
+grGpuAlreadyInitialized B ffffffff80028a38 4
+grCurrentFrame b ffffffff80028a3c 4
+grUpdateDelay B ffffffff80028a40 4
+grDy B ffffffff80028a44 4
+grDx B ffffffff80028a48 4
+bgTile4Clean b ffffffff80028a4c 4
+bgTile3Clean b ffffffff80028a50 4
+bgTile1Clean b ffffffff80028a54 4
+bgTile0Clean b ffffffff80028a58 4
+bgTile5b b ffffffff80028a5c 4
+bgTile5a b ffffffff80028a60 4
+bgTile4 B ffffffff80028a64 4
+bgTile3 B ffffffff80028a68 4
+bgTile2b b ffffffff80028a6c 4
+bgTile2a b ffffffff80028a70 4
+bgTile1 B ffffffff80028a74 4
+bgTile0 B ffffffff80028a78 4
+grBackgroundSfc B ffffffff80028a7c 4
+grSavedZonesLayer b ffffffff80028a80 4
+db B ffffffff80028a84 4
+nextPrimitive B ffffffff80028a88 8
+primitiveIndex B ffffffff80028a90 8
+primitiveBuffer B ffffffff80028a98 8
+nextChannel b ffffffff80028aa0 4
+soundsLoaded b ffffffff80028aa4 4
+soundDisabled B ffffffff80028aa8 4
+frameAdvance b ffffffff80028aac 4
+maxSpeed b ffffffff80028ab0 4
+pause b ffffffff80028ab4 4
+quit b ffffffff80028ab8 4
+evHotKeysEnabled B ffffffff80028abc 4
+ps1PilotDbgFallbacks B ffffffff80028ac0 2
+ps1PilotDbgHits B ffffffff80028ac2 2
+ps1PilotDbgActivePack B ffffffff80028ac4 2
+cdFileInUse b ffffffff80028ac8 8
+numDebugLines b ffffffff80028ad0 4
+ticks.0 b ffffffff80028ad4 4
+_last_hblank b ffffffff80028ad8 2
+_last_vblank b ffffffff80028adc 4
+_vblank_counter b ffffffff80028ae0 4
+_drawop_type b ffffffff80028ae4 1
+_queue_length b ffffffff80028ae5 1
+_queue_tail b ffffffff80028ae6 1
+_queue_head b ffffffff80028ae7 1
+_drawsync_callback b ffffffff80028ae8 4
+_vsync_callback b ffffffff80028aec 4
+_gpu_video_mode B ffffffff80028af0 4
+_font_clut B ffffffff80028af4 2
+_font_tpage B ffffffff80028af6 2
+_nstreams b ffffffff80028af8 4
+_next_saved_rect b ffffffff80028afc 4
+_transfer_mode b ffffffff80028b00 4
+_pending_sectors b ffffffff80028b04 4
+_pending_attempts b ffffffff80028b08 4
+_read_timeout b ffffffff80028b0c 4
+_read_addr b ffffffff80028b10 4
+_read_result b ffffffff80028b14 4
+_sector_size b ffffffff80028b18 4
+_total_sectors b ffffffff80028b1c 4
+_read_callback b ffffffff80028b20 4
+_cd_media_changed B ffffffff80028b24 4
+_cd_override_callback B ffffffff80028b28 4
+_sync_pending b ffffffff80028b2c 1
+_ack_pending b ffffffff80028b2d 1
+_last_error b ffffffff80028b2e 1
+_last_irq b ffffffff80028b2f 1
+_last_status b ffffffff80028b30 1
+_last_pos b ffffffff80028b34 4
+_last_mode b ffffffff80028b38 1
+_last_command b ffffffff80028b39 1
+_result_ptr b ffffffff80028b3c 4
+_pause_callback b ffffffff80028b40 4
+_sync_callback b ffffffff80028b44 4
+_ready_callback b ffffffff80028b48 4
+_cd_iso_error b ffffffff80028b4c 4
+_cd_iso_directory_len b ffffffff80028b50 4
+_cd_iso_directory_buff b ffffffff80028b54 4
+_cd_iso_pathtable_buff b ffffffff80028b58 4
+_cd_iso_last_dir_lba b ffffffff80028b5c 4
+_isr_installed b ffffffff80028b60 4
+_saved_dma_dicr b ffffffff80028b64 4
+_saved_dma_dpcr b ffffffff80028b68 4
+_saved_irq_mask b ffffffff80028b6c 2
+_num_dma_handlers b ffffffff80028b70 4
+_alloc_tail b ffffffff80028b74 4
+_alloc_head b ffffffff80028b78 4
+_alloc_start b ffffffff80028b7c 4
+_heap_alloc_max b ffffffff80028b80 4
+_heap_alloc b ffffffff80028b84 4
+_heap_limit b ffffffff80028b88 4
+_heap_end b ffffffff80028b8c 4
+_heap_start b ffffffff80028b90 4
+_random_seed b ffffffff80028b94 4
+__argv B ffffffff80028b98 4
+__argc B ffffffff80028b9c 4
+ps1BootArgStorage b ffffffff80028ba0 60
+args b ffffffff80028c00 c
+mapFile b ffffffff80028c0c 14
+ttmResources B ffffffff80028c20 190
+scrResources B ffffffff80028db0 50
+bmpResources B ffffffff80028e00 320
+adsResources B ffffffff80029120 190
+nodeStates b ffffffff800292b0 30
+paths b ffffffff800292e0 578
+gHandoffReplay b ffffffff80029858 13ec
+gPrevReplayScratch b ffffffff8002ac44 13ec
+ps1AdsCurrentName B ffffffff8002c030 10
+adsRandOps b ffffffff8002c040 78
+ttmHolidayThread b ffffffff8002c0b8 1434
+ttmBackgroundThread b ffffffff8002d4ec 1434
+ttmHolidaySlot b ffffffff8002e920 1838
+ttmBackgroundSlot b ffffffff80030158 1838
+_gp d ffffffff800308d0 
+adsChunksLocal b ffffffff80031990 c
+adsChunks b ffffffff8003199c 4b0
+checkPixels.0 b ffffffff80031e4c 20
+islandState B ffffffff80031e6c 18
+clut256.0 b ffffffff80031e84 200
+grPs1SavedZone b ffffffff80032084 a
+ttmPalette B ffffffff80032090 20
+ot B ffffffff800320b0 40
+draw B ffffffff800320f0 80
+disp b ffffffff80032170 28
+soundSampleRates b ffffffff80032198 32
+soundAddresses b ffffffff800321cc 64
+pad_buff b ffffffff80032230 44
+ps1FilePool b ffffffff80032274 120
+ps1PilotPrefetchPack b ffffffff80032394 48
+ps1PilotActivePack b ffffffff800323dc 48
+cdFilePos b ffffffff80032424 20
+debugLines b ffffffff80032444 640
+_draw_queue b ffffffff80032a84 100
+_stream b ffffffff80032b84 e0
+_saved_rects b ffffffff80032c64 80
+_cd_iso_descriptor_buff b ffffffff80032ce4 800
+_isr_stack b ffffffff800334e4 1000
+_dma_handlers b ffffffff800344e4 1c
+_irq_handlers b ffffffff80034500 2c
+_end B ffffffff8003452c 

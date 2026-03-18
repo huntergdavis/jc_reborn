@@ -12,6 +12,9 @@ CMakeFiles/jcreborn.dir/jc_reborn.c.obj: /project/jc_reborn.c \
  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/psxgpu.h \
  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/psxgte.h \
  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/psxcd.h \
+ /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/psxapi.h \
+ /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/setjmp.h \
+ /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/libpsn00b/cmake/../../../include/libpsn00b/hwregs_c.h \
  /project/graphics_ps1.h /project/events_ps1.h /project/sound_ps1.h \
  /project/cdrom_ps1.h /project/ps1_debug.h /project/ttm.h /project/ads.h \
  /project/story.h

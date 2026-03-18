@@ -3,20 +3,25 @@
 
 CMakeFiles/jcreborn.dir/ads.c.obj: ../ads.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
-  ../mytypes.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgpu.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint-gcc.h \
+  ../mytypes.h \
   ../utils.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h \
+  ../events.h \
   ../resource.h \
   ../graphics_ps1.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgpu.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgte.h \
+  ../cdrom_ps1.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h \
   ../ttm.h \
   ../island.h \
   ../walk.h \
   ../bench.h \
-  ../ads.h
+  ../ads.h \
+  ../ps1_debug.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/sys/types.h
 
 CMakeFiles/jcreborn.dir/bench.c.obj: ../bench.c \
   ../mytypes.h \
@@ -109,8 +114,11 @@ CMakeFiles/jcreborn.dir/graphics_ps1.c.obj: ../graphics_ps1.c \
   ../mytypes.h \
   ../utils.h \
   ../graphics_ps1.h \
+  ../ads.h \
   ../resource.h \
-  ../events_ps1.h
+  ../events_ps1.h \
+  ../cdrom_ps1.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h
 
 CMakeFiles/jcreborn.dir/island.c.obj: ../island.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
@@ -138,6 +146,9 @@ CMakeFiles/jcreborn.dir/jc_reborn.c.obj: ../jc_reborn.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgpu.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgte.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxapi.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/setjmp.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/hwregs_c.h \
   ../graphics_ps1.h \
   ../events_ps1.h \
   ../sound_ps1.h \
@@ -194,11 +205,16 @@ CMakeFiles/jcreborn.dir/sound_ps1.c.obj: ../sound_ps1.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/hwregs_c.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxapi.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/setjmp.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdlib.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/string.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdio.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h \
   ../mytypes.h \
   ../sound_ps1.h \
   ../config.h \
   ../utils.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h
+  ../cdrom_ps1.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h
 
 CMakeFiles/jcreborn.dir/story.c.obj: ../story.c \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
@@ -220,17 +236,22 @@ CMakeFiles/jcreborn.dir/story.c.obj: ../story.c \
   ../story_data.h
 
 CMakeFiles/jcreborn.dir/ttm.c.obj: ../ttm.c \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdlib.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
   ../mytypes.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint-gcc.h \
   ../utils.h \
-  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stddef.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h \
   ../resource.h \
   ../graphics_ps1.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgpu.h \
   /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgte.h \
   ../sound_ps1.h \
+  ../cdrom_ps1.h \
+  /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h \
+  ../ads.h \
+  ../ps1_restore_pilot_spec.h \
   ../ttm.h
 
 CMakeFiles/jcreborn.dir/uncompress.c.obj: ../uncompress.c \
@@ -270,6 +291,8 @@ CMakeFiles/jcreborn.dir/walk.c.obj: ../walk.c \
 
 ../story.c:
 
+../ps1_restore_pilot_spec.h:
+
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxspu.h:
 
 ../sound_ps1.c:
@@ -300,9 +323,7 @@ CMakeFiles/jcreborn.dir/walk.c.obj: ../walk.c \
 
 ../config.h:
 
-/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/sys/types.h:
-
-../ps1_debug.h:
+/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/hwregs_c.h:
 
 ../graphics_ps1.h:
 
@@ -320,29 +341,33 @@ CMakeFiles/jcreborn.dir/walk.c.obj: ../walk.c \
 
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdarg.h:
 
+/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgte.h:
+
+../utils.h:
+
+/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdlib.h:
+
+../cdrom_ps1.h:
+
+../calcpath.c:
+
 ../uncompress.c:
 
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint-gcc.h:
-
-../island.h:
-
-/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h:
-
-../bench.h:
 
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/setjmp.h:
 
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/lib/gcc/mipsel-none-elf/12.3.0/include/stdint.h:
 
-/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgte.h:
-
-../utils.h:
+/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/sys/types.h:
 
 ../ttm.h:
 
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxgpu.h:
 
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxapi.h:
+
+../events.h:
 
 ../ads.c:
 
@@ -352,28 +377,28 @@ CMakeFiles/jcreborn.dir/walk.c.obj: ../walk.c \
 
 ../ads.h:
 
+../island.h:
+
+/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/psxcd.h:
+
+../bench.h:
+
 ../mytypes.h:
 
 ../walk.h:
+
+../ps1_debug.h:
 
 ../ps1_debug.c:
 
 ../bench.c:
 
-../calcpath.c:
-
-/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/stdlib.h:
-
-../cdrom_ps1.h:
-
 ../calcpath.h:
 
 ../calcpath_data.h:
 
-/opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/hwregs_c.h:
-
 ../jc_reborn.c:
 
-../cdrom_ps1.c:
-
 /opt/psn00bsdk/PSn00bSDK-0.24-Linux/include/libpsn00b/string.h:
+
+../cdrom_ps1.c:

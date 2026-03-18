@@ -113,6 +113,48 @@ grSaveCleanBgTiles();
 - Check if sprite wrapping logic (`spriteNo % numSprites`) is causing issues
 - Trace TTM execution to see if draw opcodes are being executed
 
+## A/B Evidence Log
+
+### 2026-03-04 - Track A (in-scene multi-sprite dropout)
+
+Observed from decoded screenshots in fishing/coconut windows:
+- Replay reject bars (`ads_replay_reject_slot`, `ads_replay_reject_sprite`) can stay elevated while actor visibility blinks.
+- Cumulative replay-drop pressure has been high (`drop_replay_drops` saturated), indicating draw-record list pressure.
+
+Implemented telemetry/fix round:
+- Added permanent Track-A panel rows for:
+  - midscene slotGen rejects
+  - midscene sprite-null rejects
+  - frame draw-record volume split (`imageNo==0` proxy vs non-zero auxiliary)
+  - frame and scene draw-record overflow counts
+- Changed replay record capture to:
+  - dedupe repeated same-key draw records within a frame
+  - never overwrite the final record slot on overflow (drop instead and count it)
+
+Validation method:
+- Capture visible/missing pair from the same multi-sprite scene.
+- Decode with `scripts/decode-ps1-bars.py --json`.
+- Compare Track-A rows first; transition bars are interpreted separately (Track B).
+
+### Persistent Drop Overlay (NEW)
+
+To catch intermittent missing actors (boat/mermaid/extra scene characters) in screenshots,
+PS1 now draws a persistent top-left diagnostics panel whenever any drop occurs.
+
+Bar colors:
+- **Red:** ADS thread add dropped (`MAX_TTM_THREADS` overflow)
+- **Yellow:** Per-frame sprite replay dropped (`MAX_DRAWN_SPRITES` overflow)
+- **Magenta:** BMP frame sheet capped (`MAX_SPRITES_PER_BMP` reached)
+- **Cyan:** Short BMP load (loaded fewer frames than requested)
+- **Dim white top/bottom lines:** max requested BMP frame count and minimum loaded frame count seen
+
+Current limits:
+- `MAX_TTM_THREADS = 10`
+- `MAX_DRAWN_SPRITES = 255`
+- `MAX_SPRITES_PER_BMP = 255`
+
+If bars never light during missing-actor moments, the issue is likely not hard cap clipping.
+
 ## Rendering Pipeline
 
 ### Correct Frame Order

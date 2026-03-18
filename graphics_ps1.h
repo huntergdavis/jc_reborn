@@ -34,7 +34,7 @@ struct TBmpResource;
 #define MAX_BMP_SLOTS       6
 #define MAX_SPRITES_PER_BMP 255
 #define MAX_TTM_SLOTS       10
-#define MAX_TTM_THREADS     10
+#define MAX_TTM_THREADS     20
 
 struct TAdsScene {
     uint16 slot;
@@ -83,14 +83,14 @@ struct TTtmTag {
 #define MAX_DRAWN_SPRITES 255
 
 struct TDrawnSprite {
-    PS1Surface *sprite;    /* Direct pointer (for current frame) */
-    struct TTtmSlot *sourceSlot; /* Slot used when this draw was recorded */
-    sint16 x, y;
-    uint16 spriteNo;       /* For safe re-lookup on replay */
-    uint16 imageNo;        /* For safe re-lookup on replay */
-    uint16 slotGen;        /* BMP slot generation at record time */
-    uint16 sceneEpoch;     /* Thread scene epoch at record time */
+    uint8  *indexedPixels;  /* Snapshot — always valid (BMP data never freed) */
+    uint16 width, height;  /* Sprite dimensions at record time */
+    sint16 x, y;           /* Screen position */
+    uint16 spriteNo;       /* Dedup key */
+    uint16 imageNo;        /* Dedup key */
+    uint16 sceneEpoch;     /* Dedup key (iteration boundary) */
     uint8  flip;
+    uint8  pad;
 };
 
 struct TTtmThread {
@@ -107,11 +107,16 @@ struct TTtmThread {
     uint8  selectedBmpSlot;
     uint8  fgColor;
     uint8  bgColor;
+    uint16 currentRegionId;
     PS1Surface *ttmLayer;
     uint16 sceneEpoch;
     /* Track composited sprites for frame replay */
     struct TDrawnSprite drawnSprites[MAX_DRAWN_SPRITES];
     uint8  numDrawnSprites;
+    uint8  replayWriteCursor;
+    /* Per-thread actor continuity (avoid cross-scene/global contamination). */
+    struct TDrawnSprite lastActorReplay;
+    uint8  lastActorReplayValid;
 };
 
 extern PS1Surface *grBackgroundSfc;
@@ -170,6 +175,10 @@ void grRestoreBgTiles(void);
 extern struct TTtmThread *grCurrentThread;
 void grClearScreen(PS1Surface *sfc);
 
+/* GPU sprite rendering — per-frame lifecycle */
+void grBeginFrame(void);
+void grReplaySprite(struct TDrawnSprite *ds);
+
 /* Background tiles - exported for dirty rectangle wiping */
 extern PS1Surface *bgTile0;
 extern PS1Surface *bgTile1;
@@ -178,7 +187,6 @@ extern PS1Surface *bgTile4;
 void grDrawBackground(void);
 void grFadeOut();
 void grPs1StatThreadDrop(void);
-void grPs1StatReplayDrop(void);
 void grPs1StatBmpFrameCap(uint16 requested, uint16 cap);
 void grPs1StatBmpShortLoad(uint16 requested, uint16 loaded);
 

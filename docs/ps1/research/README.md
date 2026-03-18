@@ -16,7 +16,7 @@ argue that the current runtime-heavy approach is the right long-term model.
 The analyzer data and current code suggest that the core problem is not that the
 content fundamentally does not fit in RAM. The current static estimator says:
 
-- Heaviest scene: `MARY.ADS tag 1 = 556.1 KB`
+- Heaviest scene: `MARY.ADS tag 1 = 555.3 KB`
 - Budget violations: `0 / 63 scenes`
 - Maximum concurrent threads: `20`
 
@@ -24,7 +24,13 @@ Those numbers came from:
 
 - [scene_analysis_output.txt](/home/hunter/workspace/jc_reborn/scene_analysis_output.txt)
 - [scene_analysis_output_2026-03-17.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.txt)
+- [scene_analysis_output_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.json)
 - [scene_analyzer.c](/home/hunter/workspace/jc_reborn/scene_analyzer.c)
+- [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_plan_2026-03-17.json)
+- [scripts/plan-scene-packs.py](/home/hunter/workspace/jc_reborn/scripts/plan-scene-packs.py)
+- [PACK_MANIFEST_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_MANIFEST_SCHEMA.md)
+- [TRANSITION_PREFETCH_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/TRANSITION_PREFETCH_SCHEMA.md)
+- [DIRTY_REGION_TEMPLATE_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/DIRTY_REGION_TEMPLATE_SCHEMA.md)
 
 That does not mean runtime RAM pressure is solved. It means the current bug surface
 is more about semantic mismatch than raw impossibility:
@@ -40,6 +46,63 @@ The most promising direction is:
 1. Define a strict `SDL-Compat Lite` runtime contract for PS1.
 2. Move complexity into offline asset compilation and static scheduling.
 3. Spend ISO space on pretranscoded, prevalidated, scene-oriented data.
+
+### 2026-03-18 update
+
+Phase 7 now has an offline extractor for dirty-region candidates:
+
+- [extract-dirty-region-templates.py](/home/hunter/workspace/jc_reborn/scripts/extract-dirty-region-templates.py)
+- [DIRTY_REGION_TEMPLATE_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/DIRTY_REGION_TEMPLATE_SCHEMA.md)
+
+This produces per-pack template JSON from scene-pack manifests plus extracted
+`TTM` bytecode. It is intentionally offline-only for now so the runtime stays on
+the last known-good rendering path while we identify candidate scene families.
+
+An initial `BUILDING.ADS` runtime `CLEAR_SCREEN` consumer was tested and then
+backed out after later black-background regressions. The useful result is still
+the offline artifact and candidate selection, but runtime restore policy remains
+on the last known-good path until template use is tied to validated per-scene
+state instead of a fixed family-level rect.
+
+The current scene-level pilot picked from that process is now documented in:
+
+- [restore_candidate_report_2026-03-18.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_candidate_report_2026-03-18.json)
+- [restore_pilot_spec_2026-03-18.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_pilot_spec_2026-03-18.json)
+
+Right now the strongest narrow target is the compatible `STAND.ADS tags 1-3`
+cluster, which has only one BMP, two TTM owners, and a `352x140` restore
+envelope.
+
+That pilot now also has a generated C-side artifact:
+
+- [ps1_restore_pilot_spec.h](/home/hunter/workspace/jc_reborn/ps1_restore_pilot_spec.h)
+
+It is emitted from [generate-restore-pilot-header.py](/home/hunter/workspace/jc_reborn/scripts/generate-restore-pilot-header.py)
+using the JSON pilot spec, so the next runtime slice can consume checked-in
+constants instead of reaching back into research JSON by hand.
+
+That next slice is now in place in narrowly-scoped form: `ttm.c` has a
+scene-scoped `CLEAR_SCREEN` pilot hook for the `STAND.ADS tags 1-3` pilot
+cluster that only applies to `MJAMBWLK.TTM` and `MJTELE.TTM` using the
+generated header rects, instead of another family-wide restore hook.
+
+The pilot now also tracks `TTM_UNKNOWN_1` region ids in thread state and uses
+the same generated contract for `SAVE_IMAGE1` on the narrow `STAND.ADS` pilot
+cluster (`tags 1-3`).
+
+The validation harness has been tightened around real PS1 boot timing too:
+forced `STAND` boots now capture a short late-frame series rather than trying to
+judge the route from early title-screen frames. Under that later capture window,
+the `STAND` path comes up reliably and the decoder reports
+`pilot_pack ... fallbacks=0`.
+
+With that harness in place, the next Phase 7 cut is also live: on the same
+`STAND.ADS tags 1-3` route, `ads.c` no longer uses replay merge, actor
+recovery, or handoff carry/injection as a correctness mechanism. A fresh forced
+`STAND.ADS 1` run still held visually with pack hits and zero fallbacks, so
+this is the first route where the scene-scoped restore contract is beginning to
+replace the older replay-resurrection model instead of merely coexisting with
+it.
 
 ## Current facts from the repo
 
@@ -98,6 +161,9 @@ The scene analyzer already computes:
 - sprite frame counts
 - concurrent thread counts
 - global heavy-scene rankings
+- machine-readable JSON for build-time tooling
+- derived heuristics for scene clustering, shared resources, transition churn, and
+  ADS-family prefetch candidates
 
 Key files:
 
@@ -107,6 +173,155 @@ Key files:
 
 This means the next step is not "invent analysis from scratch." The next step is
 "extend the analyzer so it emits the data the build pipeline needs."
+
+### 4. Analyzer v2 output is now machine-readable
+
+`scene_analyzer` now supports `--json` in addition to the original text report.
+
+Command:
+
+```bash
+./scripts/analyze-scenes.sh --json > docs/ps1/research/scene_analysis_output_2026-03-17.json
+```
+
+Current schema highlights:
+
+- `summary`
+  - global heaviest-scene and concurrency maxima
+- `derived.candidate_scene_clusters`
+  - current heuristic groups scenes by ADS file as a pack-compilation starting point
+- `derived.shared_resources`
+  - BMP/TTM inventories shared across multiple scenes
+- `derived.heaviest_transition_deltas`
+  - highest-churn sequential scene-to-scene deltas for pack-boundary review
+- `derived.likely_prefetch_sets`
+  - ADS-family union heuristic for first-pass prefetch planning
+- `scenes[*]`
+  - story metadata, resource bindings, thread launches, and explicit memory
+    components
+
+Important caveat:
+
+- transition and prefetch outputs are currently heuristic rather than proven runtime
+  transition graphs
+- pointer-table accounting is now explicitly PS1-sized at `4` bytes per pointer,
+  rather than using host `sizeof(void *)`
+
+### 5. Pack planner consumer exists
+
+The first build-facing consumer of the analyzer JSON is now checked in:
+
+```bash
+./scripts/plan-scene-packs.py \
+  --output docs/ps1/research/scene_pack_plan_2026-03-17.json \
+  --manifest-dir docs/ps1/research/scene_pack_manifests_2026-03-17
+```
+
+What it emits:
+
+- one aggregate plan file for the pack compiler
+- one manifest per ADS-family pack
+- per-pack resource aggregates with global and pack-local reference counts
+- transition-driven prefetch candidates, with ADS-family fallback still available
+
+Important caveat:
+
+- this is a planning consumer, not a runtime loader
+- the pack IDs and prefetch links are heuristic, derived from the analyzer JSON
+- the manifests are intentionally shaped to make the later compiler a mechanical
+  step rather than a discovery step
+
+### 6. Scene pack compiler and generic loader exist
+
+The compiler now consumes either one manifest or the full manifest directory and
+emits concrete compiled packs for every current ADS family:
+
+```bash
+./scripts/compile-scene-pack.py --all
+```
+
+Current outputs:
+
+- [compile-scene-pack.py](/home/hunter/workspace/jc_reborn/scripts/compile-scene-pack.py)
+- [PACK_PAYLOAD_LAYOUT.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_PAYLOAD_LAYOUT.md)
+- [compiled pack directory](/home/hunter/workspace/jc_reborn/docs/ps1/research/compiled_packs_2026-03-17)
+
+What it emits:
+
+- `pack_payload.bin`
+  - deterministic raw resource blob
+- `pack_index.json`
+  - sector-aligned offsets, sizes, checksums, and runtime envelope metadata
+- `jc_resources/packs/*.PAK`
+  - staged CD-visible payloads for all current ADS families, each with a compact
+    binary TOC at the front of the file
+
+Current constraints:
+
+- resource order is fixed as `ADS -> SCR -> TTM -> BMP`
+- each resource is aligned to `2048` bytes
+- this is a loader target and format draft, but the runtime now consumes the
+  binary TOC embedded in each pack rather than generated C tables
+
+Runtime hook:
+
+- ADS loads now activate a pack-first lookup path in
+  [cdrom_ps1.c](/home/hunter/workspace/jc_reborn/cdrom_ps1.c)
+- all current `ACTIVITY/BUILDING/FISHING/JOHNNY/MARY/MISCGAG/STAND/SUZY/VISITOR/WALKSTUF`
+  families now try their staged pack payload first
+- once an ADS-family pack is active, `ADS/SCR/TTM/BMP` payloads are all
+  pack-authoritative and no longer fall back to the extracted-file path
+- bounded DuckStation validation now decodes `pilot_pack active_pack_id=7 hits=7
+  fallbacks=0` on the working scene path, so the pack path is active without
+  observed extracted-asset fallback in that traversal
+- the generated lookup table is now shared rather than BUILDING-specific
+
+### 7. Transition / prefetch post-processing
+
+The analyzer JSON is now fed through a small post-processor that turns the raw
+scene sequence into more actionable planning output:
+
+- [scene-transition-prefetch-report.py](/home/hunter/workspace/jc_reborn/scripts/scene-transition-prefetch-report.py)
+- [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.json)
+- [scene_transition_prefetch_report_2026-03-17.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.md)
+- [TRANSITION_PREFETCH_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/TRANSITION_PREFETCH_SCHEMA.md)
+
+This post-processor adds:
+
+- pack candidates with unioned resource bytes
+- adjacent transition edges with added/shared/removed byte counts
+- ranked prefetch edges based on added working set
+
+### 8. Dirty-region and restore runtime
+
+The PS1 runtime now has its first explicit region-restore implementation instead
+of relying entirely on whole-frame background restore plus replay continuity:
+
+- [graphics_ps1.c](/home/hunter/workspace/jc_reborn/graphics_ps1.c) now implements
+  `grSaveZone()` / `grRestoreZone()` against the clean background tile copies
+- the implementation tracks one active saved zone, matching the existing PC-side
+  assumption for Johnny's TTMs
+- `RESTORE_ZONE` can now restore a bounded rectangle from the pristine background
+  tiles during TTM playback rather than acting as a no-op on PS1
+- bounded DuckStation validation still boots the working scene and decodes
+  `pilot_pack ... fallbacks=0` after this change
+
+### 9. SDL-Compat Lite contract
+
+The first written contract for the narrow runtime boundary now lives in:
+
+- [SDL_COMPAT_LITE_SPEC.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/SDL_COMPAT_LITE_SPEC.md)
+
+It captures:
+
+- the minimum gameplay-facing graphics surface
+- the current PC/PS1 gap matrix
+- the places where PS1 still leaks replay-era implementation details into
+  gameplay-visible correctness
+- ranked pack-boundary candidates for disc-layout review
+
+The caveat remains the same: these are story-order planning heuristics, not a
+validated runtime transition graph.
 
 ## Recommended architecture
 
@@ -296,4 +511,13 @@ Why they matter:
 
 - [BACKLOG.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/BACKLOG.md)
 - [IMPLEMENTATION_PLAN.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/IMPLEMENTATION_PLAN.md)
+- [PACK_MANIFEST_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_MANIFEST_SCHEMA.md)
+- [PACK_PAYLOAD_LAYOUT.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_PAYLOAD_LAYOUT.md)
 - [scene_analysis_output_2026-03-17.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.txt)
+- [scene_analysis_output_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.json)
+- [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_plan_2026-03-17.json)
+- [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_manifests_2026-03-17)
+- [compiled_packs_2026-03-17](/home/hunter/workspace/jc_reborn/docs/ps1/research/compiled_packs_2026-03-17)
+- [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.json)
+- [scene_transition_prefetch_report_2026-03-17.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.md)
+- [TRANSITION_PREFETCH_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/TRANSITION_PREFETCH_SCHEMA.md)

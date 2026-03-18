@@ -11,9 +11,9 @@ When a new row is added, removed, or repurposed in code, update this file in the
 ## Panel 1: Drop/Load Diagnostics (top-left, `y=2`)
 
 Black background with horizontal bars. Width is generally clamped to 140 pixels unless noted.
+Current live rows are:
 
 - Row `y=4` (blue `0x001F`): `gStatThreadDrops`
-- Row `y=7` (cyan `0x03FF`): `gStatReplayDrops`
 - Row `y=10` (magenta `0x7C1F`): `gStatBmpFrameCapHits`
 - Row `y=13` (yellow `0x7FE0`): `gStatBmpShortLoads`
 - Marker `y=2` (dim white `0x4210`): `gStatBmpMaxRequested`
@@ -44,38 +44,21 @@ Notes:
 
 ## Panel 3: ADS Runtime Diagnostics (mid-left, `y=90`)
 
-Black background with 28 rows.
+Black background with 13 live rows.
 
-- Row `y=91` (cyan `0x03FF`): `ps1AdsDbgActiveThreads`
-- Row `y=94` (white `0x7FFF`): `ps1AdsDbgMini`
-- Row `y=97` (red `0x001F`): `ps1AdsDbgStalledFrames >> 2`
-- Row `y=100` (green `0x03E0`): `ps1AdsDbgProgressPulse`
-- Row `y=103` (cyan `0x03FF`): scene signature `((slot & 0x7) << 3) | (tag & 0x7)`
-- Row `y=106` (magenta `0x7C1F`): `ps1AdsDbgReplayCount`
-- Row `y=109` (cyan `0x03FF`): `ps1AdsDbgRunningThreads`
-- Row `y=112` (red `0x001F`): `ps1AdsDbgTerminatedThreads`
-- Row `y=115` (white `0x7FFF`): `ps1AdsDbgThreadTimer`
-- Row `y=118` (dim white `0x4210`): `ps1AdsDbgThreadDelay`
-- Row `y=121` (green `0x03E0`): `grUpdateDelay`
-- Row `y=124` (white `0x7FFF`): replay attempts this frame (`ps1AdsDbgReplayTryFrame`)
-- Row `y=127` (green `0x03E0`): replay draws applied this frame (`ps1AdsDbgReplayDrawFrame`)
-- Row `y=130` (red `0x001F`): replay rejects by scene epoch mismatch (`ps1AdsDbgReplayRejectEpoch`)
-- Row `y=133` (magenta `0x7C1F`): replay rejects by slot generation mismatch (`ps1AdsDbgReplayRejectGen`)
-- Row `y=136` (cyan `0x03FF`): replay rejects by slot/image invalid (`ps1AdsDbgReplayRejectSlot`)
-- Row `y=139` (yellow `0x7FE0`): replay rejects by missing sprite pointer/pixels (`ps1AdsDbgReplayRejectSprite`)
-- Row `y=142` (blue `0x001F`): replay flipped draws this frame (`ps1AdsDbgReplayFlipFrame`)
-- Row `y=145` (dim white `0x4210`): scene sequence (`ps1AdsDbgSceneSeq`)
-- Row `y=148` (white `0x7FFF`): scene frame count (`ps1AdsDbgSceneFrames`)
-- Row `y=151` (cyan `0x03FF`): scene replay attempts (`ps1AdsDbgSceneTry`)
-- Row `y=154` (green `0x03E0`): scene replay draws (`ps1AdsDbgSceneDraw`)
-- Row `y=157` (red `0x001F`): scene epoch rejects (`ps1AdsDbgSceneRejectEpoch`)
-- Row `y=160` (magenta `0x7C1F`): scene slotGen rejects (`ps1AdsDbgSceneRejectGen`)
-- Row `y=163` (cyan `0x03FF`): scene slot/image rejects (`ps1AdsDbgSceneRejectSlot`)
-- Row `y=166` (yellow `0x7FE0`): scene sprite-null rejects (`ps1AdsDbgSceneRejectSprite`)
-- Row `y=169` (white `0x7FFF`): scene max stall frames (`ps1AdsDbgSceneStallMax >> 2`)
-- Row `y=172` (red `0x001F`): no-draw streak (`ps1AdsDbgNoDrawStreak >> 1`)
-
-Scene cumulative rows reset when the active scene signature (`sceneSlot`, `sceneTag`) changes.
+- Row `y=91` (cyan `0x03FF`): active threads (`ps1AdsDbgActiveThreads`)
+- Row `y=94` (white `0x7FFF`): mini timer (`ps1AdsDbgMini`)
+- Row `y=97` (cyan `0x03FF`): scene signature `((sceneSlot & 0x7) << 3) | (sceneTag & 0x7)`
+- Row `y=100` (magenta `0x7C1F`): replay count (`ps1AdsDbgReplayCount`)
+- Row `y=103` (cyan `0x03FF`): running thread count (`ps1AdsDbgRunningThreads`)
+- Row `y=106` (green `0x03E0`): frame wait / update delay (`grUpdateDelay`)
+- Row `y=109` (white `0x7FFF`): replay tries this frame (`ps1AdsDbgReplayTryFrame`)
+- Row `y=112` (green `0x03E0`): replay draws this frame (`ps1AdsDbgReplayDrawFrame`)
+- Row `y=115` (magenta `0x7C1F`): merged carry-forward draws (`ps1AdsDbgMergeCarryFrame`)
+- Row `y=118` (red `0x001F`): played threads with zero draws (`ps1AdsDbgNoDrawThreadsFrame`)
+- Row `y=121` (cyan `0x03FF`): threads played this frame (`ps1AdsDbgPlayedThreadsFrame`)
+- Row `y=124` (yellow `0x7FE0`): total recorded sprites this frame (`ps1AdsDbgRecordedSpritesFrame`)
+- Row `y=127` (red `0x001F`): terminated thread count (`ps1AdsDbgTerminatedThreads`)
 
 ## Panel 4: Story Transition Diagnostics (bottom-left, `y=222`)
 
@@ -87,6 +70,20 @@ Black background with five rows.
 - Row `y=232` (cyan `0x03FF`): `prev` signature `((spot & 0x7) * 8) + (hdg & 0x7)`
 - Row `y=235` (yellow `0x7FE0`): `next` signature `((spot & 0x7) * 8) + (hdg & 0x7)`
 
+## Panel 5: Pilot Pack Diagnostics (upper-left, `y=30`)
+
+Black background with three rows for the current scene-pack runtime path.
+
+- Row `y=31` (white `0x7FFF`): active pilot pack id (`ps1PilotDbgActivePack`)
+- Row `y=34` (green `0x03E0`): cumulative successful pack loads (`ps1PilotDbgHits`)
+- Row `y=37` (red `0x001F`): cumulative fallback loads after pack-first lookup (`ps1PilotDbgFallbacks`)
+
+Notes:
+
+- `ps1PilotDbgActivePack` is a compact runtime pack id, not an ADS enum.
+- Non-zero `ps1PilotDbgHits` proves the compiled pack payload path was used at runtime.
+- Non-zero `ps1PilotDbgFallbacks` means the runtime stayed functional by falling back to the extracted-file path for at least one resource.
+
 ## Maintenance Rule
 
 - Keep these panels permanent in PS1 builds.
@@ -95,6 +92,7 @@ Black background with five rows.
 ## Tooling
 
 Use `scripts/decode-ps1-bars.py` to decode bar widths from screenshots instead of manual counting.
+The decoder currently targets only the live panels listed above.
 
 Examples:
 

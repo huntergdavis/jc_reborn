@@ -95,7 +95,7 @@ static struct TStoryScene storyScenes[NUM_SCENES] = {
     { "FISHING.ADS" ,  8,  SPOT_E, HDG_E ,  SPOT_E, HDG_W ,   0,  ISLAND | LEFT_ISLAND | VARPOS_OK | LOWTIDE_OK             },
 
     { "JOHNNY.ADS"  ,  1,       0,      0,       0,      0,  11,  FINAL | FIRST                                             },
-    { "JOHNNY.ADS"  ,  2,  SPOT_E, HDG_SW,  SPOT_F,      0,   2,  ISLAND | FINAL | VARPOS_OK                                },
+    { "JOHNNY.ADS"  ,  2,  SPOT_E, HDG_SW,  SPOT_F, HDG_NE,   2,  ISLAND | FINAL | VARPOS_OK                                },
     { "JOHNNY.ADS"  ,  3,  SPOT_E, HDG_SW,  SPOT_F, HDG_NE,   6,  ISLAND | VARPOS_OK | LOWTIDE_OK                           },
     { "JOHNNY.ADS"  ,  4,  SPOT_E, HDG_SW,  SPOT_F, HDG_NE,   0,  ISLAND | VARPOS_OK                                        },
     { "JOHNNY.ADS"  ,  5,  SPOT_E, HDG_SW,  SPOT_F, HDG_NE,   0,  ISLAND | VARPOS_OK                                        },
@@ -129,7 +129,7 @@ static struct TStoryScene storyScenes[NUM_SCENES] = {
     { "SUZY.ADS"    ,  2,       0,      0,       0,      0,   9,  FINAL | FIRST                                             },
 
     { "VISITOR.ADS" ,  1,  SPOT_A, HDG_S ,  SPOT_A, HDG_S ,   0,  ISLAND | LOWTIDE_OK                                       },
-    { "VISITOR.ADS" ,  3,  SPOT_B, HDG_NW,  SPOT_D,      0,   0,  ISLAND | FINAL | HOLIDAY_NOK                              },
+    { "VISITOR.ADS" ,  3,  SPOT_B, HDG_NW,  SPOT_D, HDG_W ,   0,  ISLAND | FINAL | HOLIDAY_NOK                              },
     { "VISITOR.ADS" ,  4,  SPOT_D, HDG_S ,  SPOT_D, HDG_W ,   0,  ISLAND | VARPOS_OK | LOWTIDE_OK                           },
     { "VISITOR.ADS" ,  6,  SPOT_D, HDG_S ,  SPOT_D, HDG_SW,   0,  ISLAND | VARPOS_OK | LOWTIDE_OK                           },
     { "VISITOR.ADS" ,  7,  SPOT_D, HDG_S ,  SPOT_D, HDG_SW,   0,  ISLAND | VARPOS_OK | LOWTIDE_OK                           },
@@ -139,4 +139,3 @@ static struct TStoryScene storyScenes[NUM_SCENES] = {
     { "WALKSTUF.ADS",  2,  SPOT_E, HDG_E ,  SPOT_D, HDG_SE,   0,  ISLAND | VARPOS_OK                                        },
     { "WALKSTUF.ADS",  3,  SPOT_D, HDG_W ,  SPOT_E, HDG_W ,   0,  ISLAND | VARPOS_OK | LOWTIDE_OK                           },
 };
-

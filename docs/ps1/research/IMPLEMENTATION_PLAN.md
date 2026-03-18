@@ -1,8 +1,59 @@
 # PS1 Offline-Surface Implementation Plan
 
 Date: 2026-03-17
-Status: Proposed execution plan
+Status: In progress
 Owner: PS1 port refactor
+
+## Execution status
+
+Phase 1 has started.
+
+Completed on 2026-03-17:
+
+- `scene_analyzer` now supports `--json` output while preserving the text report
+- peak-memory accounting now uses explicit PS1-sized pointer overhead instead of
+  host `sizeof(void *)`
+- derived JSON outputs exist for:
+  - candidate scene clusters
+  - shared resource inventories
+  - transition churn ranking
+  - first-pass prefetch heuristics
+- analyzer JSON now has a post-processing path that emits:
+  - pack candidates
+  - adjacent transition edges
+  - ranked prefetch edges
+  - pack-boundary candidates
+- generated artifact:
+  [scene_analysis_output_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.json)
+- draft Phase 5 manifest contract:
+  [PACK_MANIFEST_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_MANIFEST_SCHEMA.md)
+- draft pack payload layout:
+  [PACK_PAYLOAD_LAYOUT.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_PAYLOAD_LAYOUT.md)
+- derived artifact:
+  [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.json)
+- first pack-planning consumer:
+  [scripts/plan-scene-packs.py](/home/hunter/workspace/jc_reborn/scripts/plan-scene-packs.py)
+- generated pack-planning artifacts:
+  [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_plan_2026-03-17.json)
+  and
+  [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_manifests_2026-03-17)
+- compiled pack artifacts:
+  [compiled_packs_2026-03-17](/home/hunter/workspace/jc_reborn/docs/ps1/research/compiled_packs_2026-03-17)
+- staged CD payloads:
+  [jc_resources/packs](/home/hunter/workspace/jc_reborn/jc_resources/packs)
+- binary table-of-contents now embedded directly in each staged `.PAK`
+- generic runtime loader hook:
+  [cdrom_ps1.c](/home/hunter/workspace/jc_reborn/cdrom_ps1.c)
+
+Still pending inside Phase 1:
+
+- tighten heuristics into validated transition data where available
+- validate the binary table-of-contents path under real scene traversal and then
+  decide whether to keep `pack_index.json` as a research/debug sidecar only
+- continue shrinking fallback so only genuinely dynamic overlap cases remain;
+  current status: `ADS/SCR/TTM/BMP` scene assets are now pack-authoritative once
+  a family pack is active, and the current bounded validation path decodes
+  `pilot_pack ... fallbacks=0`
 
 ## Objective
 
@@ -215,6 +266,16 @@ Deliverables:
 - gap matrix
 - dependency map from gameplay/rendering code
 
+Current status:
+
+- the first working contract and gap matrix now live in
+  [SDL_COMPAT_LITE_SPEC.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/SDL_COMPAT_LITE_SPEC.md)
+- PS1 `SAVE_ZONE/RESTORE_ZONE` is no longer stubbed for the simple active-zone
+  script pattern
+- PS1 `COPY_ZONE_TO_BG` / `SAVE_IMAGE1` now commit bounded rectangles into the
+  clean background restore baseline instead of remaining stubs
+- the main remaining leaks are replay continuity and `CLEAR_SCREEN` divergence
+
 Validation:
 
 - every gameplay graphics call maps cleanly to the contract
@@ -419,6 +480,40 @@ Tasks:
 2. Build offline dirty-region extractor or templates.
 3. Integrate restore logic into pilot packs or pilot runtime path.
 4. Keep fallback path only for truly dynamic overlap cases.
+
+Current status:
+
+- PS1 now has a real `grSaveZone()` / `grRestoreZone()` implementation in the
+  pilot runtime path, restoring bounded rectangles from clean background tiles
+  instead of leaving `RESTORE_ZONE` stubbed out
+- pack-backed scene traversal still validates with `pilot_pack ... fallbacks=0`
+  after this restore-path change
+- an offline extractor now emits first-pass dirty-region template candidates
+  from pack manifests plus extracted `TTM` bytecode, without changing the live
+  runtime path
+- a first runtime `CLEAR_SCREEN` consumer was tried on `BUILDING.ADS` and then
+  backed out after later black-background regressions; current Phase 7 progress
+  remains offline/template-side until restore policy is tied to validated scene
+  state
+- the current scene-level restore pilot target is the compatible
+  `STAND.ADS tags 1-3` cluster (`scene_index 38` origin), selected from the
+  restore-candidate report with a `352x140` union rect owned by
+  `MJAMBWLK.TTM` and `MJTELE.TTM`
+- that scene-level pilot now has a generated runtime-facing header
+  (`ps1_restore_pilot_spec.h`) derived from the offline pilot spec
+- the first scene-scoped runtime consumer now exists in `ttm.c`: on
+  the `STAND.ADS tags 1-3` pilot cluster, `CLEAR_SCREEN` can restore only the
+  matching pilot-TTM rect for `MJAMBWLK.TTM` / `MJTELE.TTM`, rather than
+  applying a family-wide hook
+- that same scene-scoped pilot now tracks `TTM_UNKNOWN_1` region ids per thread
+  and extends the generated-contract hook to `SAVE_IMAGE1` for the same
+  `STAND.ADS` pilot cluster (`tags 1-3`) / `MJAMBWLK.TTM` / `MJTELE.TTM` route
+- the PS1 validation harness now captures a later three-frame series for forced
+  scene boots, which matches the real post-title boot timing of the `STAND`
+  pilot path and makes that route repeatable to validate
+- on that same `STAND.ADS tags 1-3` route, `ads.c` now disables replay merge,
+  actor recovery, and handoff carry/injection so the pilot depends on the new
+  restore contract rather than legacy replay continuity
 
 Deliverables:
 

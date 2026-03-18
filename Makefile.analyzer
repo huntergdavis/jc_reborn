@@ -1,0 +1,25 @@
+# Makefile for Scene Resource Analyzer
+# Standalone desktop tool - no SDL, no PS1 SDK needed
+#
+# Usage:
+#   make -f Makefile.analyzer
+#   cd jc_resources && ../scene_analyzer
+
+CC = cc
+CFLAGS = -Wall -Wpedantic -std=c99 -g
+EXE = scene_analyzer
+
+OBJ = scene_analyzer.o utils.o uncompress.o resource.o
+
+all: $(EXE)
+
+$(EXE): $(OBJ)
+	$(CC) $(CFLAGS) $^ -o $@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJ) $(EXE)
+
+.PHONY: all clean

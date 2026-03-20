@@ -126,6 +126,10 @@ def write_markdown(path: Path, payload: dict) -> None:
 
 
 def build_report(rows: List[dict]) -> dict:
+    return build_report_with_limit(rows, 5)
+
+
+def build_report_with_limit(rows: List[dict], recommended_limit: int) -> dict:
     recommended = []
     seen_ads = set()
     for row in rows:
@@ -134,13 +138,14 @@ def build_report(rows: List[dict]) -> dict:
             continue
         seen_ads.add(key)
         recommended.append(row)
-        if len(recommended) >= 5:
+        if len(recommended) >= recommended_limit:
             break
 
     return {
         "schema_version": 1,
         "artifact_kind": "restore_candidate_report",
         "scene_count": len(rows),
+        "all_candidates": rows,
         "top_candidates": rows[:12],
         "recommended_pilots": recommended,
     }
@@ -152,13 +157,14 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--template-dir", type=Path, default=DEFAULT_TEMPLATE_DIR)
     ap.add_argument("--json-output", type=Path, default=DEFAULT_JSON_OUTPUT)
     ap.add_argument("--md-output", type=Path, default=DEFAULT_MD_OUTPUT)
+    ap.add_argument("--recommended-limit", type=int, default=5, help="max unique ADS families to emit in recommended_pilots")
     return ap
 
 
 def main() -> int:
     args = build_parser().parse_args()
     rows = build_rows(args.manifest_dir, args.template_dir)
-    report = build_report(rows)
+    report = build_report_with_limit(rows, args.recommended_limit)
     write_json(args.json_output, report)
     write_markdown(args.md_output, report)
     print(

@@ -145,6 +145,9 @@ extern uint16 ps1AdsDbgRecordedSpritesFrame;
 extern uint16 ps1PilotDbgActivePack;
 extern uint16 ps1PilotDbgHits;
 extern uint16 ps1PilotDbgFallbacks;
+extern uint16 ps1PilotDbgLastHitEntry;
+extern uint16 ps1PilotDbgLastFallbackEntry;
+extern uint16 ps1PilotDbgFallbackWhilePackActive;
 
 void grPs1StatThreadDrop(void)
 {
@@ -305,16 +308,22 @@ static void grDrawPilotPackDiagnostics(void)
     /* Top-left pilot compiled-pack panel, below the drop diagnostics with a gap:
      * row0 white: active pilot pack id
      * row1 green: cumulative pack hits
-     * row2 red  : cumulative fallback loads after pack-first lookup */
+     * row2 red  : cumulative extracted fallback loads
+     * row3 yellow: last successful pack entry index
+     * row4 magenta: last extracted fallback entry index (0 = outside active pack)
+     * row5 cyan: failed pack-first lookups while a pack stayed active */
     int x = 2;
     int y = 30;
     int panelW = 96;
-    int rowH = 3;
+    int rowH = 2;
 
-    grDrawCounterBar(x, y, panelW, 12, 0x0000);
-    grDrawCounterBar(x + 2, y + 1, (ps1PilotDbgActivePack & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 4, (ps1PilotDbgHits & 0x3F), rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 7, (ps1PilotDbgFallbacks & 0x3F), rowH, 0x001F);
+    grDrawCounterBar(x, y, panelW, 30, 0x0000);
+    grDrawCounterBar(x + 2, y + 1,  (ps1PilotDbgActivePack & 0x3F), rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 6,  (ps1PilotDbgHits & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 11, (ps1PilotDbgFallbacks & 0x3F), rowH, 0x001F);
+    grDrawCounterBar(x + 2, y + 16, (ps1PilotDbgLastHitEntry & 0x3F), rowH, 0x03FF);
+    grDrawCounterBar(x + 2, y + 21, (ps1PilotDbgLastFallbackEntry & 0x3F), rowH, 0x7C1F);
+    grDrawCounterBar(x + 2, y + 26, (ps1PilotDbgFallbackWhilePackActive & 0x3F), rowH, 0x7FE0);
 }
 
 static void grDrawAdsFreezeDiagnostics(void)
@@ -997,8 +1006,9 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
             src += srcRowBytes;
         }
 
-        /* Advance source pointer for next frame (use full frame size, not capped) */
-        srcPtr += (width * height) / 2;
+        /* Advance by packed 4-bit frame bytes.
+         * Row stride must round up per row for odd widths. */
+        srcPtr += (((uint32)width + 1U) / 2U) * (uint32)height;
 
         /* Step 2: LoadImage to VRAM BEFORE creating PS1Surface */
         /* For 4-bit textures, texture page is 64 VRAM pixels (256 texture pixels) wide.
@@ -1202,7 +1212,7 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         /* Zero-copy indexed frame: reference BMP resource memory directly.
          * This removes per-frame malloc/memcpy churn and cuts fragmentation. */
-        uint32 indexedSize = ((uint32)width * (uint32)height + 1) / 2;
+        uint32 indexedSize = (((uint32)width + 1U) / 2U) * (uint32)height;
         surface->indexedPixels = srcPtr;
         surface->indexedOwned = 0;
 

@@ -1,0 +1,368 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "mary-ads",
+    "ads_name": "MARY.ADS",
+    "ads_tag": 2,
+    "scene_index": 33,
+    "peak_memory_bytes": 418000,
+    "bmp_count": 8,
+    "ttm_count": 5,
+    "restore_candidate": true,
+    "clear_screen_count": 890,
+    "unique_rect_count": 12,
+    "union_rect": {
+      "x": 0,
+      "y": 124,
+      "width": 640,
+      "height": 226
+    },
+    "ttm_names": [
+      "SASKDATE.TTM",
+      "SBREAKUP.TTM",
+      "SJGLIMPS.TTM",
+      "SJLEAVES.TTM",
+      "SMDATE.TTM"
+    ],
+    "restore_score": 83
+  },
+  "scene_flags": [
+    "FINAL",
+    "ISLAND",
+    "VARPOS_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 254444,
+    "bmp_15bit_bytes": 1017776,
+    "bmp_raw_bytes": 254444,
+    "ttm_bytes": 8522,
+    "ads_bytes": 1350,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 724,
+    "ttm_slot_overhead_bytes": 40960,
+    "peak_memory_bytes": 418000
+  },
+  "resource_counts": {
+    "bmps": 8,
+    "scrs": 1,
+    "ttms": 5
+  },
+  "scene_resources": {
+    "bmps": [
+      "TRUNK.BMP",
+      "MJFISH1.BMP",
+      "MJFISH3.BMP",
+      "JOHNWALK.BMP",
+      "SMDATE1.BMP",
+      "MJFISH2.BMP",
+      "SMGLIMSE.BMP",
+      "MEXCWALK.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "SJGLIMPS.TTM",
+      "SASKDATE.TTM",
+      "SMDATE.TTM",
+      "SBREAKUP.TTM",
+      "SJLEAVES.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 0,
+      "y": 124,
+      "width": 640,
+      "height": 226
+    },
+    "unique_rects": [
+      {
+        "x": 0,
+        "y": 174,
+        "width": 488,
+        "height": 176
+      },
+      {
+        "x": 248,
+        "y": 196,
+        "width": 240,
+        "height": 147
+      },
+      {
+        "x": 360,
+        "y": 243,
+        "width": 56,
+        "height": 76
+      },
+      {
+        "x": 232,
+        "y": 125,
+        "width": 408,
+        "height": 225
+      },
+      {
+        "x": 224,
+        "y": 162,
+        "width": 416,
+        "height": 152
+      },
+      {
+        "x": 504,
+        "y": 265,
+        "width": 136,
+        "height": 40
+      },
+      {
+        "x": 104,
+        "y": 151,
+        "width": 536,
+        "height": 182
+      },
+      {
+        "x": 0,
+        "y": 154,
+        "width": 416,
+        "height": 196
+      },
+      {
+        "x": 88,
+        "y": 208,
+        "width": 544,
+        "height": 141
+      },
+      {
+        "x": 8,
+        "y": 124,
+        "width": 560,
+        "height": 211
+      },
+      {
+        "x": 416,
+        "y": 257,
+        "width": 112,
+        "height": 57
+      },
+      {
+        "x": 360,
+        "y": 233,
+        "width": 48,
+        "height": 64
+      }
+    ],
+    "clear_screen_count": 890,
+    "ttm_names": [
+      "SASKDATE.TTM",
+      "SBREAKUP.TTM",
+      "SJGLIMPS.TTM",
+      "SJLEAVES.TTM",
+      "SMDATE.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "SASKDATE.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 174,
+        "width": 488,
+        "height": 176
+      },
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 174,
+          "width": 488,
+          "height": 176
+        },
+        {
+          "x": 248,
+          "y": 196,
+          "width": 240,
+          "height": 147
+        },
+        {
+          "x": 360,
+          "y": 243,
+          "width": 56,
+          "height": 76
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 1,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 207
+      }
+    },
+    {
+      "ttm_name": "SBREAKUP.TTM",
+      "union_rect": {
+        "x": 224,
+        "y": 125,
+        "width": 416,
+        "height": 225
+      },
+      "unique_rects": [
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        },
+        {
+          "x": 224,
+          "y": 162,
+          "width": 416,
+          "height": 152
+        },
+        {
+          "x": 504,
+          "y": 265,
+          "width": 136,
+          "height": 40
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 1,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 138
+      }
+    },
+    {
+      "ttm_name": "SJGLIMPS.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 151,
+        "width": 640,
+        "height": 199
+      },
+      "unique_rects": [
+        {
+          "x": 104,
+          "y": 151,
+          "width": 536,
+          "height": 182
+        },
+        {
+          "x": 0,
+          "y": 154,
+          "width": 416,
+          "height": 196
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 201
+      }
+    },
+    {
+      "ttm_name": "SJLEAVES.TTM",
+      "union_rect": {
+        "x": 88,
+        "y": 208,
+        "width": 544,
+        "height": 141
+      },
+      "unique_rects": [
+        {
+          "x": 88,
+          "y": 208,
+          "width": 544,
+          "height": 141
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 150
+      }
+    },
+    {
+      "ttm_name": "SMDATE.TTM",
+      "union_rect": {
+        "x": 8,
+        "y": 124,
+        "width": 560,
+        "height": 211
+      },
+      "unique_rects": [
+        {
+          "x": 8,
+          "y": 124,
+          "width": 560,
+          "height": 211
+        },
+        {
+          "x": 416,
+          "y": 257,
+          "width": 112,
+          "height": 57
+        },
+        {
+          "x": 360,
+          "y": 233,
+          "width": 48,
+          "height": 64
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 2,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 194
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "MARY.ADS",
+    "ads_tags": [
+      2
+    ],
+    "scene_indices": [
+      33
+    ],
+    "ttm_names": [
+      "SASKDATE.TTM",
+      "SBREAKUP.TTM",
+      "SJGLIMPS.TTM",
+      "SJLEAVES.TTM",
+      "SMDATE.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

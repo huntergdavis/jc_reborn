@@ -87,6 +87,88 @@ using the checked-in JSON pilot specs, so the runtime can consume a small table
 of validated scene contracts instead of reaching back into research JSON by
 hand.
 
+The offline spec path is now batched too:
+
+- [build-restore-pilot-spec.py](/home/hunter/workspace/jc_reborn/scripts/build-restore-pilot-spec.py)
+  can emit one spec per recommended pilot into
+  [restore_pilot_specs_2026-03-19](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_pilot_specs_2026-03-19)
+- [generate-restore-pilots-header.py](/home/hunter/workspace/jc_reborn/scripts/generate-restore-pilots-header.py)
+  can now promote a filtered subset from that directory into a runtime header,
+  so offline pre-calculation can scale faster without turning every new spec
+  into a live runtime policy immediately
+
+That batching is now expanded to the full current ADS surface too:
+
+- [restore_candidate_report_full_2026-03-19.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_candidate_report_full_2026-03-19.json)
+  ranks one recommended restore candidate per ADS family
+- [restore_pilot_specs_full_2026-03-19](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_pilot_specs_full_2026-03-19)
+  contains the first ten-family pre-calculated spec batch:
+  `STAND`, `JOHNNY`, `WALKSTUF`, `ACTIVITY`, `FISHING`, `BUILDING`,
+  `VISITOR`, `MARY`, `MISCGAG`, and `SUZY`
+- the header generator now tolerates incomplete per-TTM rect rows by disabling
+  those hook ids instead of crashing, which means research-grade candidates can
+  move through the batch pipeline before every TTM row is runtime-ready
+
+That same pipeline now emits scene-scoped output too:
+
+- [restore_scene_specs_full_2026-03-19](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_scene_specs_full_2026-03-19)
+  contains one restore spec per ranked scene, `63` total, so offline conversion
+  no longer waits on one-family-at-a-time promotion
+- [restore_rollout_manifest_2026-03-19.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_rollout_manifest_2026-03-19.json)
+  classifies that full scene batch into `live_proven`, `offline_ready`, and
+  `blocked_entry_path`
+- [restore_scene_clusters_2026-03-19.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_scene_clusters_2026-03-19.json)
+  groups those `63` scene specs into `34` shared restore contracts, which is
+  the right unit for grouped runtime promotion
+- [restore_cluster_specs_2026-03-19](/home/hunter/workspace/jc_reborn/docs/ps1/research/restore_cluster_specs_2026-03-19)
+  lifts those `34` contracts into reusable cluster specs, so the next runtime
+  enablement step can promote a whole contract in one move
+
+That offline pipeline has now been tightened again: the dirty-region extractor
+normalizes signed TTM rectangle origins and clamps them to visible scene bounds
+before unioning. That removed bogus wrapped rects like `x=65534` /
+`width=65551` from the `VISITOR` family and regenerated the full scene-spec and
+cluster-spec artifact set from corrected geometry.
+
+With the full queue emitted, live promotion is now split between:
+
+- live pilots that are actually reachable through the current harness path
+- blocked pilots that remain offline-only until their story/bootstrap route is
+  reproducible
+
+The current rollout counts are `5` live-proven scenes, `56` offline-ready
+scenes, and `2` scenes blocked by entry-path reproduction. The runtime header
+stays scoped to the proven set for now: `STAND`, `JOHNNY`, and `WALKSTUF`.
+That next grouped slice is now underway: the runtime header consumes the shared
+`STAND` cluster contract for tags `1-12`, and bounded forced runs of
+`STAND.ADS 4` and `STAND.ADS 12` both stayed visually good. This is the first
+real contract-sized expansion beyond the original pilot tags.
+
+The same grouped rollout now extends to `JOHNNY` too: the runtime header keeps
+the original proven singleton for `JOHNNY.ADS 1`, adds the shared contract for
+`JOHNNY.ADS 2-5`, and now also carries the validated `JOHNNY.ADS 6` singleton
+contract. Bounded forced runs of `JOHNNY.ADS 2`, `JOHNNY.ADS 5`, and
+`JOHNNY.ADS 6` all stayed visually good, so this grouped rollout now covers
+the full `JOHNNY.ADS 1-6` surface.
+
+`STAND` has also moved beyond the first cluster. In addition to the shared
+`STAND.ADS 1-12` contract, the runtime header now carries the second shared
+contract for `STAND.ADS 15-16`, and bounded forced runs of `STAND.ADS 15` and
+`STAND.ADS 16` both stayed visually good. That makes `STAND.ADS 1-12` plus
+`15-16` the current largest live grouped rollout.
+
+`BUILDING` was tried as the next grouped target, but both `island ads` and
+`story ads` entry paths still land on bootstrap/ocean states instead of a valid
+composed scene. That family stays offline-only for now; the blocker is entry
+reproduction, not the generated restore contract itself.
+
+`WALKSTUF` has now been widened to cover tags `1-3` in the live generated
+header. Forced runs of `WALKSTUF.ADS 1` and `WALKSTUF.ADS 3` stayed visually
+good, so the scene-scoped restore contracts are viable there too, but both
+routes still report active-pack fallbacks. That makes `WALKSTUF` the next
+cleanup target: the restore policy is holding, while the remaining debt is in
+pack completeness/runtime reads rather than scene composition.
+
 That next slice is now in place in narrowly-scoped form: `ttm.c` has a
 scene-scoped `CLEAR_SCREEN` pilot hook for the `STAND.ADS tags 1-3` pilot
 cluster that only applies to `MJAMBWLK.TTM` and `MJTELE.TTM` using the
@@ -137,10 +219,14 @@ which BMP/SCR/TTM assets get warmed for a pilot route.
 
 One current validation note: the pack fallback telemetry is now wired to real
 extracted-file reads instead of stale counters. `STAND.ADS` still validates with
-`pilot_pack ... fallbacks=0`, but `WALKSTUF.ADS 2` still shows real post-ADS
-fallbacks even though the compiled pack contains byte-perfect copies of the
-missing resources. So the remaining `WALKSTUF` gap is narrowed to the runtime
-pack-read path, not the offline compiler output.
+`pilot_pack ... fallbacks=0`, and the `WALKSTUF.ADS 2` first-frame actor gap is
+now fixed by re-enabling only one-frame missing-actor recovery on that pilot
+route. The opening frame at
+`ps1-test-20260319-083913.png` now shows Johnny holding the board where the
+earlier `ps1-test-20260319-083316.png` run showed only the board. `WALKSTUF`
+still reports one real active-pack miss (`WOULDBE.BMP` signature `17`) during
+the bounded harness route, but that remaining miss is now a secondary cleanup,
+not the visible scene-entry regression.
 
 ## Current facts from the repo
 

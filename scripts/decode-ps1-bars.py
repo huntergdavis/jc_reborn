@@ -84,13 +84,16 @@ ROWS: List[RowDef] = [
     RowDef("story_prev_sig", 232, "story", "(prevSpot*8)+prevHdg", "value ~= width", "cyan"),
     RowDef("story_next_sig", 235, "story", "(nextSpot*8)+nextHdg", "value ~= width", "yellow"),
     RowDef("pilot_pack_active", 31, "pilotpack", "ps1PilotDbgActivePack", "value ~= width", "white"),
-    RowDef("pilot_pack_hits", 34, "pilotpack", "ps1PilotDbgHits", "value ~= width", "green"),
-    RowDef("pilot_pack_fallbacks", 37, "pilotpack", "ps1PilotDbgFallbacks", "value ~= width", "red"),
+    RowDef("pilot_pack_hits", 36, "pilotpack", "ps1PilotDbgHits", "value ~= width", "green"),
+    RowDef("pilot_pack_fallbacks", 41, "pilotpack", "ps1PilotDbgFallbacks", "value ~= width", "red"),
+    RowDef("pilot_pack_last_hit_entry", 46, "pilotpack", "ps1PilotDbgLastHitEntry", "value ~= width", "yellow"),
+    RowDef("pilot_pack_last_fallback_entry", 51, "pilotpack", "ps1PilotDbgLastFallbackEntry", "value ~= width", "magenta"),
+    RowDef("pilot_pack_active_misses", 56, "pilotpack", "ps1PilotDbgFallbackWhilePackActive", "value ~= width", "cyan"),
 ]
 
 PANELS: List[PanelDef] = [
     PanelDef("drop", 2, 16),
-    PanelDef("pilotpack", 30, 12),
+    PanelDef("pilotpack", 30, 30),
     PanelDef("ads", 90, 41),
     PanelDef("mem", 174, 21),
     PanelDef("story", 222, 18),
@@ -330,6 +333,9 @@ def build_interpreted(rows: List[Dict[str, object]]) -> Dict[str, object]:
             "active_pack_id": active,
             "hits": hits,
             "fallbacks": fallbacks,
+            "last_hit_entry": row_map.get("pilot_pack_last_hit_entry", 0),
+            "last_fallback_entry": row_map.get("pilot_pack_last_fallback_entry", 0),
+            "active_pack_misses": row_map.get("pilot_pack_active_misses", 0),
             "pack_path_used": hits > 0,
             "fallback_observed": fallbacks > 0,
         }
@@ -495,6 +501,9 @@ def print_human(result: Dict[str, object]) -> None:
                 f" active_pack_id={pilot['active_pack_id']}"
                 f" hits={pilot['hits']}"
                 f" fallbacks={pilot['fallbacks']}"
+                f" last_hit_entry={pilot['last_hit_entry']}"
+                f" last_fallback_entry={pilot['last_fallback_entry']}"
+                f" active_pack_misses={pilot['active_pack_misses']}"
                 f" pack_path_used={'yes' if pilot['pack_path_used'] else 'no'}"
                 f" fallback_observed={'yes' if pilot['fallback_observed'] else 'no'}"
             )

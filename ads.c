@@ -38,6 +38,8 @@ extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern int fprintf(FILE *stream, const char *format, ...);
 extern int printf(const char *format, ...);
+extern size_t strlen(const char *s);
+extern int strcmp(const char *s1, const char *s2);
 extern void *memcpy(void *dest, const void *src, size_t n);
 #define stderr ((FILE*)2)
 #endif
@@ -170,7 +172,97 @@ static int adsUseRestorePilotReplayPolicy(void)
     return adsFindActiveRestorePilot() != NULL;
 }
 
+static int adsUseRestorePilotHandoffSeed(void)
+{
+    const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
+
+    if (pilot == NULL)
+        return 0;
+
+    /* WALKSTUF still depends on a one-shot actor carry into the opening frame.
+     * Keep this exception narrow instead of re-enabling the older replay merge
+     * policy for all pilot-scoped scenes. */
+    return adsStringEquals(pilot->adsName, "WALKSTUF.ADS");
+}
+
+static int adsUseRestorePilotActorRecovery(void)
+{
+    const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
+
+    if (pilot == NULL)
+        return 0;
+
+    /* WALKSTUF still shows a one-frame actor gap on scene entry. Keep the
+     * recovery scoped to the affected route instead of re-enabling the older
+     * replay merge/carry policy for all pilot scenes. */
+    return adsStringEquals(pilot->adsName, "WALKSTUF.ADS");
+}
+
 #ifdef PS1_BUILD
+static int adsHasExtension(const char *name, const char *extension)
+{
+    size_t nameLen;
+    size_t extLen;
+
+    if (name == NULL || extension == NULL)
+        return 0;
+
+    nameLen = strlen(name);
+    extLen = strlen(extension);
+    if (nameLen < extLen)
+        return 0;
+
+    return strcmp(name + (nameLen - extLen), extension) == 0;
+}
+
+static void adsPrimeAdsResourceSet(struct TAdsResource *adsResource)
+{
+    uint16 i;
+
+    if (adsResource == NULL || adsResource->res == NULL)
+        return;
+
+    for (i = 0; i < adsResource->numRes; i++) {
+        const char *name = adsResource->res[i].name;
+
+        if (name == NULL)
+            continue;
+
+        if (adsHasExtension(name, ".SCR")) {
+            struct TScrResource *scrResource = findScrResource((char *)name);
+            if (scrResource != NULL && scrResource->uncompressedData == NULL)
+                ps1_loadScrData(scrResource);
+            continue;
+        }
+
+        if (adsHasExtension(name, ".TTM")) {
+            struct TTtmResource *ttmResource = findTtmResource((char *)name);
+            if (ttmResource != NULL && ttmResource->uncompressedData == NULL)
+                ps1_loadTtmData(ttmResource);
+            continue;
+        }
+
+        if (adsHasExtension(name, ".BMP")) {
+            struct TBmpResource *bmpResource = findBmpResource((char *)name);
+            if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
+                ps1_loadBmpData(bmpResource);
+        }
+    }
+}
+
+static int adsShouldPrimeFullResourceSet(void)
+{
+    const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
+
+    if (pilot == NULL)
+        return 0;
+
+    /* WALKSTUF still relies on wider resource warmup for its opening-frame
+     * stability. Keep broader ADS-family priming scoped there instead of
+     * inflating every validated pilot route. */
+    return adsStringEquals(pilot->adsName, "WALKSTUF.ADS");
+}
+
 static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
 {
     uint16 i;
@@ -387,7 +479,7 @@ static void adsCaptureHandoffReplay(struct TTtmThread *thread)
     int bestArea = -1;
     if (!thread || thread->numDrawnSprites == 0) return;
 
-    if (adsUseRestorePilotReplayPolicy()) {
+    if (adsUseRestorePilotReplayPolicy() && !adsUseRestorePilotHandoffSeed()) {
         gHandoffReplayValid = 0;
         gHandoffReplayCount = 0;
         return;
@@ -418,7 +510,7 @@ static void adsCaptureHandoffReplay(struct TTtmThread *thread)
 static void adsSeedFromHandoffReplay(struct TTtmThread *thread)
 {
     if (!thread || !gHandoffReplayValid || gHandoffReplayCount == 0) return;
-    if (adsUseRestorePilotReplayPolicy()) return;
+    if (adsUseRestorePilotReplayPolicy() && !adsUseRestorePilotHandoffSeed()) return;
     if (thread->numDrawnSprites != 0) return;
 
     memcpy(thread->drawnSprites, gHandoffReplay,
@@ -1179,7 +1271,12 @@ void adsPlay(char *adsName, uint16 adsTag)
         if (adsResource->uncompressedData == NULL) {
             return;  /* ADS data load failed - skip scene */
         }
-        adsPrimeRestorePilotResources(adsFindActiveRestorePilot());
+        {
+            const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
+            adsPrimeRestorePilotResources(pilot);
+            if (adsShouldPrimeFullResourceSet())
+                adsPrimeAdsResourceSet(adsResource);
+        }
 #else
         char extractedPath[512];
         snprintf(extractedPath, sizeof(extractedPath), "extracted/ads/%s",
@@ -1341,6 +1438,8 @@ void adsPlay(char *adsName, uint16 adsTag)
                                                               prevCount);
                     adsRecoverMissingActor(&ttmThreads[i], gPrevReplayScratch, prevCount);
                     adsDbgAddU16(&ps1AdsDbgMergeCarryFrame, carried);
+                } else if (adsUseRestorePilotActorRecovery()) {
+                    adsRecoverMissingActor(&ttmThreads[i], gPrevReplayScratch, prevCount);
                 }
                 if (ttmThreads[i].numDrawnSprites == 0) {
                     adsDbgAddU16(&ps1AdsDbgNoDrawThreadsFrame, 1);
@@ -1482,7 +1581,7 @@ void adsPlay(char *adsName, uint16 adsTag)
 #ifdef PS1_BUILD
                     /* If handoff wasn't consumed (no new thread started),
                      * inject actor into a surviving thread to prevent vanish. */
-                    if (!adsUseRestorePilotReplayPolicy() &&
+                    if ((!adsUseRestorePilotReplayPolicy() || adsUseRestorePilotHandoffSeed()) &&
                         gHandoffReplayValid && gHandoffReplayCount > 0) {
                         for (int k = 0; k < MAX_TTM_THREADS; k++) {
                             if (ttmThreads[k].isRunning == ADS_THREAD_RUNNING &&

@@ -1,0 +1,210 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "suzy-ads",
+    "ads_name": "SUZY.ADS",
+    "ads_tag": 1,
+    "scene_index": 52,
+    "peak_memory_bytes": 355508,
+    "bmp_count": 5,
+    "ttm_count": 3,
+    "restore_candidate": false,
+    "clear_screen_count": 231,
+    "unique_rect_count": 3,
+    "union_rect": {
+      "x": 128,
+      "y": 77,
+      "width": 384,
+      "height": 268
+    },
+    "ttm_names": [
+      "MEANWHIL.TTM",
+      "SJMSUZY.TTM",
+      "SUZYCITY.TTM"
+    ],
+    "restore_score": 54
+  },
+  "scene_flags": [
+    "FINAL",
+    "FIRST"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 170164,
+    "bmp_15bit_bytes": 680656,
+    "bmp_raw_bytes": 170164,
+    "ttm_bytes": 6540,
+    "ads_bytes": 288,
+    "scr_bytes": 153600,
+    "sprite_pointer_bytes": 340,
+    "ttm_slot_overhead_bytes": 24576,
+    "peak_memory_bytes": 355508
+  },
+  "resource_counts": {
+    "bmps": 5,
+    "scrs": 1,
+    "ttms": 3
+  },
+  "scene_resources": {
+    "bmps": [
+      "SSUZY1.BMP",
+      "SSUZY2.BMP",
+      "SSUZY3.BMP",
+      "LITEBULB.BMP",
+      "MEANWHIL.BMP"
+    ],
+    "scrs": [
+      "SUZBEACH.SCR"
+    ],
+    "ttms": [
+      "SUZYCITY.TTM",
+      "SJMSUZY.TTM",
+      "MEANWHIL.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 128,
+      "y": 77,
+      "width": 384,
+      "height": 268
+    },
+    "unique_rects": [
+      {
+        "x": 224,
+        "y": 91,
+        "width": 160,
+        "height": 131
+      },
+      {
+        "x": 232,
+        "y": 90,
+        "width": 144,
+        "height": 134
+      },
+      {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      }
+    ],
+    "clear_screen_count": 231,
+    "ttm_names": [
+      "MEANWHIL.TTM",
+      "SJMSUZY.TTM",
+      "SUZYCITY.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "MEANWHIL.TTM",
+      "union_rect": {
+        "x": 224,
+        "y": 90,
+        "width": 160,
+        "height": 134
+      },
+      "unique_rects": [
+        {
+          "x": 224,
+          "y": 91,
+          "width": 160,
+          "height": 131
+        },
+        {
+          "x": 232,
+          "y": 90,
+          "width": 144,
+          "height": 134
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 1,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 49
+      }
+    },
+    {
+      "ttm_name": "SJMSUZY.TTM",
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      },
+      "unique_rects": [
+        {
+          "x": 128,
+          "y": 77,
+          "width": 384,
+          "height": 268
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 85
+      }
+    },
+    {
+      "ttm_name": "SUZYCITY.TTM",
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      },
+      "unique_rects": [
+        {
+          "x": 128,
+          "y": 77,
+          "width": 384,
+          "height": 268
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 97
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "SUZY.ADS",
+    "ads_tags": [
+      1
+    ],
+    "scene_indices": [
+      52
+    ],
+    "ttm_names": [
+      "MEANWHIL.TTM",
+      "SJMSUZY.TTM",
+      "SUZYCITY.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

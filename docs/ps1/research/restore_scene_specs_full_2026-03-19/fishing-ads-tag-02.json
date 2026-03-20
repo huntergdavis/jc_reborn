@@ -1,0 +1,285 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "fishing-ads",
+    "ads_name": "FISHING.ADS",
+    "ads_tag": 2,
+    "scene_index": 18,
+    "peak_memory_bytes": 379918,
+    "bmp_count": 7,
+    "ttm_count": 5,
+    "restore_candidate": true,
+    "clear_screen_count": 756,
+    "unique_rect_count": 4,
+    "union_rect": {
+      "x": 0,
+      "y": 111,
+      "width": 640,
+      "height": 239
+    },
+    "ttm_names": [
+      "FISHWALK.TTM",
+      "GFFFOOD.TTM",
+      "GJCATCH2.TTM",
+      "MJFISH.TTM",
+      "MJFISHC.TTM"
+    ],
+    "restore_score": 95
+  },
+  "scene_flags": [
+    "ISLAND",
+    "VARPOS_OK",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 207912,
+    "bmp_15bit_bytes": 831648,
+    "bmp_raw_bytes": 207912,
+    "ttm_bytes": 16660,
+    "ads_bytes": 1778,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 608,
+    "ttm_slot_overhead_bytes": 40960,
+    "peak_memory_bytes": 379918
+  },
+  "resource_counts": {
+    "bmps": 7,
+    "scrs": 1,
+    "ttms": 5
+  },
+  "scene_resources": {
+    "bmps": [
+      "MJFISH2.BMP",
+      "MJFISH3.BMP",
+      "TRUNK.BMP",
+      "MJFISH1.BMP",
+      "JOHNWALK.BMP",
+      "LILFISH.BMP",
+      "GJCATCH3.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "MJFISH.TTM",
+      "GJCATCH2.TTM",
+      "GFFFOOD.TTM",
+      "MJFISHC.TTM",
+      "FISHWALK.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 0,
+      "y": 111,
+      "width": 640,
+      "height": 239
+    },
+    "unique_rects": [
+      {
+        "x": 88,
+        "y": 142,
+        "width": 552,
+        "height": 208
+      },
+      {
+        "x": 136,
+        "y": 111,
+        "width": 504,
+        "height": 239
+      },
+      {
+        "x": 0,
+        "y": 157,
+        "width": 640,
+        "height": 193
+      },
+      {
+        "x": 0,
+        "y": 138,
+        "width": 640,
+        "height": 196
+      }
+    ],
+    "clear_screen_count": 756,
+    "ttm_names": [
+      "FISHWALK.TTM",
+      "GFFFOOD.TTM",
+      "GJCATCH2.TTM",
+      "MJFISH.TTM",
+      "MJFISHC.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "FISHWALK.TTM",
+      "union_rect": {
+        "x": 88,
+        "y": 142,
+        "width": 552,
+        "height": 208
+      },
+      "unique_rects": [
+        {
+          "x": 88,
+          "y": 142,
+          "width": 552,
+          "height": 208
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 22
+      }
+    },
+    {
+      "ttm_name": "GFFFOOD.TTM",
+      "union_rect": {
+        "x": 136,
+        "y": 111,
+        "width": 504,
+        "height": 239
+      },
+      "unique_rects": [
+        {
+          "x": 136,
+          "y": 111,
+          "width": 504,
+          "height": 239
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 47
+      }
+    },
+    {
+      "ttm_name": "GJCATCH2.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 157,
+        "width": 640,
+        "height": 193
+      },
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 157,
+          "width": 640,
+          "height": 193
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 61
+      }
+    },
+    {
+      "ttm_name": "MJFISH.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 157,
+        "width": 640,
+        "height": 193
+      },
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 157,
+          "width": 640,
+          "height": 193
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 370
+      }
+    },
+    {
+      "ttm_name": "MJFISHC.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 138,
+        "width": 640,
+        "height": 212
+      },
+      "unique_rects": [
+        {
+          "x": 88,
+          "y": 142,
+          "width": 552,
+          "height": 208
+        },
+        {
+          "x": 0,
+          "y": 138,
+          "width": 640,
+          "height": 196
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 256
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "FISHING.ADS",
+    "ads_tags": [
+      2,
+      6
+    ],
+    "scene_indices": [
+      18,
+      22
+    ],
+    "ttm_names": [
+      "FISHWALK.TTM",
+      "GFFFOOD.TTM",
+      "GJCATCH2.TTM",
+      "MJFISH.TTM",
+      "MJFISHC.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

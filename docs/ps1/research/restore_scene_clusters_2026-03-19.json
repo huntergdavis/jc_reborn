@@ -1,0 +1,3976 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_scene_cluster_report",
+  "cluster_count": 34,
+  "scene_count": 63,
+  "clusters": [
+    {
+      "cluster_id": "stand-ads:b39c6b8ebf4a",
+      "ads_name": "STAND.ADS",
+      "signature_id": "b39c6b8ebf4a",
+      "restore_score_max": 118,
+      "restore_score_min": 118,
+      "scene_count": 12,
+      "statuses": {
+        "live_proven": 3,
+        "offline_ready": 9,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MJAMBWLK.TTM",
+          "MJTELE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 248,
+            "y": 196,
+            "width": 344,
+            "height": 139
+          },
+          {
+            "x": 256,
+            "y": 197,
+            "width": 344,
+            "height": 139
+          }
+        ],
+        "bmps": [
+          "MJ_AMB.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJAMBWLK.TTM",
+          "MJTELE.TTM"
+        ]
+      },
+      "scene_tags": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "scene_indices": [
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-01.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-02.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-03.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-04.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-05.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-06.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-07.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-08.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-09.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-10.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-11.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-12.json"
+      ],
+      "promotion_state": "mixed_live_and_offline",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "activity-ads:ba7617a9b24e",
+      "ads_name": "ACTIVITY.ADS",
+      "signature_id": "ba7617a9b24e",
+      "restore_score_max": 81,
+      "restore_score_min": 81,
+      "scene_count": 4,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 4,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJDIVE.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM",
+          "MJBATH.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 96,
+            "y": 43,
+            "width": 400,
+            "height": 295
+          },
+          {
+            "x": 0,
+            "y": 128,
+            "width": 640,
+            "height": 180
+          },
+          {
+            "x": 144,
+            "y": 161,
+            "width": 432,
+            "height": 189
+          },
+          {
+            "x": 192,
+            "y": 77,
+            "width": 448,
+            "height": 236
+          },
+          {
+            "x": 155,
+            "y": 50,
+            "width": 336,
+            "height": 288
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 232,
+            "y": 60,
+            "width": 408,
+            "height": 281
+          }
+        ],
+        "bmps": [
+          "COCONUTS.BMP",
+          "MJREAD.BMP",
+          "TRUNK.BMP",
+          "ZZZZS.BMP",
+          "LITEBULB.BMP",
+          "JOHNWALK.BMP",
+          "GJGULL1.BMP",
+          "GJGULL1A.BMP",
+          "GJGULL3.BMP",
+          "GJGULL3A.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJDIVE.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM",
+          "MJBATH.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM"
+        ]
+      },
+      "scene_tags": [
+        6,
+        7,
+        10,
+        12
+      ],
+      "scene_indices": [
+        1,
+        3,
+        6,
+        7
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-06.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-07.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-10.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-12.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-06.json"
+    },
+    {
+      "cluster_id": "johnny-ads:91036ad6c850",
+      "ads_name": "JOHNNY.ADS",
+      "signature_id": "91036ad6c850",
+      "restore_score_max": 101,
+      "restore_score_min": 101,
+      "scene_count": 4,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 4,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MEANWHIL.TTM",
+          "SJMSSGE.TTM",
+          "SJWORK.TTM",
+          "THEEND.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 224,
+            "y": 91,
+            "width": 160,
+            "height": 131
+          },
+          {
+            "x": 232,
+            "y": 90,
+            "width": 144,
+            "height": 134
+          },
+          {
+            "x": 0,
+            "y": 147,
+            "width": 448,
+            "height": 203
+          },
+          {
+            "x": 192,
+            "y": 199,
+            "width": 264,
+            "height": 142
+          },
+          {
+            "x": 144,
+            "y": 87,
+            "width": 384,
+            "height": 152
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "MJBOTTLE.BMP",
+          "MJBTL2.BMP",
+          "THNKBUBL.BMP",
+          "MJFISH3.BMP",
+          "LITEBULB.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "THEEND.TTM",
+          "SJMSSGE.TTM",
+          "SJWORK.TTM",
+          "MEANWHIL.TTM"
+        ]
+      },
+      "scene_tags": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "scene_indices": [
+        26,
+        27,
+        28,
+        29
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-02.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-03.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-04.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-05.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-02.json"
+    },
+    {
+      "cluster_id": "building-ads:50347529e8e2",
+      "ads_name": "BUILDING.ADS",
+      "signature_id": "50347529e8e2",
+      "restore_score_max": 84,
+      "restore_score_min": 84,
+      "scene_count": 3,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 3,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJGULIVR.TTM",
+          "MJFIRE.TTM",
+          "MJSAND.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 280,
+            "y": 119,
+            "width": 360,
+            "height": 231
+          },
+          {
+            "x": 194,
+            "y": 123,
+            "width": 175,
+            "height": 142
+          },
+          {
+            "x": 176,
+            "y": 120,
+            "width": 192,
+            "height": 144
+          },
+          {
+            "x": 120,
+            "y": 215,
+            "width": 472,
+            "height": 124
+          },
+          {
+            "x": 192,
+            "y": 90,
+            "width": 448,
+            "height": 207
+          },
+          {
+            "x": 240,
+            "y": 134,
+            "width": 352,
+            "height": 204
+          },
+          {
+            "x": 40,
+            "y": 132,
+            "width": 448,
+            "height": 202
+          },
+          {
+            "x": 296,
+            "y": 254,
+            "width": 72,
+            "height": 61
+          },
+          {
+            "x": 304,
+            "y": 56,
+            "width": 304,
+            "height": 272
+          },
+          {
+            "x": 184,
+            "y": 121,
+            "width": 176,
+            "height": 139
+          },
+          {
+            "x": 240,
+            "y": 303,
+            "width": 88,
+            "height": 47
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "STNDLAY.BMP",
+          "ZZZZS.BMP",
+          "SLEEP.BMP",
+          "SHIPS.BMP",
+          "GJBIPLAN.BMP",
+          "LILIPUTS.BMP",
+          "TRUNK.BMP",
+          "GJGULL1.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJSAND.TTM",
+          "GJGULIVR.TTM",
+          "MJFIRE.TTM"
+        ]
+      },
+      "scene_tags": [
+        3,
+        4,
+        6
+      ],
+      "scene_indices": [
+        11,
+        12,
+        16
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-03.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-04.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-06.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-03.json"
+    },
+    {
+      "cluster_id": "fishing-ads:f32b6fac7f0e",
+      "ads_name": "FISHING.ADS",
+      "signature_id": "f32b6fac7f0e",
+      "restore_score_max": 95,
+      "restore_score_min": 95,
+      "scene_count": 3,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 2,
+        "blocked_entry_path": 1
+      },
+      "signature": {
+        "ttm_names": [
+          "FISHWALK.TTM",
+          "GFFFOOD.TTM",
+          "GJCATCH2.TTM",
+          "MJFISH.TTM",
+          "MJFISHC.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 88,
+            "y": 142,
+            "width": 552,
+            "height": 208
+          },
+          {
+            "x": 136,
+            "y": 111,
+            "width": 504,
+            "height": 239
+          },
+          {
+            "x": 0,
+            "y": 157,
+            "width": 640,
+            "height": 193
+          },
+          {
+            "x": 0,
+            "y": 138,
+            "width": 640,
+            "height": 196
+          }
+        ],
+        "bmps": [
+          "MJFISH2.BMP",
+          "MJFISH3.BMP",
+          "TRUNK.BMP",
+          "MJFISH1.BMP",
+          "JOHNWALK.BMP",
+          "LILFISH.BMP",
+          "GJCATCH3.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJFISH.TTM",
+          "GJCATCH2.TTM",
+          "GFFFOOD.TTM",
+          "MJFISHC.TTM",
+          "FISHWALK.TTM"
+        ]
+      },
+      "scene_tags": [
+        1,
+        2,
+        6
+      ],
+      "scene_indices": [
+        17,
+        18,
+        22
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-01.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-02.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-06.json"
+      ],
+      "promotion_state": "blocked_entry_path",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "fishing-ads:88fb417bdfb4",
+      "ads_name": "FISHING.ADS",
+      "signature_id": "88fb417bdfb4",
+      "restore_score_max": 94,
+      "restore_score_min": 94,
+      "scene_count": 3,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 3,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "FISHWALK.TTM",
+          "GFFFOOD.TTM",
+          "GJCATCH2.TTM",
+          "MJFISH.TTM",
+          "MJFISHC.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 88,
+            "y": 142,
+            "width": 552,
+            "height": 208
+          },
+          {
+            "x": 136,
+            "y": 111,
+            "width": 504,
+            "height": 239
+          },
+          {
+            "x": 0,
+            "y": 157,
+            "width": 640,
+            "height": 193
+          },
+          {
+            "x": 0,
+            "y": 138,
+            "width": 640,
+            "height": 196
+          }
+        ],
+        "bmps": [
+          "TRUNK.BMP",
+          "MJFISH1.BMP",
+          "MJFISH2.BMP",
+          "MJFISH3.BMP",
+          "JOHNWALK.BMP",
+          "GJCATCH1.BMP"
+        ],
+        "scrs": [
+          "ISLAND2.SCR"
+        ],
+        "ttms": [
+          "MJFISH.TTM",
+          "GJCATCH2.TTM",
+          "GFFFOOD.TTM",
+          "MJFISHC.TTM",
+          "FISHWALK.TTM"
+        ]
+      },
+      "scene_tags": [
+        4,
+        7,
+        8
+      ],
+      "scene_indices": [
+        20,
+        23,
+        24
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-04.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-07.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-08.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-04.json"
+    },
+    {
+      "cluster_id": "visitor-ads:1ce431cd95eb",
+      "ads_name": "VISITOR.ADS",
+      "signature_id": "1ce431cd95eb",
+      "restore_score_max": 76,
+      "restore_score_min": 76,
+      "scene_count": 3,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 3,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJLILIPU.TTM",
+          "GJVIS3.TTM",
+          "GJVIS5.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 264,
+            "y": 40,
+            "width": 376,
+            "height": 274
+          },
+          {
+            "x": 0,
+            "y": 159,
+            "width": 640,
+            "height": 191
+          },
+          {
+            "x": 0,
+            "y": 35,
+            "width": 640,
+            "height": 111
+          },
+          {
+            "x": 128,
+            "y": 130,
+            "width": 304,
+            "height": 195
+          },
+          {
+            "x": 0,
+            "y": 73,
+            "width": 640,
+            "height": 95
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 0,
+            "y": 134,
+            "width": 464,
+            "height": 157
+          },
+          {
+            "x": 0,
+            "y": 44,
+            "width": 232,
+            "height": 302
+          },
+          {
+            "x": 65534,
+            "y": 43,
+            "width": 17,
+            "height": 302
+          },
+          {
+            "x": 15,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 39,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 63,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 87,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 112,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 136,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 161,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 185,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 209,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 234,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 258,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 282,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 307,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 331,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 355,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 380,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 404,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 429,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 453,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 479,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 503,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 527,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 551,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 575,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 599,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 624,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 232,
+            "y": 117,
+            "width": 408,
+            "height": 233
+          }
+        ],
+        "bmps": [
+          "MJCOCO.BMP",
+          "JOHNWALK.BMP",
+          "COCONUTS.BMP",
+          "SPLASH.BMP",
+          "TRUNK.BMP",
+          "COCOHEAD.BMP",
+          "MJREAD.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJVIS3.TTM",
+          "GJLILIPU.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM",
+          "GJVIS5.TTM"
+        ]
+      },
+      "scene_tags": [
+        4,
+        6,
+        7
+      ],
+      "scene_indices": [
+        56,
+        57,
+        58
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-04.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-06.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-07.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-04.json"
+    },
+    {
+      "cluster_id": "activity-ads:cce08eb4bcd4",
+      "ads_name": "ACTIVITY.ADS",
+      "signature_id": "cce08eb4bcd4",
+      "restore_score_max": 93,
+      "restore_score_min": 93,
+      "scene_count": 2,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 2,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJDIVE.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM",
+          "MJBATH.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 96,
+            "y": 43,
+            "width": 400,
+            "height": 295
+          },
+          {
+            "x": 0,
+            "y": 128,
+            "width": 640,
+            "height": 180
+          },
+          {
+            "x": 144,
+            "y": 161,
+            "width": 432,
+            "height": 189
+          },
+          {
+            "x": 192,
+            "y": 77,
+            "width": 448,
+            "height": 236
+          },
+          {
+            "x": 155,
+            "y": 50,
+            "width": 336,
+            "height": 288
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 232,
+            "y": 60,
+            "width": 408,
+            "height": 281
+          }
+        ],
+        "bmps": [
+          "TRUNK.BMP",
+          "MJBATH.BMP",
+          "JCHANGE.BMP",
+          "GJGULL1.BMP",
+          "GJGULL2.BMP",
+          "GJGULL2A.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJDIVE.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM",
+          "MJBATH.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM"
+        ]
+      },
+      "scene_tags": [
+        8,
+        11
+      ],
+      "scene_indices": [
+        2,
+        8
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-08.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-11.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-08.json"
+    },
+    {
+      "cluster_id": "building-ads:1533fe96913e",
+      "ads_name": "BUILDING.ADS",
+      "signature_id": "1533fe96913e",
+      "restore_score_max": 91,
+      "restore_score_min": 91,
+      "scene_count": 2,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 2,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJGULIVR.TTM",
+          "MJFIRE.TTM",
+          "MJSAND.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 280,
+            "y": 119,
+            "width": 360,
+            "height": 231
+          },
+          {
+            "x": 194,
+            "y": 123,
+            "width": 175,
+            "height": 142
+          },
+          {
+            "x": 176,
+            "y": 120,
+            "width": 192,
+            "height": 144
+          },
+          {
+            "x": 120,
+            "y": 215,
+            "width": 472,
+            "height": 124
+          },
+          {
+            "x": 192,
+            "y": 90,
+            "width": 448,
+            "height": 207
+          },
+          {
+            "x": 240,
+            "y": 134,
+            "width": 352,
+            "height": 204
+          },
+          {
+            "x": 40,
+            "y": 132,
+            "width": 448,
+            "height": 202
+          },
+          {
+            "x": 296,
+            "y": 254,
+            "width": 72,
+            "height": 61
+          },
+          {
+            "x": 304,
+            "y": 56,
+            "width": 304,
+            "height": 272
+          },
+          {
+            "x": 184,
+            "y": 121,
+            "width": 176,
+            "height": 139
+          },
+          {
+            "x": 240,
+            "y": 303,
+            "width": 88,
+            "height": 47
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "TRUNK.BMP",
+          "FIRE.BMP",
+          "FIRE1.BMP",
+          "FIRE3.BMP",
+          "FIRE4.BMP",
+          "FIRE2.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJSAND.TTM",
+          "GJGULIVR.TTM",
+          "MJFIRE.TTM"
+        ]
+      },
+      "scene_tags": [
+        5,
+        7
+      ],
+      "scene_indices": [
+        14,
+        15
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-05.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-07.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-05.json"
+    },
+    {
+      "cluster_id": "building-ads:f0332f0909a8",
+      "ads_name": "BUILDING.ADS",
+      "signature_id": "f0332f0909a8",
+      "restore_score_max": 80,
+      "restore_score_min": 80,
+      "scene_count": 2,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 2,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJGULIVR.TTM",
+          "MJFIRE.TTM",
+          "MJSAND.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 280,
+            "y": 119,
+            "width": 360,
+            "height": 231
+          },
+          {
+            "x": 194,
+            "y": 123,
+            "width": 175,
+            "height": 142
+          },
+          {
+            "x": 176,
+            "y": 120,
+            "width": 192,
+            "height": 144
+          },
+          {
+            "x": 120,
+            "y": 215,
+            "width": 472,
+            "height": 124
+          },
+          {
+            "x": 192,
+            "y": 90,
+            "width": 448,
+            "height": 207
+          },
+          {
+            "x": 240,
+            "y": 134,
+            "width": 352,
+            "height": 204
+          },
+          {
+            "x": 40,
+            "y": 132,
+            "width": 448,
+            "height": 202
+          },
+          {
+            "x": 296,
+            "y": 254,
+            "width": 72,
+            "height": 61
+          },
+          {
+            "x": 304,
+            "y": 56,
+            "width": 304,
+            "height": 272
+          },
+          {
+            "x": 184,
+            "y": 121,
+            "width": 176,
+            "height": 139
+          },
+          {
+            "x": 240,
+            "y": 303,
+            "width": 88,
+            "height": 57
+          }
+        ],
+        "bmps": [
+          "SANDCAST.BMP",
+          "MJSANDC.BMP",
+          "JOHNWALK.BMP",
+          "GJCASTLE.BMP",
+          "GJRUNAWA.BMP",
+          "GJKINGKO.BMP",
+          "SPLASH.BMP",
+          "SHIPS.BMP",
+          "GJBIPLAN.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJSAND.TTM",
+          "GJGULIVR.TTM",
+          "MJFIRE.TTM"
+        ]
+      },
+      "scene_tags": [
+        1,
+        2
+      ],
+      "scene_indices": [
+        10,
+        13
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-01.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-02.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/building-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "stand-ads:97bad97ad5d8",
+      "ads_name": "STAND.ADS",
+      "signature_id": "97bad97ad5d8",
+      "restore_score_max": 117,
+      "restore_score_min": 117,
+      "scene_count": 2,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 2,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MJAMBWLK.TTM",
+          "MJTELE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 248,
+            "y": 196,
+            "width": 344,
+            "height": 139
+          },
+          {
+            "x": 256,
+            "y": 197,
+            "width": 344,
+            "height": 139
+          }
+        ],
+        "bmps": [
+          "MJTELE.BMP",
+          "MJTELE2.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJAMBWLK.TTM",
+          "MJTELE.TTM"
+        ]
+      },
+      "scene_tags": [
+        15,
+        16
+      ],
+      "scene_indices": [
+        50,
+        51
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-15.json",
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-16.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/stand-ads-tag-15.json"
+    },
+    {
+      "cluster_id": "activity-ads:cc600f374d46",
+      "ads_name": "ACTIVITY.ADS",
+      "signature_id": "cc600f374d46",
+      "restore_score_max": 100,
+      "restore_score_min": 100,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 0,
+        "blocked_entry_path": 1
+      },
+      "signature": {
+        "ttm_names": [
+          "GJDIVE.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM",
+          "MJBATH.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 96,
+            "y": 43,
+            "width": 400,
+            "height": 295
+          },
+          {
+            "x": 0,
+            "y": 128,
+            "width": 640,
+            "height": 180
+          },
+          {
+            "x": 144,
+            "y": 161,
+            "width": 432,
+            "height": 189
+          },
+          {
+            "x": 192,
+            "y": 77,
+            "width": 448,
+            "height": 236
+          },
+          {
+            "x": 155,
+            "y": 50,
+            "width": 336,
+            "height": 288
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 232,
+            "y": 60,
+            "width": 408,
+            "height": 281
+          }
+        ],
+        "bmps": [
+          "MJDIVE.BMP",
+          "JOHNWALK.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJDIVE.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM",
+          "MJBATH.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM"
+        ]
+      },
+      "scene_tags": [
+        4
+      ],
+      "scene_indices": [
+        4
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-04.json"
+      ],
+      "promotion_state": "blocked_entry_path",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-04.json"
+    },
+    {
+      "cluster_id": "activity-ads:01be6456479e",
+      "ads_name": "ACTIVITY.ADS",
+      "signature_id": "01be6456479e",
+      "restore_score_max": 94,
+      "restore_score_min": 94,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJDIVE.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM",
+          "MJBATH.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 96,
+            "y": 43,
+            "width": 400,
+            "height": 295
+          },
+          {
+            "x": 0,
+            "y": 128,
+            "width": 640,
+            "height": 180
+          },
+          {
+            "x": 144,
+            "y": 161,
+            "width": 432,
+            "height": 189
+          },
+          {
+            "x": 192,
+            "y": 77,
+            "width": 448,
+            "height": 236
+          },
+          {
+            "x": 155,
+            "y": 50,
+            "width": 336,
+            "height": 288
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 232,
+            "y": 60,
+            "width": 408,
+            "height": 281
+          }
+        ],
+        "bmps": [
+          "MJDIVE.BMP",
+          "GJDIVE.BMP",
+          "JOHNWALK.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJDIVE.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM",
+          "MJBATH.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM"
+        ]
+      },
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        0
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-01.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "activity-ads:8463f3831c05",
+      "ads_name": "ACTIVITY.ADS",
+      "signature_id": "8463f3831c05",
+      "restore_score_max": 91,
+      "restore_score_min": 91,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJDIVE.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM",
+          "MJBATH.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 96,
+            "y": 43,
+            "width": 400,
+            "height": 295
+          },
+          {
+            "x": 0,
+            "y": 128,
+            "width": 640,
+            "height": 180
+          },
+          {
+            "x": 144,
+            "y": 161,
+            "width": 432,
+            "height": 189
+          },
+          {
+            "x": 192,
+            "y": 77,
+            "width": 448,
+            "height": 236
+          },
+          {
+            "x": 155,
+            "y": 50,
+            "width": 336,
+            "height": 288
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 232,
+            "y": 60,
+            "width": 408,
+            "height": 281
+          }
+        ],
+        "bmps": [
+          "GJHOT.BMP",
+          "GJNAT1LI.BMP",
+          "LITEBULB.BMP",
+          "TRUNK.BMP",
+          "MEXCWALK.BMP",
+          "JCHANGE.BMP",
+          "GJNAT1.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJDIVE.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM",
+          "MJBATH.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM"
+        ]
+      },
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        5
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-05.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-05.json"
+    },
+    {
+      "cluster_id": "activity-ads:78a8dda15a0d",
+      "ads_name": "ACTIVITY.ADS",
+      "signature_id": "78a8dda15a0d",
+      "restore_score_max": 82,
+      "restore_score_min": 82,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJDIVE.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM",
+          "MJBATH.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 96,
+            "y": 43,
+            "width": 400,
+            "height": 295
+          },
+          {
+            "x": 0,
+            "y": 128,
+            "width": 640,
+            "height": 180
+          },
+          {
+            "x": 144,
+            "y": 161,
+            "width": 432,
+            "height": 189
+          },
+          {
+            "x": 192,
+            "y": 77,
+            "width": 448,
+            "height": 236
+          },
+          {
+            "x": 155,
+            "y": 50,
+            "width": 336,
+            "height": 288
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 232,
+            "y": 60,
+            "width": 408,
+            "height": 281
+          }
+        ],
+        "bmps": [
+          "GJHOT.BMP",
+          "GJNAT1LI.BMP",
+          "LITEBULB.BMP",
+          "TRUNK.BMP",
+          "MEXCWALK.BMP",
+          "JCHANGE.BMP",
+          "GJNAT1.BMP",
+          "GJNAT3.BMP",
+          "BOAT.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJDIVE.TTM",
+          "MJDIVE.TTM",
+          "MJREAD.TTM",
+          "MJBATH.TTM",
+          "GJNAT1.TTM",
+          "GJNAT3.TTM"
+        ]
+      },
+      "scene_tags": [
+        9
+      ],
+      "scene_indices": [
+        9
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-09.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/activity-ads-tag-09.json"
+    },
+    {
+      "cluster_id": "fishing-ads:c6e0ad821661",
+      "ads_name": "FISHING.ADS",
+      "signature_id": "c6e0ad821661",
+      "restore_score_max": 95,
+      "restore_score_min": 95,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "FISHWALK.TTM",
+          "GFFFOOD.TTM",
+          "GJCATCH2.TTM",
+          "MJFISH.TTM",
+          "MJFISHC.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 88,
+            "y": 142,
+            "width": 552,
+            "height": 208
+          },
+          {
+            "x": 136,
+            "y": 111,
+            "width": 504,
+            "height": 239
+          },
+          {
+            "x": 0,
+            "y": 157,
+            "width": 640,
+            "height": 193
+          },
+          {
+            "x": 0,
+            "y": 138,
+            "width": 640,
+            "height": 196
+          }
+        ],
+        "bmps": [
+          "GJFFFOOD.BMP",
+          "TRUNK.BMP",
+          "MJFISH1.BMP",
+          "JOHNWALK.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJFISH.TTM",
+          "GJCATCH2.TTM",
+          "GFFFOOD.TTM",
+          "MJFISHC.TTM",
+          "FISHWALK.TTM"
+        ]
+      },
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        21
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-05.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-05.json"
+    },
+    {
+      "cluster_id": "fishing-ads:0d4ad9117637",
+      "ads_name": "FISHING.ADS",
+      "signature_id": "0d4ad9117637",
+      "restore_score_max": 81,
+      "restore_score_min": 81,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "FISHWALK.TTM",
+          "GFFFOOD.TTM",
+          "GJCATCH2.TTM",
+          "MJFISH.TTM",
+          "MJFISHC.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 88,
+            "y": 142,
+            "width": 552,
+            "height": 208
+          },
+          {
+            "x": 136,
+            "y": 111,
+            "width": 504,
+            "height": 239
+          },
+          {
+            "x": 0,
+            "y": 157,
+            "width": 640,
+            "height": 193
+          },
+          {
+            "x": 0,
+            "y": 138,
+            "width": 640,
+            "height": 196
+          }
+        ],
+        "bmps": [
+          "MJFISH2.BMP",
+          "MJFISH3.BMP",
+          "TRUNK.BMP",
+          "MJFISH1.BMP",
+          "JOHNWALK.BMP",
+          "LILFISH.BMP",
+          "GJCATCH3.BMP",
+          "GJCATCH2.BMP",
+          "SPLASH.BMP",
+          "FISHMAN.BMP",
+          "SHKNFIST.BMP",
+          "MJDIVE.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "MJFISH.TTM",
+          "GJCATCH2.TTM",
+          "GFFFOOD.TTM",
+          "MJFISHC.TTM",
+          "FISHWALK.TTM"
+        ]
+      },
+      "scene_tags": [
+        3
+      ],
+      "scene_indices": [
+        19
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-03.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/fishing-ads-tag-03.json"
+    },
+    {
+      "cluster_id": "johnny-ads:6e547fdb477d",
+      "ads_name": "JOHNNY.ADS",
+      "signature_id": "6e547fdb477d",
+      "restore_score_max": 113,
+      "restore_score_min": 113,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 1,
+        "offline_ready": 0,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MEANWHIL.TTM",
+          "SJMSSGE.TTM",
+          "SJWORK.TTM",
+          "THEEND.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 224,
+            "y": 91,
+            "width": 160,
+            "height": 131
+          },
+          {
+            "x": 232,
+            "y": 90,
+            "width": 144,
+            "height": 134
+          },
+          {
+            "x": 0,
+            "y": 147,
+            "width": 448,
+            "height": 203
+          },
+          {
+            "x": 192,
+            "y": 199,
+            "width": 264,
+            "height": 142
+          },
+          {
+            "x": 144,
+            "y": 87,
+            "width": 384,
+            "height": 152
+          }
+        ],
+        "bmps": [
+          "THEEND1.BMP",
+          "ENDCRDTS.BMP",
+          "MEANWHIL.BMP"
+        ],
+        "scrs": [
+          "THEEND.SCR"
+        ],
+        "ttms": [
+          "THEEND.TTM",
+          "SJMSSGE.TTM",
+          "SJWORK.TTM",
+          "MEANWHIL.TTM"
+        ]
+      },
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        25
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-01.json"
+      ],
+      "promotion_state": "live_proven",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "johnny-ads:cfe5ac96fb8f",
+      "ads_name": "JOHNNY.ADS",
+      "signature_id": "cfe5ac96fb8f",
+      "restore_score_max": 111,
+      "restore_score_min": 111,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MEANWHIL.TTM",
+          "SJMSSGE.TTM",
+          "SJWORK.TTM",
+          "THEEND.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 224,
+            "y": 91,
+            "width": 160,
+            "height": 131
+          },
+          {
+            "x": 232,
+            "y": 90,
+            "width": 144,
+            "height": 134
+          },
+          {
+            "x": 0,
+            "y": 147,
+            "width": 448,
+            "height": 203
+          },
+          {
+            "x": 192,
+            "y": 199,
+            "width": 264,
+            "height": 142
+          },
+          {
+            "x": 144,
+            "y": 87,
+            "width": 384,
+            "height": 152
+          }
+        ],
+        "bmps": [
+          "SJWORK.BMP",
+          "THNKBUBL.BMP",
+          "MEANWHIL.BMP"
+        ],
+        "scrs": [
+          "JOFFICE.SCR"
+        ],
+        "ttms": [
+          "THEEND.TTM",
+          "SJMSSGE.TTM",
+          "SJWORK.TTM",
+          "MEANWHIL.TTM"
+        ]
+      },
+      "scene_tags": [
+        6
+      ],
+      "scene_indices": [
+        30
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-06.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/johnny-ads-tag-06.json"
+    },
+    {
+      "cluster_id": "mary-ads:23e389bae672",
+      "ads_name": "MARY.ADS",
+      "signature_id": "23e389bae672",
+      "restore_score_max": 83,
+      "restore_score_min": 83,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "SASKDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJGLIMPS.TTM",
+          "SJLEAVES.TTM",
+          "SMDATE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 0,
+            "y": 174,
+            "width": 488,
+            "height": 176
+          },
+          {
+            "x": 248,
+            "y": 196,
+            "width": 240,
+            "height": 147
+          },
+          {
+            "x": 360,
+            "y": 243,
+            "width": 56,
+            "height": 76
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 224,
+            "y": 162,
+            "width": 416,
+            "height": 152
+          },
+          {
+            "x": 504,
+            "y": 265,
+            "width": 136,
+            "height": 40
+          },
+          {
+            "x": 104,
+            "y": 151,
+            "width": 536,
+            "height": 182
+          },
+          {
+            "x": 0,
+            "y": 154,
+            "width": 416,
+            "height": 196
+          },
+          {
+            "x": 88,
+            "y": 208,
+            "width": 544,
+            "height": 141
+          },
+          {
+            "x": 8,
+            "y": 124,
+            "width": 560,
+            "height": 211
+          },
+          {
+            "x": 416,
+            "y": 257,
+            "width": 112,
+            "height": 57
+          },
+          {
+            "x": 360,
+            "y": 233,
+            "width": 48,
+            "height": 64
+          }
+        ],
+        "bmps": [
+          "TRUNK.BMP",
+          "MJFISH1.BMP",
+          "MJFISH3.BMP",
+          "JOHNWALK.BMP",
+          "SMDATE1.BMP",
+          "MJFISH2.BMP",
+          "SMGLIMSE.BMP",
+          "MEXCWALK.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "SJGLIMPS.TTM",
+          "SASKDATE.TTM",
+          "SMDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJLEAVES.TTM"
+        ]
+      },
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        33
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-02.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-02.json"
+    },
+    {
+      "cluster_id": "mary-ads:7fd6377bbf4a",
+      "ads_name": "MARY.ADS",
+      "signature_id": "7fd6377bbf4a",
+      "restore_score_max": 83,
+      "restore_score_min": 83,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "SASKDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJGLIMPS.TTM",
+          "SJLEAVES.TTM",
+          "SMDATE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 0,
+            "y": 174,
+            "width": 488,
+            "height": 176
+          },
+          {
+            "x": 248,
+            "y": 196,
+            "width": 240,
+            "height": 147
+          },
+          {
+            "x": 360,
+            "y": 243,
+            "width": 56,
+            "height": 76
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 224,
+            "y": 162,
+            "width": 416,
+            "height": 152
+          },
+          {
+            "x": 504,
+            "y": 265,
+            "width": 136,
+            "height": 40
+          },
+          {
+            "x": 104,
+            "y": 151,
+            "width": 536,
+            "height": 182
+          },
+          {
+            "x": 0,
+            "y": 154,
+            "width": 416,
+            "height": 196
+          },
+          {
+            "x": 88,
+            "y": 208,
+            "width": 544,
+            "height": 141
+          },
+          {
+            "x": 8,
+            "y": 124,
+            "width": 560,
+            "height": 211
+          },
+          {
+            "x": 416,
+            "y": 257,
+            "width": 112,
+            "height": 57
+          },
+          {
+            "x": 360,
+            "y": 233,
+            "width": 48,
+            "height": 64
+          }
+        ],
+        "bmps": [
+          "SMDATE1.BMP",
+          "SMGLIMSE.BMP",
+          "SMGIFT.BMP",
+          "MJREAD.BMP",
+          "SJGFTJMP.BMP",
+          "LITEBULB.BMP",
+          "SJGFTSHY.BMP",
+          "SJGFTXCH.BMP",
+          "SJGFTASK.BMP",
+          "SMGFTWAV.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "SJGLIMPS.TTM",
+          "SASKDATE.TTM",
+          "SMDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJLEAVES.TTM"
+        ]
+      },
+      "scene_tags": [
+        3
+      ],
+      "scene_indices": [
+        32
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-03.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-03.json"
+    },
+    {
+      "cluster_id": "mary-ads:15d5f3f71aee",
+      "ads_name": "MARY.ADS",
+      "signature_id": "15d5f3f71aee",
+      "restore_score_max": 83,
+      "restore_score_min": 83,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "SASKDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJGLIMPS.TTM",
+          "SJLEAVES.TTM",
+          "SMDATE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 0,
+            "y": 174,
+            "width": 488,
+            "height": 176
+          },
+          {
+            "x": 248,
+            "y": 196,
+            "width": 240,
+            "height": 147
+          },
+          {
+            "x": 360,
+            "y": 243,
+            "width": 56,
+            "height": 76
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 224,
+            "y": 162,
+            "width": 416,
+            "height": 152
+          },
+          {
+            "x": 504,
+            "y": 265,
+            "width": 136,
+            "height": 40
+          },
+          {
+            "x": 104,
+            "y": 151,
+            "width": 536,
+            "height": 182
+          },
+          {
+            "x": 0,
+            "y": 154,
+            "width": 416,
+            "height": 196
+          },
+          {
+            "x": 88,
+            "y": 208,
+            "width": 544,
+            "height": 141
+          },
+          {
+            "x": 8,
+            "y": 124,
+            "width": 560,
+            "height": 211
+          },
+          {
+            "x": 416,
+            "y": 257,
+            "width": 112,
+            "height": 57
+          },
+          {
+            "x": 360,
+            "y": 233,
+            "width": 48,
+            "height": 64
+          }
+        ],
+        "bmps": [
+          "TRUNK.BMP",
+          "SLEVEJM1.BMP",
+          "JOHNWALK.BMP",
+          "SRAFT.BMP",
+          "SLEVEJC1.BMP",
+          "JCHANGE.BMP",
+          "SLEVEJC2.BMP",
+          "SLEVEJM2.BMP",
+          "SLEVEJM3.BMP",
+          "SLEVEJC3.BMP"
+        ],
+        "scrs": [
+          "ISLAND2.SCR"
+        ],
+        "ttms": [
+          "SJGLIMPS.TTM",
+          "SASKDATE.TTM",
+          "SMDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJLEAVES.TTM"
+        ]
+      },
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        35
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-05.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-05.json"
+    },
+    {
+      "cluster_id": "mary-ads:d3c315d3dc84",
+      "ads_name": "MARY.ADS",
+      "signature_id": "d3c315d3dc84",
+      "restore_score_max": 81,
+      "restore_score_min": 81,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "SASKDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJGLIMPS.TTM",
+          "SJLEAVES.TTM",
+          "SMDATE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 0,
+            "y": 174,
+            "width": 488,
+            "height": 176
+          },
+          {
+            "x": 248,
+            "y": 196,
+            "width": 240,
+            "height": 147
+          },
+          {
+            "x": 360,
+            "y": 243,
+            "width": 56,
+            "height": 76
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 224,
+            "y": 162,
+            "width": 416,
+            "height": 152
+          },
+          {
+            "x": 504,
+            "y": 265,
+            "width": 136,
+            "height": 40
+          },
+          {
+            "x": 104,
+            "y": 151,
+            "width": 536,
+            "height": 182
+          },
+          {
+            "x": 0,
+            "y": 154,
+            "width": 416,
+            "height": 196
+          },
+          {
+            "x": 88,
+            "y": 208,
+            "width": 544,
+            "height": 141
+          },
+          {
+            "x": 8,
+            "y": 124,
+            "width": 560,
+            "height": 211
+          },
+          {
+            "x": 416,
+            "y": 257,
+            "width": 112,
+            "height": 57
+          },
+          {
+            "x": 360,
+            "y": 233,
+            "width": 48,
+            "height": 64
+          }
+        ],
+        "bmps": [
+          "TRUNK.BMP",
+          "JOHNWALK.BMP",
+          "MEXCWALK.BMP",
+          "MJRAFT2.BMP",
+          "SJRAFT1.BMP",
+          "SMDATE1.BMP",
+          "SMGLIMSE.BMP",
+          "SJBRAKUP.BMP",
+          "SBREAKUP.BMP",
+          "SJGFTSHY.BMP",
+          "LITEBULB.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "SJGLIMPS.TTM",
+          "SASKDATE.TTM",
+          "SMDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJLEAVES.TTM"
+        ]
+      },
+      "scene_tags": [
+        4
+      ],
+      "scene_indices": [
+        34
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-04.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-04.json"
+    },
+    {
+      "cluster_id": "mary-ads:86de7bfb6098",
+      "ads_name": "MARY.ADS",
+      "signature_id": "86de7bfb6098",
+      "restore_score_max": 72,
+      "restore_score_min": 72,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "SASKDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJGLIMPS.TTM",
+          "SJLEAVES.TTM",
+          "SMDATE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 0,
+            "y": 174,
+            "width": 488,
+            "height": 176
+          },
+          {
+            "x": 248,
+            "y": 196,
+            "width": 240,
+            "height": 147
+          },
+          {
+            "x": 360,
+            "y": 243,
+            "width": 56,
+            "height": 76
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 224,
+            "y": 162,
+            "width": 416,
+            "height": 152
+          },
+          {
+            "x": 504,
+            "y": 265,
+            "width": 136,
+            "height": 40
+          },
+          {
+            "x": 104,
+            "y": 151,
+            "width": 536,
+            "height": 182
+          },
+          {
+            "x": 0,
+            "y": 154,
+            "width": 416,
+            "height": 196
+          },
+          {
+            "x": 88,
+            "y": 208,
+            "width": 544,
+            "height": 141
+          },
+          {
+            "x": 8,
+            "y": 124,
+            "width": 560,
+            "height": 211
+          },
+          {
+            "x": 416,
+            "y": 257,
+            "width": 112,
+            "height": 57
+          },
+          {
+            "x": 360,
+            "y": 233,
+            "width": 48,
+            "height": 64
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "SMDATE2.BMP",
+          "JCHANGE.BMP",
+          "TRUNK.BMP",
+          "SMDATE3.BMP",
+          "SMDATE1.BMP",
+          "SMDATE7.BMP",
+          "SMDATE4.BMP",
+          "SMDATE5.BMP",
+          "SMDATE6.BMP",
+          "LITEBULB.BMP",
+          "SMDATE8.BMP",
+          "SMDATE9.BMP",
+          "SMDATE12.BMP",
+          "SMDATE10.BMP",
+          "SMDATE11.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "SJGLIMPS.TTM",
+          "SASKDATE.TTM",
+          "SMDATE.TTM",
+          "SBREAKUP.TTM",
+          "SJLEAVES.TTM"
+        ]
+      },
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        31
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-01.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/mary-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "miscgag-ads:40f9391cb4b7",
+      "ads_name": "MISCGAG.ADS",
+      "signature_id": "40f9391cb4b7",
+      "restore_score_max": 61,
+      "restore_score_min": 61,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJGULL1.TTM",
+          "GJHOT.TTM",
+          "SHARK1.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 0,
+            "y": 171,
+            "width": 272,
+            "height": 179
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "TRUNK.BMP",
+          "GJHOT.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJHOT.TTM",
+          "SHARK1.TTM",
+          "GJGULL1.TTM"
+        ]
+      },
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        36
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-01.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "miscgag-ads:993764e013c4",
+      "ads_name": "MISCGAG.ADS",
+      "signature_id": "993764e013c4",
+      "restore_score_max": 57,
+      "restore_score_min": 57,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJGULL1.TTM",
+          "GJHOT.TTM",
+          "SHARK1.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 160,
+            "y": 61,
+            "width": 440,
+            "height": 276
+          },
+          {
+            "x": 256,
+            "y": 123,
+            "width": 384,
+            "height": 227
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 0,
+            "y": 171,
+            "width": 272,
+            "height": 179
+          }
+        ],
+        "bmps": [
+          "SHARKWLK.BMP",
+          "TRUNK.BMP",
+          "SHARK.BMP",
+          "JOHNWALK.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJHOT.TTM",
+          "SHARK1.TTM",
+          "GJGULL1.TTM"
+        ]
+      },
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        37
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-02.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-02.json"
+    },
+    {
+      "cluster_id": "suzy-ads:56d4ea771a80",
+      "ads_name": "SUZY.ADS",
+      "signature_id": "56d4ea771a80",
+      "restore_score_max": 54,
+      "restore_score_min": 54,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MEANWHIL.TTM",
+          "SJMSUZY.TTM",
+          "SUZYCITY.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 224,
+            "y": 91,
+            "width": 160,
+            "height": 131
+          },
+          {
+            "x": 232,
+            "y": 90,
+            "width": 144,
+            "height": 134
+          },
+          {
+            "x": 128,
+            "y": 77,
+            "width": 384,
+            "height": 268
+          }
+        ],
+        "bmps": [
+          "SSUZY1.BMP",
+          "SSUZY2.BMP",
+          "SSUZY3.BMP",
+          "LITEBULB.BMP",
+          "MEANWHIL.BMP"
+        ],
+        "scrs": [
+          "SUZBEACH.SCR"
+        ],
+        "ttms": [
+          "SUZYCITY.TTM",
+          "SJMSUZY.TTM",
+          "MEANWHIL.TTM"
+        ]
+      },
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        52
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/suzy-ads-tag-01.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/suzy-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "suzy-ads:08387fe8e04f",
+      "ads_name": "SUZY.ADS",
+      "signature_id": "08387fe8e04f",
+      "restore_score_max": 45,
+      "restore_score_min": 45,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MEANWHIL.TTM",
+          "SJMSUZY.TTM",
+          "SUZYCITY.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 224,
+            "y": 91,
+            "width": 160,
+            "height": 131
+          },
+          {
+            "x": 232,
+            "y": 90,
+            "width": 144,
+            "height": 134
+          },
+          {
+            "x": 128,
+            "y": 77,
+            "width": 384,
+            "height": 268
+          }
+        ],
+        "bmps": [
+          "SSUZY2.BMP",
+          "SJMSUZY1.BMP",
+          "SSUZY3.BMP",
+          "MRAFT.BMP",
+          "SJMSUZY2.BMP",
+          "SJMSUZY3.BMP",
+          "MEANWHIL.BMP"
+        ],
+        "scrs": [
+          "SUZBEACH.SCR"
+        ],
+        "ttms": [
+          "SUZYCITY.TTM",
+          "SJMSUZY.TTM",
+          "MEANWHIL.TTM"
+        ]
+      },
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        53
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/suzy-ads-tag-02.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/suzy-ads-tag-02.json"
+    },
+    {
+      "cluster_id": "visitor-ads:d59893d35209",
+      "ads_name": "VISITOR.ADS",
+      "signature_id": "d59893d35209",
+      "restore_score_max": 85,
+      "restore_score_min": 85,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJLILIPU.TTM",
+          "GJVIS3.TTM",
+          "GJVIS5.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 264,
+            "y": 40,
+            "width": 376,
+            "height": 274
+          },
+          {
+            "x": 0,
+            "y": 159,
+            "width": 640,
+            "height": 191
+          },
+          {
+            "x": 0,
+            "y": 35,
+            "width": 640,
+            "height": 111
+          },
+          {
+            "x": 128,
+            "y": 130,
+            "width": 304,
+            "height": 195
+          },
+          {
+            "x": 0,
+            "y": 73,
+            "width": 640,
+            "height": 95
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 0,
+            "y": 134,
+            "width": 464,
+            "height": 157
+          },
+          {
+            "x": 0,
+            "y": 44,
+            "width": 232,
+            "height": 302
+          },
+          {
+            "x": 0,
+            "y": 43,
+            "width": 15,
+            "height": 302
+          },
+          {
+            "x": 15,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 39,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 63,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 87,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 112,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 136,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 161,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 185,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 209,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 234,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 258,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 282,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 307,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 331,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 355,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 380,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 404,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 429,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 453,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 479,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 503,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 527,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 551,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 575,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 599,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 624,
+            "y": 43,
+            "width": 16,
+            "height": 302
+          },
+          {
+            "x": 232,
+            "y": 117,
+            "width": 408,
+            "height": 233
+          }
+        ],
+        "bmps": [
+          "MJTELE.BMP",
+          "MJTELE2.BMP",
+          "GJVIS3.BMP",
+          "TRUNK.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJVIS3.TTM",
+          "GJLILIPU.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM",
+          "GJVIS5.TTM"
+        ]
+      },
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        54
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-01.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-01.json"
+    },
+    {
+      "cluster_id": "visitor-ads:9c6d6b5fa573",
+      "ads_name": "VISITOR.ADS",
+      "signature_id": "9c6d6b5fa573",
+      "restore_score_max": 78,
+      "restore_score_min": 78,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJLILIPU.TTM",
+          "GJVIS3.TTM",
+          "GJVIS5.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 264,
+            "y": 40,
+            "width": 376,
+            "height": 274
+          },
+          {
+            "x": 0,
+            "y": 159,
+            "width": 640,
+            "height": 191
+          },
+          {
+            "x": 0,
+            "y": 35,
+            "width": 640,
+            "height": 111
+          },
+          {
+            "x": 128,
+            "y": 130,
+            "width": 304,
+            "height": 195
+          },
+          {
+            "x": 0,
+            "y": 73,
+            "width": 640,
+            "height": 95
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 0,
+            "y": 134,
+            "width": 464,
+            "height": 157
+          },
+          {
+            "x": 0,
+            "y": 44,
+            "width": 232,
+            "height": 302
+          },
+          {
+            "x": 65534,
+            "y": 43,
+            "width": 17,
+            "height": 302
+          },
+          {
+            "x": 15,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 39,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 63,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 87,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 112,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 136,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 161,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 185,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 209,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 234,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 258,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 282,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 307,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 331,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 355,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 380,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 404,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 429,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 453,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 479,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 503,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 527,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 551,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 575,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 599,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 624,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 232,
+            "y": 117,
+            "width": 408,
+            "height": 233
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "GJVIS6.BMP",
+          "TANKER.BMP",
+          "GJPROW.BMP",
+          "GJVIS5.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "GJVIS3.TTM",
+          "GJLILIPU.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM",
+          "GJVIS5.TTM"
+        ]
+      },
+      "scene_tags": [
+        3
+      ],
+      "scene_indices": [
+        55
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-03.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-03.json"
+    },
+    {
+      "cluster_id": "visitor-ads:8c5dbc40f81e",
+      "ads_name": "VISITOR.ADS",
+      "signature_id": "8c5dbc40f81e",
+      "restore_score_max": 77,
+      "restore_score_min": 77,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "GJLILIPU.TTM",
+          "GJVIS3.TTM",
+          "GJVIS5.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 264,
+            "y": 40,
+            "width": 376,
+            "height": 274
+          },
+          {
+            "x": 0,
+            "y": 159,
+            "width": 640,
+            "height": 191
+          },
+          {
+            "x": 0,
+            "y": 35,
+            "width": 640,
+            "height": 111
+          },
+          {
+            "x": 128,
+            "y": 130,
+            "width": 304,
+            "height": 195
+          },
+          {
+            "x": 0,
+            "y": 73,
+            "width": 640,
+            "height": 95
+          },
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 0,
+            "y": 134,
+            "width": 464,
+            "height": 157
+          },
+          {
+            "x": 0,
+            "y": 44,
+            "width": 232,
+            "height": 302
+          },
+          {
+            "x": 65534,
+            "y": 43,
+            "width": 17,
+            "height": 302
+          },
+          {
+            "x": 15,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 39,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 63,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 87,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 112,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 136,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 161,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 185,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 209,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 234,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 258,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 282,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 307,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 331,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 355,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 380,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 404,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 429,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 453,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 479,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 503,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 527,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 551,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 575,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 599,
+            "y": 43,
+            "width": 25,
+            "height": 302
+          },
+          {
+            "x": 624,
+            "y": 43,
+            "width": 24,
+            "height": 302
+          },
+          {
+            "x": 232,
+            "y": 117,
+            "width": 408,
+            "height": 233
+          }
+        ],
+        "bmps": [
+          "GJVIS5.BMP",
+          "JOHNWALK.BMP",
+          "GJVIS52.BMP",
+          "MJCOCO.BMP",
+          "COCONUTS.BMP"
+        ],
+        "scrs": [
+          "ISLAND2.SCR"
+        ],
+        "ttms": [
+          "GJVIS3.TTM",
+          "GJLILIPU.TTM",
+          "GJVIS6.TTM",
+          "MJCOCO.TTM",
+          "GJVIS5.TTM"
+        ]
+      },
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        59
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-05.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/visitor-ads-tag-05.json"
+    },
+    {
+      "cluster_id": "walkstuf-ads:daafca374403",
+      "ads_name": "WALKSTUF.ADS",
+      "signature_id": "daafca374403",
+      "restore_score_max": 108,
+      "restore_score_min": 108,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 1,
+        "offline_ready": 0,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MJJOG.TTM",
+          "MJRAFT.TTM",
+          "WOULDBE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 96,
+            "y": 102,
+            "width": 544,
+            "height": 217
+          },
+          {
+            "x": 0,
+            "y": 91,
+            "width": 104,
+            "height": 154
+          }
+        ],
+        "bmps": [
+          "TRUNK.BMP",
+          "JOHNWALK.BMP",
+          "MJRAFT2.BMP",
+          "SJRAFT1.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "WOULDBE.TTM",
+          "MJRAFT.TTM",
+          "MJJOG.TTM"
+        ]
+      },
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        61
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-02.json"
+      ],
+      "promotion_state": "live_proven",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-02.json"
+    },
+    {
+      "cluster_id": "walkstuf-ads:069f7e1c435f",
+      "ads_name": "WALKSTUF.ADS",
+      "signature_id": "069f7e1c435f",
+      "restore_score_max": 105,
+      "restore_score_min": 105,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MJJOG.TTM",
+          "MJRAFT.TTM",
+          "WOULDBE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 96,
+            "y": 102,
+            "width": 544,
+            "height": 217
+          },
+          {
+            "x": 0,
+            "y": 91,
+            "width": 104,
+            "height": 154
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "TRUNK.BMP",
+          "MJJOG2.BMP",
+          "JCHANGE.BMP",
+          "MJJOG1.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "WOULDBE.TTM",
+          "MJRAFT.TTM",
+          "MJJOG.TTM"
+        ]
+      },
+      "scene_tags": [
+        3
+      ],
+      "scene_indices": [
+        62
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-03.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-03.json"
+    },
+    {
+      "cluster_id": "walkstuf-ads:8fab4126c2db",
+      "ads_name": "WALKSTUF.ADS",
+      "signature_id": "8fab4126c2db",
+      "restore_score_max": 99,
+      "restore_score_min": 99,
+      "scene_count": 1,
+      "statuses": {
+        "live_proven": 0,
+        "offline_ready": 1,
+        "blocked_entry_path": 0
+      },
+      "signature": {
+        "ttm_names": [
+          "MJJOG.TTM",
+          "MJRAFT.TTM",
+          "WOULDBE.TTM"
+        ],
+        "unique_rects": [
+          {
+            "x": 280,
+            "y": 200,
+            "width": 304,
+            "height": 150
+          },
+          {
+            "x": 232,
+            "y": 125,
+            "width": 408,
+            "height": 225
+          },
+          {
+            "x": 96,
+            "y": 102,
+            "width": 544,
+            "height": 217
+          },
+          {
+            "x": 0,
+            "y": 91,
+            "width": 104,
+            "height": 154
+          }
+        ],
+        "bmps": [
+          "JOHNWALK.BMP",
+          "WOULDBE.BMP",
+          "BOAT.BMP",
+          "TRUNK.BMP",
+          "LITEBULB.BMP",
+          "JOHNWOUL.BMP",
+          "DRUNKJON.BMP"
+        ],
+        "scrs": [
+          "ISLETEMP.SCR"
+        ],
+        "ttms": [
+          "WOULDBE.TTM",
+          "MJRAFT.TTM",
+          "MJJOG.TTM"
+        ]
+      },
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        60
+      ],
+      "spec_paths": [
+        "docs/ps1/research/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-01.json"
+      ],
+      "promotion_state": "offline_ready",
+      "preferred_spec_path": "docs/ps1/research/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-01.json"
+    }
+  ]
+}

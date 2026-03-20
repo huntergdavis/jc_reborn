@@ -1,1 +1,1 @@
-island ads STAND.ADS 1
+island ads JOHNNY.ADS 6

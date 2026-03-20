@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "miscgag-ads",
+    "ads_name": "MISCGAG.ADS",
+    "ads_tag": 2,
+    "scene_index": 37,
+    "peak_memory_bytes": 294508,
+    "bmp_count": 4,
+    "ttm_count": 3,
+    "restore_candidate": false,
+    "clear_screen_count": 284,
+    "unique_rect_count": 4,
+    "union_rect": {
+      "x": 0,
+      "y": 61,
+      "width": 640,
+      "height": 289
+    },
+    "ttm_names": [
+      "GJGULL1.TTM",
+      "GJHOT.TTM",
+      "SHARK1.TTM"
+    ],
+    "restore_score": 57
+  },
+  "scene_flags": [
+    "FINAL",
+    "ISLAND",
+    "VARPOS_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 154728,
+    "bmp_15bit_bytes": 618912,
+    "bmp_raw_bytes": 154728,
+    "ttm_bytes": 2538,
+    "ads_bytes": 298,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 368,
+    "ttm_slot_overhead_bytes": 24576,
+    "peak_memory_bytes": 294508
+  },
+  "resource_counts": {
+    "bmps": 4,
+    "scrs": 1,
+    "ttms": 3
+  },
+  "scene_resources": {
+    "bmps": [
+      "SHARKWLK.BMP",
+      "TRUNK.BMP",
+      "SHARK.BMP",
+      "JOHNWALK.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "GJHOT.TTM",
+      "SHARK1.TTM",
+      "GJGULL1.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 0,
+      "y": 61,
+      "width": 640,
+      "height": 289
+    },
+    "unique_rects": [
+      {
+        "x": 160,
+        "y": 61,
+        "width": 440,
+        "height": 276
+      },
+      {
+        "x": 256,
+        "y": 123,
+        "width": 384,
+        "height": 227
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "width": 304,
+        "height": 150
+      },
+      {
+        "x": 0,
+        "y": 171,
+        "width": 272,
+        "height": 179
+      }
+    ],
+    "clear_screen_count": 284,
+    "ttm_names": [
+      "GJGULL1.TTM",
+      "GJHOT.TTM",
+      "SHARK1.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "GJGULL1.TTM",
+      "union_rect": {
+        "x": 160,
+        "y": 61,
+        "width": 480,
+        "height": 289
+      },
+      "unique_rects": [
+        {
+          "x": 160,
+          "y": 61,
+          "width": 440,
+          "height": 276
+        },
+        {
+          "x": 256,
+          "y": 123,
+          "width": 384,
+          "height": 227
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 107
+      }
+    },
+    {
+      "ttm_name": "GJHOT.TTM",
+      "union_rect": {
+        "x": 280,
+        "y": 200,
+        "width": 304,
+        "height": 150
+      },
+      "unique_rects": [
+        {
+          "x": 280,
+          "y": 200,
+          "width": 304,
+          "height": 150
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 89
+      }
+    },
+    {
+      "ttm_name": "SHARK1.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 171,
+        "width": 584,
+        "height": 179
+      },
+      "unique_rects": [
+        {
+          "x": 280,
+          "y": 200,
+          "width": 304,
+          "height": 150
+        },
+        {
+          "x": 0,
+          "y": 171,
+          "width": 272,
+          "height": 179
+        }
+      ],
+      "clear_region_ids": [
+        0,
+        1
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 88
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "MISCGAG.ADS",
+    "ads_tags": [
+      2
+    ],
+    "scene_indices": [
+      37
+    ],
+    "ttm_names": [
+      "GJGULL1.TTM",
+      "GJHOT.TTM",
+      "SHARK1.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

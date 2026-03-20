@@ -27,6 +27,9 @@ DIRTY_REGION_OPS = {
     0xA601: "clear_screen",
 }
 
+SCENE_WIDTH = 640
+SCENE_HEIGHT = 350
+
 
 def load_json(path: Path) -> dict:
     with path.open("r", encoding="utf-8") as fh:
@@ -40,6 +43,10 @@ def write_json(path: Path, payload: dict) -> None:
 
 def peek_u16(data: bytes, offset: int) -> Tuple[int, int]:
     return struct.unpack_from("<H", data, offset)[0], offset + 2
+
+
+def as_s16(value: int) -> int:
+    return value - 0x10000 if value & 0x8000 else value
 
 
 def read_name(data: bytes, offset: int) -> Tuple[str, int]:
@@ -82,6 +89,37 @@ def union_rects(rects: Sequence[Mapping[str, int]]) -> Dict[str, int] | None:
     x2 = max(rect["x"] + rect["width"] for rect in rects)
     y2 = max(rect["y"] + rect["height"] for rect in rects)
     return {"x": x1, "y": y1, "width": x2 - x1, "height": y2 - y1}
+
+
+def normalized_rect(args: Sequence[int]) -> Dict[str, int] | None:
+    if len(args) < 4:
+        return None
+
+    x = as_s16(args[0])
+    y = as_s16(args[1])
+    width = int(args[2])
+    height = int(args[3])
+
+    if width <= 0 or height <= 0:
+        return None
+
+    x2 = x + width
+    y2 = y + height
+
+    if x2 <= 0 or y2 <= 0:
+        return None
+    if x >= SCENE_WIDTH or y >= SCENE_HEIGHT:
+        return None
+
+    x = max(0, x)
+    y = max(0, y)
+    x2 = min(SCENE_WIDTH, x2)
+    y2 = min(SCENE_HEIGHT, y2)
+
+    if x2 <= x or y2 <= y:
+        return None
+
+    return {"x": x, "y": y, "width": x2 - x, "height": y2 - y}
 
 
 def make_tag_entry(tag: int) -> dict:
@@ -149,12 +187,9 @@ def parse_ttm_template(ttm_name: str, path: Path) -> dict:
             tag_entry["clear_region_ids"].append(region_id)
             continue
 
-        rect = {
-            "x": args[0],
-            "y": args[1],
-            "width": args[2],
-            "height": args[3],
-        }
+        rect = normalized_rect(args)
+        if rect is None:
+            continue
         tag_entry["rects"].append(rect)
         all_rects.append(rect)
 

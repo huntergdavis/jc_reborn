@@ -253,16 +253,21 @@ struct TPs1ActivePack {
     char adsName[PS1_PACK_NAME_BYTES];
     char packFile[PS1_PACK_FILE_MAX];
     char prefetchedAdsName[PS1_PACK_NAME_BYTES];
+    CdlFILE cdfile;
     uint16 packId;
     uint16 entryCount;
+    uint8 fileInfoValid;
     struct TPs1PackedResourceEntry *entries;
 };
 
-static struct TPs1ActivePack ps1PilotActivePack = {"", "", "", 0, 0, NULL};
-static struct TPs1ActivePack ps1PilotPrefetchPack = {"", "", "", 0, 0, NULL};
+static struct TPs1ActivePack ps1PilotActivePack = {"", "", "", {0}, 0, 0, 0, NULL};
+static struct TPs1ActivePack ps1PilotPrefetchPack = {"", "", "", {0}, 0, 0, 0, NULL};
 uint16 ps1PilotDbgActivePack = 0;
 uint16 ps1PilotDbgHits = 0;
 uint16 ps1PilotDbgFallbacks = 0;
+uint16 ps1PilotDbgLastHitEntry = 0;
+uint16 ps1PilotDbgLastFallbackEntry = 0;
+uint16 ps1PilotDbgFallbackWhilePackActive = 0;
 
 /* CD-ROM read buffer (1KB static buffer - minimal size for testing) */
 /* Must be 4-byte aligned for DMA operations! */
@@ -749,6 +754,8 @@ void ps1_wrapBuffer(PS1File* file, uint8_t* buffer, uint32_t size)
     file->filename[0] = '\0';  /* No filename for wrapped buffers */
 }
 
+static uint8_t* ps1_streamReadFromCdFile(const CdlFILE *cdfile, uint32_t offset, uint32_t size);
+
 /*
  * Stream read: Read a range of bytes from a file without loading entire file.
  * This is for dynamic loading - reads only the necessary CD sectors.
@@ -756,11 +763,11 @@ void ps1_wrapBuffer(PS1File* file, uint8_t* buffer, uint32_t size)
  */
 uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size)
 {
-    if (size == 0) return NULL;
-
-    /* Find file on CD */
     CdlFILE cdfile;
     char cdPath[64];
+
+    if (size == 0) return NULL;
+
     cdPath[0] = '\\';
     strncpy(cdPath + 1, filename, sizeof(cdPath) - 4);
     cdPath[sizeof(cdPath) - 3] = '\0';
@@ -772,49 +779,164 @@ uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size)
 
     /* Calculate sector range needed
      * CD sectors are 2048 bytes each */
-    uint32_t startSector = offset / CD_SECTOR_SIZE;
-    uint32_t endByte = offset + size;
-    uint32_t endSector = (endByte + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
-    uint32_t numSectors = endSector - startSector;
-    uint32_t bufferSize = numSectors * CD_SECTOR_SIZE;
+    return ps1_streamReadFromCdFile(&cdfile, offset, size);
+}
+
+static uint8_t* ps1_streamReadFromCdFile(const CdlFILE *cdfile, uint32_t offset, uint32_t size)
+{
+    uint32_t startSector;
+    uint32_t endByte;
+    uint32_t endSector;
+    uint32_t numSectors;
+    uint32_t bufferSize;
+    uint8_t* sectorBuffer;
+    CdlLOC loc;
+    uint8_t* result;
+    uint32_t offsetInBuffer;
+    int syncResult;
+    int timeout;
+    uint32_t sectorsRead;
+
+    enum { PS1_CD_READ_CHUNK_SECTORS = 8 };
+
+    if (cdfile == NULL || size == 0)
+        return NULL;
+
+    /* Calculate sector range needed
+     * CD sectors are 2048 bytes each */
+    startSector = offset / CD_SECTOR_SIZE;
+    endByte = offset + size;
+    endSector = (endByte + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
+    numSectors = endSector - startSector;
+    bufferSize = numSectors * CD_SECTOR_SIZE;
 
     /* Allocate buffer for the sectors we need */
-    uint8_t* sectorBuffer = (uint8_t*)malloc(bufferSize);
+    sectorBuffer = (uint8_t*)malloc(bufferSize);
     if (!sectorBuffer) {
         return NULL;  /* Malloc failed */
     }
 
-    /* Calculate absolute sector position on CD */
-    CdlLOC loc;
-    CdIntToPos(CdPosToInt(&cdfile.pos) + startSector, &loc);
+    /* Read in smaller sector chunks. Large single-shot reads on packed BMPs
+     * have been intermittently fragile on hardware-style CD timing. */
+    sectorsRead = 0;
+    while (sectorsRead < numSectors) {
+        uint32_t chunkSectors = numSectors - sectorsRead;
+        uint8_t *chunkDst = sectorBuffer + (sectorsRead * CD_SECTOR_SIZE);
 
-    /* Position CD head */
-    CdControl(CdlSetloc, (uint8_t*)&loc, NULL);
+        if (chunkSectors > PS1_CD_READ_CHUNK_SECTORS)
+            chunkSectors = PS1_CD_READ_CHUNK_SECTORS;
 
-    /* Brief wait for seek */
-    for (volatile int i = 0; i < 100000; i++);
+        CdIntToPos(CdPosToInt((CdlLOC *)&cdfile->pos) + startSector + sectorsRead, &loc);
 
-    /* Read the sectors */
-    CdRead(numSectors, (uint32_t*)sectorBuffer, CdlModeSpeed);
+        if (CdControl(CdlSetloc, (uint8_t*)&loc, NULL) == 0) {
+            free(sectorBuffer);
+            return NULL;
+        }
 
-    /* Wait for read to complete */
-    if (CdReadSync(0, NULL) < 0) {
-        free(sectorBuffer);
-        return NULL;  /* Read error */
+        for (volatile int i = 0; i < 100000; i++);
+
+        if (CdRead(chunkSectors, (uint32_t*)chunkDst, CdlModeSpeed) == 0) {
+            free(sectorBuffer);
+            return NULL;
+        }
+
+        timeout = 1000000;
+        do {
+            syncResult = CdReadSync(1, NULL);
+        } while (syncResult > 0 && --timeout > 0);
+
+        if (timeout <= 0 || syncResult < 0) {
+            free(sectorBuffer);
+            return NULL;  /* Read error */
+        }
+
+        sectorsRead += chunkSectors;
     }
 
     /* Allocate exact-size output buffer and copy the data we need */
-    uint8_t* result = (uint8_t*)malloc(size);
+    result = (uint8_t*)malloc(size);
     if (!result) {
         free(sectorBuffer);
         return NULL;
     }
 
     /* Copy from sector buffer at the correct offset */
-    uint32_t offsetInBuffer = offset % CD_SECTOR_SIZE;
+    offsetInBuffer = offset % CD_SECTOR_SIZE;
     memcpy(result, sectorBuffer + offsetInBuffer, size);
 
     free(sectorBuffer);
+    return result;
+}
+
+static uint8_t* ps1_streamReadFromCdFileWhole(const CdlFILE *cdfile, uint32_t offset, uint32_t size)
+{
+    uint32_t fileSize;
+    uint32_t totalSectors;
+    uint32_t bufferSize;
+    uint8_t *fileBuffer;
+    uint8_t *result;
+    CdlLOC loc;
+    uint32_t sectorsRead;
+    int syncResult;
+    int timeout;
+
+    enum { PS1_CD_READ_CHUNK_SECTORS = 8 };
+
+    if (cdfile == NULL || size == 0)
+        return NULL;
+
+    fileSize = cdfile->size;
+    if (offset > fileSize || size > fileSize || (offset + size) > fileSize)
+        return NULL;
+
+    totalSectors = (fileSize + CD_SECTOR_SIZE - 1U) / CD_SECTOR_SIZE;
+    bufferSize = totalSectors * CD_SECTOR_SIZE;
+    fileBuffer = (uint8_t*)malloc(bufferSize);
+    if (fileBuffer == NULL)
+        return NULL;
+
+    sectorsRead = 0;
+    while (sectorsRead < totalSectors) {
+        uint32_t chunkSectors = totalSectors - sectorsRead;
+        uint8_t *chunkDst = fileBuffer + (sectorsRead * CD_SECTOR_SIZE);
+
+        if (chunkSectors > PS1_CD_READ_CHUNK_SECTORS)
+            chunkSectors = PS1_CD_READ_CHUNK_SECTORS;
+
+        CdIntToPos(CdPosToInt((CdlLOC *)&cdfile->pos) + sectorsRead, &loc);
+        if (CdControl(CdlSetloc, (uint8_t*)&loc, NULL) == 0) {
+            free(fileBuffer);
+            return NULL;
+        }
+
+        for (volatile int i = 0; i < 100000; i++);
+
+        if (CdRead(chunkSectors, (uint32_t*)chunkDst, CdlModeSpeed) == 0) {
+            free(fileBuffer);
+            return NULL;
+        }
+
+        timeout = 1000000;
+        do {
+            syncResult = CdReadSync(1, NULL);
+        } while (syncResult > 0 && --timeout > 0);
+
+        if (timeout <= 0 || syncResult < 0) {
+            free(fileBuffer);
+            return NULL;
+        }
+
+        sectorsRead += chunkSectors;
+    }
+
+    result = (uint8_t*)malloc(size);
+    if (result == NULL) {
+        free(fileBuffer);
+        return NULL;
+    }
+
+    memcpy(result, fileBuffer + offset, size);
+    free(fileBuffer);
     return result;
 }
 
@@ -850,6 +972,26 @@ static uint16 ps1PilotPackDebugId(const char *adsName)
     return (uint16)((hash % 63U) + 1U);
 }
 
+static uint16 ps1PilotResourceDebugSig(const char *resourceType, const char *name)
+{
+    uint32 hash = 0;
+    int i;
+
+    if (resourceType != NULL) {
+        for (i = 0; resourceType[i] != '\0'; i++)
+            hash = (hash * 33U) + (uint8)resourceType[i];
+    }
+
+    hash = (hash * 33U) + 0x2FU;
+
+    if (name != NULL) {
+        for (i = 0; name[i] != '\0'; i++)
+            hash = (hash * 33U) + (uint8)name[i];
+    }
+
+    return (uint16)((hash % 63U) + 1U);
+}
+
 static void ps1PilotResetPack(struct TPs1ActivePack *pack)
 {
     if (pack == NULL)
@@ -863,8 +1005,10 @@ static void ps1PilotResetPack(struct TPs1ActivePack *pack)
     pack->adsName[0] = '\0';
     pack->packFile[0] = '\0';
     pack->prefetchedAdsName[0] = '\0';
+    memset(&pack->cdfile, 0, sizeof(pack->cdfile));
     pack->packId = 0;
     pack->entryCount = 0;
+    pack->fileInfoValid = 0;
 }
 
 static void ps1PilotResetActivePack(void)
@@ -873,6 +1017,9 @@ static void ps1PilotResetActivePack(void)
     ps1PilotDbgActivePack = 0;
     ps1PilotDbgHits = 0;
     ps1PilotDbgFallbacks = 0;
+    ps1PilotDbgLastHitEntry = 0;
+    ps1PilotDbgLastFallbackEntry = 0;
+    ps1PilotDbgFallbackWhilePackActive = 0;
 }
 
 static int ps1PilotBuildPackFile(const char *adsName, char *outPath, size_t outPathSize)
@@ -894,6 +1041,29 @@ static int ps1PilotBuildPackFile(const char *adsName, char *outPath, size_t outP
     return 1;
 }
 
+static int ps1PilotRefreshPackFileInfo(struct TPs1ActivePack *pack)
+{
+    char cdPath[64];
+    CdlFILE cdfile;
+
+    if (pack == NULL || pack->packFile[0] == '\0')
+        return 0;
+
+    cdPath[0] = '\\';
+    strncpy(cdPath + 1, pack->packFile, sizeof(cdPath) - 4);
+    cdPath[sizeof(cdPath) - 3] = '\0';
+    strcat(cdPath, ";1");
+
+    if (CdSearchFile(&cdfile, cdPath) == NULL) {
+        pack->fileInfoValid = 0;
+        return 0;
+    }
+
+    pack->cdfile = cdfile;
+    pack->fileInfoValid = 1;
+    return 1;
+}
+
 static int ps1PilotLoadPackIndex(const char *adsName, struct TPs1ActivePack *outPack)
 {
     uint8_t *headerData;
@@ -904,6 +1074,8 @@ static int ps1PilotLoadPackIndex(const char *adsName, struct TPs1ActivePack *out
     uint32 prefetchCount;
     struct TPs1PackedResourceEntry *entries;
     char packFile[PS1_PACK_FILE_MAX];
+    char cdPath[64];
+    CdlFILE cdfile;
     uint32 entryBytes;
     uint32 i;
 
@@ -913,7 +1085,14 @@ static int ps1PilotLoadPackIndex(const char *adsName, struct TPs1ActivePack *out
     if (!ps1PilotBuildPackFile(adsName, packFile, sizeof(packFile)))
         return 0;
 
-    headerData = ps1_streamRead(packFile, 0, PS1_PACK_HEADER_SIZE);
+    cdPath[0] = '\\';
+    strncpy(cdPath + 1, packFile, sizeof(cdPath) - 4);
+    cdPath[sizeof(cdPath) - 3] = '\0';
+    strcat(cdPath, ";1");
+    if (CdSearchFile(&cdfile, cdPath) == NULL)
+        return 0;
+
+    headerData = ps1_streamReadFromCdFile(&cdfile, 0, PS1_PACK_HEADER_SIZE);
     if (headerData == NULL)
         return 0;
 
@@ -931,7 +1110,7 @@ static int ps1PilotLoadPackIndex(const char *adsName, struct TPs1ActivePack *out
     if (firstResourceOffset < PS1_PACK_HEADER_SIZE + entryBytes + (PS1_PACK_PREFETCH_MAX * PS1_PACK_NAME_BYTES))
         return 0;
 
-    headerData = ps1_streamRead(packFile, 0, firstResourceOffset);
+    headerData = ps1_streamReadFromCdFile(&cdfile, 0, firstResourceOffset);
     if (headerData == NULL)
         return 0;
 
@@ -955,8 +1134,10 @@ static int ps1PilotLoadPackIndex(const char *adsName, struct TPs1ActivePack *out
     outPack->adsName[sizeof(outPack->adsName) - 1] = '\0';
     strncpy(outPack->packFile, packFile, sizeof(outPack->packFile) - 1);
     outPack->packFile[sizeof(outPack->packFile) - 1] = '\0';
+    outPack->cdfile = cdfile;
     outPack->packId = ps1PilotPackDebugId(adsName);
     outPack->entryCount = (uint16)entryCount;
+    outPack->fileInfoValid = 1;
     outPack->entries = entries;
     outPack->prefetchedAdsName[0] = '\0';
 
@@ -990,6 +1171,9 @@ static void ps1PilotSetActivePackForAds(const char *adsName)
     ps1PilotDbgActivePack = ps1PilotActivePack.packId;
     ps1PilotDbgHits = 0;
     ps1PilotDbgFallbacks = 0;
+    ps1PilotDbgLastHitEntry = 0;
+    ps1PilotDbgLastFallbackEntry = 0;
+    ps1PilotDbgFallbackWhilePackActive = 0;
 
     if (ps1PilotActivePack.prefetchedAdsName[0] != '\0') {
         if (strcmp(ps1PilotPrefetchPack.adsName, ps1PilotActivePack.prefetchedAdsName) != 0)
@@ -1028,15 +1212,47 @@ static uint8_t *ps1PilotLoadResource(const char *resourceType, const char *name,
     const struct TPs1PackedResourceEntry *entry = ps1PilotFindEntry(resourceType, name);
     uint8_t *data;
 
-    if (entry == NULL)
+    if (entry == NULL) {
+        if (ps1PilotActivePack.entries != NULL)
+            ps1PilotDbgLastFallbackEntry = ps1PilotResourceDebugSig(resourceType, name);
         return NULL;
+    }
 
-    data = ps1_streamRead(ps1PilotActivePack.packFile, entry->offsetBytes, entry->sizeBytes);
+    if (!ps1PilotActivePack.fileInfoValid) {
+        ps1PilotDbgLastFallbackEntry = ps1PilotResourceDebugSig(resourceType, name);
+        return NULL;
+    }
+
+    data = ps1_streamReadFromCdFile(&ps1PilotActivePack.cdfile, entry->offsetBytes, entry->sizeBytes);
+    if (data == NULL) {
+        /* Recover once from transient CD state drift before treating the pack
+         * entry as a true miss. The pack index already proved the asset exists. */
+        cdromResetState();
+        if (ps1PilotRefreshPackFileInfo(&ps1PilotActivePack))
+            data = ps1_streamReadFromCdFile(&ps1PilotActivePack.cdfile, entry->offsetBytes, entry->sizeBytes);
+        if (data == NULL) {
+            /* Keep the pack path authoritative: if the direct range read still
+             * fails, retry by reading the pack file body and slicing the exact
+             * entry bytes out of that image. */
+            cdromResetState();
+            if (ps1PilotRefreshPackFileInfo(&ps1PilotActivePack)) {
+                data = ps1_streamReadFromCdFileWhole(&ps1PilotActivePack.cdfile,
+                                                     entry->offsetBytes,
+                                                     entry->sizeBytes);
+            }
+        }
+    }
     if (data != NULL) {
         if (inOutSize != NULL)
             *inOutSize = entry->sizeBytes;
         if (ps1PilotDbgHits < 0xFFFFU)
             ps1PilotDbgHits++;
+        ps1PilotDbgLastHitEntry = (uint16)((entry - ps1PilotActivePack.entries) + 1);
+    } else {
+        /* When the entry exists but the sector read fails, keep the overlay
+         * value as the pack entry index so screenshot-based validation can
+         * distinguish read-path faults from "resource not in pack" faults. */
+        ps1PilotDbgLastFallbackEntry = (uint16)((entry - ps1PilotActivePack.entries) + 1);
     }
 
     return data;
@@ -1861,8 +2077,11 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource)
 
     /* Once an ADS-family pack is active, BMP payloads are also authoritative.
      * The callers already handle a missing BMP by skipping sprite load cleanly. */
-    if (ps1PilotActivePack.entries != NULL)
+    if (ps1PilotActivePack.entries != NULL) {
+        if (ps1PilotDbgFallbackWhilePackActive < 0xFFFFU)
+            ps1PilotDbgFallbackWhilePackActive++;
         return;
+    }
 
     /* Build path to pre-extracted file */
     char path[64];
@@ -1886,6 +2105,7 @@ void ps1_loadBmpData(struct TBmpResource *bmpResource)
     /* Read entire file from CD - already decompressed, no processing needed */
     if (ps1PilotDbgFallbacks < 0xFFFFU)
         ps1PilotDbgFallbacks++;
+    ps1PilotDbgLastFallbackEntry = 0;
     bmpResource->uncompressedData = ps1_streamRead(path, 0, readSize);
 
     /* Update uncompressedSize to match what we actually read */
@@ -1918,8 +2138,11 @@ void ps1_loadScrData(struct TScrResource *scrResource)
 
     /* Once an ADS-family pack is active, the scene-root SCR payload is also
      * authoritative. Keep fallback only for more dynamic secondary assets. */
-    if (ps1PilotActivePack.entries != NULL)
+    if (ps1PilotActivePack.entries != NULL) {
+        if (ps1PilotDbgFallbackWhilePackActive < 0xFFFFU)
+            ps1PilotDbgFallbackWhilePackActive++;
         return;
+    }
 
     /* Build path to pre-extracted file: "SCR/OCEAN00.SCR" etc.
      * ps1_streamRead will prepend backslash and append ";1" */
@@ -1930,6 +2153,7 @@ void ps1_loadScrData(struct TScrResource *scrResource)
      * Trust the metadata uncompressedSize - the extracted files should match */
     if (ps1PilotDbgFallbacks < 0xFFFFU)
         ps1PilotDbgFallbacks++;
+    ps1PilotDbgLastFallbackEntry = 0;
     scrResource->uncompressedData = ps1_streamRead(path, 0, scrResource->uncompressedSize);
 }
 
@@ -1955,8 +2179,11 @@ void ps1_loadTtmData(struct TTtmResource *ttmResource)
 
     /* Once an ADS-family pack is active, TTM bytecode should come from the pack.
      * Keep extracted-file fallback only for BMP during rollout validation. */
-    if (ps1PilotActivePack.entries != NULL)
+    if (ps1PilotActivePack.entries != NULL) {
+        if (ps1PilotDbgFallbackWhilePackActive < 0xFFFFU)
+            ps1PilotDbgFallbackWhilePackActive++;
         return;
+    }
 
     /* Build path to pre-extracted file: "TTM/FISHWALK.TTM" etc.
      * ps1_streamRead will prepend backslash and append ";1" */
@@ -1966,6 +2193,7 @@ void ps1_loadTtmData(struct TTtmResource *ttmResource)
     /* Read entire file from CD - already decompressed bytecode */
     if (ps1PilotDbgFallbacks < 0xFFFFU)
         ps1PilotDbgFallbacks++;
+    ps1PilotDbgLastFallbackEntry = 0;
     ttmResource->uncompressedData = ps1_streamRead(path, 0, ttmResource->uncompressedSize);
 }
 
@@ -1993,8 +2221,11 @@ void ps1_loadAdsData(struct TAdsResource *adsResource)
     /* Once an ADS-family pack is active, the ADS payload itself is authoritative.
      * Keep fallback only for secondary assets (BMP/SCR/TTM) while validating pack
      * coverage; if the ADS root record is missing, fail the scene load cleanly. */
-    if (ps1PilotActivePack.entries != NULL)
+    if (ps1PilotActivePack.entries != NULL) {
+        if (ps1PilotDbgFallbackWhilePackActive < 0xFFFFU)
+            ps1PilotDbgFallbackWhilePackActive++;
         return;
+    }
 
     /* Build path to pre-extracted file: "ADS/STAND.ADS" etc.
      * ps1_streamRead will prepend backslash and append ";1" */
@@ -2004,5 +2235,6 @@ void ps1_loadAdsData(struct TAdsResource *adsResource)
     /* Read entire file from CD - already decompressed bytecode */
     if (ps1PilotDbgFallbacks < 0xFFFFU)
         ps1PilotDbgFallbacks++;
+    ps1PilotDbgLastFallbackEntry = 0;
     adsResource->uncompressedData = ps1_streamRead(path, 0, adsResource->uncompressedSize);
 }

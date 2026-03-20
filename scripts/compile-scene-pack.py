@@ -46,6 +46,17 @@ ISLAND_SHARED_RESOURCES: Sequence[Tuple[str, str]] = (
     ("bmps", "MRAFT.BMP"),
     ("bmps", "BACKGRND.BMP"),
     ("bmps", "HOLIDAY.BMP"),
+    # Stray island-route loads still probe these scene TTMs on WALKSTUF/STAND
+    # style routes. Carry the minimal support assets in the island shared
+    # payload so those lookups stay pack-backed instead of leaking into the
+    # extracted-file path.
+    ("ttms", "MJBATH.TTM"),
+    ("bmps", "MJBATH.BMP"),
+    ("ttms", "SUZYCITY.TTM"),
+    ("bmps", "MEANWHIL.BMP"),
+    ("bmps", "SSUZY1.BMP"),
+    ("bmps", "SSUZY2.BMP"),
+    ("bmps", "SSUZY3.BMP"),
 )
 
 

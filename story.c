@@ -50,6 +50,8 @@ extern int rand(void);
 
 
 static int storyCurrentDay = 1;
+static char storyBootAdsName[13] = "";
+static int storyBootAdsTag = -1;
 
 #ifdef PS1_BUILD
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
@@ -72,6 +74,10 @@ static int storyIsValidHdg(int hdg)
     return (hdg >= HDG_S && hdg <= HDG_SE);
 }
 
+static void storyUpdateCurrentDay(void);
+static void storyCalculateIslandFromDateAndTime(void);
+static void storyCalculateIslandFromScene(struct TStoryScene *scene);
+
 static int storyHasValidStart(struct TStoryScene *scene)
 {
     return storyIsValidSpot(scene->spotStart) && storyIsValidHdg(scene->hdgStart);
@@ -82,6 +88,33 @@ static int storyHasValidEnd(struct TStoryScene *scene)
     return storyIsValidSpot(scene->spotEnd) && storyIsValidHdg(scene->hdgEnd);
 }
 
+static struct TStoryScene *storyFindSceneByAds(const char *adsName, int adsTag)
+{
+    int i;
+
+    if (adsName == NULL || adsTag < 0)
+        return NULL;
+
+    for (i = 0; i < NUM_SCENES; i++) {
+        if (!strcmp(storyScenes[i].adsName, adsName) && storyScenes[i].adsTagNo == adsTag)
+            return &storyScenes[i];
+    }
+
+    return NULL;
+}
+
+void storySetBootScene(const char *adsName, uint16 adsTag)
+{
+    if (adsName == NULL) {
+        storyBootAdsName[0] = '\0';
+        storyBootAdsTag = -1;
+        return;
+    }
+
+    strncpy(storyBootAdsName, adsName, sizeof(storyBootAdsName) - 1);
+    storyBootAdsName[sizeof(storyBootAdsName) - 1] = '\0';
+    storyBootAdsTag = (int)adsTag;
+}
 
 static struct TStoryScene *storyPickScene(
                 uint16 wantedFlags, uint16 unwantedFlags)
@@ -240,7 +273,7 @@ void storyPlay()
     uint16 wantedFlags   = 0;
     uint16 unwantedFlags = 0;
     int firstSequence = 1;
-
+    struct TStoryScene *bootScene = NULL;
 
     adsInit();
     adsPlayIntro();
@@ -253,15 +286,26 @@ void storyPlay()
 
         storyUpdateCurrentDay();
         storyCalculateIslandFromDateAndTime();
-        unwantedFlags = 0;
-        if (firstSequence)
-            unwantedFlags |= FIRST;
 
-        struct TStoryScene *finalScene = storyPickScene(FINAL, unwantedFlags);
-        /* Transition invariant: if final scene needs a walk-in, it must have valid start metadata. */
-        if (!(finalScene->flags & FIRST)) {
-            for (int tryPick = 0; tryPick < 32 && !storyHasValidStart(finalScene); tryPick++)
-                finalScene = storyPickScene(FINAL, unwantedFlags);
+        bootScene = NULL;
+        if (storyBootAdsName[0] != '\0' && storyBootAdsTag >= 0) {
+            bootScene = storyFindSceneByAds(storyBootAdsName, storyBootAdsTag);
+            storyBootAdsName[0] = '\0';
+            storyBootAdsTag = -1;
+        }
+
+        struct TStoryScene *finalScene = bootScene;
+        if (finalScene == NULL) {
+            unwantedFlags = 0;
+            if (firstSequence)
+                unwantedFlags |= FIRST;
+
+            finalScene = storyPickScene(FINAL, unwantedFlags);
+            /* Transition invariant: if final scene needs a walk-in, it must have valid start metadata. */
+            if (!(finalScene->flags & FIRST)) {
+                for (int tryPick = 0; tryPick < 32 && !storyHasValidStart(finalScene); tryPick++)
+                    finalScene = storyPickScene(FINAL, unwantedFlags);
+            }
         }
 
         if (finalScene->flags & ISLAND) {
@@ -278,7 +322,7 @@ void storyPlay()
         int lastAdsTag = -1;
         lastAdsName[0] = '\0';
 
-        if (!(finalScene->flags & FIRST)) {
+        if (bootScene == NULL && !(finalScene->flags & FIRST)) {
 
             wantedFlags = 0;
             unwantedFlags |= FINAL;
@@ -400,6 +444,9 @@ void storyPlay()
 
         if (finalScene->flags & ISLAND)
             adsReleaseIsland();
+
+        if (bootScene != NULL)
+            return;
 
         firstSequence = 0;
     }

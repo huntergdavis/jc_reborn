@@ -528,13 +528,82 @@ Current status:
   (`bmps/scrs/ttms`), and the PS1 runtime primes those scene-scoped resources
   before play through `ps1_restore_pilots.h` + `ads.c`; this is the first
   offline-generated preload contract for the pilot routes
+- the restore-spec generator now has a batch mode, and
+  `restore_pilot_specs_2026-03-19/` contains the first five recommended
+  scene-level specs (`STAND`, `JOHNNY`, `WALKSTUF`, `ACTIVITY`, `FISHING`)
+- the header generator can now consume a spec directory plus ADS filters, so
+  promotion from offline spec to runtime table is a selection step instead of a
+  hand-maintained file list
+- the candidate-report/spec pipeline now scales to the full current ADS set:
+  `restore_candidate_report_full_2026-03-19.*` plus
+  `restore_pilot_specs_full_2026-03-19/` emit one pre-calculated restore scene
+  for all ten ADS families (`STAND`, `JOHNNY`, `WALKSTUF`, `ACTIVITY`,
+  `FISHING`, `BUILDING`, `VISITOR`, `MARY`, `MISCGAG`, `SUZY`)
+- the same tooling now scales beyond one-per-family pilots:
+  `restore_scene_specs_full_2026-03-19/` emits `63` scene-scoped restore specs,
+  one per ranked scene, so offline conversion can advance across the whole ADS
+  surface without waiting for one-by-one runtime promotion
+- `restore_rollout_manifest_2026-03-19.*` classifies that full scene batch into
+  `live_proven` (`5` scenes), `offline_ready` (`56` scenes), and
+  `blocked_entry_path` (`2` scenes)
+- `restore_scene_clusters_2026-03-19.*` compresses those `63` scenes into `34`
+  shared restore contracts; this is now the right promotion unit for runtime
+  enablement instead of single scenes or hand-picked family labels
+- `restore_cluster_specs_2026-03-19/` now materializes those `34` grouped
+  contracts as reusable cluster specs, so runtime promotion can consume the
+  same generated-contract path we already use for pilot scenes
+- the header generator now treats missing per-TTM rects as disabled hook rows
+  instead of failing generation, so research-grade candidates can stay in the
+  offline queue before their every TTM contract is runtime-ready
 - fallback telemetry is now real instead of stale: counters reset on pack
   activation and increment only on extracted-file fallback reads
 - `STAND.ADS` still validates with `pilot_pack ... fallbacks=0` after that
-  correction, while `WALKSTUF.ADS 2` still shows real post-ADS fallbacks even
-  though `WALKSTUF.PAK` contains byte-identical copies of the missing assets;
-  that narrows the remaining gap to the runtime pack-read path, not the
-  manifest/compiler side
+  correction
+- `WALKSTUF.ADS 2` no longer drops Johnny on the opening board frame: the
+  scene-scoped pilot now keeps replay merge suppressed but re-enables only
+  one-frame missing-actor recovery for that route, which restores the opening
+  Johnny pose without broadening replay carry policy again
+- `WALKSTUF.ADS 2` still shows one real active-pack miss (`WOULDBE.BMP`
+  signature `17`) even though `WALKSTUF.PAK` contains the expected assets; that
+  remaining gap is now a secondary runtime pack-read cleanup, not the visible
+  first-frame regression
+- the forced-scene harness now supports `story ads <ADS> <tag>` and routes that
+  request through the normal `storyPlay()` final-scene flow instead of a custom
+  boot shim, which is the right long-term shape for validating scene-scoped
+  pilots that need real story/island setup
+- `ACTIVITY.ADS tag 4` remains blocked as a live pilot even with that corrected
+  story path: the pack activates, but the forced route still does not reach a
+  valid composed scene, so it stays offline-only for now
+- the runtime header has been re-tightened to the proven set only
+  (`STAND`, `JOHNNY`, `WALKSTUF`) so the tree cleanly distinguishes
+  scene-scoped offline conversion from scene-scoped live enablement
+- the offline extractor now interprets TTM rect origins as signed coordinates
+  and clamps them to the visible scene bounds before clustering; regenerating
+  the full `63`-scene / `34`-cluster artifact set fixed wrapped `VISITOR`
+  envelopes such as `width=65551` and makes that family a sane next rollout
+  target once entry validation is ready
+- the first contract-sized runtime expansion is now in place: the live header
+  consumes the shared `STAND` cluster contract for tags `1-12`, and bounded
+  forced validation of `STAND.ADS 4` plus `STAND.ADS 12` stayed visually good
+- the second contract-sized runtime expansion is now in place too: the live
+  header retains the proven `JOHNNY.ADS 1` singleton and adds the shared
+  `JOHNNY.ADS 2-5` contract, with bounded forced validation of
+  `JOHNNY.ADS 2` plus `JOHNNY.ADS 5` staying visually good
+- that grouped rollout now extends one step further: the live header also
+  carries the validated `JOHNNY.ADS 6` singleton contract, and a bounded forced
+  `JOHNNY.ADS 6` run stayed visually good
+- `STAND` has now been widened past the first shared contract too: the live
+  header adds the second `STAND.ADS 15-16` cluster, and bounded forced runs of
+  `STAND.ADS 15` plus `STAND.ADS 16` stayed visually good
+- `BUILDING` was attempted as the next grouped rollout target, but current
+  `island ads` and `story ads` entry paths still land on bootstrap/ocean
+  states instead of valid composed scenes, so `BUILDING` remains offline-only
+  until its entry path is reproducible
+- `WALKSTUF` has now been widened in the live header from the original tag `2`
+  singleton to tags `1-3`; bounded forced runs of `WALKSTUF.ADS 1` and
+  `WALKSTUF.ADS 3` stayed visually good, but both still show active-pack
+  fallbacks, so that family is now a valid restore-pilot route with remaining
+  pack cleanup debt rather than a restore-policy blocker
 
 Deliverables:
 

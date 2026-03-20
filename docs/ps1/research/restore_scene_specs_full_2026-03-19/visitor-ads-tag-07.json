@@ -1,0 +1,660 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "visitor-ads",
+    "ads_name": "VISITOR.ADS",
+    "ads_tag": 7,
+    "scene_index": 58,
+    "peak_memory_bytes": 335648,
+    "bmp_count": 7,
+    "ttm_count": 5,
+    "restore_candidate": true,
+    "clear_screen_count": 979,
+    "unique_rect_count": 36,
+    "union_rect": {
+      "x": 0,
+      "y": 35,
+      "width": 65551,
+      "height": 315
+    },
+    "ttm_names": [
+      "GJLILIPU.TTM",
+      "GJVIS3.TTM",
+      "GJVIS5.TTM",
+      "GJVIS6.TTM",
+      "MJCOCO.TTM"
+    ],
+    "restore_score": 76
+  },
+  "scene_flags": [
+    "ISLAND",
+    "VARPOS_OK",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 174916,
+    "bmp_15bit_bytes": 699664,
+    "bmp_raw_bytes": 174916,
+    "ttm_bytes": 6220,
+    "ads_bytes": 972,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 580,
+    "ttm_slot_overhead_bytes": 40960,
+    "peak_memory_bytes": 335648
+  },
+  "resource_counts": {
+    "bmps": 7,
+    "scrs": 1,
+    "ttms": 5
+  },
+  "scene_resources": {
+    "bmps": [
+      "MJCOCO.BMP",
+      "JOHNWALK.BMP",
+      "COCONUTS.BMP",
+      "SPLASH.BMP",
+      "TRUNK.BMP",
+      "COCOHEAD.BMP",
+      "MJREAD.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "GJVIS3.TTM",
+      "GJLILIPU.TTM",
+      "GJVIS6.TTM",
+      "MJCOCO.TTM",
+      "GJVIS5.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 0,
+      "y": 35,
+      "width": 640,
+      "height": 315
+    },
+    "unique_rects": [
+      {
+        "x": 264,
+        "y": 40,
+        "width": 376,
+        "height": 274
+      },
+      {
+        "x": 0,
+        "y": 159,
+        "width": 640,
+        "height": 191
+      },
+      {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 111
+      },
+      {
+        "x": 128,
+        "y": 130,
+        "width": 304,
+        "height": 195
+      },
+      {
+        "x": 0,
+        "y": 73,
+        "width": 640,
+        "height": 95
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "width": 304,
+        "height": 150
+      },
+      {
+        "x": 0,
+        "y": 134,
+        "width": 464,
+        "height": 157
+      },
+      {
+        "x": 0,
+        "y": 44,
+        "width": 232,
+        "height": 302
+      },
+      {
+        "x": 0,
+        "y": 43,
+        "width": 15,
+        "height": 302
+      },
+      {
+        "x": 15,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 39,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 63,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 87,
+        "y": 43,
+        "width": 25,
+        "height": 302
+      },
+      {
+        "x": 112,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 136,
+        "y": 43,
+        "width": 25,
+        "height": 302
+      },
+      {
+        "x": 161,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 185,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 209,
+        "y": 43,
+        "width": 25,
+        "height": 302
+      },
+      {
+        "x": 234,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 258,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 282,
+        "y": 43,
+        "width": 25,
+        "height": 302
+      },
+      {
+        "x": 307,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 331,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 355,
+        "y": 43,
+        "width": 25,
+        "height": 302
+      },
+      {
+        "x": 380,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 404,
+        "y": 43,
+        "width": 25,
+        "height": 302
+      },
+      {
+        "x": 429,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 453,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 479,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 503,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 527,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 551,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 575,
+        "y": 43,
+        "width": 24,
+        "height": 302
+      },
+      {
+        "x": 599,
+        "y": 43,
+        "width": 25,
+        "height": 302
+      },
+      {
+        "x": 624,
+        "y": 43,
+        "width": 16,
+        "height": 302
+      },
+      {
+        "x": 232,
+        "y": 117,
+        "width": 408,
+        "height": 233
+      }
+    ],
+    "clear_screen_count": 979,
+    "ttm_names": [
+      "GJLILIPU.TTM",
+      "GJVIS3.TTM",
+      "GJVIS5.TTM",
+      "GJVIS6.TTM",
+      "MJCOCO.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "GJLILIPU.TTM",
+      "union_rect": {
+        "x": 264,
+        "y": 40,
+        "width": 376,
+        "height": 274
+      },
+      "unique_rects": [
+        {
+          "x": 264,
+          "y": 40,
+          "width": 376,
+          "height": 274
+        }
+      ],
+      "clear_region_ids": [
+        0,
+        1
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 100
+      }
+    },
+    {
+      "ttm_name": "GJVIS3.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 315
+      },
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 159,
+          "width": 640,
+          "height": 191
+        },
+        {
+          "x": 0,
+          "y": 35,
+          "width": 640,
+          "height": 111
+        }
+      ],
+      "clear_region_ids": [
+        0,
+        1
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 329
+      }
+    },
+    {
+      "ttm_name": "GJVIS5.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 73,
+        "width": 640,
+        "height": 252
+      },
+      "unique_rects": [
+        {
+          "x": 128,
+          "y": 130,
+          "width": 304,
+          "height": 195
+        },
+        {
+          "x": 0,
+          "y": 73,
+          "width": 640,
+          "height": 95
+        }
+      ],
+      "clear_region_ids": [
+        0,
+        1
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 250
+      }
+    },
+    {
+      "ttm_name": "GJVIS6.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "unique_rects": [
+        {
+          "x": 280,
+          "y": 200,
+          "width": 304,
+          "height": 150
+        },
+        {
+          "x": 0,
+          "y": 134,
+          "width": 464,
+          "height": 157
+        },
+        {
+          "x": 0,
+          "y": 44,
+          "width": 232,
+          "height": 302
+        },
+        {
+          "x": 0,
+          "y": 43,
+          "width": 15,
+          "height": 302
+        },
+        {
+          "x": 15,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 39,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 63,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 87,
+          "y": 43,
+          "width": 25,
+          "height": 302
+        },
+        {
+          "x": 112,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 136,
+          "y": 43,
+          "width": 25,
+          "height": 302
+        },
+        {
+          "x": 161,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 185,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 209,
+          "y": 43,
+          "width": 25,
+          "height": 302
+        },
+        {
+          "x": 234,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 258,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 282,
+          "y": 43,
+          "width": 25,
+          "height": 302
+        },
+        {
+          "x": 307,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 331,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 355,
+          "y": 43,
+          "width": 25,
+          "height": 302
+        },
+        {
+          "x": 380,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 404,
+          "y": 43,
+          "width": 25,
+          "height": 302
+        },
+        {
+          "x": 429,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 453,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 479,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 503,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 527,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 551,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 575,
+          "y": 43,
+          "width": 24,
+          "height": 302
+        },
+        {
+          "x": 599,
+          "y": 43,
+          "width": 25,
+          "height": 302
+        },
+        {
+          "x": 624,
+          "y": 43,
+          "width": 16,
+          "height": 302
+        }
+      ],
+      "clear_region_ids": [
+        0,
+        1,
+        2
+      ],
+      "op_counts": {
+        "region_id": 4,
+        "copy_zone_to_bg": 28,
+        "save_image1": 3,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 157
+      }
+    },
+    {
+      "ttm_name": "MJCOCO.TTM",
+      "union_rect": {
+        "x": 232,
+        "y": 117,
+        "width": 408,
+        "height": 233
+      },
+      "unique_rects": [
+        {
+          "x": 232,
+          "y": 117,
+          "width": 408,
+          "height": 233
+        }
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 143
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "VISITOR.ADS",
+    "ads_tags": [
+      7
+    ],
+    "scene_indices": [
+      58
+    ],
+    "ttm_names": [
+      "GJLILIPU.TTM",
+      "GJVIS3.TTM",
+      "GJVIS5.TTM",
+      "GJVIS6.TTM",
+      "MJCOCO.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

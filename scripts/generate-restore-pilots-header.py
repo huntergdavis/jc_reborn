@@ -21,6 +21,29 @@ def load_json(path: Path) -> dict:
         return json.load(fh)
 
 
+def collect_spec_paths(
+    explicit_specs: list[Path] | None,
+    spec_dir: Path | None,
+    include_ads: list[str] | None,
+) -> list[Path]:
+    paths = list(explicit_specs or [])
+    if spec_dir is not None:
+        paths.extend(sorted(path for path in spec_dir.glob("*.json") if path.name != "summary.json"))
+    if not paths:
+        paths = list(DEFAULT_SPECS)
+
+    if include_ads:
+        include_set = set(include_ads)
+        filtered = []
+        for path in paths:
+            spec = load_json(path)
+            if spec["selected_scene"]["ads_name"] in include_set:
+                filtered.append(path)
+        paths = filtered
+
+    return paths
+
+
 def c_string(value: str) -> str:
     return '"' + value.replace("\\", "\\\\").replace('"', '\\"') + '"'
 
@@ -28,13 +51,31 @@ def c_string(value: str) -> str:
 def save_image_region_id(row: dict) -> int:
     region_ids = row.get("clear_region_ids") or [0]
     op_counts = row.get("op_counts") or {}
+    union_rect = row.get("union_rect")
 
     # When the script already commits its own background slice via COPY_ZONE_TO_BG,
     # the SAVE_IMAGE1 pilot hook tends to fight that baseline and leaves black cards.
     if op_counts.get("copy_zone_to_bg", 0) > 0:
         return 0xFFFF
 
+    if union_rect is None:
+        return 0xFFFF
+
     return int(region_ids[0])
+
+
+def clear_region_id(row: dict) -> int:
+    region_ids = row.get("clear_region_ids") or [0]
+    if row.get("union_rect") is None:
+        return 0xFFFF
+    return int(region_ids[0])
+
+
+def normalized_rect(row: dict) -> dict:
+    rect = row.get("union_rect")
+    if rect is None:
+        return {"x": 0, "y": 0, "width": 0, "height": 0}
+    return rect
 
 
 def build_header(specs: list[dict]) -> str:
@@ -113,13 +154,13 @@ def build_header(specs: list[dict]) -> str:
         lines.append("")
         lines.append(f"static const struct TPs1RestorePilotTtm {prefix}Ttms[{len(ttm_details)}] = {{")
         for row in ttm_details:
-            region_ids = row.get("clear_region_ids") or [0]
-            union_rect = row["union_rect"]
+            union_rect = normalized_rect(row)
+            clear_id = clear_region_id(row)
             save_region_id = save_image_region_id(row)
             lines.append(
                 "    { "
                 + c_string(row["ttm_name"])
-                + f", {region_ids[0]}u, {save_region_id}u, "
+                + f", {clear_id}u, {save_region_id}u, "
                 + "{ "
                 + f"{union_rect['x']}u, {union_rect['y']}u, {union_rect['width']}u, {union_rect['height']}u"
                 + " } },"
@@ -155,13 +196,17 @@ def build_header(specs: list[dict]) -> str:
 def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--spec", type=Path, action="append", dest="specs")
+    ap.add_argument("--spec-dir", type=Path, default=None, help="add all *.json pilot specs from a directory")
+    ap.add_argument("--include-ads", action="append", default=None, help="limit header generation to specific ADS names")
     ap.add_argument("--header", type=Path, default=DEFAULT_HEADER)
     return ap
 
 
 def main() -> int:
     args = build_parser().parse_args()
-    spec_paths = args.specs or DEFAULT_SPECS
+    spec_paths = collect_spec_paths(args.specs, args.spec_dir, args.include_ads)
+    if not spec_paths:
+        raise SystemExit("No restore pilot specs selected")
     specs = [load_json(path) for path in spec_paths]
     args.header.write_text(build_header(specs), encoding="utf-8")
     print(

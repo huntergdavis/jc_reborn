@@ -47,7 +47,9 @@
   },
   "scene_resources": {
     "bmps": [
-      "MJ_AMB.BMP"
+      "MJ_AMB.BMP",
+      "MJTELE.BMP",
+      "MJTELE2.BMP"
     ],
     "scrs": [
       "ISLETEMP.SCR"

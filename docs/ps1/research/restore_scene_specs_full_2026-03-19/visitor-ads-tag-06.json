@@ -56,7 +56,17 @@
       "SPLASH.BMP",
       "TRUNK.BMP",
       "COCOHEAD.BMP",
-      "MJREAD.BMP"
+      "MJREAD.BMP",
+      "MJTELE.BMP",
+      "MJTELE2.BMP",
+      "GJVIS3.BMP",
+      "GJCASTLE.BMP",
+      "SHIPS.BMP",
+      "GJVIS6.BMP",
+      "TANKER.BMP",
+      "GJPROW.BMP",
+      "GJVIS5.BMP",
+      "GJVIS52.BMP"
     ],
     "scrs": [
       "ISLETEMP.SCR"

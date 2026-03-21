@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import struct
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
@@ -39,6 +40,7 @@ RESOURCE_TYPES = {
 }
 
 RESOURCE_ORDER = ("ads", "scrs", "ttms", "bmps")
+TTM_STRING_PATTERN = re.compile(rb"[A-Z0-9_]{1,12}\.(?:BMP|SCR|TTM|PAL)")
 ISLAND_SHARED_RESOURCES: Sequence[Tuple[str, str]] = (
     ("scrs", "OCEAN00.SCR"),
     ("scrs", "OCEAN01.SCR"),
@@ -100,6 +102,29 @@ def _psb_name_for_bmp(bmp_name: str) -> str:
     return f"{stem}.PSB"
 
 
+def infer_ttm_dependencies(ttm_path: Path) -> Dict[str, List[str]]:
+    deps: Dict[str, List[str]] = {"bmps": [], "scrs": [], "ttms": []}
+    seen = {key: set() for key in deps}
+    data = ttm_path.read_bytes()
+
+    for match in TTM_STRING_PATTERN.findall(data):
+        name = match.decode("ascii")
+        if name.endswith(".BMP"):
+            kind = "bmps"
+        elif name.endswith(".SCR"):
+            kind = "scrs"
+        elif name.endswith(".TTM"):
+            kind = "ttms"
+        else:
+            continue
+
+        if name not in seen[kind]:
+            deps[kind].append(name)
+            seen[kind].add(name)
+
+    return deps
+
+
 def collect_resource_entries(
     manifest: dict, extracted_root: Path, transcoded_root: Path
 ) -> List[Tuple[str, str, Path]]:
@@ -108,6 +133,7 @@ def collect_resource_entries(
     resources = manifest.get("resources", {})
     scenes = manifest.get("scenes", [])
     has_island_scene = any("ISLAND" in scene.get("flags", []) for scene in scenes)
+    inferred_deps: Dict[str, set[str]] = {"bmps": set(), "scrs": set(), "ttms": set()}
 
     for kind in RESOURCE_ORDER:
         for name in resources.get(kind, []):
@@ -128,6 +154,21 @@ def collect_resource_entries(
                     if psb_key not in seen:
                         entries.append(("psb", psb_name, psb_path))
                         seen.add(psb_key)
+
+            if kind == "ttms":
+                deps = infer_ttm_dependencies(source_path)
+                for dep_kind, dep_names in deps.items():
+                    inferred_deps[dep_kind].update(dep_names)
+
+    for kind in ("scrs", "ttms", "bmps"):
+        for name in sorted(inferred_deps[kind]):
+            source_path = extracted_root / RESOURCE_DIRS[kind] / name
+            if not source_path.is_file():
+                continue
+            key = (RESOURCE_TYPES[kind], name)
+            if key not in seen:
+                entries.append((RESOURCE_TYPES[kind], name, source_path))
+                seen.add(key)
 
     if has_island_scene:
         for kind, name in ISLAND_SHARED_RESOURCES:

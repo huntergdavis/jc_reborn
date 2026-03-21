@@ -56,7 +56,18 @@
       "GJKINGKO.BMP",
       "SPLASH.BMP",
       "SHIPS.BMP",
-      "GJBIPLAN.BMP"
+      "GJBIPLAN.BMP",
+      "STNDLAY.BMP",
+      "ZZZZS.BMP",
+      "SLEEP.BMP",
+      "LILIPUTS.BMP",
+      "TRUNK.BMP",
+      "GJGULL1.BMP",
+      "FIRE.BMP",
+      "FIRE1.BMP",
+      "FIRE3.BMP",
+      "FIRE4.BMP",
+      "FIRE2.BMP"
     ],
     "scrs": [
       "ISLETEMP.SCR"

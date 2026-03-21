@@ -52,6 +52,7 @@ extern int rand(void);
 static int storyCurrentDay = 1;
 static char storyBootAdsName[13] = "";
 static int storyBootAdsTag = -1;
+static int storyBootSceneIndex = -1;
 
 #ifdef PS1_BUILD
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
@@ -128,12 +129,26 @@ void storySetBootScene(const char *adsName, uint16 adsTag)
     if (adsName == NULL) {
         storyBootAdsName[0] = '\0';
         storyBootAdsTag = -1;
+        storyBootSceneIndex = -1;
         return;
     }
 
     strncpy(storyBootAdsName, adsName, sizeof(storyBootAdsName) - 1);
     storyBootAdsName[sizeof(storyBootAdsName) - 1] = '\0';
     storyBootAdsTag = (int)adsTag;
+    storyBootSceneIndex = -1;
+}
+
+void storySetBootSceneIndex(int sceneIndex)
+{
+    if (sceneIndex < 0 || sceneIndex >= NUM_SCENES) {
+        storyBootSceneIndex = -1;
+        return;
+    }
+
+    storyBootSceneIndex = sceneIndex;
+    storyBootAdsName[0] = '\0';
+    storyBootAdsTag = -1;
 }
 
 static struct TStoryScene *storyPickScene(
@@ -294,6 +309,7 @@ void storyPlay()
     uint16 unwantedFlags = 0;
     int firstSequence = 1;
     struct TStoryScene *bootScene = NULL;
+    struct TStoryScene *forcedIntermediateScene = NULL;
 
     adsInit();
     adsPlayIntro();
@@ -308,7 +324,16 @@ void storyPlay()
         storyCalculateIslandFromDateAndTime();
 
         bootScene = NULL;
-        if (storyBootAdsName[0] != '\0' && storyBootAdsTag >= 0) {
+        forcedIntermediateScene = NULL;
+        if (storyBootSceneIndex >= 0 && storyBootSceneIndex < NUM_SCENES) {
+            struct TStoryScene *requestedScene = &storyScenes[storyBootSceneIndex];
+            if (requestedScene->flags & FINAL)
+                bootScene = requestedScene;
+            else
+                forcedIntermediateScene = requestedScene;
+            storyBootSceneIndex = -1;
+        }
+        else if (storyBootAdsName[0] != '\0' && storyBootAdsTag >= 0) {
             bootScene = storyFindSceneByAds(storyBootAdsName, storyBootAdsTag);
             storyBootAdsName[0] = '\0';
             storyBootAdsTag = -1;
@@ -356,13 +381,18 @@ void storyPlay()
             for (int i=0; i < 6 + (rand() % 14); i++) {
 
                 struct TStoryScene *scene = NULL;
-                for (int pickTry = 0; pickTry < 8; pickTry++) {
-                    scene = storyPickScene(wantedFlags, unwantedFlags);
-                    if (prevSpot != -1 && !storyHasValidStart(scene)) continue;
-                    if (!storyHasValidEnd(scene)) continue;
-                    if (lastAdsName[0] == '\0') break;
-                    if (strcmp(scene->adsName, lastAdsName) != 0) break;
-                    if (scene->adsTagNo != lastAdsTag) break;
+                if (forcedIntermediateScene != NULL) {
+                    scene = forcedIntermediateScene;
+                    forcedIntermediateScene = NULL;
+                } else {
+                    for (int pickTry = 0; pickTry < 8; pickTry++) {
+                        scene = storyPickScene(wantedFlags, unwantedFlags);
+                        if (prevSpot != -1 && !storyHasValidStart(scene)) continue;
+                        if (!storyHasValidEnd(scene)) continue;
+                        if (lastAdsName[0] == '\0') break;
+                        if (strcmp(scene->adsName, lastAdsName) != 0) break;
+                        if (scene->adsTagNo != lastAdsTag) break;
+                    }
                 }
 
                 if (prevSpot != -1)

@@ -23,3 +23,4 @@
 
 void storyPlay();
 void storySetBootScene(const char *adsName, uint16 adsTag);
+void storySetBootSceneIndex(int sceneIndex);

@@ -70,6 +70,9 @@ ROWS: List[RowDef] = [
     RowDef("ads_played_threads_frame", 121, "ads", "ps1AdsDbgPlayedThreadsFrame", "value ~= width", "cyan"),
     RowDef("ads_recorded_sprites_frame", 124, "ads", "ps1AdsDbgRecordedSpritesFrame", "value ~= width", "yellow"),
     RowDef("ads_terminated_threads", 127, "ads", "ps1AdsDbgTerminatedThreads", "value ~= width", "red"),
+    RowDef("ads_last_bmp_slot", 130, "ads", "last grLoadBmpRAM slot (+1)", "value ~= width", "white"),
+    RowDef("ads_last_bmp_frames", 133, "ads", "last grLoadBmpRAM frame count", "value ~= width", "green"),
+    RowDef("ads_last_bmp_status", 136, "ads", "last grLoadBmpRAM status", "value ~= width", "magenta"),
 
     RowDef("mem_used_pct_scaled", 175, "mem", "(used/budget)*63", "used_pct ~= width * 100 / 63", "green"),
     RowDef("mem_loaded_bmp", 178, "mem", "gStatLoadedBmp", "value ~= width", "cyan"),
@@ -95,7 +98,7 @@ ROWS: List[RowDef] = [
 PANELS: List[PanelDef] = [
     PanelDef("drop", 2, 16),
     PanelDef("pilotpack", 30, 30),
-    PanelDef("ads", 90, 41),
+    PanelDef("ads", 90, 50),
     PanelDef("mem", 174, 21),
     PanelDef("story", 222, 21),
 ]
@@ -360,6 +363,9 @@ def build_interpreted(rows: List[Dict[str, object]]) -> Dict[str, object]:
             "active_threads": row_map.get("ads_active_threads", 0),
             "running_threads": row_map.get("ads_running_threads", 0),
             "replay_count": row_map.get("ads_replay_count", 0),
+            "last_bmp_slot": row_map.get("ads_last_bmp_slot", 0),
+            "last_bmp_frames": row_map.get("ads_last_bmp_frames", 0),
+            "last_bmp_status": row_map.get("ads_last_bmp_status", 0),
         }
 
     if "story_prev_sig" in row_map or "story_next_sig" in row_map:
@@ -527,6 +533,9 @@ def print_human(result: Dict[str, object]) -> None:
                 f" active_threads={ads['active_threads']}"
                 f" running_threads={ads['running_threads']}"
                 f" replay_count={ads['replay_count']}"
+                f" last_bmp_slot={ads['last_bmp_slot']}"
+                f" last_bmp_frames={ads['last_bmp_frames']}"
+                f" last_bmp_status={ads['last_bmp_status']}"
             )
         if "story" in interpreted:
             story = interpreted["story"]

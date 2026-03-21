@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 from pathlib import Path
 from typing import Iterable
 
@@ -15,6 +16,8 @@ DEFAULT_TEMPLATE_DIR = Path("docs/ps1/research/dirty_region_templates_2026-03-18
 DEFAULT_SCENE_ANALYSIS = Path("docs/ps1/research/scene_analysis_output_2026-03-17.json")
 DEFAULT_JSON_OUTPUT = Path("docs/ps1/research/restore_pilot_spec_2026-03-18.json")
 DEFAULT_MD_OUTPUT = Path("docs/ps1/research/restore_pilot_spec_2026-03-18.md")
+DEFAULT_EXTRACTED_ROOT = Path("jc_resources/extracted")
+TTM_STRING_PATTERN = re.compile(rb"[A-Z0-9_]{1,12}\.(?:BMP|SCR|TTM|PAL)")
 
 
 def load_json(path: Path) -> dict:
@@ -27,11 +30,32 @@ def write_json(path: Path, payload: dict) -> None:
     path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
 
+def infer_ttm_bmp_dependencies(ttm_names: Iterable[str], extracted_root: Path) -> list[str]:
+    found: set[str] = set()
+    ordered: list[str] = []
+
+    for ttm_name in ttm_names:
+        ttm_path = extracted_root / "ttm" / ttm_name
+        if not ttm_path.is_file():
+            continue
+
+        for match in TTM_STRING_PATTERN.findall(ttm_path.read_bytes()):
+            name = match.decode("ascii")
+            if not name.endswith(".BMP"):
+                continue
+            if name not in found:
+                found.add(name)
+                ordered.append(name)
+
+    return ordered
+
+
 def build_spec(
     candidate: dict,
     manifest_dir: Path,
     template_dir: Path,
     scene_analysis: dict,
+    extracted_root: Path,
 ) -> dict:
     manifest = load_json(manifest_dir / f"{candidate['pack_id']}.json")
     template = load_json(template_dir / f"{candidate['pack_id']}.json")
@@ -71,6 +95,14 @@ def build_spec(
         row for row in template["ttm_templates"]
         if row["ttm_name"] in scene_template["ttm_names"]
     ]
+    scene_bmps = [row["name"] for row in analyzed_scene["resources"]["bmps"]]
+    inferred_bmps = infer_ttm_bmp_dependencies(
+        [row["name"] for row in analyzed_scene["resources"]["ttms"]],
+        extracted_root,
+    )
+    for name in inferred_bmps:
+        if name not in scene_bmps:
+            scene_bmps.append(name)
 
     return {
         "schema_version": 1,
@@ -80,7 +112,7 @@ def build_spec(
         "memory": scene["memory"],
         "resource_counts": scene["resource_counts"],
         "scene_resources": {
-            "bmps": [row["name"] for row in analyzed_scene["resources"]["bmps"]],
+            "bmps": scene_bmps,
             "scrs": [row["name"] for row in analyzed_scene["resources"]["scrs"]],
             "ttms": [row["name"] for row in analyzed_scene["resources"]["ttms"]],
         },
@@ -232,6 +264,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--manifest-dir", type=Path, default=DEFAULT_MANIFEST_DIR)
     ap.add_argument("--template-dir", type=Path, default=DEFAULT_TEMPLATE_DIR)
     ap.add_argument("--scene-analysis", type=Path, default=DEFAULT_SCENE_ANALYSIS)
+    ap.add_argument("--extracted-root", type=Path, default=DEFAULT_EXTRACTED_ROOT)
     ap.add_argument("--ads-name", default=None, help="pick a specific ADS family from recommended_pilots")
     ap.add_argument("--all-recommended", action="store_true", help="emit one spec per recommended pilot")
     ap.add_argument(
@@ -260,7 +293,7 @@ def main() -> int:
         candidates = select_candidates(report, args.ads_name, args.limit, candidate_set)
         specs = []
         for candidate in candidates:
-            spec = build_spec(candidate, args.manifest_dir, args.template_dir, scene_analysis)
+            spec = build_spec(candidate, args.manifest_dir, args.template_dir, scene_analysis, args.extracted_root)
             slug = slugify_scene(candidate["ads_name"], candidate["ads_tag"]) if args.all_scenes else slugify_ads_name(candidate["ads_name"])
             write_json(output_dir / f"{slug}.json", spec)
             write_markdown(output_dir / f"{slug}.md", spec)
@@ -291,7 +324,7 @@ def main() -> int:
     candidates = select_candidates(report, args.ads_name, 1, "recommended_pilots")
     if not candidates:
         raise SystemExit("No matching recommended pilot found")
-    spec = build_spec(candidates[0], args.manifest_dir, args.template_dir, scene_analysis)
+    spec = build_spec(candidates[0], args.manifest_dir, args.template_dir, scene_analysis, args.extracted_root)
     write_json(args.json_output, spec)
     write_markdown(args.md_output, spec)
     print(

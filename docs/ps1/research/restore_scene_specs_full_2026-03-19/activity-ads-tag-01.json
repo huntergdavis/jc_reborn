@@ -53,7 +53,26 @@
     "bmps": [
       "MJDIVE.BMP",
       "GJDIVE.BMP",
-      "JOHNWALK.BMP"
+      "JOHNWALK.BMP",
+      "COCONUTS.BMP",
+      "MJREAD.BMP",
+      "TRUNK.BMP",
+      "ZZZZS.BMP",
+      "LITEBULB.BMP",
+      "GJGULL1.BMP",
+      "GJGULL1A.BMP",
+      "GJGULL3.BMP",
+      "GJGULL3A.BMP",
+      "MJBATH.BMP",
+      "JCHANGE.BMP",
+      "GJGULL2.BMP",
+      "GJGULL2A.BMP",
+      "GJHOT.BMP",
+      "GJNAT1LI.BMP",
+      "MEXCWALK.BMP",
+      "GJNAT1.BMP",
+      "GJNAT3.BMP",
+      "BOAT.BMP"
     ],
     "scrs": [
       "ISLETEMP.SCR"

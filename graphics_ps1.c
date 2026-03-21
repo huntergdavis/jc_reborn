@@ -119,6 +119,9 @@ static uint32 gStatBmpFrameCapHits = 0;
 static uint32 gStatBmpShortLoads = 0;
 static uint16 gStatBmpMaxRequested = 0;
 static uint16 gStatBmpMinLoaded = 0xFFFF;
+static uint16 gStatLastBmpSlot = 0;
+static uint16 gStatLastBmpFrames = 0;
+static uint16 gStatLastBmpStatus = 0;
 static uint16 gStatLoadedBmp = 0;
 static uint16 gStatLoadedTtm = 0;
 static uint16 gStatLoadedAds = 0;
@@ -346,13 +349,16 @@ static void grDrawAdsFreezeDiagnostics(void)
      * row9 red    : played threads with zero draws
      * row10 cyan  : threads played this frame
      * row11 yellow: total recorded sprites this frame
-     * row12 red   : terminated thread count */
+     * row12 red   : terminated thread count
+     * row13 white : last BMP slot loaded (+1)
+     * row14 green : last BMP frame count installed
+     * row15 magenta: last BMP load status code */
     int x = 2;
     int y = 90;
     int panelW = 96;
     int rowH = 3;
 
-    grDrawCounterBar(x, y, panelW, 41, 0x0000);
+    grDrawCounterBar(x, y, panelW, 50, 0x0000);
     grDrawCounterBar(x + 2, y + 1,  (ps1AdsDbgActiveThreads & 0x3F), rowH, 0x03FF);
     grDrawCounterBar(x + 2, y + 4,  (ps1AdsDbgMini & 0x3F), rowH, 0x7FFF);
     grDrawCounterBar(x + 2, y + 7,
@@ -368,6 +374,9 @@ static void grDrawAdsFreezeDiagnostics(void)
     grDrawCounterBar(x + 2, y + 31, (ps1AdsDbgPlayedThreadsFrame & 0x3F), rowH, 0x03FF);
     grDrawCounterBar(x + 2, y + 34, (ps1AdsDbgRecordedSpritesFrame & 0x3F), rowH, 0x7FE0);
     grDrawCounterBar(x + 2, y + 37, (ps1AdsDbgTerminatedThreads & 0x3F), rowH, 0x001F);
+    grDrawCounterBar(x + 2, y + 40, (gStatLastBmpSlot & 0x3F), rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 43, (gStatLastBmpFrames & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 46, (gStatLastBmpStatus & 0x3F), rowH, 0x7C1F);
 }
 
 /* VRAM allocation tracking
@@ -1356,12 +1365,18 @@ static int grTryLoadPsb(struct TTtmSlot *ttmSlot, uint16 slotNo,
 void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
     struct TBmpResource *bmpResource = findBmpResource(strArg);
+    gStatLastBmpSlot = (uint16)(slotNo + 1U);
+    gStatLastBmpFrames = 0;
+    gStatLastBmpStatus = 1;  /* attempt */
     if (!bmpResource) {
+        gStatLastBmpStatus = 2;  /* resource missing */
         return;
     }
 
     /* Dedup: if slot already has this exact BMP loaded (via PSB or BMP), keep it. */
     if (ttmSlot->numSprites[slotNo] > 0 && ttmSlot->loadedBmp[slotNo] == bmpResource) {
+        gStatLastBmpFrames = ttmSlot->numSprites[slotNo];
+        gStatLastBmpStatus = 3;  /* reused existing slot */
         return;
     }
 
@@ -1381,9 +1396,11 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     }
 
     if (!bmpResource->uncompressedData) {
+        gStatLastBmpStatus = 4;  /* no BMP bytes after load */
         return;
     }
     if (bmpResource->numImages < 1) {
+        gStatLastBmpStatus = 5;  /* zero image metadata */
         return;
     }
 
@@ -1402,11 +1419,11 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
             uint16 width = bmpResource->widths[frameIdx];
             uint16 height = bmpResource->heights[frameIdx];
             uint32 indexedSize = ((uint32)width * (uint32)height + 1) / 2;
-            PS1Surface *surface;
 
             /* Allocate PS1Surface */
-            surface = (PS1Surface*)malloc(sizeof(PS1Surface));
+            PS1Surface *surface = (PS1Surface*)malloc(sizeof(PS1Surface));
             if (!surface) {
+                gStatLastBmpStatus = 6;  /* allocation failure / partial install */
                 break;
             }
 
@@ -1435,6 +1452,8 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         ttmSlot->numSprites[slotNo] = framesLoaded;
         ttmSlot->loadedBmp[slotNo] = bmpResource;
+        gStatLastBmpFrames = (uint16)framesLoaded;
+        gStatLastBmpStatus = (framesLoaded == numToLoad) ? 7 : 8;  /* ok / short install */
         if (framesLoaded < numToLoad) {
             grPs1StatBmpShortLoad((uint16)numToLoad, (uint16)framesLoaded);
         }

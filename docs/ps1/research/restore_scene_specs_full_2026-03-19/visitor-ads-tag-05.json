@@ -56,7 +56,19 @@
       "JOHNWALK.BMP",
       "GJVIS52.BMP",
       "MJCOCO.BMP",
-      "COCONUTS.BMP"
+      "COCONUTS.BMP",
+      "MJTELE.BMP",
+      "MJTELE2.BMP",
+      "GJVIS3.BMP",
+      "TRUNK.BMP",
+      "GJCASTLE.BMP",
+      "SHIPS.BMP",
+      "GJVIS6.BMP",
+      "TANKER.BMP",
+      "GJPROW.BMP",
+      "SPLASH.BMP",
+      "COCOHEAD.BMP",
+      "MJREAD.BMP"
     ],
     "scrs": [
       "ISLAND2.SCR"

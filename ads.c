@@ -118,6 +118,7 @@ char ps1AdsCurrentName[16] = "";
 uint16 ps1AdsCurrentTag = 0;
 
 static void adsStopScene(int sceneNo);
+static int adsSlotInUseByOtherScene(uint16 ttmSlotNo, int excludeSceneNo);
 
 static void adsSetCurrentScene(char *adsName, uint16 adsTag)
 {
@@ -789,6 +790,18 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 
     struct TTtmThread *ttmThread = &ttmThreads[i];
 
+#ifdef PS1_BUILD
+    /* Shared TTM slots persist across scene tags within one ADS route. Flush
+     * stale BMP state before a fresh scene starts unless another live thread
+     * still owns that slot. */
+    if (ttmSlotNo < MAX_TTM_SLOTS && !adsSlotInUseByOtherScene(ttmSlotNo, -1)) {
+        for (int bmpSlot = 0; bmpSlot < MAX_BMP_SLOTS; bmpSlot++) {
+            if (ttmSlots[ttmSlotNo].numSprites[bmpSlot] > 0)
+                grReleaseBmp(&ttmSlots[ttmSlotNo], bmpSlot);
+        }
+    }
+#endif
+
     ttmThread->ttmSlot         = &ttmSlots[ttmSlotNo];
     ttmThread->isRunning       = 1;
     ttmThread->sceneSlot       = ttmSlotNo;
@@ -874,6 +887,20 @@ static int isSceneRunning(uint16 ttmSlotNo, uint16 ttmTag)
              && thread.sceneTag  == ttmTag    ) {
             return 1;
         }
+    }
+
+    return 0;
+}
+
+
+static int adsSlotInUseByOtherScene(uint16 ttmSlotNo, int excludeSceneNo)
+{
+    for (int i = 0; i < MAX_TTM_THREADS; i++) {
+        if (i == excludeSceneNo)
+            continue;
+        if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING &&
+            ttmThreads[i].sceneSlot == ttmSlotNo)
+            return 1;
     }
 
     return 0;
@@ -1305,12 +1332,6 @@ void adsPlay(char *adsName, uint16 adsTag)
         if (adsResource->uncompressedData == NULL) {
             return;  /* ADS data load failed - skip scene */
         }
-        {
-            const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
-            adsPrimeRestorePilotResources(pilot);
-            if (adsShouldPrimeFullResourceSet())
-                adsPrimeAdsResourceSet(adsResource);
-        }
 #else
         char extractedPath[512];
         snprintf(extractedPath, sizeof(extractedPath), "extracted/ads/%s",
@@ -1333,6 +1354,18 @@ void adsPlay(char *adsName, uint16 adsTag)
         }
 #endif
     }
+
+#ifdef PS1_BUILD
+    {
+        const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
+        /* Keep pilot resource priming tied to every scene launch, not only the
+         * first ADS bytecode load. Some validated routes revisit a resident ADS
+         * and still need the scene-scoped BMP/SCR/TTM contract re-established. */
+        adsPrimeRestorePilotResources(pilot);
+        if (adsShouldPrimeFullResourceSet())
+            adsPrimeAdsResourceSet(adsResource);
+    }
+#endif
 
     /* Pin ADS resource to prevent eviction while in use */
     pinResource(adsResource, adsResource->uncompressedSize, "ADS");

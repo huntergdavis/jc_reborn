@@ -37,71 +37,109 @@ struct TPs1RestorePilot {
     const struct TPs1RestorePilotTtm *ttms;
 };
 
-static const uint16 gPs1RestorePilot0AdsTags[12] = { 1u, 2u, 3u, 4u, 5u, 6u, 7u, 8u, 9u, 10u, 11u, 12u };
+static const uint16 gPs1RestorePilot0AdsTags[2] = { 1u, 6u };
 
-static const char *const gPs1RestorePilot0Bmps[1] = {
-    "MJ_AMB.BMP",
+static const char *const gPs1RestorePilot0Bmps[10] = {
+    "THEEND1.BMP",
+    "ENDCRDTS.BMP",
+    "MEANWHIL.BMP",
+    "JOHNWALK.BMP",
+    "MJBOTTLE.BMP",
+    "MJBTL2.BMP",
+    "THNKBUBL.BMP",
+    "MJFISH3.BMP",
+    "LITEBULB.BMP",
+    "SJWORK.BMP",
 };
 
 static const char *const gPs1RestorePilot0Scrs[1] = {
-    "ISLETEMP.SCR",
+    "THEEND.SCR",
 };
 
-static const char *const gPs1RestorePilot0SceneTtms[2] = {
-    "MJAMBWLK.TTM",
-    "MJTELE.TTM",
+static const char *const gPs1RestorePilot0SceneTtms[4] = {
+    "THEEND.TTM",
+    "SJMSSGE.TTM",
+    "SJWORK.TTM",
+    "MEANWHIL.TTM",
 };
 
-static const struct TPs1RestorePilotRect gPs1RestorePilot0Rects[2] = {
-    { 248u, 196u, 344u, 139u },
-    { 256u, 197u, 344u, 139u },
+static const struct TPs1RestorePilotRect gPs1RestorePilot0Rects[5] = {
+    { 224u, 91u, 160u, 131u },
+    { 232u, 90u, 144u, 134u },
+    { 0u, 147u, 448u, 203u },
+    { 192u, 199u, 264u, 142u },
+    { 144u, 87u, 384u, 152u },
 };
 
-static const struct TPs1RestorePilotTtm gPs1RestorePilot0Ttms[2] = {
-    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
-    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+static const struct TPs1RestorePilotTtm gPs1RestorePilot0Ttms[4] = {
+    { "MEANWHIL.TTM", 0u, 65535u, { 224u, 90u, 160u, 134u } },
+    { "SJMSSGE.TTM", 0u, 0u, { 0u, 147u, 448u, 203u } },
+    { "SJWORK.TTM", 0u, 0u, { 192u, 199u, 264u, 142u } },
+    { "THEEND.TTM", 0u, 0u, { 144u, 87u, 384u, 152u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot0 = { "STAND.ADS", 1u, 38u, { 248u, 196u, 352u, 140u }, 12u, gPs1RestorePilot0AdsTags, 1u, gPs1RestorePilot0Bmps, 1u, gPs1RestorePilot0Scrs, 2u, gPs1RestorePilot0SceneTtms, 2u, gPs1RestorePilot0Rects, 2u, gPs1RestorePilot0Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot0 = { "JOHNNY.ADS", 1u, 25u, { 0u, 87u, 528u, 263u }, 2u, gPs1RestorePilot0AdsTags, 10u, gPs1RestorePilot0Bmps, 1u, gPs1RestorePilot0Scrs, 4u, gPs1RestorePilot0SceneTtms, 5u, gPs1RestorePilot0Rects, 4u, gPs1RestorePilot0Ttms };
 
-static const uint16 gPs1RestorePilot1AdsTags[2] = { 15u, 16u };
+static const uint16 gPs1RestorePilot1AdsTags[3] = { 2u, 3u, 4u };
 
-static const char *const gPs1RestorePilot1Bmps[2] = {
-    "MJTELE.BMP",
-    "MJTELE2.BMP",
+static const char *const gPs1RestorePilot1Bmps[10] = {
+    "JOHNWALK.BMP",
+    "MJBOTTLE.BMP",
+    "MJBTL2.BMP",
+    "THNKBUBL.BMP",
+    "MJFISH3.BMP",
+    "LITEBULB.BMP",
+    "THEEND1.BMP",
+    "ENDCRDTS.BMP",
+    "SJWORK.BMP",
+    "MEANWHIL.BMP",
 };
 
 static const char *const gPs1RestorePilot1Scrs[1] = {
     "ISLETEMP.SCR",
 };
 
-static const char *const gPs1RestorePilot1SceneTtms[2] = {
-    "MJAMBWLK.TTM",
-    "MJTELE.TTM",
+static const char *const gPs1RestorePilot1SceneTtms[4] = {
+    "THEEND.TTM",
+    "SJMSSGE.TTM",
+    "SJWORK.TTM",
+    "MEANWHIL.TTM",
 };
 
-static const struct TPs1RestorePilotRect gPs1RestorePilot1Rects[2] = {
-    { 248u, 196u, 344u, 139u },
-    { 256u, 197u, 344u, 139u },
+static const struct TPs1RestorePilotRect gPs1RestorePilot1Rects[5] = {
+    { 224u, 91u, 160u, 131u },
+    { 232u, 90u, 144u, 134u },
+    { 0u, 147u, 448u, 203u },
+    { 192u, 199u, 264u, 142u },
+    { 144u, 87u, 384u, 152u },
 };
 
-static const struct TPs1RestorePilotTtm gPs1RestorePilot1Ttms[2] = {
-    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
-    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+static const struct TPs1RestorePilotTtm gPs1RestorePilot1Ttms[4] = {
+    { "MEANWHIL.TTM", 0u, 65535u, { 224u, 90u, 160u, 134u } },
+    { "SJMSSGE.TTM", 0u, 0u, { 0u, 147u, 448u, 203u } },
+    { "SJWORK.TTM", 0u, 0u, { 192u, 199u, 264u, 142u } },
+    { "THEEND.TTM", 0u, 0u, { 144u, 87u, 384u, 152u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot1 = { "STAND.ADS", 15u, 50u, { 248u, 196u, 352u, 140u }, 2u, gPs1RestorePilot1AdsTags, 2u, gPs1RestorePilot1Bmps, 1u, gPs1RestorePilot1Scrs, 2u, gPs1RestorePilot1SceneTtms, 2u, gPs1RestorePilot1Rects, 2u, gPs1RestorePilot1Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot1 = { "JOHNNY.ADS", 2u, 26u, { 0u, 87u, 528u, 263u }, 3u, gPs1RestorePilot1AdsTags, 10u, gPs1RestorePilot1Bmps, 1u, gPs1RestorePilot1Scrs, 4u, gPs1RestorePilot1SceneTtms, 5u, gPs1RestorePilot1Rects, 4u, gPs1RestorePilot1Ttms };
 
-static const uint16 gPs1RestorePilot2AdsTags[1] = { 1u };
+static const uint16 gPs1RestorePilot2AdsTags[3] = { 3u, 4u, 5u };
 
-static const char *const gPs1RestorePilot2Bmps[3] = {
+static const char *const gPs1RestorePilot2Bmps[10] = {
+    "JOHNWALK.BMP",
+    "MJBOTTLE.BMP",
+    "MJBTL2.BMP",
+    "THNKBUBL.BMP",
+    "MJFISH3.BMP",
+    "LITEBULB.BMP",
     "THEEND1.BMP",
     "ENDCRDTS.BMP",
+    "SJWORK.BMP",
     "MEANWHIL.BMP",
 };
 
 static const char *const gPs1RestorePilot2Scrs[1] = {
-    "THEEND.SCR",
+    "ISLETEMP.SCR",
 };
 
 static const char *const gPs1RestorePilot2SceneTtms[4] = {
@@ -126,17 +164,21 @@ static const struct TPs1RestorePilotTtm gPs1RestorePilot2Ttms[4] = {
     { "THEEND.TTM", 0u, 0u, { 144u, 87u, 384u, 152u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot2 = { "JOHNNY.ADS", 1u, 25u, { 0u, 87u, 528u, 263u }, 1u, gPs1RestorePilot2AdsTags, 3u, gPs1RestorePilot2Bmps, 1u, gPs1RestorePilot2Scrs, 4u, gPs1RestorePilot2SceneTtms, 5u, gPs1RestorePilot2Rects, 4u, gPs1RestorePilot2Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot2 = { "JOHNNY.ADS", 3u, 27u, { 0u, 87u, 528u, 263u }, 3u, gPs1RestorePilot2AdsTags, 10u, gPs1RestorePilot2Bmps, 1u, gPs1RestorePilot2Scrs, 4u, gPs1RestorePilot2SceneTtms, 5u, gPs1RestorePilot2Rects, 4u, gPs1RestorePilot2Ttms };
 
-static const uint16 gPs1RestorePilot3AdsTags[4] = { 2u, 3u, 4u, 5u };
+static const uint16 gPs1RestorePilot3AdsTags[2] = { 4u, 5u };
 
-static const char *const gPs1RestorePilot3Bmps[6] = {
+static const char *const gPs1RestorePilot3Bmps[10] = {
     "JOHNWALK.BMP",
     "MJBOTTLE.BMP",
     "MJBTL2.BMP",
     "THNKBUBL.BMP",
     "MJFISH3.BMP",
     "LITEBULB.BMP",
+    "THEEND1.BMP",
+    "ENDCRDTS.BMP",
+    "SJWORK.BMP",
+    "MEANWHIL.BMP",
 };
 
 static const char *const gPs1RestorePilot3Scrs[1] = {
@@ -165,18 +207,25 @@ static const struct TPs1RestorePilotTtm gPs1RestorePilot3Ttms[4] = {
     { "THEEND.TTM", 0u, 0u, { 144u, 87u, 384u, 152u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot3 = { "JOHNNY.ADS", 2u, 26u, { 0u, 87u, 528u, 263u }, 4u, gPs1RestorePilot3AdsTags, 6u, gPs1RestorePilot3Bmps, 1u, gPs1RestorePilot3Scrs, 4u, gPs1RestorePilot3SceneTtms, 5u, gPs1RestorePilot3Rects, 4u, gPs1RestorePilot3Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot3 = { "JOHNNY.ADS", 4u, 28u, { 0u, 87u, 528u, 263u }, 2u, gPs1RestorePilot3AdsTags, 10u, gPs1RestorePilot3Bmps, 1u, gPs1RestorePilot3Scrs, 4u, gPs1RestorePilot3SceneTtms, 5u, gPs1RestorePilot3Rects, 4u, gPs1RestorePilot3Ttms };
 
-static const uint16 gPs1RestorePilot4AdsTags[1] = { 6u };
+static const uint16 gPs1RestorePilot4AdsTags[1] = { 5u };
 
-static const char *const gPs1RestorePilot4Bmps[3] = {
-    "SJWORK.BMP",
+static const char *const gPs1RestorePilot4Bmps[10] = {
+    "JOHNWALK.BMP",
+    "MJBOTTLE.BMP",
+    "MJBTL2.BMP",
     "THNKBUBL.BMP",
+    "MJFISH3.BMP",
+    "LITEBULB.BMP",
+    "THEEND1.BMP",
+    "ENDCRDTS.BMP",
+    "SJWORK.BMP",
     "MEANWHIL.BMP",
 };
 
 static const char *const gPs1RestorePilot4Scrs[1] = {
-    "JOFFICE.SCR",
+    "ISLETEMP.SCR",
 };
 
 static const char *const gPs1RestorePilot4SceneTtms[4] = {
@@ -201,52 +250,62 @@ static const struct TPs1RestorePilotTtm gPs1RestorePilot4Ttms[4] = {
     { "THEEND.TTM", 0u, 0u, { 144u, 87u, 384u, 152u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot4 = { "JOHNNY.ADS", 6u, 30u, { 0u, 87u, 528u, 263u }, 1u, gPs1RestorePilot4AdsTags, 3u, gPs1RestorePilot4Bmps, 1u, gPs1RestorePilot4Scrs, 4u, gPs1RestorePilot4SceneTtms, 5u, gPs1RestorePilot4Rects, 4u, gPs1RestorePilot4Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot4 = { "JOHNNY.ADS", 5u, 29u, { 0u, 87u, 528u, 263u }, 1u, gPs1RestorePilot4AdsTags, 10u, gPs1RestorePilot4Bmps, 1u, gPs1RestorePilot4Scrs, 4u, gPs1RestorePilot4SceneTtms, 5u, gPs1RestorePilot4Rects, 4u, gPs1RestorePilot4Ttms };
 
-static const uint16 gPs1RestorePilot5AdsTags[1] = { 1u };
+static const uint16 gPs1RestorePilot5AdsTags[1] = { 6u };
 
-static const char *const gPs1RestorePilot5Bmps[7] = {
+static const char *const gPs1RestorePilot5Bmps[10] = {
+    "SJWORK.BMP",
+    "THNKBUBL.BMP",
+    "MEANWHIL.BMP",
+    "THEEND1.BMP",
+    "ENDCRDTS.BMP",
     "JOHNWALK.BMP",
-    "WOULDBE.BMP",
-    "BOAT.BMP",
-    "TRUNK.BMP",
+    "MJBOTTLE.BMP",
+    "MJBTL2.BMP",
+    "MJFISH3.BMP",
     "LITEBULB.BMP",
-    "JOHNWOUL.BMP",
-    "DRUNKJON.BMP",
 };
 
 static const char *const gPs1RestorePilot5Scrs[1] = {
-    "ISLETEMP.SCR",
+    "JOFFICE.SCR",
 };
 
-static const char *const gPs1RestorePilot5SceneTtms[3] = {
-    "WOULDBE.TTM",
-    "MJRAFT.TTM",
-    "MJJOG.TTM",
+static const char *const gPs1RestorePilot5SceneTtms[4] = {
+    "THEEND.TTM",
+    "SJMSSGE.TTM",
+    "SJWORK.TTM",
+    "MEANWHIL.TTM",
 };
 
-static const struct TPs1RestorePilotRect gPs1RestorePilot5Rects[4] = {
-    { 280u, 200u, 304u, 150u },
-    { 232u, 125u, 408u, 225u },
-    { 96u, 102u, 544u, 217u },
-    { 0u, 91u, 104u, 154u },
+static const struct TPs1RestorePilotRect gPs1RestorePilot5Rects[5] = {
+    { 224u, 91u, 160u, 131u },
+    { 232u, 90u, 144u, 134u },
+    { 0u, 147u, 448u, 203u },
+    { 192u, 199u, 264u, 142u },
+    { 144u, 87u, 384u, 152u },
 };
 
-static const struct TPs1RestorePilotTtm gPs1RestorePilot5Ttms[3] = {
-    { "MJJOG.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
-    { "MJRAFT.TTM", 0u, 0u, { 232u, 125u, 408u, 225u } },
-    { "WOULDBE.TTM", 0u, 0u, { 0u, 91u, 640u, 228u } },
+static const struct TPs1RestorePilotTtm gPs1RestorePilot5Ttms[4] = {
+    { "MEANWHIL.TTM", 0u, 65535u, { 224u, 90u, 160u, 134u } },
+    { "SJMSSGE.TTM", 0u, 0u, { 0u, 147u, 448u, 203u } },
+    { "SJWORK.TTM", 0u, 0u, { 192u, 199u, 264u, 142u } },
+    { "THEEND.TTM", 0u, 0u, { 144u, 87u, 384u, 152u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot5 = { "WALKSTUF.ADS", 1u, 60u, { 0u, 91u, 640u, 259u }, 1u, gPs1RestorePilot5AdsTags, 7u, gPs1RestorePilot5Bmps, 1u, gPs1RestorePilot5Scrs, 3u, gPs1RestorePilot5SceneTtms, 4u, gPs1RestorePilot5Rects, 3u, gPs1RestorePilot5Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot5 = { "JOHNNY.ADS", 6u, 30u, { 0u, 87u, 528u, 263u }, 1u, gPs1RestorePilot5AdsTags, 10u, gPs1RestorePilot5Bmps, 1u, gPs1RestorePilot5Scrs, 4u, gPs1RestorePilot5SceneTtms, 5u, gPs1RestorePilot5Rects, 4u, gPs1RestorePilot5Ttms };
 
-static const uint16 gPs1RestorePilot6AdsTags[1] = { 2u };
+static const uint16 gPs1RestorePilot6AdsTags[1] = { 1u };
 
-static const char *const gPs1RestorePilot6Bmps[4] = {
-    "TRUNK.BMP",
+static const char *const gPs1RestorePilot6Bmps[8] = {
     "JOHNWALK.BMP",
-    "MJRAFT2.BMP",
-    "SJRAFT1.BMP",
+    "TRUNK.BMP",
+    "GJHOT.BMP",
+    "SHARKWLK.BMP",
+    "SHARK.BMP",
+    "MJREAD.BMP",
+    "GJGULL1.BMP",
+    "GJGULL1A.BMP",
 };
 
 static const char *const gPs1RestorePilot6Scrs[1] = {
@@ -254,34 +313,37 @@ static const char *const gPs1RestorePilot6Scrs[1] = {
 };
 
 static const char *const gPs1RestorePilot6SceneTtms[3] = {
-    "WOULDBE.TTM",
-    "MJRAFT.TTM",
-    "MJJOG.TTM",
+    "GJHOT.TTM",
+    "SHARK1.TTM",
+    "GJGULL1.TTM",
 };
 
 static const struct TPs1RestorePilotRect gPs1RestorePilot6Rects[4] = {
+    { 160u, 61u, 440u, 276u },
+    { 256u, 123u, 384u, 227u },
     { 280u, 200u, 304u, 150u },
-    { 232u, 125u, 408u, 225u },
-    { 96u, 102u, 544u, 217u },
-    { 0u, 91u, 104u, 154u },
+    { 0u, 171u, 272u, 179u },
 };
 
 static const struct TPs1RestorePilotTtm gPs1RestorePilot6Ttms[3] = {
-    { "MJJOG.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
-    { "MJRAFT.TTM", 0u, 0u, { 232u, 125u, 408u, 225u } },
-    { "WOULDBE.TTM", 0u, 0u, { 0u, 91u, 640u, 228u } },
+    { "GJGULL1.TTM", 0u, 0u, { 160u, 61u, 480u, 289u } },
+    { "GJHOT.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
+    { "SHARK1.TTM", 0u, 0u, { 0u, 171u, 584u, 179u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot6 = { "WALKSTUF.ADS", 2u, 61u, { 0u, 91u, 640u, 259u }, 1u, gPs1RestorePilot6AdsTags, 4u, gPs1RestorePilot6Bmps, 1u, gPs1RestorePilot6Scrs, 3u, gPs1RestorePilot6SceneTtms, 4u, gPs1RestorePilot6Rects, 3u, gPs1RestorePilot6Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot6 = { "MISCGAG.ADS", 1u, 36u, { 0u, 61u, 640u, 289u }, 1u, gPs1RestorePilot6AdsTags, 8u, gPs1RestorePilot6Bmps, 1u, gPs1RestorePilot6Scrs, 3u, gPs1RestorePilot6SceneTtms, 4u, gPs1RestorePilot6Rects, 3u, gPs1RestorePilot6Ttms };
 
-static const uint16 gPs1RestorePilot7AdsTags[1] = { 3u };
+static const uint16 gPs1RestorePilot7AdsTags[1] = { 2u };
 
-static const char *const gPs1RestorePilot7Bmps[5] = {
-    "JOHNWALK.BMP",
+static const char *const gPs1RestorePilot7Bmps[8] = {
+    "SHARKWLK.BMP",
     "TRUNK.BMP",
-    "MJJOG2.BMP",
-    "JCHANGE.BMP",
-    "MJJOG1.BMP",
+    "SHARK.BMP",
+    "JOHNWALK.BMP",
+    "GJHOT.BMP",
+    "MJREAD.BMP",
+    "GJGULL1.BMP",
+    "GJGULL1A.BMP",
 };
 
 static const char *const gPs1RestorePilot7Scrs[1] = {
@@ -289,94 +351,559 @@ static const char *const gPs1RestorePilot7Scrs[1] = {
 };
 
 static const char *const gPs1RestorePilot7SceneTtms[3] = {
-    "WOULDBE.TTM",
-    "MJRAFT.TTM",
-    "MJJOG.TTM",
+    "GJHOT.TTM",
+    "SHARK1.TTM",
+    "GJGULL1.TTM",
 };
 
 static const struct TPs1RestorePilotRect gPs1RestorePilot7Rects[4] = {
+    { 160u, 61u, 440u, 276u },
+    { 256u, 123u, 384u, 227u },
     { 280u, 200u, 304u, 150u },
-    { 232u, 125u, 408u, 225u },
-    { 96u, 102u, 544u, 217u },
-    { 0u, 91u, 104u, 154u },
+    { 0u, 171u, 272u, 179u },
 };
 
 static const struct TPs1RestorePilotTtm gPs1RestorePilot7Ttms[3] = {
-    { "MJJOG.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
-    { "MJRAFT.TTM", 0u, 0u, { 232u, 125u, 408u, 225u } },
-    { "WOULDBE.TTM", 0u, 0u, { 0u, 91u, 640u, 228u } },
+    { "GJGULL1.TTM", 0u, 0u, { 160u, 61u, 480u, 289u } },
+    { "GJHOT.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
+    { "SHARK1.TTM", 0u, 0u, { 0u, 171u, 584u, 179u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot7 = { "WALKSTUF.ADS", 3u, 62u, { 0u, 91u, 640u, 259u }, 1u, gPs1RestorePilot7AdsTags, 5u, gPs1RestorePilot7Bmps, 1u, gPs1RestorePilot7Scrs, 3u, gPs1RestorePilot7SceneTtms, 4u, gPs1RestorePilot7Rects, 3u, gPs1RestorePilot7Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot7 = { "MISCGAG.ADS", 2u, 37u, { 0u, 61u, 640u, 289u }, 1u, gPs1RestorePilot7AdsTags, 8u, gPs1RestorePilot7Bmps, 1u, gPs1RestorePilot7Scrs, 3u, gPs1RestorePilot7SceneTtms, 4u, gPs1RestorePilot7Rects, 3u, gPs1RestorePilot7Ttms };
 
-static const uint16 gPs1RestorePilot8AdsTags[1] = { 1u };
+static const uint16 gPs1RestorePilot8AdsTags[3] = { 1u, 2u, 3u };
 
 static const char *const gPs1RestorePilot8Bmps[3] = {
-    "JOHNWALK.BMP",
-    "TRUNK.BMP",
-    "GJHOT.BMP",
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
 };
 
 static const char *const gPs1RestorePilot8Scrs[1] = {
     "ISLETEMP.SCR",
 };
 
-static const char *const gPs1RestorePilot8SceneTtms[3] = {
-    "GJHOT.TTM",
-    "SHARK1.TTM",
-    "GJGULL1.TTM",
+static const char *const gPs1RestorePilot8SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
 };
 
-static const struct TPs1RestorePilotRect gPs1RestorePilot8Rects[4] = {
-    { 160u, 61u, 440u, 276u },
-    { 256u, 123u, 384u, 227u },
-    { 280u, 200u, 304u, 150u },
-    { 0u, 171u, 272u, 179u },
+static const struct TPs1RestorePilotRect gPs1RestorePilot8Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
 };
 
-static const struct TPs1RestorePilotTtm gPs1RestorePilot8Ttms[3] = {
-    { "GJGULL1.TTM", 0u, 0u, { 160u, 61u, 480u, 289u } },
-    { "GJHOT.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
-    { "SHARK1.TTM", 0u, 0u, { 0u, 171u, 584u, 179u } },
+static const struct TPs1RestorePilotTtm gPs1RestorePilot8Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot8 = { "MISCGAG.ADS", 1u, 36u, { 0u, 61u, 640u, 289u }, 1u, gPs1RestorePilot8AdsTags, 3u, gPs1RestorePilot8Bmps, 1u, gPs1RestorePilot8Scrs, 3u, gPs1RestorePilot8SceneTtms, 4u, gPs1RestorePilot8Rects, 3u, gPs1RestorePilot8Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot8 = { "STAND.ADS", 1u, 38u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot8AdsTags, 3u, gPs1RestorePilot8Bmps, 1u, gPs1RestorePilot8Scrs, 2u, gPs1RestorePilot8SceneTtms, 2u, gPs1RestorePilot8Rects, 2u, gPs1RestorePilot8Ttms };
 
-static const uint16 gPs1RestorePilot9AdsTags[1] = { 2u };
+static const uint16 gPs1RestorePilot9AdsTags[3] = { 2u, 3u, 4u };
 
-static const char *const gPs1RestorePilot9Bmps[4] = {
-    "SHARKWLK.BMP",
-    "TRUNK.BMP",
-    "SHARK.BMP",
-    "JOHNWALK.BMP",
+static const char *const gPs1RestorePilot9Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
 };
 
 static const char *const gPs1RestorePilot9Scrs[1] = {
     "ISLETEMP.SCR",
 };
 
-static const char *const gPs1RestorePilot9SceneTtms[3] = {
-    "GJHOT.TTM",
-    "SHARK1.TTM",
-    "GJGULL1.TTM",
+static const char *const gPs1RestorePilot9SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
 };
 
-static const struct TPs1RestorePilotRect gPs1RestorePilot9Rects[4] = {
-    { 160u, 61u, 440u, 276u },
-    { 256u, 123u, 384u, 227u },
+static const struct TPs1RestorePilotRect gPs1RestorePilot9Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot9Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot9 = { "STAND.ADS", 2u, 39u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot9AdsTags, 3u, gPs1RestorePilot9Bmps, 1u, gPs1RestorePilot9Scrs, 2u, gPs1RestorePilot9SceneTtms, 2u, gPs1RestorePilot9Rects, 2u, gPs1RestorePilot9Ttms };
+
+static const uint16 gPs1RestorePilot10AdsTags[3] = { 3u, 4u, 5u };
+
+static const char *const gPs1RestorePilot10Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot10Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot10SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot10Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot10Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot10 = { "STAND.ADS", 3u, 40u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot10AdsTags, 3u, gPs1RestorePilot10Bmps, 1u, gPs1RestorePilot10Scrs, 2u, gPs1RestorePilot10SceneTtms, 2u, gPs1RestorePilot10Rects, 2u, gPs1RestorePilot10Ttms };
+
+static const uint16 gPs1RestorePilot11AdsTags[3] = { 4u, 5u, 6u };
+
+static const char *const gPs1RestorePilot11Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot11Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot11SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot11Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot11Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot11 = { "STAND.ADS", 4u, 41u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot11AdsTags, 3u, gPs1RestorePilot11Bmps, 1u, gPs1RestorePilot11Scrs, 2u, gPs1RestorePilot11SceneTtms, 2u, gPs1RestorePilot11Rects, 2u, gPs1RestorePilot11Ttms };
+
+static const uint16 gPs1RestorePilot12AdsTags[3] = { 5u, 6u, 7u };
+
+static const char *const gPs1RestorePilot12Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot12Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot12SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot12Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot12Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot12 = { "STAND.ADS", 5u, 42u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot12AdsTags, 3u, gPs1RestorePilot12Bmps, 1u, gPs1RestorePilot12Scrs, 2u, gPs1RestorePilot12SceneTtms, 2u, gPs1RestorePilot12Rects, 2u, gPs1RestorePilot12Ttms };
+
+static const uint16 gPs1RestorePilot13AdsTags[3] = { 6u, 7u, 8u };
+
+static const char *const gPs1RestorePilot13Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot13Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot13SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot13Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot13Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot13 = { "STAND.ADS", 6u, 43u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot13AdsTags, 3u, gPs1RestorePilot13Bmps, 1u, gPs1RestorePilot13Scrs, 2u, gPs1RestorePilot13SceneTtms, 2u, gPs1RestorePilot13Rects, 2u, gPs1RestorePilot13Ttms };
+
+static const uint16 gPs1RestorePilot14AdsTags[3] = { 7u, 8u, 9u };
+
+static const char *const gPs1RestorePilot14Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot14Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot14SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot14Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot14Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot14 = { "STAND.ADS", 7u, 44u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot14AdsTags, 3u, gPs1RestorePilot14Bmps, 1u, gPs1RestorePilot14Scrs, 2u, gPs1RestorePilot14SceneTtms, 2u, gPs1RestorePilot14Rects, 2u, gPs1RestorePilot14Ttms };
+
+static const uint16 gPs1RestorePilot15AdsTags[3] = { 8u, 9u, 10u };
+
+static const char *const gPs1RestorePilot15Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot15Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot15SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot15Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot15Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot15 = { "STAND.ADS", 8u, 45u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot15AdsTags, 3u, gPs1RestorePilot15Bmps, 1u, gPs1RestorePilot15Scrs, 2u, gPs1RestorePilot15SceneTtms, 2u, gPs1RestorePilot15Rects, 2u, gPs1RestorePilot15Ttms };
+
+static const uint16 gPs1RestorePilot16AdsTags[3] = { 9u, 10u, 11u };
+
+static const char *const gPs1RestorePilot16Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot16Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot16SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot16Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot16Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot16 = { "STAND.ADS", 9u, 46u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot16AdsTags, 3u, gPs1RestorePilot16Bmps, 1u, gPs1RestorePilot16Scrs, 2u, gPs1RestorePilot16SceneTtms, 2u, gPs1RestorePilot16Rects, 2u, gPs1RestorePilot16Ttms };
+
+static const uint16 gPs1RestorePilot17AdsTags[3] = { 10u, 11u, 12u };
+
+static const char *const gPs1RestorePilot17Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot17Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot17SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot17Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot17Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot17 = { "STAND.ADS", 10u, 47u, { 248u, 196u, 352u, 140u }, 3u, gPs1RestorePilot17AdsTags, 3u, gPs1RestorePilot17Bmps, 1u, gPs1RestorePilot17Scrs, 2u, gPs1RestorePilot17SceneTtms, 2u, gPs1RestorePilot17Rects, 2u, gPs1RestorePilot17Ttms };
+
+static const uint16 gPs1RestorePilot18AdsTags[2] = { 11u, 12u };
+
+static const char *const gPs1RestorePilot18Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot18Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot18SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot18Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot18Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot18 = { "STAND.ADS", 11u, 48u, { 248u, 196u, 352u, 140u }, 2u, gPs1RestorePilot18AdsTags, 3u, gPs1RestorePilot18Bmps, 1u, gPs1RestorePilot18Scrs, 2u, gPs1RestorePilot18SceneTtms, 2u, gPs1RestorePilot18Rects, 2u, gPs1RestorePilot18Ttms };
+
+static const uint16 gPs1RestorePilot19AdsTags[1] = { 12u };
+
+static const char *const gPs1RestorePilot19Bmps[3] = {
+    "MJ_AMB.BMP",
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+};
+
+static const char *const gPs1RestorePilot19Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot19SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot19Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot19Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot19 = { "STAND.ADS", 12u, 49u, { 248u, 196u, 352u, 140u }, 1u, gPs1RestorePilot19AdsTags, 3u, gPs1RestorePilot19Bmps, 1u, gPs1RestorePilot19Scrs, 2u, gPs1RestorePilot19SceneTtms, 2u, gPs1RestorePilot19Rects, 2u, gPs1RestorePilot19Ttms };
+
+static const uint16 gPs1RestorePilot20AdsTags[2] = { 15u, 16u };
+
+static const char *const gPs1RestorePilot20Bmps[3] = {
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+    "MJ_AMB.BMP",
+};
+
+static const char *const gPs1RestorePilot20Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot20SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot20Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot20Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot20 = { "STAND.ADS", 15u, 50u, { 248u, 196u, 352u, 140u }, 2u, gPs1RestorePilot20AdsTags, 3u, gPs1RestorePilot20Bmps, 1u, gPs1RestorePilot20Scrs, 2u, gPs1RestorePilot20SceneTtms, 2u, gPs1RestorePilot20Rects, 2u, gPs1RestorePilot20Ttms };
+
+static const uint16 gPs1RestorePilot21AdsTags[1] = { 16u };
+
+static const char *const gPs1RestorePilot21Bmps[3] = {
+    "MJTELE.BMP",
+    "MJTELE2.BMP",
+    "MJ_AMB.BMP",
+};
+
+static const char *const gPs1RestorePilot21Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot21SceneTtms[2] = {
+    "MJAMBWLK.TTM",
+    "MJTELE.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot21Rects[2] = {
+    { 248u, 196u, 344u, 139u },
+    { 256u, 197u, 344u, 139u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot21Ttms[2] = {
+    { "MJAMBWLK.TTM", 0u, 0u, { 248u, 196u, 344u, 139u } },
+    { "MJTELE.TTM", 0u, 0u, { 256u, 197u, 344u, 139u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot21 = { "STAND.ADS", 16u, 51u, { 248u, 196u, 352u, 140u }, 1u, gPs1RestorePilot21AdsTags, 3u, gPs1RestorePilot21Bmps, 1u, gPs1RestorePilot21Scrs, 2u, gPs1RestorePilot21SceneTtms, 2u, gPs1RestorePilot21Rects, 2u, gPs1RestorePilot21Ttms };
+
+static const uint16 gPs1RestorePilot22AdsTags[1] = { 1u };
+
+static const char *const gPs1RestorePilot22Bmps[12] = {
+    "JOHNWALK.BMP",
+    "WOULDBE.BMP",
+    "BOAT.BMP",
+    "TRUNK.BMP",
+    "LITEBULB.BMP",
+    "JOHNWOUL.BMP",
+    "DRUNKJON.BMP",
+    "MJRAFT2.BMP",
+    "SJRAFT1.BMP",
+    "MJJOG2.BMP",
+    "JCHANGE.BMP",
+    "MJJOG1.BMP",
+};
+
+static const char *const gPs1RestorePilot22Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot22SceneTtms[3] = {
+    "WOULDBE.TTM",
+    "MJRAFT.TTM",
+    "MJJOG.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot22Rects[4] = {
     { 280u, 200u, 304u, 150u },
-    { 0u, 171u, 272u, 179u },
+    { 232u, 125u, 408u, 225u },
+    { 96u, 102u, 544u, 217u },
+    { 0u, 91u, 104u, 154u },
 };
 
-static const struct TPs1RestorePilotTtm gPs1RestorePilot9Ttms[3] = {
-    { "GJGULL1.TTM", 0u, 0u, { 160u, 61u, 480u, 289u } },
-    { "GJHOT.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
-    { "SHARK1.TTM", 0u, 0u, { 0u, 171u, 584u, 179u } },
+static const struct TPs1RestorePilotTtm gPs1RestorePilot22Ttms[3] = {
+    { "MJJOG.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
+    { "MJRAFT.TTM", 0u, 0u, { 232u, 125u, 408u, 225u } },
+    { "WOULDBE.TTM", 0u, 0u, { 0u, 91u, 640u, 228u } },
 };
 
-static const struct TPs1RestorePilot gPs1RestorePilot9 = { "MISCGAG.ADS", 2u, 37u, { 0u, 61u, 640u, 289u }, 1u, gPs1RestorePilot9AdsTags, 4u, gPs1RestorePilot9Bmps, 1u, gPs1RestorePilot9Scrs, 3u, gPs1RestorePilot9SceneTtms, 4u, gPs1RestorePilot9Rects, 3u, gPs1RestorePilot9Ttms };
+static const struct TPs1RestorePilot gPs1RestorePilot22 = { "WALKSTUF.ADS", 1u, 60u, { 0u, 91u, 640u, 259u }, 1u, gPs1RestorePilot22AdsTags, 12u, gPs1RestorePilot22Bmps, 1u, gPs1RestorePilot22Scrs, 3u, gPs1RestorePilot22SceneTtms, 4u, gPs1RestorePilot22Rects, 3u, gPs1RestorePilot22Ttms };
 
-#define PS1_RESTORE_PILOT_COUNT 10u
+static const uint16 gPs1RestorePilot23AdsTags[1] = { 2u };
+
+static const char *const gPs1RestorePilot23Bmps[12] = {
+    "TRUNK.BMP",
+    "JOHNWALK.BMP",
+    "MJRAFT2.BMP",
+    "SJRAFT1.BMP",
+    "WOULDBE.BMP",
+    "BOAT.BMP",
+    "LITEBULB.BMP",
+    "JOHNWOUL.BMP",
+    "DRUNKJON.BMP",
+    "MJJOG2.BMP",
+    "JCHANGE.BMP",
+    "MJJOG1.BMP",
+};
+
+static const char *const gPs1RestorePilot23Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot23SceneTtms[3] = {
+    "WOULDBE.TTM",
+    "MJRAFT.TTM",
+    "MJJOG.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot23Rects[4] = {
+    { 280u, 200u, 304u, 150u },
+    { 232u, 125u, 408u, 225u },
+    { 96u, 102u, 544u, 217u },
+    { 0u, 91u, 104u, 154u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot23Ttms[3] = {
+    { "MJJOG.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
+    { "MJRAFT.TTM", 0u, 0u, { 232u, 125u, 408u, 225u } },
+    { "WOULDBE.TTM", 0u, 0u, { 0u, 91u, 640u, 228u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot23 = { "WALKSTUF.ADS", 2u, 61u, { 0u, 91u, 640u, 259u }, 1u, gPs1RestorePilot23AdsTags, 12u, gPs1RestorePilot23Bmps, 1u, gPs1RestorePilot23Scrs, 3u, gPs1RestorePilot23SceneTtms, 4u, gPs1RestorePilot23Rects, 3u, gPs1RestorePilot23Ttms };
+
+static const uint16 gPs1RestorePilot24AdsTags[1] = { 3u };
+
+static const char *const gPs1RestorePilot24Bmps[12] = {
+    "JOHNWALK.BMP",
+    "TRUNK.BMP",
+    "MJJOG2.BMP",
+    "JCHANGE.BMP",
+    "MJJOG1.BMP",
+    "WOULDBE.BMP",
+    "BOAT.BMP",
+    "LITEBULB.BMP",
+    "JOHNWOUL.BMP",
+    "DRUNKJON.BMP",
+    "MJRAFT2.BMP",
+    "SJRAFT1.BMP",
+};
+
+static const char *const gPs1RestorePilot24Scrs[1] = {
+    "ISLETEMP.SCR",
+};
+
+static const char *const gPs1RestorePilot24SceneTtms[3] = {
+    "WOULDBE.TTM",
+    "MJRAFT.TTM",
+    "MJJOG.TTM",
+};
+
+static const struct TPs1RestorePilotRect gPs1RestorePilot24Rects[4] = {
+    { 280u, 200u, 304u, 150u },
+    { 232u, 125u, 408u, 225u },
+    { 96u, 102u, 544u, 217u },
+    { 0u, 91u, 104u, 154u },
+};
+
+static const struct TPs1RestorePilotTtm gPs1RestorePilot24Ttms[3] = {
+    { "MJJOG.TTM", 0u, 0u, { 280u, 200u, 304u, 150u } },
+    { "MJRAFT.TTM", 0u, 0u, { 232u, 125u, 408u, 225u } },
+    { "WOULDBE.TTM", 0u, 0u, { 0u, 91u, 640u, 228u } },
+};
+
+static const struct TPs1RestorePilot gPs1RestorePilot24 = { "WALKSTUF.ADS", 3u, 62u, { 0u, 91u, 640u, 259u }, 1u, gPs1RestorePilot24AdsTags, 12u, gPs1RestorePilot24Bmps, 1u, gPs1RestorePilot24Scrs, 3u, gPs1RestorePilot24SceneTtms, 4u, gPs1RestorePilot24Rects, 3u, gPs1RestorePilot24Ttms };
+
+#define PS1_RESTORE_PILOT_COUNT 25u
 
 static const struct TPs1RestorePilot gPs1RestorePilots[PS1_RESTORE_PILOT_COUNT] = {
     gPs1RestorePilot0,
@@ -389,6 +916,21 @@ static const struct TPs1RestorePilot gPs1RestorePilots[PS1_RESTORE_PILOT_COUNT] 
     gPs1RestorePilot7,
     gPs1RestorePilot8,
     gPs1RestorePilot9,
+    gPs1RestorePilot10,
+    gPs1RestorePilot11,
+    gPs1RestorePilot12,
+    gPs1RestorePilot13,
+    gPs1RestorePilot14,
+    gPs1RestorePilot15,
+    gPs1RestorePilot16,
+    gPs1RestorePilot17,
+    gPs1RestorePilot18,
+    gPs1RestorePilot19,
+    gPs1RestorePilot20,
+    gPs1RestorePilot21,
+    gPs1RestorePilot22,
+    gPs1RestorePilot23,
+    gPs1RestorePilot24,
 };
 
 #endif

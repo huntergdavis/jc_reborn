@@ -15,7 +15,7 @@ Selected pilot: `STAND.ADS tag 16` from `stand-ads`
 
 ## Scene resources
 
-- BMPs: `MJTELE.BMP, MJTELE2.BMP`
+- BMPs: `MJTELE.BMP, MJTELE2.BMP, MJ_AMB.BMP`
 - SCRs: `ISLETEMP.SCR`
 - TTMs: `MJAMBWLK.TTM, MJTELE.TTM`
 

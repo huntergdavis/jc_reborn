@@ -59,7 +59,20 @@
       "JCHANGE.BMP",
       "GJNAT1.BMP",
       "GJNAT3.BMP",
-      "BOAT.BMP"
+      "BOAT.BMP",
+      "MJDIVE.BMP",
+      "GJDIVE.BMP",
+      "JOHNWALK.BMP",
+      "COCONUTS.BMP",
+      "MJREAD.BMP",
+      "ZZZZS.BMP",
+      "GJGULL1.BMP",
+      "GJGULL1A.BMP",
+      "GJGULL3.BMP",
+      "GJGULL3A.BMP",
+      "MJBATH.BMP",
+      "GJGULL2.BMP",
+      "GJGULL2A.BMP"
     ],
     "scrs": [
       "ISLETEMP.SCR"

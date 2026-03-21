@@ -14,6 +14,7 @@ from typing import Dict, Iterable, List, Sequence, Tuple
 DEFAULT_MANIFEST = Path("docs/ps1/research/scene_pack_manifests_2026-03-17/building-ads.json")
 DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/scene_pack_manifests_2026-03-17")
 DEFAULT_EXTRACTED_ROOT = Path("jc_resources/extracted")
+DEFAULT_TRANSCODED_ROOT = Path("jc_resources/transcoded")
 DEFAULT_OUTPUT_ROOT = Path("docs/ps1/research/compiled_packs_2026-03-17")
 DEFAULT_STAGE_ROOT = Path("jc_resources/packs")
 DEFAULT_TEMPLATE_ROOT = Path("docs/ps1/research/dirty_region_templates_2026-03-18")
@@ -71,7 +72,7 @@ def make_pack_filename(manifest: dict) -> str:
 
 
 def resource_type_code(resource_type: str) -> int:
-    codes = {"ads": 1, "scr": 2, "ttm": 3, "bmp": 4}
+    codes = {"ads": 1, "scr": 2, "ttm": 3, "bmp": 4, "psb": 5}
     return codes[resource_type]
 
 
@@ -82,7 +83,15 @@ def encode_name(name: str) -> bytes:
     return data + (b"\x00" * (PACK_NAME_BYTES - len(data)))
 
 
-def collect_resource_entries(manifest: dict, extracted_root: Path) -> List[Tuple[str, str, Path]]:
+def _psb_name_for_bmp(bmp_name: str) -> str:
+    """Convert BMP filename to PSB filename: JOHNWALK.BMP -> JOHNWALK.PSB"""
+    stem = Path(bmp_name).stem
+    return f"{stem}.PSB"
+
+
+def collect_resource_entries(
+    manifest: dict, extracted_root: Path, transcoded_root: Path
+) -> List[Tuple[str, str, Path]]:
     entries: List[Tuple[str, str, Path]] = []
     seen: set[Tuple[str, str]] = set()
     resources = manifest.get("resources", {})
@@ -99,6 +108,16 @@ def collect_resource_entries(manifest: dict, extracted_root: Path) -> List[Tuple
                 entries.append((RESOURCE_TYPES[kind], name, source_path))
                 seen.add(key)
 
+            # For each BMP, also include its PSB if available
+            if kind == "bmps":
+                psb_name = _psb_name_for_bmp(name)
+                psb_path = transcoded_root / psb_name
+                if psb_path.is_file():
+                    psb_key = ("psb", psb_name)
+                    if psb_key not in seen:
+                        entries.append(("psb", psb_name, psb_path))
+                        seen.add(psb_key)
+
     if has_island_scene:
         for kind, name in ISLAND_SHARED_RESOURCES:
             source_path = extracted_root / RESOURCE_DIRS[kind] / name
@@ -109,6 +128,16 @@ def collect_resource_entries(manifest: dict, extracted_root: Path) -> List[Tuple
                 entries.append((RESOURCE_TYPES[kind], name, source_path))
                 seen.add(key)
 
+            # For shared island BMPs, also include PSBs
+            if kind == "bmps":
+                psb_name = _psb_name_for_bmp(name)
+                psb_path = transcoded_root / psb_name
+                if psb_path.is_file():
+                    psb_key = ("psb", psb_name)
+                    if psb_key not in seen:
+                        entries.append(("psb", psb_name, psb_path))
+                        seen.add(psb_key)
+
     return entries
 
 
@@ -116,12 +145,13 @@ def compile_pack(
     manifest: dict,
     manifest_path: Path,
     extracted_root: Path,
+    transcoded_root: Path,
     output_root: Path,
     stage_root: Path,
     template_root: Path,
     alignment: int,
 ) -> dict:
-    entries = collect_resource_entries(manifest, extracted_root)
+    entries = collect_resource_entries(manifest, extracted_root, transcoded_root)
     output_dir = output_root / manifest["pack_id"]
     payload_path = output_dir / "pack_payload.bin"
     index_path = output_dir / "pack_index.json"
@@ -263,6 +293,7 @@ def compile_pack(
 def compile_many(
     manifest_paths: Iterable[Path],
     extracted_root: Path,
+    transcoded_root: Path,
     output_root: Path,
     stage_root: Path,
     template_root: Path,
@@ -275,6 +306,7 @@ def compile_many(
             manifest=manifest,
             manifest_path=manifest_path,
             extracted_root=extracted_root,
+            transcoded_root=transcoded_root,
             output_root=output_root,
             stage_root=stage_root,
             template_root=template_root,
@@ -292,6 +324,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--manifest-dir", type=Path, default=DEFAULT_MANIFEST_DIR, help="directory of manifest JSON files")
     ap.add_argument("--all", action="store_true", help="compile every manifest in --manifest-dir")
     ap.add_argument("--extracted-root", type=Path, default=DEFAULT_EXTRACTED_ROOT, help="root of extracted resource files")
+    ap.add_argument("--transcoded-root", type=Path, default=DEFAULT_TRANSCODED_ROOT, help="root of transcoded PSB files")
     ap.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_ROOT, help="root directory for compiled pack payloads")
     ap.add_argument("--stage-root", type=Path, default=DEFAULT_STAGE_ROOT, help="directory for staged CD-visible pack payloads")
     ap.add_argument("--template-root", type=Path, default=DEFAULT_TEMPLATE_ROOT, help="directory of offline dirty-region template JSON files")
@@ -312,6 +345,7 @@ def main() -> int:
     indices = compile_many(
         manifest_paths=manifest_paths,
         extracted_root=args.extracted_root,
+        transcoded_root=args.transcoded_root,
         output_root=args.output_root,
         stage_root=args.stage_root,
         template_root=args.template_root,

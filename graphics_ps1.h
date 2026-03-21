@@ -48,6 +48,7 @@ typedef struct PS1Surface {
     uint16 *pixels;     /* 15-bit direct color pixel data (NULL if using indexedPixels) */
     uint8  *indexedPixels; /* 4-bit packed indexed pixel data (NULL if using pixels) */
     uint8  indexedOwned; /* 1 if indexedPixels must be freed with this surface */
+    uint8  psbNibbles;  /* 1 if indexedPixels are PS1 nibble order (pre-swapped PSB) */
     uint16 width;       /* This tile's width (max 64) */
     uint16 height;      /* This tile's height (max 64) */
     uint16 x, y;        /* Position in VRAM */
@@ -71,6 +72,7 @@ struct TTtmSlot {
     int         numSprites[MAX_BMP_SLOTS];
     uint16      spriteGen[MAX_BMP_SLOTS];
     struct TBmpResource *loadedBmp[MAX_BMP_SLOTS];
+    uint8       *psbData[MAX_BMP_SLOTS]; /* PSB buffer per-slot (sprites point into it) */
     PS1Surface  *sprites[MAX_BMP_SLOTS][MAX_SPRITES_PER_BMP];
     struct TTtmResource *ttmResource;  /* For LRU cache unpinning */
 };
@@ -90,7 +92,7 @@ struct TDrawnSprite {
     uint16 imageNo;        /* Dedup key */
     uint16 sceneEpoch;     /* Dedup key (iteration boundary) */
     uint8  flip;
-    uint8  pad;
+    uint8  psbNibbles;  /* 1 if indexedPixels are PS1 nibble order (pre-swapped PSB) */
 };
 
 struct TTtmThread {

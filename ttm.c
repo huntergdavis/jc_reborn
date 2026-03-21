@@ -303,6 +303,7 @@ void ttmInitSlot(struct TTtmSlot *ttmSlot)
         ttmSlot->numSprites[i] = 0;
         ttmSlot->spriteGen[i] = 0;
         ttmSlot->loadedBmp[i] = NULL;
+        ttmSlot->psbData[i] = NULL;
         /* Zero out sprite pointers to prevent garbage pointer access */
         for (int j=0; j < MAX_SPRITES_PER_BMP; j++) {
             ttmSlot->sprites[i][j] = NULL;

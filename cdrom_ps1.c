@@ -256,10 +256,12 @@ struct TPs1ActivePack {
     uint16 packId;
     uint16 entryCount;
     struct TPs1PackedResourceEntry *entries;
+    uint32 cachedStartSector;  /* CD sector of packFile start (0 = not cached) */
+    uint32 cachedFileSize;     /* Pack file size in bytes */
 };
 
-static struct TPs1ActivePack ps1PilotActivePack = {"", "", "", 0, 0, NULL};
-static struct TPs1ActivePack ps1PilotPrefetchPack = {"", "", "", 0, 0, NULL};
+static struct TPs1ActivePack ps1PilotActivePack = {"", "", "", 0, 0, NULL, 0, 0};
+static struct TPs1ActivePack ps1PilotPrefetchPack = {"", "", "", 0, 0, NULL, 0, 0};
 uint16 ps1PilotDbgActivePack = 0;
 uint16 ps1PilotDbgHits = 0;
 uint16 ps1PilotDbgFallbacks = 0;
@@ -833,6 +835,7 @@ static uint8 ps1PilotResourceTypeCode(const char *resourceType)
     if (strcmp(resourceType, "scr") == 0) return 2;
     if (strcmp(resourceType, "ttm") == 0) return 3;
     if (strcmp(resourceType, "bmp") == 0) return 4;
+    if (strcmp(resourceType, "psb") == 0) return 5;
     return 0;
 }
 
@@ -865,6 +868,8 @@ static void ps1PilotResetPack(struct TPs1ActivePack *pack)
     pack->prefetchedAdsName[0] = '\0';
     pack->packId = 0;
     pack->entryCount = 0;
+    pack->cachedStartSector = 0;
+    pack->cachedFileSize = 0;
 }
 
 static void ps1PilotResetActivePack(void)
@@ -966,6 +971,25 @@ static int ps1PilotLoadPackIndex(const char *adsName, struct TPs1ActivePack *out
         outPack->prefetchedAdsName[PS1_PACK_NAME_BYTES - 1] = '\0';
     }
 
+    /* Cache the pack file's CD sector position to eliminate per-resource
+     * CdSearchFile calls.  This single lookup amortises across all
+     * subsequent resource loads from this pack. */
+    {
+        CdlFILE packCdFile;
+        char cdPackPath[64];
+        cdPackPath[0] = '\\';
+        strncpy(cdPackPath + 1, packFile, sizeof(cdPackPath) - 4);
+        cdPackPath[sizeof(cdPackPath) - 3] = '\0';
+        strcat(cdPackPath, ";1");
+        if (CdSearchFile(&packCdFile, cdPackPath) != NULL) {
+            outPack->cachedStartSector = CdPosToInt(&packCdFile.pos);
+            outPack->cachedFileSize = packCdFile.size;
+        } else {
+            outPack->cachedStartSector = 0;
+            outPack->cachedFileSize = 0;
+        }
+    }
+
     free(headerData);
     return 1;
 }
@@ -1023,6 +1047,67 @@ static const struct TPs1PackedResourceEntry *ps1PilotFindEntry(const char *resou
     return NULL;
 }
 
+/*
+ * Read bytes from the active pack using cached CD sector position.
+ * Eliminates per-resource CdSearchFile calls for pack-based loading.
+ * Returns malloc'd buffer (caller must free), or NULL on error.
+ */
+static uint8_t *ps1PilotStreamFromPack(uint32 offset, uint32 size)
+{
+    uint32 startSector, endSector, numSectors, bufferSize;
+    uint32 offsetInBuffer;
+    uint8_t *sectorBuffer;
+    uint8_t *result;
+    CdlLOC loc;
+
+    if (size == 0 || ps1PilotActivePack.cachedStartSector == 0)
+        return NULL;
+
+    /* Bounds check: reject reads past the end of the cached pack file.
+     * Protects against corrupted pack index entries. */
+    if (ps1PilotActivePack.cachedFileSize > 0 &&
+        (offset + size > ps1PilotActivePack.cachedFileSize || offset + size < offset))
+        return NULL;
+
+    startSector = offset / CD_SECTOR_SIZE;
+    endSector = (offset + size + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
+    numSectors = endSector - startSector;
+    bufferSize = numSectors * CD_SECTOR_SIZE;
+
+    sectorBuffer = (uint8_t *)malloc(bufferSize);
+    if (sectorBuffer == NULL)
+        return NULL;
+
+    CdIntToPos(ps1PilotActivePack.cachedStartSector + startSector, &loc);
+    CdControl(CdlSetloc, (uint8_t *)&loc, NULL);
+    for (volatile int w = 0; w < 100000; w++);
+
+    CdRead(numSectors, (uint32_t *)sectorBuffer, CdlModeSpeed);
+    if (CdReadSync(0, NULL) < 0) {
+        free(sectorBuffer);
+        return NULL;
+    }
+
+    result = (uint8_t *)malloc(size);
+    if (result == NULL) {
+        free(sectorBuffer);
+        return NULL;
+    }
+
+    offsetInBuffer = offset % CD_SECTOR_SIZE;
+    /* Safety: ensure the copy stays within the sector buffer.
+     * Should always hold given the sector math above, but guard against
+     * integer overflow in the sector calculation. */
+    if (offsetInBuffer + size > bufferSize) {
+        free(sectorBuffer);
+        free(result);
+        return NULL;
+    }
+    memcpy(result, sectorBuffer + offsetInBuffer, size);
+    free(sectorBuffer);
+    return result;
+}
+
 static uint8_t *ps1PilotLoadResource(const char *resourceType, const char *name, uint32 *inOutSize)
 {
     const struct TPs1PackedResourceEntry *entry = ps1PilotFindEntry(resourceType, name);
@@ -1031,7 +1116,13 @@ static uint8_t *ps1PilotLoadResource(const char *resourceType, const char *name,
     if (entry == NULL)
         return NULL;
 
-    data = ps1_streamRead(ps1PilotActivePack.packFile, entry->offsetBytes, entry->sizeBytes);
+    /* Try cached sector-based read first (no CdSearchFile). */
+    data = ps1PilotStreamFromPack(entry->offsetBytes, entry->sizeBytes);
+
+    /* Fallback to ps1_streamRead (does CdSearchFile). */
+    if (data == NULL)
+        data = ps1_streamRead(ps1PilotActivePack.packFile, entry->offsetBytes, entry->sizeBytes);
+
     if (data != NULL) {
         if (inOutSize != NULL)
             *inOutSize = entry->sizeBytes;
@@ -1040,6 +1131,17 @@ static uint8_t *ps1PilotLoadResource(const char *resourceType, const char *name,
     }
 
     return data;
+}
+
+/*
+ * Try to load a PSB resource from the active pack.
+ * psbName is the PSB filename (e.g. "JOHNWALK.PSB").
+ * Returns malloc'd buffer on success, NULL if not found in pack.
+ * On success, *outSize is set to the resource size.
+ */
+uint8_t *ps1PilotLoadPsb(const char *psbName, uint32 *outSize)
+{
+    return ps1PilotLoadResource("psb", psbName, outSize);
 }
 
 /*

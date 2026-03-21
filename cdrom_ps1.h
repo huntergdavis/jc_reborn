@@ -140,4 +140,9 @@ void ps1_loadTtmData(struct TTtmResource *ttmResource);
 void ps1_loadAdsData(struct TAdsResource *adsResource);
 void ps1_pilotPrearmPackForAds(const char *adsName);
 
+/* Try to load a PSB resource from the active scene pack.
+ * Returns malloc'd buffer on success, NULL if not found.
+ * On success, *outSize is set to the resource size. */
+uint8_t *ps1PilotLoadPsb(const char *psbName, uint32_t *outSize);
+
 #endif /* CDROM_PS1_H */

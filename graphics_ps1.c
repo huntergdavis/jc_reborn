@@ -36,6 +36,8 @@ typedef struct _FILE FILE;
 #include "resource.h"
 #include "events_ps1.h"
 #include "cdrom_ps1.h"
+#include "psb_format.h"
+#include "psb_registry.h"
 
 /* Primitive buffer for GPU commands */
 #define PRIMITIVE_BUFFER_SIZE 32768
@@ -706,7 +708,8 @@ void grBeginFrame(void)
  * Returns 0 on success, -1 on failure (caller should fall back to software).
  */
 static int grUploadAndDrawGpuSprite(const uint8 *indexedPixels, uint16 w, uint16 h,
-                                     sint16 screenX, sint16 screenY, int flip)
+                                     sint16 screenX, sint16 screenY, int flip,
+                                     int psbNibbles)
 {
     if (!gpuFrameReady) return -1;
     if (w > 256 || w == 0 || h == 0) return -1;
@@ -724,12 +727,17 @@ static int grUploadAndDrawGpuSprite(const uint8 *indexedPixels, uint16 w, uint16
     uint16 vramX, vramY;
     if (grAllocScratch(vramW, h, &vramX, &vramY) < 0) return -1;
 
-    /* Nibble-swap into swap buffer at current offset.
-     * Sierra: HIGH nibble = even pixel.  PS1: LOW nibble = pixel 0. */
     uint8 *dst = (uint8 *)gpuSwapBuf32 + gpuSwapOffset;
-    for (uint32 i = 0; i < indexedSize; i++) {
-        uint8 b = indexedPixels[i];
-        dst[i] = ((b & 0x0F) << 4) | ((b >> 4) & 0x0F);
+    if (psbNibbles) {
+        /* PSB format: already in PS1 nibble order — direct copy, no swap */
+        memcpy(dst, indexedPixels, indexedSize);
+    } else {
+        /* Sierra format: nibble-swap into swap buffer.
+         * Sierra: HIGH nibble = even pixel.  PS1: LOW nibble = pixel 0. */
+        for (uint32 i = 0; i < indexedSize; i++) {
+            uint8 b = indexedPixels[i];
+            dst[i] = ((b & 0x0F) << 4) | ((b >> 4) & 0x0F);
+        }
     }
 
     /* Upload to VRAM scratch — NO DrawSync here, all uploads batched */
@@ -806,6 +814,7 @@ void grReplaySprite(struct TDrawnSprite *ds)
     tmpSfc.indexedPixels = ds->indexedPixels;
     tmpSfc.width = ds->width;
     tmpSfc.height = ds->height;
+    tmpSfc.psbNibbles = ds->psbNibbles;
     if (ds->flip)
         grCompositeToBackgroundFlip(&tmpSfc, ds->x, ds->y);
     else
@@ -866,6 +875,7 @@ PS1Surface *grNewEmptyBackground()
     sfc->pixels = NULL;  /* Will be allocated in VRAM */
     sfc->indexedPixels = NULL;
     sfc->indexedOwned = 0;
+    sfc->psbNibbles = 0;
     sfc->nextTile = NULL;
 
     /* Update VRAM allocation tracking */
@@ -1053,6 +1063,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         surface->pixels = copyBuf;
         surface->indexedPixels = NULL;
         surface->indexedOwned = 0;
+        surface->psbNibbles = 0;
         surface->clutX = 640;
         surface->clutY = 0;
         /* Multi-tile fields */
@@ -1102,6 +1113,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
             bottomTile->pixels = bottomBuf;
             bottomTile->indexedPixels = NULL;
             bottomTile->indexedOwned = 0;
+            bottomTile->psbNibbles = 0;
             bottomTile->clutX = 640;
             bottomTile->clutY = 0;
             bottomTile->fullWidth = width;
@@ -1141,7 +1153,9 @@ void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo)
     ttmSlot->spriteGen[bmpSlotNo]++;
     ttmSlot->loadedBmp[bmpSlotNo] = NULL;
 
-    /* Free all sprites in this slot */
+    /* Free all sprites in this slot (PS1Surface structs only;
+     * indexedPixels with indexedOwned=0 are NOT freed here because
+     * they point into either the BMP resource data or the PSB buffer). */
     for (int i = 0; i < ttmSlot->numSprites[bmpSlotNo]; i++) {
         if (ttmSlot->sprites[bmpSlotNo][i] != NULL) {
             grFreeLayer(ttmSlot->sprites[bmpSlotNo][i]);
@@ -1149,13 +1163,195 @@ void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo)
         }
     }
 
+    /* Free PSB data buffer if this slot was loaded from a PSB file.
+     * Must happen AFTER freeing sprites since they pointed into it. */
+    if (ttmSlot->psbData[bmpSlotNo] != NULL) {
+        free(ttmSlot->psbData[bmpSlotNo]);
+        ttmSlot->psbData[bmpSlotNo] = NULL;
+    }
+
     ttmSlot->numSprites[bmpSlotNo] = 0;
+}
+
+/*
+ * Try to load a pre-transcoded PSB (PS1 Sprite Bundle) file for a BMP resource.
+ * PSB files have nibbles pre-swapped to PS1 order, eliminating runtime swap.
+ *
+ * Uses the compile-time PSB registry for O(log N) lookup — no CD probe needed
+ * for BMPs that don't have PSB versions.
+ *
+ * On success: sprites loaded into slot, psbData stored for lifecycle management,
+ * bmpResource stored in loadedBmp for dedup.
+ * Returns 1 on success, 0 if no PSB available or load failed.
+ */
+static int grTryLoadPsb(struct TTtmSlot *ttmSlot, uint16 slotNo,
+                         char *strArg, struct TBmpResource *bmpResource)
+{
+    char psbPath[64];
+    char psbName[32];
+    int nameLen;
+    int i;
+    uint32 psbSize;
+    uint8 *psbBuf;
+    PSBHeader *hdr;
+    PSBFrame *frames;
+    uint8 *pixelBase;
+    int numToLoad;
+    int framesLoaded;
+    uint32 frameTableEnd;
+
+    /* Fast registry lookup — avoids any CD access for unknown BMPs. */
+    psbSize = psbRegistryLookup(strArg);
+    if (psbSize == 0) return 0;
+
+    /* Build PSB name: JOHNWALK.BMP -> JOHNWALK.PSB */
+    nameLen = strlen(strArg);
+    if (nameLen < 5 || nameLen > 28) return 0;
+    memcpy(psbName, strArg, nameLen + 1);
+    /* Replace .BMP extension with .PSB */
+    if (psbName[nameLen-4] == '.' &&
+        (psbName[nameLen-3] == 'B' || psbName[nameLen-3] == 'b') &&
+        (psbName[nameLen-2] == 'M' || psbName[nameLen-2] == 'm') &&
+        (psbName[nameLen-1] == 'P' || psbName[nameLen-1] == 'p')) {
+        psbName[nameLen-3] = 'P';
+        psbName[nameLen-2] = 'S';
+        psbName[nameLen-1] = 'B';
+    } else {
+        return 0;
+    }
+
+    /* Try loading PSB from the active scene pack first (offset-based,
+     * no CdSearchFile needed — much faster than standalone file lookup). */
+    psbBuf = ps1PilotLoadPsb(psbName, &psbSize);
+
+    /* Fallback: load standalone PSB file from CD PSB/ directory.
+     * This path does a CdSearchFile but only triggers for scenes
+     * without a compiled pack or when a PSB is missing from the pack.
+     * psbSize was already set from the registry lookup above. */
+    if (psbBuf == NULL) {
+        snprintf(psbPath, sizeof(psbPath), "PSB\\%s", psbName);
+        psbBuf = ps1_streamRead(psbPath, 0, psbSize);
+        if (psbBuf == NULL) return 0;
+    }
+
+    /* Validate PSB header */
+    if (psbSize < sizeof(PSBHeader)) {
+        free(psbBuf);
+        return 0;
+    }
+
+    hdr = (PSBHeader *)psbBuf;
+    if (hdr->magic != PSB_MAGIC || hdr->version != PSB_VERSION) {
+        free(psbBuf);
+        return 0;
+    }
+
+    if (hdr->numFrames == 0 || hdr->dataOffset > psbSize) {
+        free(psbBuf);
+        return 0;
+    }
+
+    /* Cross-check totalSize against actual buffer size */
+    if (hdr->totalSize > psbSize) {
+        free(psbBuf);
+        return 0;
+    }
+
+    /* Verify frame table fits */
+    frameTableEnd = sizeof(PSBHeader) + (uint32)hdr->numFrames * sizeof(PSBFrame);
+    if (frameTableEnd > hdr->dataOffset) {
+        free(psbBuf);
+        return 0;
+    }
+
+    /* Release any existing sprites in this slot */
+    if (ttmSlot->numSprites[slotNo])
+        grReleaseBmp(ttmSlot, slotNo);
+
+    frames = (PSBFrame *)(psbBuf + sizeof(PSBHeader));
+    pixelBase = psbBuf + hdr->dataOffset;
+    numToLoad = hdr->numFrames;
+    if (numToLoad > MAX_SPRITES_PER_BMP)
+        numToLoad = MAX_SPRITES_PER_BMP;
+
+    framesLoaded = 0;
+    for (i = 0; i < numToLoad; i++) {
+        PSBFrame *fr = &frames[i];
+        PS1Surface *surface;
+
+        /* Validate frame bounds against actual buffer */
+        if (hdr->dataOffset + fr->offset + fr->size > psbSize) break;
+
+        /* Validate frame dimensions — reject corrupt entries that would
+         * waste RAM or confuse the compositing path (max 640x480). */
+        if (fr->width == 0 || fr->height == 0 ||
+            fr->width > 640 || fr->height > 480) break;
+
+        /* Use malloc (not safe_malloc) so OOM falls back to BMP path
+         * instead of halting the PS1 via fatalError. */
+        surface = (PS1Surface*)malloc(sizeof(PS1Surface));
+        if (!surface) break;
+
+        surface->width = fr->width;
+        surface->height = fr->height;
+        surface->x = 0;  /* RAM-based, not in VRAM */
+        surface->y = 0;
+        surface->clutX = 0;
+        surface->clutY = 0;
+        surface->nextTile = NULL;
+        surface->pixels = NULL;
+
+        /* Point directly into PSB data buffer (zero-copy).
+         * PSB data is in PS1 nibble order — no runtime swap needed. */
+        surface->indexedPixels = pixelBase + fr->offset;
+        surface->indexedOwned = 0;  /* Don't free per-frame; whole buffer freed on release */
+        surface->psbNibbles = 1;    /* Flag: PS1 nibble order */
+
+        /* Multi-tile fields (not used for PSB, but init for safety) */
+        surface->fullWidth = fr->width;
+        surface->fullHeight = fr->height;
+        surface->tileOffsetX = 0;
+        surface->tileOffsetY = 0;
+
+        ttmSlot->sprites[slotNo][i] = surface;
+        framesLoaded++;
+    }
+
+    ttmSlot->numSprites[slotNo] = framesLoaded;
+
+    /* If no frames loaded (corruption or OOM), free everything and fall back. */
+    if (framesLoaded == 0) {
+        free(psbBuf);
+        return 0;
+    }
+
+    /* NOTE: The PSB header + frame table (~16 + 12*N bytes) remain in the
+     * buffer.  Trimming them via memmove + realloc + pointer fixup was
+     * considered (TODO 3), but the savings are tiny (e.g. 1.5KB for 120
+     * frames) vs. the memmove cost on a 33MHz R3000 and the fragility of
+     * post-realloc pointer adjustment.  Keeping the header in-place is
+     * simpler and safer. */
+
+    /* Lifecycle: store PSB buffer in slot so grReleaseBmp can free it. */
+    ttmSlot->psbData[slotNo] = psbBuf;
+
+    /* Dedup: store the BMP resource pointer so repeated loads of the same
+     * BMP into the same slot are detected and skipped by grLoadBmpRAM. */
+    ttmSlot->loadedBmp[slotNo] = bmpResource;
+
+    return 1;
 }
 
 /*
  * Load BMP sprites into RAM as 4-bit indexed data (compact storage)
  * Stores raw 4-bit packed pixels in indexedPixels, palette lookup at composite time.
  * This uses 4x less memory than the previous 15-bit direct color approach.
+ *
+ * Load order:
+ * 1. Dedup check — if this exact BMP is already loaded in the slot, keep it.
+ * 2. PSB fast path — if a pre-transcoded PSB exists on CD, use it (zero-copy,
+ *    no runtime nibble swap, compile-time registry lookup).
+ * 3. BMP fallback — decompress from RESOURCE.001 / extracted BMP files.
  */
 void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 {
@@ -1164,11 +1360,18 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         return;
     }
 
-    /* Avoid churn: if slot already has this exact BMP loaded, keep it. */
+    /* Dedup: if slot already has this exact BMP loaded (via PSB or BMP), keep it. */
     if (ttmSlot->numSprites[slotNo] > 0 && ttmSlot->loadedBmp[slotNo] == bmpResource) {
         return;
     }
 
+    /* PSB fast path: try pre-transcoded PSB file (skips nibble swap).
+     * Pass bmpResource so PSB loader can set loadedBmp for dedup. */
+    if (grTryLoadPsb(ttmSlot, slotNo, strArg, bmpResource)) {
+        return;
+    }
+
+    /* BMP fallback path */
     if (ttmSlot->numSprites[slotNo])
         grReleaseBmp(ttmSlot, slotNo);
 
@@ -1184,53 +1387,57 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
         return;
     }
 
-    int numToLoad = bmpResource->numImages;
-    if (numToLoad > MAX_SPRITES_PER_BMP) {
-        grPs1StatBmpFrameCap((uint16)bmpResource->numImages, MAX_SPRITES_PER_BMP);
-        fatalError("BMP frame overflow: %s has %d frames, MAX_SPRITES_PER_BMP=%d",
-                   strArg, numToLoad, MAX_SPRITES_PER_BMP);
-    }
+    {
+        int numToLoad = bmpResource->numImages;
+        uint8 *srcPtr = bmpResource->uncompressedData;
+        int framesLoaded = 0;
 
-    uint8 *srcPtr = bmpResource->uncompressedData;
-
-    int framesLoaded = 0;
-    for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
-        uint16 width = bmpResource->widths[frameIdx];
-        uint16 height = bmpResource->heights[frameIdx];
-
-        /* Allocate PS1Surface */
-        PS1Surface *surface = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
-        if (!surface) {
-            break;
+        if (numToLoad > MAX_SPRITES_PER_BMP) {
+            grPs1StatBmpFrameCap((uint16)bmpResource->numImages, MAX_SPRITES_PER_BMP);
+            fatalError("BMP frame overflow: %s has %d frames, MAX_SPRITES_PER_BMP=%d",
+                       strArg, numToLoad, MAX_SPRITES_PER_BMP);
         }
 
-        surface->width = width;
-        surface->height = height;
-        surface->x = 0;  /* Not in VRAM - RAM only */
-        surface->y = 0;
-        surface->clutX = 0;
-        surface->clutY = 0;
-        surface->nextTile = NULL;
-        surface->pixels = NULL;  /* Not using 15-bit direct color */
+        for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
+            uint16 width = bmpResource->widths[frameIdx];
+            uint16 height = bmpResource->heights[frameIdx];
+            uint32 indexedSize = ((uint32)width * (uint32)height + 1) / 2;
+            PS1Surface *surface;
 
-        /* Zero-copy indexed frame: reference BMP resource memory directly.
-         * This removes per-frame malloc/memcpy churn and cuts fragmentation. */
-        uint32 indexedSize = (((uint32)width + 1U) / 2U) * (uint32)height;
-        surface->indexedPixels = srcPtr;
-        surface->indexedOwned = 0;
+            /* Allocate PS1Surface */
+            surface = (PS1Surface*)malloc(sizeof(PS1Surface));
+            if (!surface) {
+                break;
+            }
 
-        /* Advance source pointer for next frame */
-        srcPtr += indexedSize;
+            surface->width = width;
+            surface->height = height;
+            surface->x = 0;  /* Not in VRAM - RAM only */
+            surface->y = 0;
+            surface->clutX = 0;
+            surface->clutY = 0;
+            surface->nextTile = NULL;
+            surface->pixels = NULL;  /* Not using 15-bit direct color */
 
-        /* Store in slot */
-        ttmSlot->sprites[slotNo][frameIdx] = surface;
-        framesLoaded++;
-    }
+            /* Zero-copy indexed frame: reference BMP resource memory directly.
+             * This removes per-frame malloc/memcpy churn and cuts fragmentation. */
+            surface->indexedPixels = srcPtr;
+            surface->indexedOwned = 0;
+            surface->psbNibbles = 0;
 
-    ttmSlot->numSprites[slotNo] = framesLoaded;
-    ttmSlot->loadedBmp[slotNo] = bmpResource;
-    if (framesLoaded < numToLoad) {
-        grPs1StatBmpShortLoad((uint16)numToLoad, (uint16)framesLoaded);
+            /* Advance source pointer for next frame */
+            srcPtr += indexedSize;
+
+            /* Store in slot */
+            ttmSlot->sprites[slotNo][frameIdx] = surface;
+            framesLoaded++;
+        }
+
+        ttmSlot->numSprites[slotNo] = framesLoaded;
+        ttmSlot->loadedBmp[slotNo] = bmpResource;
+        if (framesLoaded < numToLoad) {
+            grPs1StatBmpShortLoad((uint16)numToLoad, (uint16)framesLoaded);
+        }
     }
 }
 
@@ -1369,6 +1576,85 @@ static inline void compositeIndexedSpanRev(uint16 *dst, const uint8 *src,
 }
 
 /*
+ * PS1-nibble-order compositing helpers for PSB (pre-transcoded) sprites.
+ * In PSB format: LOW nibble = pixel 0, HIGH nibble = pixel 1.
+ * (Sierra format is the opposite: HIGH nibble = pixel 0.)
+ */
+static inline void compositePsbSpanFwd(uint16 *dst, const uint8 *src,
+                                       uint32 pixelIdx, int count,
+                                       const uint16 *pal)
+{
+    int di = 0;
+    if (count <= 0) return;
+
+    /* Handle odd start pixel */
+    if (pixelIdx & 1) {
+        uint8 packed = src[pixelIdx >> 1];
+        uint16 p = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel = HIGH nibble */
+        if (p) dst[di] = p;
+        di++;
+        pixelIdx++;
+        count--;
+    }
+
+    /* Process two pixels at a time */
+    while (count >= 2) {
+        uint8 packed = src[pixelIdx >> 1];
+        uint16 p0 = pal[packed & 0x0F];         /* PSB: even pixel = LOW nibble */
+        uint16 p1 = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel  = HIGH nibble */
+        if (p0) dst[di] = p0;
+        if (p1) dst[di + 1] = p1;
+        di += 2;
+        pixelIdx += 2;
+        count -= 2;
+    }
+
+    /* Handle trailing pixel */
+    if (count) {
+        uint8 packed = src[pixelIdx >> 1];
+        uint16 p = pal[packed & 0x0F];  /* PSB: even pixel = LOW nibble */
+        if (p) dst[di] = p;
+    }
+}
+
+static inline void compositePsbSpanRev(uint16 *dst, const uint8 *src,
+                                       uint32 pixelIdx, int count,
+                                       const uint16 *pal)
+{
+    int di = 0;
+    if (count <= 0) return;
+
+    /* Handle even start pixel (reversed iteration starts at rightmost) */
+    if ((pixelIdx & 1) == 0) {
+        uint8 packed = src[pixelIdx >> 1];
+        uint16 p = pal[packed & 0x0F];  /* PSB: even pixel = LOW nibble */
+        if (p) dst[di] = p;
+        di++;
+        pixelIdx--;
+        count--;
+    }
+
+    /* Process two pixels at a time (reversed) */
+    while (count >= 2) {
+        uint8 packed = src[pixelIdx >> 1];
+        uint16 p0 = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel  = HIGH nibble */
+        uint16 p1 = pal[packed & 0x0F];          /* PSB: even pixel = LOW nibble */
+        if (p0) dst[di] = p0;
+        if (p1) dst[di + 1] = p1;
+        di += 2;
+        pixelIdx -= 2;
+        count -= 2;
+    }
+
+    /* Handle trailing pixel */
+    if (count) {
+        uint8 packed = src[pixelIdx >> 1];
+        uint16 p = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel = HIGH nibble */
+        if (p) dst[di] = p;
+    }
+}
+
+/*
  * Composite a RAM-stored sprite into the background tile buffers WITH TRANSPARENCY
  * Skips pixels with value 0x0000 (transparent)
  * This modifies the bgTile RAM buffers so grDrawBackground() renders with transparency
@@ -1392,6 +1678,7 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 
     /* Choose indexed or direct color path */
     int useIndexed = (sprite->indexedPixels != NULL);
+    int usePsb = (useIndexed && sprite->psbNibbles);
 
     int startSy = 0;
     int endSy = sprH;
@@ -1429,7 +1716,26 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
         int destStartX = screenX + startSx;
         int destEndX = screenX + endSx;
 
-        if (useIndexed) {
+        if (usePsb) {
+            /* PSB (PS1 nibble order): skip nibble swap — data is pre-transcoded */
+            if (rowLeft && destStartX < 320) {
+                int lx0 = destStartX;
+                int lx1 = (destEndX < 320) ? destEndX : 320;
+                int srcX = startSx + (lx0 - destStartX);
+                int span = lx1 - lx0;
+                compositePsbSpanFwd(rowLeft + lx0, sprite->indexedPixels,
+                                    srcRowBase + (uint32)srcX, span, pal);
+            }
+
+            if (rowRight && destEndX > 320) {
+                int rx0 = (destStartX > 320) ? destStartX : 320;
+                int rx1 = destEndX;
+                int srcX = startSx + (rx0 - destStartX);
+                int span = rx1 - rx0;
+                compositePsbSpanFwd(rowRight + (rx0 - 320), sprite->indexedPixels,
+                                    srcRowBase + (uint32)srcX, span, pal);
+            }
+        } else if (useIndexed) {
             if (rowLeft && destStartX < 320) {
                 int lx0 = destStartX;
                 int lx1 = (destEndX < 320) ? destEndX : 320;
@@ -1598,6 +1904,7 @@ static void grRecordReplaySprite(struct TTtmThread *thread,
             ds->indexedPixels = sprite->indexedPixels;
             ds->width = sprite->width;
             ds->height = sprite->height;
+            ds->psbNibbles = sprite->psbNibbles;
             return;
         }
     }
@@ -1624,7 +1931,7 @@ static void grRecordReplaySprite(struct TTtmThread *thread,
     ds->imageNo = imageNo;
     ds->sceneEpoch = thread->sceneEpoch;
     ds->flip = flip;
-    ds->pad = 0;
+    ds->psbNibbles = sprite->psbNibbles;
 }
 
 void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
@@ -1725,6 +2032,7 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
 
     /* Choose indexed or direct color path */
     int useIndexed = (sprite->indexedPixels != NULL);
+    int usePsb = (useIndexed && sprite->psbNibbles);
 
     int startSy = 0;
     int endSy = sprH;
@@ -1760,7 +2068,26 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
         uint16 *rowRight = (tileRight && tileRight->pixels) ? (tileRight->pixels + tileLocalY * (int)tileRight->width) : NULL;
         uint32 srcRowBase = (uint32)sy * (uint32)sprW;
 
-        if (useIndexed) {
+        if (usePsb) {
+            /* PSB (PS1 nibble order): pre-transcoded, no runtime swap */
+            if (rowLeft && startDestX < 320) {
+                int lx0 = startDestX;
+                int lx1 = (endDestX < 320) ? endDestX : 320;
+                int srcX = sprW - 1 - (lx0 - screenX);
+                int span = lx1 - lx0;
+                compositePsbSpanRev(rowLeft + lx0, sprite->indexedPixels,
+                                    srcRowBase + (uint32)srcX, span, pal);
+            }
+
+            if (rowRight && endDestX > 320) {
+                int rx0 = (startDestX > 320) ? startDestX : 320;
+                int rx1 = endDestX;
+                int srcX = sprW - 1 - (rx0 - screenX);
+                int span = rx1 - rx0;
+                compositePsbSpanRev(rowRight + (rx0 - 320), sprite->indexedPixels,
+                                    srcRowBase + (uint32)srcX, span, pal);
+            }
+        } else if (useIndexed) {
             if (rowLeft && startDestX < 320) {
                 int lx0 = startDestX;
                 int lx1 = (endDestX < 320) ? endDestX : 320;
@@ -1984,6 +2311,7 @@ static PS1Surface *createEmptyBgTileRAM(uint16 width, uint16 height)
     tile->y = 0;
     tile->indexedPixels = NULL;
     tile->indexedOwned = 0;
+    tile->psbNibbles = 0;
     tile->nextTile = NULL;
     tile->pixels = (uint16*)safe_malloc(width * height * 2);
     /* Fill with black (0x0000 = transparent/black) */
@@ -2344,6 +2672,7 @@ static PS1Surface *createBgTile(uint8 *src, uint16 srcWidth,
     tile->y = vramY;
     tile->indexedPixels = NULL;
     tile->indexedOwned = 0;
+    tile->psbNibbles = 0;
     tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */
@@ -2406,6 +2735,7 @@ static PS1Surface *createBgTileRAMPartial(uint8 *src, uint16 srcWidth, uint16 sr
     tile->y = 0;
     tile->indexedPixels = NULL;
     tile->indexedOwned = 0;
+    tile->psbNibbles = 0;
     tile->nextTile = NULL;
 
     /* Allocate pixel buffer for 15-bit direct color */

@@ -325,6 +325,9 @@ static struct TDrawnSprite gPrevReplayScratch[MAX_DRAWN_SPRITES];
 static struct TDrawnSprite gHandoffReplay[MAX_DRAWN_SPRITES];
 static uint8 gHandoffReplayCount = 0;
 static uint8 gHandoffReplayValid = 0;
+/* Owned pixel buffer for handoff — avoids dangling pointer when source BMP is freed. */
+#define HANDOFF_PIXEL_BUF_SIZE 2048
+static uint8 gHandoffPixelBuf[HANDOFF_PIXEL_BUF_SIZE];
 
 static void adsDbgAddU16(uint16 *acc, uint16 add)
 {
@@ -513,6 +516,25 @@ static void adsCaptureHandoffReplay(struct TTtmThread *thread)
         gHandoffReplayValid = 0;
         gHandoffReplayCount = 0;
         return;
+    }
+
+    /* Copy pixel data into owned buffer so handoff survives BMP free. */
+    {
+        uint16 w = gHandoffReplay[0].width;
+        uint16 h = gHandoffReplay[0].height;
+        if (w == 0 || h == 0 || !gHandoffReplay[0].indexedPixels) {
+            gHandoffReplayValid = 0;
+            gHandoffReplayCount = 0;
+            return;
+        }
+        uint32 pixelSize = ((uint32)w * (uint32)h + 1) / 2;
+        if (pixelSize > HANDOFF_PIXEL_BUF_SIZE) {
+            gHandoffReplayValid = 0;
+            gHandoffReplayCount = 0;
+            return;
+        }
+        memcpy(gHandoffPixelBuf, gHandoffReplay[0].indexedPixels, pixelSize);
+        gHandoffReplay[0].indexedPixels = gHandoffPixelBuf;
     }
 
     gHandoffReplayCount = 1;

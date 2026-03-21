@@ -44,6 +44,8 @@ stage_boot_override() {
         echo "=== Boot override ==="
         echo "$BOOT_OVERRIDE"
         echo ""
+    else
+        : > "$BOOTMODE_FILE"
     fi
 }
 
@@ -86,6 +88,8 @@ SCREENSHOT_DIR="$HOME/.var/app/org.duckstation.DuckStation/config/duckstation/sc
 DUCK_SETTINGS="$HOME/.var/app/org.duckstation.DuckStation/config/duckstation/settings.ini"
 CUE_FILE="$PWD/jcreborn.cue"
 CAPTURE_INTERVAL=${PS1_CAPTURE_INTERVAL:-5}
+INITIAL_CAPTURE_WAIT=${PS1_INITIAL_CAPTURE_WAIT:-35}
+CAPTURE_COUNT=${PS1_CAPTURE_COUNT:-4}
 DUCK_SETTINGS_BACKUP=""
 
 mkdir -p "$SCREENSHOT_DIR"
@@ -147,32 +151,32 @@ flatpak run --filesystem="$(dirname "$CUE_FILE")" org.duckstation.DuckStation -f
 DUCK_PID=$!
 
 echo "DuckStation PID: $DUCK_PID"
-echo "Waiting 25 seconds for initial screenshot..."
+echo "Waiting ${INITIAL_CAPTURE_WAIT} seconds for initial screenshot..."
 
-sleep 25
+sleep "$INITIAL_CAPTURE_WAIT"
 
 if kill -0 "$DUCK_PID" 2>/dev/null; then
     if take_duckstation_screenshot SCREENSHOT_FILE; then
-        echo "Screenshot 1 saved to: $SCREENSHOT_FILE"
+        echo "Screenshot 1/${CAPTURE_COUNT} saved to: $SCREENSHOT_FILE"
 
         if [ -x "$PWD/scripts/decode-ps1-bars.py" ]; then
             echo ""
-            echo "=== Telemetry decode (capture 1/3) ==="
+            echo "=== Telemetry decode (capture 1/${CAPTURE_COUNT}) ==="
             "$PWD/scripts/decode-ps1-bars.py" --include-zero "$SCREENSHOT_FILE" || true
         fi
     fi
 fi
 
-for capture_index in 2 3; do
+for ((capture_index=2; capture_index<=CAPTURE_COUNT; capture_index++)); do
     echo "Waiting ${CAPTURE_INTERVAL} more seconds for screenshot ${capture_index}..."
     sleep "$CAPTURE_INTERVAL"
     if kill -0 "$DUCK_PID" 2>/dev/null; then
         if take_duckstation_screenshot SCREENSHOT_FILE2; then
-            echo "Screenshot ${capture_index} saved to: $SCREENSHOT_FILE2"
+            echo "Screenshot ${capture_index}/${CAPTURE_COUNT} saved to: $SCREENSHOT_FILE2"
 
             if [ -x "$PWD/scripts/decode-ps1-bars.py" ]; then
                 echo ""
-                echo "=== Telemetry decode (capture ${capture_index}/3) ==="
+                echo "=== Telemetry decode (capture ${capture_index}/${CAPTURE_COUNT}) ==="
                 "$PWD/scripts/decode-ps1-bars.py" --include-zero "$SCREENSHOT_FILE2" || true
             fi
         fi

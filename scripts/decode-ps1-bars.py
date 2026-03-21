@@ -81,8 +81,9 @@ ROWS: List[RowDef] = [
     RowDef("story_seq", 223, "story", "ps1StoryDbgSeq", "value ~= width", "gray"),
     RowDef("story_phase", 226, "story", "ps1StoryDbgPhase", "value ~= width", "white"),
     RowDef("story_scene_tag", 229, "story", "ps1StoryDbgSceneTag", "value ~= width", "green"),
-    RowDef("story_prev_sig", 232, "story", "(prevSpot*8)+prevHdg", "value ~= width", "cyan"),
-    RowDef("story_next_sig", 235, "story", "(nextSpot*8)+nextHdg", "value ~= width", "yellow"),
+    RowDef("story_ads_sig", 232, "story", "hash(adsName)", "value ~= width", "magenta"),
+    RowDef("story_prev_sig", 235, "story", "(prevSpot*8)+prevHdg", "value ~= width", "cyan"),
+    RowDef("story_next_sig", 238, "story", "(nextSpot*8)+nextHdg", "value ~= width", "yellow"),
     RowDef("pilot_pack_active", 31, "pilotpack", "ps1PilotDbgActivePack", "value ~= width", "white"),
     RowDef("pilot_pack_hits", 36, "pilotpack", "ps1PilotDbgHits", "value ~= width", "green"),
     RowDef("pilot_pack_fallbacks", 41, "pilotpack", "ps1PilotDbgFallbacks", "value ~= width", "red"),
@@ -96,7 +97,7 @@ PANELS: List[PanelDef] = [
     PanelDef("pilotpack", 30, 30),
     PanelDef("ads", 90, 41),
     PanelDef("mem", 174, 21),
-    PanelDef("story", 222, 18),
+    PanelDef("story", 222, 21),
 ]
 PANEL_BY_KEY = {panel.key: panel for panel in PANELS}
 ROW_BY_KEY = {row.key: row for row in ROWS}
@@ -368,6 +369,7 @@ def build_interpreted(rows: List[Dict[str, object]]) -> Dict[str, object]:
             "seq": row_map.get("story_seq", 0),
             "phase": row_map.get("story_phase", 0),
             "scene_tag": row_map.get("story_scene_tag", 0),
+            "ads_sig": row_map.get("story_ads_sig", 0),
             "prev_sig": prev_sig,
             "prev_spot_estimate": prev_sig >> 3,
             "prev_hdg_estimate": prev_sig & 0x7,
@@ -533,6 +535,7 @@ def print_human(result: Dict[str, object]) -> None:
                 f" seq={story['seq']}"
                 f" phase={story['phase']}"
                 f" scene_tag={story['scene_tag']}"
+                f" ads_sig={story['ads_sig']}"
                 f" prev_sig={story['prev_sig']}"
                 f" next_sig={story['next_sig']}"
             )

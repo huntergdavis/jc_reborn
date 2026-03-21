@@ -124,6 +124,7 @@ static uint16 gStatLoadedAds = 0;
 /* Story transition diagnostics from story.c */
 extern uint16 ps1StoryDbgPhase;
 extern uint16 ps1StoryDbgSceneTag;
+extern uint16 ps1StoryDbgAdsSig;
 extern uint16 ps1StoryDbgPrevSpot;
 extern uint16 ps1StoryDbgPrevHdg;
 extern uint16 ps1StoryDbgNextSpot;
@@ -283,23 +284,25 @@ static void grDrawStoryDiagnostics(void)
      * row0: sequence id (gray)
      * row1: phase (white)
      * row2: scene tag (green)
-     * row3: prevSpot/prevHdg (yellow)
-     * row4: nextSpot/nextHdg (cyan) */
+     * row3: ads family signature (magenta)
+     * row4: prevSpot/prevHdg (yellow)
+     * row5: nextSpot/nextHdg (cyan) */
     int x = 2;
     int y = 222;
     int panelW = 96;
     int rowH = 3;
 
-    grDrawCounterBar(x, y, panelW, 18, 0x0000);
+    grDrawCounterBar(x, y, panelW, 21, 0x0000);
     grDrawCounterBar(x + 2, y + 1,  (ps1StoryDbgSeq & 0x3F), rowH, 0x4210);
     grDrawCounterBar(x + 2, y + 4,  (ps1StoryDbgPhase & 0x3F), rowH, 0x7FFF);
     grDrawCounterBar(x + 2, y + 7,  (ps1StoryDbgSceneTag & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 10, (ps1StoryDbgAdsSig & 0x3F), rowH, 0x7C1F);
 
     {
         int prevW = ((ps1StoryDbgPrevSpot & 0x7) * 8) + (ps1StoryDbgPrevHdg & 0x7);
         int nextW = ((ps1StoryDbgNextSpot & 0x7) * 8) + (ps1StoryDbgNextHdg & 0x7);
-        grDrawCounterBar(x + 2, y + 10, prevW, rowH, 0x03FF);
-        grDrawCounterBar(x + 2, y + 13, nextW, rowH, 0x7FE0);
+        grDrawCounterBar(x + 2, y + 13, prevW, rowH, 0x03FF);
+        grDrawCounterBar(x + 2, y + 16, nextW, rowH, 0x7FE0);
     }
 }
 
@@ -1534,22 +1537,30 @@ void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height
     if (x >= x2 || y >= y2) return;
 
     for (sint16 py = y; py < y2; py++) {
-        PS1Surface *tile;
         int tileLocalY;
         if (py < 240) {
             tileLocalY = py;
         } else {
             tileLocalY = py - 240;
         }
-        for (sint16 px = x; px < x2; px++) {
-            if (px < 320) {
-                tile = (py < 240) ? bgTile0 : bgTile3;
-                if (tile && tile->pixels)
-                    tile->pixels[tileLocalY * (int)tile->width + px] = bgColor;
-            } else {
-                tile = (py < 240) ? bgTile1 : bgTile4;
-                if (tile && tile->pixels)
-                    tile->pixels[tileLocalY * (int)tile->width + (px - 320)] = bgColor;
+        PS1Surface *tileLeft = (py < 240) ? bgTile0 : bgTile3;
+        PS1Surface *tileRight = (py < 240) ? bgTile1 : bgTile4;
+
+        if (x < 320 && tileLeft && tileLeft->pixels) {
+            sint16 fillStart = x;
+            sint16 fillEnd = (x2 < 320) ? x2 : 320;
+            uint16 *dst = tileLeft->pixels + (tileLocalY * (int)tileLeft->width) + fillStart;
+            for (sint16 i = fillStart; i < fillEnd; i++) {
+                *dst++ = bgColor;
+            }
+        }
+
+        if (x2 > 320 && tileRight && tileRight->pixels) {
+            sint16 fillStart = (x > 320) ? x : 320;
+            sint16 fillEnd = x2;
+            uint16 *dst = tileRight->pixels + (tileLocalY * (int)tileRight->width) + (fillStart - 320);
+            for (sint16 i = fillStart; i < fillEnd; i++) {
+                *dst++ = bgColor;
             }
         }
     }
@@ -2050,6 +2061,7 @@ void grSaveCleanBgTiles(void)
         bgTile4Clean = (uint16*)malloc(tileSize);
         if (bgTile4Clean) memcpy(bgTile4Clean, bgTile4->pixels, tileSize);
     }
+
 }
 
 /*

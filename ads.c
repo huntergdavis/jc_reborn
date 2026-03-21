@@ -276,13 +276,25 @@ static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
             ps1_loadScrData(scrResource);
     }
 
-    for (i = 0; i < pilot->sceneTtmCount; i++) {
-        struct TTtmResource *ttmResource = findTtmResource((char *)pilot->sceneTtms[i]);
-        if (ttmResource != NULL && ttmResource->uncompressedData == NULL)
-            ps1_loadTtmData(ttmResource);
+    /* Warm Johnny's sprite sheet first when present. Several live island
+     * routes depend on that actor being available for the first composed frame,
+     * and leaving it until the end of the BMP queue has been fragile. */
+    for (i = 0; i < pilot->bmpCount; i++) {
+        if (!adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP"))
+            continue;
+
+        {
+            struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
+            if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
+                ps1_loadBmpData(bmpResource);
+        }
+        break;
     }
 
     for (i = 0; i < pilot->bmpCount; i++) {
+        if (adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP"))
+            continue;
+
         struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
         if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
             ps1_loadBmpData(bmpResource);
@@ -1871,4 +1883,5 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
     }
 
     adsStopScene(0);
+    ttmResetSlot(&ttmSlots[0]);
 }

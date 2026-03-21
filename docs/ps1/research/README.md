@@ -196,6 +196,21 @@ That same replay-policy cut now also goes through the `JOHNNY.ADS tag 1`
 pilot via the shared generated pilot table. A fresh forced
 `JOHNNY.ADS 1` run still held with `pilot_pack ... fallbacks=0`.
 
+The normal boot path also flushed out a real baseline transition regression.
+The first island handoff was fading to black and then collapsing instead of
+completing the takeover into the next scene. The narrow fix was in
+[ads.c](/home/hunter/workspace/jc_reborn/ads.c): `adsPlayWalk()` now resets
+`ttmSlots[0]` after `adsStopScene(0)`, so stale `JOHNWALK` slot state no
+longer leaks into the next ADS launch. Longer normal-boot capture runs now stay
+alive across that first handoff instead of dropping to a permanent black frame.
+
+One important validation detail from that same run: `story phase=4` persisting
+for several captures is expected while the handoff is still inside
+`adsPlayWalk()`. `storyPlay()` only advances to phase `5` after the walk path
+returns, and the walk code intentionally holds an arrival pose before it exits.
+So the remaining long `phase=4` window is not by itself evidence of another
+stuck story-state bug.
+
 One useful validation note from that route: the black-backed clock in the
 `MEANWHIL` sequence is not a new restore regression. The original
 `MEANWHIL.TTM` script explicitly issues `DRAW_RECT 0 0 640 350` after

@@ -54,6 +54,11 @@ Still pending inside Phase 1:
   current status: `ADS/SCR/TTM/BMP` scene assets are now pack-authoritative once
   a family pack is active, and the current bounded validation path decodes
   `pilot_pack ... fallbacks=0`
+- keep baseline progression on the normal boot path healthy while scene-scoped
+  rollout continues; current status: the first island handoff no longer
+  collapses to black after `adsPlayWalk()` now resets `ttmSlots[0]`, and the
+  longer `story phase=4` window on that route is understood as the walk/takeover
+  still running rather than a frozen story-state counter
 
 ## Objective
 

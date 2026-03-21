@@ -57,11 +57,31 @@ static int storyBootAdsTag = -1;
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
 uint16 ps1StoryDbgPhase = 0;
 uint16 ps1StoryDbgSceneTag = 0;
+uint16 ps1StoryDbgAdsSig = 0;
 uint16 ps1StoryDbgPrevSpot = 0;
 uint16 ps1StoryDbgPrevHdg = 0;
 uint16 ps1StoryDbgNextSpot = 0;
 uint16 ps1StoryDbgNextHdg = 0;
 uint16 ps1StoryDbgSeq = 0;
+#endif
+
+#ifdef PS1_BUILD
+static uint16 ps1StoryDbgFamilyId(const char *adsName)
+{
+    if (adsName == NULL || adsName[0] == '\0')
+        return 0;
+    if (strcmp(adsName, "ACTIVITY.ADS") == 0) return 1;
+    if (strcmp(adsName, "BUILDING.ADS") == 0) return 2;
+    if (strcmp(adsName, "FISHING.ADS") == 0) return 3;
+    if (strcmp(adsName, "JOHNNY.ADS") == 0) return 4;
+    if (strcmp(adsName, "MARY.ADS") == 0) return 5;
+    if (strcmp(adsName, "MISCGAG.ADS") == 0) return 6;
+    if (strcmp(adsName, "STAND.ADS") == 0) return 7;
+    if (strcmp(adsName, "SUZY.ADS") == 0) return 8;
+    if (strcmp(adsName, "VISITOR.ADS") == 0) return 9;
+    if (strcmp(adsName, "WALKSTUF.ADS") == 0) return 10;
+    return 0;
+}
 #endif
 
 static int storyIsValidSpot(int spot)
@@ -370,6 +390,7 @@ void storyPlay()
 
 #ifdef PS1_BUILD
                 ps1StoryDbgPhase = 2;
+                ps1StoryDbgAdsSig = ps1StoryDbgFamilyId(scene->adsName);
                 ps1StoryDbgSceneTag = (uint16)scene->adsTagNo;
                 ps1StoryDbgNextSpot = (uint16)scene->spotEnd;
                 ps1StoryDbgNextHdg = (uint16)scene->hdgEnd;
@@ -399,6 +420,8 @@ void storyPlay()
 #ifdef PS1_BUILD
         {
             ps1StoryDbgPhase = 4;
+            ps1StoryDbgAdsSig = ps1StoryDbgFamilyId(finalScene->adsName);
+            ps1StoryDbgSceneTag = (uint16)finalScene->adsTagNo;
             ps1StoryDbgPrevSpot = (uint16)prevSpot;
             ps1StoryDbgPrevHdg = (uint16)prevHdg;
             ps1StoryDbgNextSpot = (uint16)finalScene->spotStart;
@@ -422,6 +445,7 @@ void storyPlay()
 
 #ifdef PS1_BUILD
         ps1StoryDbgPhase = 5;
+        ps1StoryDbgAdsSig = ps1StoryDbgFamilyId(finalScene->adsName);
         ps1StoryDbgSceneTag = (uint16)finalScene->adsTagNo;
         ps1StoryDbgNextSpot = (uint16)finalScene->spotEnd;
         ps1StoryDbgNextHdg = (uint16)finalScene->hdgEnd;

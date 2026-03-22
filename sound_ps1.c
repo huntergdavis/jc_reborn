@@ -36,6 +36,7 @@ typedef struct _FILE FILE;
 
 /* Global variables */
 int soundDisabled = 0;
+int soundMuted = 0;
 
 /* SPU configuration */
 #define MAX_SOUND_EFFECTS 25
@@ -47,6 +48,7 @@ int soundDisabled = 0;
 static uint32_t soundAddresses[MAX_SOUND_EFFECTS];
 static uint32_t soundSizes[MAX_SOUND_EFFECTS];
 static uint16_t soundSampleRates[MAX_SOUND_EFFECTS];
+static uint16_t soundPitches[MAX_SOUND_EFFECTS];  /* Pre-computed pitch values */
 static int soundsLoaded = 0;
 static int nextChannel = 0;
 
@@ -80,6 +82,9 @@ void soundInit()
         soundSampleRates[i] = 0;
     }
 
+    /* Set DMA transfer mode once for all uploads */
+    SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
+
     /* Load VAG files from CD into SPU RAM */
     uint32_t spuAddr = SPU_DATA_START;
     int loaded = 0;
@@ -101,8 +106,14 @@ void soundInit()
         uint16_t sampleRate = (uint16_t)readBE32(vagData + 16);
         uint32_t adpcmSize = vagSize - VAG_HEADER_SIZE;
 
+        /* Check SPU RAM overflow (512KB total) */
+        if (spuAddr + adpcmSize > 512 * 1024) {
+            printf("SPU: out of RAM at sound %d\n", i);
+            free(vagData);
+            break;
+        }
+
         /* Upload ADPCM data (skip VAG header) to SPU RAM */
-        SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
         SpuSetTransferStartAddr(spuAddr);
         SpuWrite((uint32_t *)(vagData + VAG_HEADER_SIZE), adpcmSize);
         SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
@@ -110,6 +121,7 @@ void soundInit()
         soundAddresses[i] = spuAddr;
         soundSizes[i] = adpcmSize;
         soundSampleRates[i] = sampleRate;
+        soundPitches[i] = getSPUSampleRate(sampleRate);
 
         /* Advance SPU address, 16-byte aligned */
         spuAddr += (adpcmSize + 15) & ~15;
@@ -144,7 +156,7 @@ void soundEnd()
  */
 void soundPlay(int nb)
 {
-    if (soundDisabled || !soundsLoaded) {
+    if (soundDisabled || soundMuted || !soundsLoaded) {
         return;
     }
 
@@ -159,17 +171,44 @@ void soundPlay(int nb)
     int ch = nextChannel;
     nextChannel = (nextChannel + 1) % NUM_CHANNELS;
 
-    /* Convert sample rate to SPU pitch (44100 Hz = 0x1000) */
-    uint16_t pitch = getSPUSampleRate(soundSampleRates[nb]);
+    /* Key-off the channel first to prevent glitches from reuse */
+    SpuSetKey(0, 1 << ch);
 
     /* Set voice parameters using PSn00bSDK macros */
     SpuSetVoiceVolume(ch, 0x3FFF, 0x3FFF);
-    SpuSetVoicePitch(ch, pitch);
+    SpuSetVoicePitch(ch, soundPitches[nb]);
     SpuSetVoiceStartAddr(ch, soundAddresses[nb]);
-    SpuSetVoiceADSR(ch, 0x7F, 0x0, 0x7F, 0x0, 0xF);
+    /* ADSR: fast attack, no decay, hold sustain (sr=0), fast release */
+    SpuSetVoiceADSR(ch, 0x7F, 0x0, 0x00, 0x00, 0x5);
 
     /* Start playback */
     SpuSetKey(1, 1 << ch);
+}
+
+/*
+ * Stop a specific sound (key-off any channel playing it)
+ */
+void soundStop(int nb)
+{
+    if (soundDisabled || !soundsLoaded) return;
+    if (nb < 0 || nb >= MAX_SOUND_EFFECTS) return;
+    /* Key-off all channels that might be playing this sound.
+     * We don't track which channel plays which sound, so stop all. */
+    for (int ch = 0; ch < NUM_CHANNELS; ch++) {
+        SpuSetKey(0, 1 << ch);
+    }
+}
+
+/*
+ * Toggle sound mute on/off. Keys-off all voices when muting.
+ */
+void soundMuteToggle(void)
+{
+    soundMuted = !soundMuted;
+    if (soundMuted) {
+        /* Silence all active voices immediately */
+        SpuSetKey(0, 0xFFFFFF);
+    }
 }
 
 /*

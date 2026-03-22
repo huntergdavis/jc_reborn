@@ -22,9 +22,12 @@
 #define SOUND_PS1_H
 
 extern int soundDisabled;
+extern int soundMuted;
 
-void soundInit();
-void soundEnd();
+void soundInit(void);
+void soundEnd(void);
 void soundPlay(int nb);
+void soundStop(int nb);
+void soundMuteToggle(void);
 
 #endif /* SOUND_PS1_H */

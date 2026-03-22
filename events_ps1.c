@@ -24,6 +24,7 @@
 
 #include "mytypes.h"
 #include "events_ps1.h"
+#include "sound_ps1.h"
 #include "config.h"
 
 /* Global variables */
@@ -76,9 +77,15 @@ void eventsWaitTick(uint16 delay)
                 }
             }
 
-            /* SELECT button - Quit */
+            /* L1+SELECT = toggle sound mute, SELECT alone = quit */
             if (buttons & PAD_SELECT) {
-                quit = 1;
+                if (buttons & PAD_L1) {
+                    soundMuteToggle();
+                    /* Wait for release to prevent retriggering */
+                    while (pad->btn != 0xFFFF) { VSync(0); }
+                } else {
+                    quit = 1;
+                }
             }
 
             /* TRIANGLE button - Frame advance (when paused) */

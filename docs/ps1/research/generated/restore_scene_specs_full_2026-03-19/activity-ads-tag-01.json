@@ -176,6 +176,9 @@
           "height": 295
         }
       ],
+      "region_ids": [
+        0
+      ],
       "clear_region_ids": [
         0
       ],
@@ -192,6 +195,7 @@
       "ttm_name": "GJNAT1.TTM",
       "union_rect": null,
       "unique_rects": [],
+      "region_ids": [],
       "clear_region_ids": [
         0
       ],
@@ -219,6 +223,9 @@
           "width": 640,
           "height": 180
         }
+      ],
+      "region_ids": [
+        0
       ],
       "clear_region_ids": [
         0
@@ -254,6 +261,9 @@
           "height": 236
         }
       ],
+      "region_ids": [
+        0
+      ],
       "clear_region_ids": [
         0
       ],
@@ -281,6 +291,9 @@
           "width": 336,
           "height": 288
         }
+      ],
+      "region_ids": [
+        0
       ],
       "clear_region_ids": [
         0
@@ -327,6 +340,9 @@
           "width": 408,
           "height": 281
         }
+      ],
+      "region_ids": [
+        0
       ],
       "clear_region_ids": [
         0

@@ -10,10 +10,10 @@ import json
 from pathlib import Path
 
 
-DEFAULT_SPEC_DIR = Path("docs/ps1/research/restore_scene_specs_full_2026-03-19")
-DEFAULT_ROLLOUT = Path("docs/ps1/research/restore_rollout_manifest_2026-03-19.json")
-DEFAULT_JSON_OUTPUT = Path("docs/ps1/research/restore_scene_clusters_2026-03-19.json")
-DEFAULT_MD_OUTPUT = Path("docs/ps1/research/restore_scene_clusters_2026-03-19.md")
+DEFAULT_SPEC_DIR = Path("docs/ps1/research/generated/restore_scene_specs_full_2026-03-19")
+DEFAULT_ROLLOUT = Path("docs/ps1/research/generated/restore_rollout_manifest_2026-03-21.json")
+DEFAULT_JSON_OUTPUT = Path("docs/ps1/research/generated/restore_scene_clusters_2026-03-21.json")
+DEFAULT_MD_OUTPUT = Path("docs/ps1/research/generated/restore_scene_clusters_2026-03-21.md")
 
 
 def load_json(path: Path) -> dict:
@@ -73,7 +73,12 @@ def build_clusters(spec_dir: Path, rollout_map: dict[tuple[str, int], dict]) -> 
                 "restore_score_max": selected["restore_score"],
                 "restore_score_min": selected["restore_score"],
                 "scene_count": 0,
-                "statuses": {"live_proven": 0, "offline_ready": 0, "blocked_entry_path": 0},
+                "statuses": {
+                    "verified_live": 0,
+                    "live_bringup": 0,
+                    "artifact_ready_unverified": 0,
+                    "blocked_entry_path_or_unreliable_route": 0,
+                },
                 "signature": signature,
                 "scene_tags": [],
                 "scene_indices": [],
@@ -94,14 +99,17 @@ def build_clusters(spec_dir: Path, rollout_map: dict[tuple[str, int], dict]) -> 
         scene_tags = sorted(cluster["scene_tags"])
         scene_indices = sorted(cluster["scene_indices"])
         statuses = cluster["statuses"]
-        if statuses["blocked_entry_path"] > 0:
-            promotion = "blocked_entry_path"
-        elif statuses["live_proven"] == cluster["scene_count"]:
-            promotion = "live_proven"
-        elif statuses["live_proven"] > 0:
-            promotion = "mixed_live_and_offline"
+        live_count = statuses["verified_live"] + statuses["live_bringup"]
+        if statuses["blocked_entry_path_or_unreliable_route"] > 0:
+            promotion = "blocked_entry_path_or_unreliable_route"
+        elif statuses["verified_live"] == cluster["scene_count"]:
+            promotion = "verified_live"
+        elif live_count == cluster["scene_count"] and statuses["live_bringup"] > 0:
+            promotion = "live_bringup"
+        elif live_count > 0:
+            promotion = "mixed_live_and_unverified"
         else:
-            promotion = "offline_ready"
+            promotion = "artifact_ready_unverified"
 
         rows.append(
             {
@@ -115,7 +123,7 @@ def build_clusters(spec_dir: Path, rollout_map: dict[tuple[str, int], dict]) -> 
 
     rows.sort(key=lambda row: (-row["scene_count"], row["ads_name"], -row["restore_score_max"], row["scene_tags"][0]))
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_kind": "restore_scene_cluster_report",
         "cluster_count": len(rows),
         "scene_count": sum(row["scene_count"] for row in rows),
@@ -127,7 +135,7 @@ def write_markdown(path: Path, payload: dict) -> None:
     lines = [
         "# Restore Scene Clusters",
         "",
-        "Date: 2026-03-19",
+        "Date: 2026-03-21",
         "",
         f"- clusters: `{payload['cluster_count']}`",
         f"- scenes: `{payload['scene_count']}`",

@@ -23,6 +23,7 @@ This directory contains organized documentation for the Johnny Reborn project, s
 - **[Toolchain Setup](ps1/toolchain-setup.md)** - Toolchain installation guide
 - **[Development Workflow](ps1/development-workflow.md)** - Build and test workflow
 - **[Project History](ps1/project-history.md)** - Development journey and lessons learned
+- **[Research Package](ps1/research/README.md)** - Scene-pack and restore research (2026-03)
 
 ### Archive
 Original markdown files before reorganization are in `archive/` for reference.

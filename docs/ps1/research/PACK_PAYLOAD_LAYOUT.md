@@ -8,8 +8,9 @@ Status: Draft compiler format
 Describe the first concrete compiled-pack artifact produced from a scene-pack
 manifest.
 
-This is the current payload layout for compiler and loader work. It is not yet
-the final on-disc binary format.
+This is the current payload layout for compiler and loader work. It is already
+the live on-disc pilot format used by the runtime, even though it is still not
+the final long-term binary format.
 
 ## Artifact shape
 
@@ -29,7 +30,7 @@ This is a flat binary blob containing:
 
 1. a compact binary header
 2. a compact resource table of contents
-3. raw extracted resources concatenated in a deterministic order
+3. packed scene resources concatenated in a deterministic order
 
 Current resource order:
 
@@ -37,6 +38,7 @@ Current resource order:
 2. SCR
 3. TTM
 4. BMP
+5. PSB
 
 The current header includes:
 
@@ -51,6 +53,13 @@ Each TOC entry includes:
 - offset
 - size
 - fixed-width resource name
+
+Current runtime meaning:
+
+- `ADS/SCR/TTM/BMP` entries preserve the extracted asset contract
+- `PSB` entries carry offline-transcoded PS1 sprite bundles for hot BMPs
+- runtime prefers `PSB` when available and proven, while some routes still keep
+  targeted BMP fallback behavior for safety
 
 Each resource starts on a `2048`-byte boundary so the payload can already be
 reasoned about in CD-sector terms. The first resource currently begins at sector 1,
@@ -108,13 +117,14 @@ This layout is intentionally simple, but it already gives the runtime-loader wor
 - integrity checks for debugging
 - direct access to transition and prefetch hints from the source manifest
 - a self-describing on-disc TOC that the runtime can read directly from the pack
+- mixed extracted-resource plus PSB-sprite delivery in one pack contract
 
 ## Known limitations
 
-- resource bytes are still original extracted assets, not transcoded PS1-native
-  sprite banks
+- non-sprite resources are still mostly carried as extracted-format bytes
+- only some hot BMPs currently have PSB counterparts, so BMP/PSB path parity is
+  still an active runtime concern
 - the research sidecar index is still JSON
-- no compression is applied yet
 - no shared-bank deduplication is applied across packs yet
 - no checksum validation is performed on-console yet
 - dirty-region templates are compiler sidecars only; runtime consumption remains

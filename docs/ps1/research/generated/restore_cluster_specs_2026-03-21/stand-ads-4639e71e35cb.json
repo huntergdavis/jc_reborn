@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_cluster_spec",
+  "selected_scene": {
+    "pack_id": "stand-ads",
+    "ads_name": "STAND.ADS",
+    "ads_tag": 1,
+    "scene_index": 38,
+    "peak_memory_bytes": 166164,
+    "bmp_count": 1,
+    "ttm_count": 2,
+    "restore_candidate": true,
+    "clear_screen_count": 394,
+    "unique_rect_count": 2,
+    "union_rect": {
+      "x": 248,
+      "y": 196,
+      "width": 352,
+      "height": 140
+    },
+    "ttm_names": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ],
+    "restore_score": 118
+  },
+  "scene_flags": [
+    "ISLAND",
+    "VARPOS_OK",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 27484,
+    "bmp_15bit_bytes": 109936,
+    "bmp_raw_bytes": 27484,
+    "ttm_bytes": 7760,
+    "ads_bytes": 2396,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 140,
+    "ttm_slot_overhead_bytes": 16384,
+    "peak_memory_bytes": 166164
+  },
+  "resource_counts": {
+    "bmps": 1,
+    "scrs": 1,
+    "ttms": 2
+  },
+  "scene_resources": {
+    "bmps": [
+      "MJ_AMB.BMP",
+      "MJTELE.BMP",
+      "MJTELE2.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 248,
+      "y": 196,
+      "width": 352,
+      "height": 140
+    },
+    "unique_rects": [
+      {
+        "x": 248,
+        "y": 196,
+        "width": 344,
+        "height": 139
+      },
+      {
+        "x": 256,
+        "y": 197,
+        "width": 344,
+        "height": 139
+      }
+    ],
+    "clear_screen_count": 394,
+    "ttm_names": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "MJAMBWLK.TTM",
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 344,
+        "height": 139
+      },
+      "unique_rects": [
+        {
+          "x": 248,
+          "y": 196,
+          "width": 344,
+          "height": 139
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 273
+      }
+    },
+    {
+      "ttm_name": "MJTELE.TTM",
+      "union_rect": {
+        "x": 256,
+        "y": 197,
+        "width": 344,
+        "height": 139
+      },
+      "unique_rects": [
+        {
+          "x": 256,
+          "y": 197,
+          "width": 344,
+          "height": 139
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 121
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "STAND.ADS",
+    "ads_tags": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "scene_indices": [
+      38,
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45,
+      46,
+      47,
+      48,
+      49
+    ],
+    "ttm_names": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic.",
+      "This spec was lifted from a shared restore-contract cluster.",
+      "Promote the whole tag list together when runtime validation confirms the contract."
+    ]
+  },
+  "cluster": {
+    "cluster_id": "stand-ads:4639e71e35cb",
+    "promotion_state": "verified_live",
+    "scene_count": 12,
+    "statuses": {
+      "verified_live": 12,
+      "live_bringup": 0,
+      "artifact_ready_unverified": 0,
+      "blocked_entry_path_or_unreliable_route": 0
+    },
+    "signature_id": "4639e71e35cb"
+  }
+}

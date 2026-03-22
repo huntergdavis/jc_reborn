@@ -1,0 +1,554 @@
+{
+  "schema_version": 1,
+  "manifest_kind": "scene_pack_manifest",
+  "pack_id": "suzy-ads",
+  "cluster_key": "SUZY.ADS",
+  "pack_strategy": "ads_cluster",
+  "scene_indices": [
+    52,
+    53
+  ],
+  "scene_count": 2,
+  "ads_names": [
+    "SUZY.ADS"
+  ],
+  "resources": {
+    "ads": [
+      "SUZY.ADS"
+    ],
+    "bmps": [
+      "MEANWHIL.BMP",
+      "SSUZY2.BMP",
+      "SSUZY3.BMP",
+      "LITEBULB.BMP",
+      "MRAFT.BMP",
+      "SJMSUZY1.BMP",
+      "SJMSUZY2.BMP",
+      "SJMSUZY3.BMP",
+      "SSUZY1.BMP"
+    ],
+    "scrs": [
+      "SUZBEACH.SCR"
+    ],
+    "ttms": [
+      "MEANWHIL.TTM",
+      "SJMSUZY.TTM",
+      "SUZYCITY.TTM"
+    ],
+    "shared_candidates": [
+      "LITEBULB.BMP",
+      "MEANWHIL.BMP",
+      "MEANWHIL.TTM",
+      "SJMSUZY.TTM",
+      "SSUZY2.BMP",
+      "SSUZY3.BMP",
+      "SUZBEACH.SCR",
+      "SUZYCITY.TTM"
+    ]
+  },
+  "runtime_requirements": {
+    "max_concurrent_threads": 11,
+    "max_sprite_frames": 117,
+    "peak_memory_bytes": 460470,
+    "memory_components": {
+      "bmp_indexed_bytes": 276348,
+      "ttm_bytes": 6540,
+      "ads_bytes": 288,
+      "scr_bytes": 153600,
+      "sprite_pointer_bytes": 468,
+      "ttm_slot_overhead_bytes": 24576
+    }
+  },
+  "transition_hints": {
+    "likely_next_pack_ids": [
+      "visitor-ads"
+    ],
+    "high_churn_transitions": [
+      {
+        "from_scene_index": 53,
+        "to_scene_index": 54,
+        "to_pack_id": "visitor-ads",
+        "total_resource_churn": 21,
+        "peak_memory_delta_bytes": 225276
+      }
+    ],
+    "transition_budget_notes": "Derived from analyzer post-processing; not runtime-validated."
+  },
+  "prefetch_hints": {
+    "candidate_scene_indices": [
+      54,
+      55,
+      56,
+      57,
+      58,
+      59
+    ],
+    "additional_bmps": [
+      "COCOHEAD.BMP",
+      "COCONUTS.BMP",
+      "GJPROW.BMP",
+      "GJVIS3.BMP",
+      "GJVIS5.BMP",
+      "GJVIS52.BMP",
+      "GJVIS6.BMP",
+      "JOHNWALK.BMP",
+      "MJCOCO.BMP",
+      "MJREAD.BMP",
+      "MJTELE.BMP",
+      "MJTELE2.BMP",
+      "SPLASH.BMP",
+      "TANKER.BMP",
+      "TRUNK.BMP"
+    ],
+    "additional_scrs": [
+      "ISLAND2.SCR",
+      "ISLETEMP.SCR"
+    ],
+    "additional_ttms": [
+      "GJLILIPU.TTM",
+      "GJVIS3.TTM",
+      "GJVIS5.TTM",
+      "GJVIS6.TTM",
+      "MJCOCO.TTM"
+    ],
+    "heuristic": "transition_churn_then_ads_family_union",
+    "confidence": "low"
+  },
+  "scenes": [
+    {
+      "scene_index": 52,
+      "ads_name": "SUZY.ADS",
+      "ads_tag": 1,
+      "story_day": 3,
+      "flags": [
+        "FINAL",
+        "FIRST"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 170164,
+        "bmp_15bit_bytes": 680656,
+        "bmp_raw_bytes": 170164,
+        "ttm_bytes": 6540,
+        "ads_bytes": 288,
+        "scr_bytes": 153600,
+        "sprite_pointer_bytes": 340,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 355508
+      },
+      "resource_counts": {
+        "bmps": 5,
+        "scrs": 1,
+        "ttms": 3
+      }
+    },
+    {
+      "scene_index": 53,
+      "ads_name": "SUZY.ADS",
+      "ads_tag": 2,
+      "story_day": 9,
+      "flags": [
+        "FINAL",
+        "FIRST"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 276348,
+        "bmp_15bit_bytes": 1105392,
+        "bmp_raw_bytes": 276348,
+        "ttm_bytes": 5190,
+        "ads_bytes": 288,
+        "scr_bytes": 153600,
+        "sprite_pointer_bytes": 468,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 460470
+      },
+      "resource_counts": {
+        "bmps": 7,
+        "scrs": 1,
+        "ttms": 3
+      }
+    }
+  ],
+  "shared_bank": {
+    "bmps": [
+      {
+        "name": "MEANWHIL.BMP",
+        "global_scene_ref_count": 4,
+        "pack_scene_ref_count": 2,
+        "bytes": 8648,
+        "raw_bytes": 8648,
+        "indexed_bytes": 8648
+      },
+      {
+        "name": "SSUZY2.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 48184,
+        "raw_bytes": 48184,
+        "indexed_bytes": 48184
+      },
+      {
+        "name": "SSUZY3.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 76720,
+        "raw_bytes": 76720,
+        "indexed_bytes": 76720
+      },
+      {
+        "name": "LITEBULB.BMP",
+        "global_scene_ref_count": 15,
+        "pack_scene_ref_count": 1,
+        "bytes": 5216,
+        "raw_bytes": 5216,
+        "indexed_bytes": 5216
+      }
+    ],
+    "scrs": [
+      {
+        "name": "SUZBEACH.SCR",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 153600,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ],
+    "ttms": [
+      {
+        "name": "MEANWHIL.TTM",
+        "global_scene_ref_count": 8,
+        "pack_scene_ref_count": 2,
+        "bytes": 1856,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "SJMSUZY.TTM",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 3334,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "SUZYCITY.TTM",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 4684,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ]
+  },
+  "resource_details": {
+    "bmps": [
+      {
+        "name": "MEANWHIL.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 4,
+        "bytes": 8648,
+        "raw_bytes": 8648,
+        "indexed_bytes": 8648,
+        "source_scene_indices": [
+          52,
+          53
+        ],
+        "metadata": {
+          "num_frames": 17,
+          "max_width": 96,
+          "max_height": 109,
+          "bindings": [
+            {
+              "scene_index": 52,
+              "ttm_slot": 3,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 53,
+              "ttm_slot": 3,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "SSUZY2.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 48184,
+        "raw_bytes": 48184,
+        "indexed_bytes": 48184,
+        "source_scene_indices": [
+          52,
+          53
+        ],
+        "metadata": {
+          "num_frames": 18,
+          "max_width": 96,
+          "max_height": 101,
+          "bindings": [
+            {
+              "scene_index": 52,
+              "ttm_slot": 1,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 53,
+              "ttm_slot": 2,
+              "bmp_slot": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "SSUZY3.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 76720,
+        "raw_bytes": 76720,
+        "indexed_bytes": 76720,
+        "source_scene_indices": [
+          52,
+          53
+        ],
+        "metadata": {
+          "num_frames": 33,
+          "max_width": 184,
+          "max_height": 127,
+          "bindings": [
+            {
+              "scene_index": 52,
+              "ttm_slot": 1,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 53,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "LITEBULB.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 15,
+        "bytes": 5216,
+        "raw_bytes": 5216,
+        "indexed_bytes": 5216,
+        "source_scene_indices": [
+          52
+        ],
+        "metadata": {
+          "num_frames": 5,
+          "max_width": 48,
+          "max_height": 80,
+          "bindings": [
+            {
+              "scene_index": 52,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "MRAFT.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 10616,
+        "raw_bytes": 10616,
+        "indexed_bytes": 10616,
+        "source_scene_indices": [
+          53
+        ],
+        "metadata": {
+          "num_frames": 7,
+          "max_width": 128,
+          "max_height": 39,
+          "bindings": [
+            {
+              "scene_index": 53,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "SJMSUZY1.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 16148,
+        "raw_bytes": 16148,
+        "indexed_bytes": 16148,
+        "source_scene_indices": [
+          53
+        ],
+        "metadata": {
+          "num_frames": 10,
+          "max_width": 96,
+          "max_height": 59,
+          "bindings": [
+            {
+              "scene_index": 53,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "SJMSUZY2.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 43676,
+        "raw_bytes": 43676,
+        "indexed_bytes": 43676,
+        "source_scene_indices": [
+          53
+        ],
+        "metadata": {
+          "num_frames": 14,
+          "max_width": 96,
+          "max_height": 104,
+          "bindings": [
+            {
+              "scene_index": 53,
+              "ttm_slot": 2,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "SJMSUZY3.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 72356,
+        "raw_bytes": 72356,
+        "indexed_bytes": 72356,
+        "source_scene_indices": [
+          53
+        ],
+        "metadata": {
+          "num_frames": 18,
+          "max_width": 136,
+          "max_height": 105,
+          "bindings": [
+            {
+              "scene_index": 53,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "SSUZY1.BMP",
+        "pack_scene_ref_count": 1,
+        "global_scene_ref_count": 1,
+        "bytes": 31396,
+        "raw_bytes": 31396,
+        "indexed_bytes": 31396,
+        "source_scene_indices": [
+          52
+        ],
+        "metadata": {
+          "num_frames": 12,
+          "max_width": 112,
+          "max_height": 64,
+          "bindings": [
+            {
+              "scene_index": 52,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      }
+    ],
+    "scrs": [
+      {
+        "name": "SUZBEACH.SCR",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 153600,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          52,
+          53
+        ],
+        "metadata": {
+          "bytes": 153600
+        }
+      }
+    ],
+    "ttms": [
+      {
+        "name": "MEANWHIL.TTM",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 8,
+        "bytes": 1856,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          52,
+          53
+        ],
+        "metadata": {
+          "slot_ids": [
+            3,
+            3
+          ]
+        }
+      },
+      {
+        "name": "SJMSUZY.TTM",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 3334,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          52,
+          53
+        ],
+        "metadata": {
+          "slot_ids": [
+            2,
+            2
+          ]
+        }
+      },
+      {
+        "name": "SUZYCITY.TTM",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 4684,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          52,
+          53
+        ],
+        "metadata": {
+          "slot_ids": [
+            1,
+            1
+          ]
+        }
+      }
+    ]
+  },
+  "prefetch": {
+    "heuristic": "transition_churn_then_ads_family_union",
+    "candidate_pack_ids": [
+      "visitor-ads"
+    ],
+    "secondary_candidate_pack_ids": []
+  },
+  "max_peak_memory_bytes": 460470,
+  "total_peak_memory_bytes": 815978
+}

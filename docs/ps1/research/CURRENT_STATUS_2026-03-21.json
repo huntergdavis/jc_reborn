@@ -3,10 +3,10 @@
   "artifact_kind": "restore_rollout_status",
   "date": "2026-03-21",
   "scene_total": 63,
-  "current_verified_scene_count": 25,
-  "current_live_header_scene_count": 26,
+  "current_verified_scene_count": 27,
+  "current_live_header_scene_count": 27,
   "current_live_header_ads_names": [
-    "ACTIVITY.ADS",
+    "MARY.ADS",
     "JOHNNY.ADS",
     "MISCGAG.ADS",
     "STAND.ADS",
@@ -61,19 +61,17 @@
         2
       ],
       "scene_count": 2
-    }
-  ],
-  "current_bringup": [
+    },
     {
-      "ads_name": "ACTIVITY.ADS",
+      "ads_name": "MARY.ADS",
       "ads_tags": [
-        4
+        3,
+        5
       ],
-      "scene_count": 1,
-      "status": "in_progress",
-      "notes": "Live in header, visually improved, not counted as verified until stale-frame artifact is removed."
+      "scene_count": 2
     }
   ],
+  "current_bringup": [],
   "current_blocked_families": [
     {
       "ads_name": "BUILDING.ADS",
@@ -87,14 +85,24 @@
     }
   ],
   "current_counts": {
-    "verified": 25,
-    "live_header_total": 26,
-    "live_bringup_not_verified": 1,
-    "remaining_unverified_or_unpromoted": 38
+    "verified": 27,
+    "live_header_total": 27,
+    "live_bringup_not_verified": 0,
+    "remaining_unverified_or_unpromoted": 36
+  },
+  "current_pack_artifacts": {
+    "date": "2026-03-21",
+    "pack_count": 10,
+    "compiled_entry_count": 560,
+    "compiled_psb_entry_count": 219,
+    "compiled_payload_bytes": 22743040,
+    "compiled_pack_root": "docs/ps1/research/generated/compiled_packs_2026-03-21"
   },
   "notes": [
     "This status snapshot supersedes the archived 2026-03-19 rollout manifest for day-to-day planning.",
-    "ACTIVITY.ADS tag 4 is intentionally excluded from verified count until the stale extra-Johnny climb frame is fixed.",
-    "The generated header currently includes 26 promoted scene tags: 25 verified plus 1 bring-up scene."
+    "ACTIVITY.ADS tag 4 remains a bring-up/runtime issue but is not in the current live header.",
+    "The generated header currently includes 27 promoted scene tags, all counted as verified.",
+    "MARY.ADS tags 3 and 5 are now verified live under the retained MARY-specific startup and restore-hook policy.",
+    "The pack-side artifact surface was refreshed on 2026-03-21 and now has a current generated snapshot separate from the older 2026-03-17/18/19 research outputs."
   ]
 }

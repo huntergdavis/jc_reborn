@@ -1,0 +1,242 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_cluster_spec",
+  "selected_scene": {
+    "pack_id": "walkstuf-ads",
+    "ads_name": "WALKSTUF.ADS",
+    "ads_tag": 1,
+    "scene_index": 60,
+    "peak_memory_bytes": 341368,
+    "bmp_count": 7,
+    "ttm_count": 3,
+    "restore_candidate": true,
+    "clear_screen_count": 536,
+    "unique_rect_count": 4,
+    "union_rect": {
+      "x": 0,
+      "y": 91,
+      "width": 640,
+      "height": 259
+    },
+    "ttm_names": [
+      "MJJOG.TTM",
+      "MJRAFT.TTM",
+      "WOULDBE.TTM"
+    ],
+    "restore_score": 99
+  },
+  "scene_flags": [
+    "FINAL",
+    "ISLAND",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 190452,
+    "bmp_15bit_bytes": 761808,
+    "bmp_raw_bytes": 190452,
+    "ttm_bytes": 13170,
+    "ads_bytes": 610,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 560,
+    "ttm_slot_overhead_bytes": 24576,
+    "peak_memory_bytes": 341368
+  },
+  "resource_counts": {
+    "bmps": 7,
+    "scrs": 1,
+    "ttms": 3
+  },
+  "scene_resources": {
+    "bmps": [
+      "JOHNWALK.BMP",
+      "WOULDBE.BMP",
+      "BOAT.BMP",
+      "TRUNK.BMP",
+      "LITEBULB.BMP",
+      "JOHNWOUL.BMP",
+      "DRUNKJON.BMP",
+      "MJRAFT2.BMP",
+      "SJRAFT1.BMP",
+      "MJJOG2.BMP",
+      "JCHANGE.BMP",
+      "MJJOG1.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "WOULDBE.TTM",
+      "MJRAFT.TTM",
+      "MJJOG.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 0,
+      "y": 91,
+      "width": 640,
+      "height": 259
+    },
+    "unique_rects": [
+      {
+        "x": 280,
+        "y": 200,
+        "width": 304,
+        "height": 150
+      },
+      {
+        "x": 232,
+        "y": 125,
+        "width": 408,
+        "height": 225
+      },
+      {
+        "x": 96,
+        "y": 102,
+        "width": 544,
+        "height": 217
+      },
+      {
+        "x": 0,
+        "y": 91,
+        "width": 104,
+        "height": 154
+      }
+    ],
+    "clear_screen_count": 536,
+    "ttm_names": [
+      "MJJOG.TTM",
+      "MJRAFT.TTM",
+      "WOULDBE.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "MJJOG.TTM",
+      "union_rect": {
+        "x": 280,
+        "y": 200,
+        "width": 304,
+        "height": 150
+      },
+      "unique_rects": [
+        {
+          "x": 280,
+          "y": 200,
+          "width": 304,
+          "height": 150
+        }
+      ],
+      "region_ids": [],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 224
+      }
+    },
+    {
+      "ttm_name": "MJRAFT.TTM",
+      "union_rect": {
+        "x": 232,
+        "y": 125,
+        "width": 408,
+        "height": 225
+      },
+      "unique_rects": [
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        }
+      ],
+      "region_ids": [],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 34
+      }
+    },
+    {
+      "ttm_name": "WOULDBE.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 91,
+        "width": 640,
+        "height": 228
+      },
+      "unique_rects": [
+        {
+          "x": 96,
+          "y": 102,
+          "width": 544,
+          "height": 217
+        },
+        {
+          "x": 0,
+          "y": 91,
+          "width": 104,
+          "height": 154
+        }
+      ],
+      "region_ids": [],
+      "clear_region_ids": [
+        0,
+        1
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 278
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "WALKSTUF.ADS",
+    "ads_tags": [
+      1
+    ],
+    "scene_indices": [
+      60
+    ],
+    "ttm_names": [
+      "MJJOG.TTM",
+      "MJRAFT.TTM",
+      "WOULDBE.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic.",
+      "This spec was lifted from a shared restore-contract cluster.",
+      "Promote the whole tag list together when runtime validation confirms the contract."
+    ]
+  },
+  "cluster": {
+    "cluster_id": "walkstuf-ads:771a194e54f6",
+    "promotion_state": "verified_live",
+    "scene_count": 1,
+    "statuses": {
+      "verified_live": 1,
+      "live_bringup": 0,
+      "artifact_ready_unverified": 0,
+      "blocked_entry_path_or_unreliable_route": 0
+    },
+    "signature_id": "771a194e54f6"
+  }
+}

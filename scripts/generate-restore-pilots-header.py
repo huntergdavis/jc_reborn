@@ -49,7 +49,7 @@ def c_string(value: str) -> str:
 
 
 def save_image_region_id(row: dict) -> int:
-    region_ids = row.get("clear_region_ids") or [0]
+    region_ids = row.get("region_ids") or row.get("clear_region_ids") or [0]
     op_counts = row.get("op_counts") or {}
     union_rect = row.get("union_rect")
 

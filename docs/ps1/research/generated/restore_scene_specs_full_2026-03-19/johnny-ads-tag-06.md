@@ -27,7 +27,7 @@ Selected pilot: `JOHNNY.ADS tag 6` from `johnny-ads`
 
 ## TTM details
 
-- `MEANWHIL.TTM`: rect `{'x': 224, 'y': 90, 'width': 160, 'height': 134}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 1, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 49}`
-- `SJMSSGE.TTM`: rect `{'x': 0, 'y': 147, 'width': 448, 'height': 203}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 142}`
-- `SJWORK.TTM`: rect `{'x': 192, 'y': 199, 'width': 264, 'height': 142}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 25}`
-- `THEEND.TTM`: rect `{'x': 144, 'y': 87, 'width': 384, 'height': 152}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 73}`
+- `MEANWHIL.TTM`: rect `{'x': 224, 'y': 90, 'width': 160, 'height': 134}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 1, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 49}`
+- `SJMSSGE.TTM`: rect `{'x': 0, 'y': 147, 'width': 448, 'height': 203}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 142}`
+- `SJWORK.TTM`: rect `{'x': 192, 'y': 199, 'width': 264, 'height': 142}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 25}`
+- `THEEND.TTM`: rect `{'x': 144, 'y': 87, 'width': 384, 'height': 152}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 73}`

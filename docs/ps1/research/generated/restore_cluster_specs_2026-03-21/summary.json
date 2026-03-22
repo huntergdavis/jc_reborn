@@ -1,0 +1,562 @@
+{
+  "schema_version": 2,
+  "artifact_kind": "restore_cluster_spec_batch",
+  "cluster_count": 33,
+  "clusters": [
+    {
+      "cluster_id": "stand-ads:4639e71e35cb",
+      "ads_name": "STAND.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 12,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "scene_indices": [
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/stand-ads-4639e71e35cb.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/stand-ads-4639e71e35cb.md"
+    },
+    {
+      "cluster_id": "activity-ads:da9796821a68",
+      "ads_name": "ACTIVITY.ADS",
+      "selected_ads_tag": 6,
+      "scene_count": 4,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        6,
+        7,
+        10,
+        12
+      ],
+      "scene_indices": [
+        1,
+        3,
+        6,
+        7
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-da9796821a68.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-da9796821a68.md"
+    },
+    {
+      "cluster_id": "fishing-ads:9f543a76e974",
+      "ads_name": "FISHING.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 4,
+      "promotion_state": "blocked_entry_path_or_unreliable_route",
+      "scene_tags": [
+        1,
+        2,
+        3,
+        6
+      ],
+      "scene_indices": [
+        17,
+        18,
+        19,
+        22
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/fishing-ads-9f543a76e974.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/fishing-ads-9f543a76e974.md"
+    },
+    {
+      "cluster_id": "johnny-ads:ed5379fe15a2",
+      "ads_name": "JOHNNY.ADS",
+      "selected_ads_tag": 2,
+      "scene_count": 4,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        2,
+        3,
+        4,
+        5
+      ],
+      "scene_indices": [
+        26,
+        27,
+        28,
+        29
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/johnny-ads-ed5379fe15a2.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/johnny-ads-ed5379fe15a2.md"
+    },
+    {
+      "cluster_id": "building-ads:ad99c333603c",
+      "ads_name": "BUILDING.ADS",
+      "selected_ads_tag": 3,
+      "scene_count": 3,
+      "promotion_state": "blocked_entry_path_or_unreliable_route",
+      "scene_tags": [
+        3,
+        4,
+        6
+      ],
+      "scene_indices": [
+        11,
+        12,
+        16
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/building-ads-ad99c333603c.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/building-ads-ad99c333603c.md"
+    },
+    {
+      "cluster_id": "fishing-ads:6dab2548cba7",
+      "ads_name": "FISHING.ADS",
+      "selected_ads_tag": 4,
+      "scene_count": 3,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        4,
+        7,
+        8
+      ],
+      "scene_indices": [
+        20,
+        23,
+        24
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/fishing-ads-6dab2548cba7.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/fishing-ads-6dab2548cba7.md"
+    },
+    {
+      "cluster_id": "visitor-ads:0c2807cdc62f",
+      "ads_name": "VISITOR.ADS",
+      "selected_ads_tag": 4,
+      "scene_count": 3,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        4,
+        6,
+        7
+      ],
+      "scene_indices": [
+        56,
+        57,
+        58
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-0c2807cdc62f.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-0c2807cdc62f.md"
+    },
+    {
+      "cluster_id": "activity-ads:ccf58440d356",
+      "ads_name": "ACTIVITY.ADS",
+      "selected_ads_tag": 8,
+      "scene_count": 2,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        8,
+        11
+      ],
+      "scene_indices": [
+        2,
+        8
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-ccf58440d356.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-ccf58440d356.md"
+    },
+    {
+      "cluster_id": "building-ads:880d26b1085c",
+      "ads_name": "BUILDING.ADS",
+      "selected_ads_tag": 5,
+      "scene_count": 2,
+      "promotion_state": "blocked_entry_path_or_unreliable_route",
+      "scene_tags": [
+        5,
+        7
+      ],
+      "scene_indices": [
+        14,
+        15
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/building-ads-880d26b1085c.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/building-ads-880d26b1085c.md"
+    },
+    {
+      "cluster_id": "building-ads:fa82f9b7222d",
+      "ads_name": "BUILDING.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 2,
+      "promotion_state": "blocked_entry_path_or_unreliable_route",
+      "scene_tags": [
+        1,
+        2
+      ],
+      "scene_indices": [
+        10,
+        13
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/building-ads-fa82f9b7222d.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/building-ads-fa82f9b7222d.md"
+    },
+    {
+      "cluster_id": "stand-ads:c9d4c9b8c017",
+      "ads_name": "STAND.ADS",
+      "selected_ads_tag": 15,
+      "scene_count": 2,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        15,
+        16
+      ],
+      "scene_indices": [
+        50,
+        51
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/stand-ads-c9d4c9b8c017.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/stand-ads-c9d4c9b8c017.md"
+    },
+    {
+      "cluster_id": "activity-ads:d79dda25b922",
+      "ads_name": "ACTIVITY.ADS",
+      "selected_ads_tag": 4,
+      "scene_count": 1,
+      "promotion_state": "live_bringup",
+      "scene_tags": [
+        4
+      ],
+      "scene_indices": [
+        4
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-d79dda25b922.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-d79dda25b922.md"
+    },
+    {
+      "cluster_id": "activity-ads:37dfc150c7d3",
+      "ads_name": "ACTIVITY.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        0
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-37dfc150c7d3.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-37dfc150c7d3.md"
+    },
+    {
+      "cluster_id": "activity-ads:0ac02941ac27",
+      "ads_name": "ACTIVITY.ADS",
+      "selected_ads_tag": 5,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        5
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-0ac02941ac27.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-0ac02941ac27.md"
+    },
+    {
+      "cluster_id": "activity-ads:306254dfc4d0",
+      "ads_name": "ACTIVITY.ADS",
+      "selected_ads_tag": 9,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        9
+      ],
+      "scene_indices": [
+        9
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-306254dfc4d0.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/activity-ads-306254dfc4d0.md"
+    },
+    {
+      "cluster_id": "fishing-ads:7434693204b9",
+      "ads_name": "FISHING.ADS",
+      "selected_ads_tag": 5,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        21
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/fishing-ads-7434693204b9.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/fishing-ads-7434693204b9.md"
+    },
+    {
+      "cluster_id": "johnny-ads:4a43421d8fd7",
+      "ads_name": "JOHNNY.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 1,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        25
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/johnny-ads-4a43421d8fd7.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/johnny-ads-4a43421d8fd7.md"
+    },
+    {
+      "cluster_id": "johnny-ads:289fabd14af6",
+      "ads_name": "JOHNNY.ADS",
+      "selected_ads_tag": 6,
+      "scene_count": 1,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        6
+      ],
+      "scene_indices": [
+        30
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/johnny-ads-289fabd14af6.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/johnny-ads-289fabd14af6.md"
+    },
+    {
+      "cluster_id": "mary-ads:5a07efbfeaf6",
+      "ads_name": "MARY.ADS",
+      "selected_ads_tag": 2,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        33
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-5a07efbfeaf6.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-5a07efbfeaf6.md"
+    },
+    {
+      "cluster_id": "mary-ads:b6b3ccb55fef",
+      "ads_name": "MARY.ADS",
+      "selected_ads_tag": 3,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        3
+      ],
+      "scene_indices": [
+        32
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-b6b3ccb55fef.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-b6b3ccb55fef.md"
+    },
+    {
+      "cluster_id": "mary-ads:5fac37705196",
+      "ads_name": "MARY.ADS",
+      "selected_ads_tag": 5,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        35
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-5fac37705196.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-5fac37705196.md"
+    },
+    {
+      "cluster_id": "mary-ads:da436c719e02",
+      "ads_name": "MARY.ADS",
+      "selected_ads_tag": 4,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        4
+      ],
+      "scene_indices": [
+        34
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-da436c719e02.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-da436c719e02.md"
+    },
+    {
+      "cluster_id": "mary-ads:c11a92332075",
+      "ads_name": "MARY.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        31
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-c11a92332075.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/mary-ads-c11a92332075.md"
+    },
+    {
+      "cluster_id": "miscgag-ads:e227990fd435",
+      "ads_name": "MISCGAG.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 1,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        36
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/miscgag-ads-e227990fd435.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/miscgag-ads-e227990fd435.md"
+    },
+    {
+      "cluster_id": "miscgag-ads:a042893bb927",
+      "ads_name": "MISCGAG.ADS",
+      "selected_ads_tag": 2,
+      "scene_count": 1,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        37
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/miscgag-ads-a042893bb927.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/miscgag-ads-a042893bb927.md"
+    },
+    {
+      "cluster_id": "suzy-ads:45d534135345",
+      "ads_name": "SUZY.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        52
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/suzy-ads-45d534135345.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/suzy-ads-45d534135345.md"
+    },
+    {
+      "cluster_id": "suzy-ads:83958a78a6bc",
+      "ads_name": "SUZY.ADS",
+      "selected_ads_tag": 2,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        53
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/suzy-ads-83958a78a6bc.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/suzy-ads-83958a78a6bc.md"
+    },
+    {
+      "cluster_id": "visitor-ads:4ba4d3b98d79",
+      "ads_name": "VISITOR.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        54
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-4ba4d3b98d79.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-4ba4d3b98d79.md"
+    },
+    {
+      "cluster_id": "visitor-ads:d466c70a8992",
+      "ads_name": "VISITOR.ADS",
+      "selected_ads_tag": 3,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        3
+      ],
+      "scene_indices": [
+        55
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-d466c70a8992.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-d466c70a8992.md"
+    },
+    {
+      "cluster_id": "visitor-ads:d7af143bb83b",
+      "ads_name": "VISITOR.ADS",
+      "selected_ads_tag": 5,
+      "scene_count": 1,
+      "promotion_state": "artifact_ready_unverified",
+      "scene_tags": [
+        5
+      ],
+      "scene_indices": [
+        59
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-d7af143bb83b.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/visitor-ads-d7af143bb83b.md"
+    },
+    {
+      "cluster_id": "walkstuf-ads:8266d1f9f7fa",
+      "ads_name": "WALKSTUF.ADS",
+      "selected_ads_tag": 2,
+      "scene_count": 1,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        2
+      ],
+      "scene_indices": [
+        61
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/walkstuf-ads-8266d1f9f7fa.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/walkstuf-ads-8266d1f9f7fa.md"
+    },
+    {
+      "cluster_id": "walkstuf-ads:70d5dfb55c92",
+      "ads_name": "WALKSTUF.ADS",
+      "selected_ads_tag": 3,
+      "scene_count": 1,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        3
+      ],
+      "scene_indices": [
+        62
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/walkstuf-ads-70d5dfb55c92.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/walkstuf-ads-70d5dfb55c92.md"
+    },
+    {
+      "cluster_id": "walkstuf-ads:771a194e54f6",
+      "ads_name": "WALKSTUF.ADS",
+      "selected_ads_tag": 1,
+      "scene_count": 1,
+      "promotion_state": "verified_live",
+      "scene_tags": [
+        1
+      ],
+      "scene_indices": [
+        60
+      ],
+      "json_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/walkstuf-ads-771a194e54f6.json",
+      "md_path": "docs/ps1/research/generated/restore_cluster_specs_2026-03-21/walkstuf-ads-771a194e54f6.md"
+    }
+  ]
+}

@@ -11,9 +11,9 @@ from typing import Iterable
 
 
 DEFAULT_REPORT = Path("docs/ps1/research/restore_candidate_report_full_2026-03-19.json")
-DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/scene_pack_manifests_2026-03-17")
-DEFAULT_TEMPLATE_DIR = Path("docs/ps1/research/dirty_region_templates_2026-03-18")
-DEFAULT_SCENE_ANALYSIS = Path("docs/ps1/research/scene_analysis_output_2026-03-17.json")
+DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/generated/scene_pack_manifests_2026-03-21")
+DEFAULT_TEMPLATE_DIR = Path("docs/ps1/research/generated/dirty_region_templates_2026-03-21")
+DEFAULT_SCENE_ANALYSIS = Path("docs/ps1/research/generated/scene_analysis_output_2026-03-21.json")
 DEFAULT_JSON_OUTPUT = Path("docs/ps1/research/restore_pilot_spec_2026-03-18.json")
 DEFAULT_MD_OUTPUT = Path("docs/ps1/research/restore_pilot_spec_2026-03-18.md")
 DEFAULT_EXTRACTED_ROOT = Path("jc_resources/extracted")
@@ -127,6 +127,7 @@ def build_spec(
                 "ttm_name": row["ttm_name"],
                 "union_rect": row["union_rect"],
                 "unique_rects": row["unique_rects"],
+                "region_ids": row.get("unique_region_ids", row.get("region_ids", [])),
                 "clear_region_ids": row["unique_clear_region_ids"],
                 "op_counts": row["op_counts"],
             }
@@ -252,7 +253,7 @@ def write_markdown(path: Path, spec: dict) -> None:
     lines.extend(["", "## TTM details", ""])
     for row in spec["ttm_details"]:
         lines.append(
-            f"- `{row['ttm_name']}`: rect `{row['union_rect']}`, clear regions `{row['clear_region_ids']}`, op counts `{row['op_counts']}`"
+            f"- `{row['ttm_name']}`: rect `{row['union_rect']}`, region ids `{row.get('region_ids', [])}`, clear regions `{row['clear_region_ids']}`, op counts `{row['op_counts']}`"
         )
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")

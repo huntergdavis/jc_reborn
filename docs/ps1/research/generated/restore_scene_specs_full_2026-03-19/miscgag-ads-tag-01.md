@@ -27,6 +27,6 @@ Selected pilot: `MISCGAG.ADS tag 1` from `miscgag-ads`
 
 ## TTM details
 
-- `GJGULL1.TTM`: rect `{'x': 160, 'y': 61, 'width': 480, 'height': 289}`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 107}`
-- `GJHOT.TTM`: rect `{'x': 280, 'y': 200, 'width': 304, 'height': 150}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 89}`
-- `SHARK1.TTM`: rect `{'x': 0, 'y': 171, 'width': 584, 'height': 179}`, clear regions `[0, 1]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 88}`
+- `GJGULL1.TTM`: rect `{'x': 160, 'y': 61, 'width': 480, 'height': 289}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 107}`
+- `GJHOT.TTM`: rect `{'x': 280, 'y': 200, 'width': 304, 'height': 150}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 89}`
+- `SHARK1.TTM`: rect `{'x': 0, 'y': 171, 'width': 584, 'height': 179}`, region ids `[0, 1]`, clear regions `[0, 1]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 88}`

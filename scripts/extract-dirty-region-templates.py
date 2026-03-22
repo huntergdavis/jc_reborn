@@ -10,10 +10,10 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Sequence, Tuple
 
 
-DEFAULT_MANIFEST = Path("docs/ps1/research/scene_pack_manifests_2026-03-17/building-ads.json")
-DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/scene_pack_manifests_2026-03-17")
+DEFAULT_MANIFEST = Path("docs/ps1/research/generated/scene_pack_manifests_2026-03-21/building-ads.json")
+DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/generated/scene_pack_manifests_2026-03-21")
 DEFAULT_EXTRACTED_ROOT = Path("jc_resources/extracted")
-DEFAULT_OUTPUT_ROOT = Path("docs/ps1/research/dirty_region_templates_2026-03-18")
+DEFAULT_OUTPUT_ROOT = Path("docs/ps1/research/generated/dirty_region_templates_2026-03-21")
 SCHEMA_VERSION = 1
 TTM_TAG = 0x1111
 TTM_LOCAL_TAG = 0x1101
@@ -229,6 +229,13 @@ def parse_ttm_template(ttm_name: str, path: Path) -> dict:
             for region_id in entry["clear_region_ids"]
         }
     )
+    unique_region_ids = sorted(
+        {
+            region_id
+            for entry in tag_map.values()
+            for region_id in entry["region_ids"]
+        }
+    )
     clear_heavy = len(unique_clear_regions) > max(2, len(uniq_all))
     small_region_set = 0 < len(uniq_all) <= 8
     return {
@@ -238,6 +245,7 @@ def parse_ttm_template(ttm_name: str, path: Path) -> dict:
         "unique_rect_count": len(uniq_all),
         "unique_rects": uniq_all,
         "union_rect": union_rects(uniq_all),
+        "unique_region_ids": unique_region_ids,
         "clear_heavy": clear_heavy,
         "unique_clear_region_ids": unique_clear_regions,
         "restore_candidate": restore_ops > 0 and stable_tag_count > 0 and small_region_set,

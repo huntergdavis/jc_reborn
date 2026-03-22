@@ -27,8 +27,8 @@ Selected pilot: `FISHING.ADS tag 7` from `fishing-ads`
 
 ## TTM details
 
-- `FISHWALK.TTM`: rect `{'x': 88, 'y': 142, 'width': 552, 'height': 208}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 22}`
-- `GFFFOOD.TTM`: rect `{'x': 136, 'y': 111, 'width': 504, 'height': 239}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 47}`
-- `GJCATCH2.TTM`: rect `{'x': 0, 'y': 157, 'width': 640, 'height': 193}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 61}`
-- `MJFISH.TTM`: rect `{'x': 0, 'y': 157, 'width': 640, 'height': 193}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 370}`
-- `MJFISHC.TTM`: rect `{'x': 0, 'y': 138, 'width': 640, 'height': 212}`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 256}`
+- `FISHWALK.TTM`: rect `{'x': 88, 'y': 142, 'width': 552, 'height': 208}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 22}`
+- `GFFFOOD.TTM`: rect `{'x': 136, 'y': 111, 'width': 504, 'height': 239}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 47}`
+- `GJCATCH2.TTM`: rect `{'x': 0, 'y': 157, 'width': 640, 'height': 193}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 61}`
+- `MJFISH.TTM`: rect `{'x': 0, 'y': 157, 'width': 640, 'height': 193}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 370}`
+- `MJFISHC.TTM`: rect `{'x': 0, 'y': 138, 'width': 640, 'height': 212}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 256}`

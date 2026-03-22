@@ -27,6 +27,6 @@ Selected pilot: `WALKSTUF.ADS tag 3` from `walkstuf-ads`
 
 ## TTM details
 
-- `MJJOG.TTM`: rect `{'x': 280, 'y': 200, 'width': 304, 'height': 150}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 224}`
-- `MJRAFT.TTM`: rect `{'x': 232, 'y': 125, 'width': 408, 'height': 225}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 34}`
-- `WOULDBE.TTM`: rect `{'x': 0, 'y': 91, 'width': 640, 'height': 228}`, clear regions `[0, 1]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 278}`
+- `MJJOG.TTM`: rect `{'x': 280, 'y': 200, 'width': 304, 'height': 150}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 224}`
+- `MJRAFT.TTM`: rect `{'x': 232, 'y': 125, 'width': 408, 'height': 225}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 34}`
+- `WOULDBE.TTM`: rect `{'x': 0, 'y': 91, 'width': 640, 'height': 228}`, region ids `[0, 1]`, clear regions `[0, 1]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 278}`

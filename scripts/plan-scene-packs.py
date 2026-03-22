@@ -41,15 +41,15 @@ def repo_root() -> Path:
 
 
 def default_source_path() -> Path:
-    return repo_root() / "docs" / "ps1" / "research" / "scene_analysis_output_2026-03-17.json"
+    return repo_root() / "docs" / "ps1" / "research" / "generated" / "scene_analysis_output_2026-03-21.json"
 
 
 def default_index_path() -> Path:
-    return repo_root() / "docs" / "ps1" / "research" / "scene_pack_plan_2026-03-17.json"
+    return repo_root() / "docs" / "ps1" / "research" / "generated" / "scene_pack_plan_2026-03-21.json"
 
 
 def default_manifest_dir() -> Path:
-    return repo_root() / "docs" / "ps1" / "research" / "scene_pack_manifests_2026-03-17"
+    return repo_root() / "docs" / "ps1" / "research" / "generated" / "scene_pack_manifests_2026-03-21"
 
 
 def slugify(name: str) -> str:
@@ -469,13 +469,13 @@ def main() -> int:
         nargs="?",
         type=Path,
         default=default_source_path(),
-        help="Analyzer JSON input (default: docs/ps1/research/scene_analysis_output_2026-03-17.json)",
+        help="Analyzer JSON input (default: docs/ps1/research/generated/scene_analysis_output_2026-03-21.json)",
     )
     ap.add_argument(
         "--output",
         type=Path,
         default=default_index_path(),
-        help="Write the aggregate plan JSON here (default: docs/ps1/research/scene_pack_plan_2026-03-17.json)",
+        help="Write the aggregate plan JSON here (default: docs/ps1/research/generated/scene_pack_plan_2026-03-21.json)",
     )
     ap.add_argument(
         "--manifest-dir",

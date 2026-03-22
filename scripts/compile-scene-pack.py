@@ -12,13 +12,13 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
 
-DEFAULT_MANIFEST = Path("docs/ps1/research/scene_pack_manifests_2026-03-17/building-ads.json")
-DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/scene_pack_manifests_2026-03-17")
+DEFAULT_MANIFEST = Path("docs/ps1/research/generated/scene_pack_manifests_2026-03-21/building-ads.json")
+DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/generated/scene_pack_manifests_2026-03-21")
 DEFAULT_EXTRACTED_ROOT = Path("jc_resources/extracted")
 DEFAULT_TRANSCODED_ROOT = Path("jc_resources/transcoded")
-DEFAULT_OUTPUT_ROOT = Path("docs/ps1/research/compiled_packs_2026-03-17")
+DEFAULT_OUTPUT_ROOT = Path("docs/ps1/research/generated/compiled_packs_2026-03-21")
 DEFAULT_STAGE_ROOT = Path("jc_resources/packs")
-DEFAULT_TEMPLATE_ROOT = Path("docs/ps1/research/dirty_region_templates_2026-03-18")
+DEFAULT_TEMPLATE_ROOT = Path("docs/ps1/research/generated/dirty_region_templates_2026-03-21")
 DEFAULT_ALIGNMENT = 2048
 PACK_MAGIC = 0x4B415053  # "SPAK" little-endian
 PACK_VERSION = 1

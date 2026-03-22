@@ -24,21 +24,27 @@ Current active state:
 - scene assets are pack-authoritative once a family pack is active, and the
   current bounded validation path decodes `pilot_pack ... fallbacks=0` on the
   clean routes
+- the renderer now uses dirty-row background restore/upload and other hot-path
+  optimizations in [graphics_ps1.c](/home/hunter/workspace/jc_reborn/graphics_ps1.c),
+  so renderer correctness must now be validated at the dirty-region boundary
+- offline-transcoded `PSB` sprite bundles are part of the live pack/runtime
+  architecture, with targeted BMP exceptions only where PSB parity is not yet
+  proven
 - baseline normal boot no longer collapses on the first island handoff after
   `adsPlayWalk()` now resets `ttmSlots[0]`
 
 Key supporting artifacts:
 
 - analyzer output:
-  [scene_analysis_output_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-17.json)
+  [scene_analysis_output_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-21.json)
 - pack plan:
-  [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_plan_2026-03-17.json)
+  [scene_pack_plan_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_plan_2026-03-21.json)
 - pack manifests:
-  [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_manifests_2026-03-17)
+  [scene_pack_manifests_2026-03-21/](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_manifests_2026-03-21)
 - compiled research packs:
-  [compiled_packs_2026-03-17](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/compiled_packs_2026-03-17)
+  [compiled_packs_2026-03-21](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/compiled_packs_2026-03-21)
 - transition/prefetch report:
-  [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_transition_prefetch_report_2026-03-17.json)
+  [scene_transition_prefetch_report_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_transition_prefetch_report_2026-03-21.json)
 
 Near-term open work:
 
@@ -86,12 +92,12 @@ The project already has several strong foundations:
 
 - static scene analysis:
   [scene_analyzer.c](/home/hunter/workspace/jc_reborn/scene_analyzer.c)
-- dated analyzer artifact:
-  [scene_analysis_output_2026-03-17.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-17.txt)
 - rendering mismatch documentation:
   [README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/README.md)
 - existing research backlog:
   [BACKLOG.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/BACKLOG.md)
+- current analyzer text snapshot:
+  [scene_analysis_output_2026-03-21.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-21.txt)
 
 The key conclusion so far is:
 
@@ -102,6 +108,34 @@ The key conclusion so far is:
 That means the execution strategy should focus on replacing the boundary, not merely
 patching the symptoms.
 
+## Why This Should Fix The Disappearing-Johnny Bugs
+
+The long-running "Johnny disappears" class is no longer a vague symptom bucket.
+The work done so far has narrowed it to a small number of concrete failure modes:
+
+- stale slot/state carry across scene or walk handoff
+- replay continuity being used as a correctness mechanism instead of as legacy
+  glue
+- route-specific pack-read tails on hot actor assets such as `JOHNWALK`
+- sprite-path divergence between offline-transcoded `PSB` loading and the older
+  BMP path
+- renderer dirty-region mistakes that can leave stale rows or fail to restore a
+  touched region correctly
+- restore/clear policy gaps that leave one-frame ghosts or missing actor pieces
+
+The architecture direction in this plan is aimed directly at those failures:
+
+- compiled scene contracts replace implicit runtime discovery
+- pack-authoritative scene loading removes extracted-file drift
+- per-scene restore policy replaces replay-era recovery heuristics
+- verification gates force visual proof before promotion
+- family completion means removing the old correctness dependencies instead of
+  merely adding more special cases
+
+If the plan is followed to completion, Johnny-disappearing bugs should stop
+moving around because the runtime will no longer depend on the same unstable
+state-carry and replay-resurrection paths that have been causing them.
+
 ## Target end-state
 
 The intended final architecture is:
@@ -111,6 +145,255 @@ The intended final architecture is:
 3. Scene packs group assets and metadata for deterministic runtime use.
 4. PS1 runtime implements a narrow `SDL-Compat Lite` surface contract.
 5. Gameplay code stops depending on replay-record continuity logic for correctness.
+
+## Conversion And Verification Program
+
+This is the active step-by-step program for finishing the port from the current
+state. The first-order priority is to complete the offline artifact surface
+before trying to finish every runtime route, because that removes large classes
+of uncertainty and lets the remaining work be driven by explicit contracts.
+
+### Stage A: Complete The Artifact Surface First
+
+#### Step A1: Freeze And Protect The Baseline
+
+Goal:
+Normal boot and canonical story handoffs must stay alive while artifact work
+continues.
+
+Required outcomes:
+
+- no first-scene or first-handoff blackscreen regressions
+- no stale boot-override leakage from the harness
+- normal boot remains a trusted certification path
+- no dirty-row renderer regressions that leave stale or un-restored frame
+  regions during normal story progression
+
+Why this matters:
+
+- artifact completion is only useful if the baseline stays reproducible while
+  the generated surface grows
+
+#### Step A2: Complete Scene Coverage Artifacts
+
+Goal:
+Every scene should have a current, machine-readable offline record.
+
+Required outcomes:
+
+- analyzer output current and trustworthy
+- one scene-scoped restore spec per reachable scene
+- one cluster/spec view for grouped promotion
+- clear status for verified, bring-up, blocked, and unpromoted scenes
+
+Bug classes eliminated once complete:
+
+- missing-scene planning ambiguity
+- "we do not know what resources/rects this route needs"
+- contract gaps caused purely by absent generated data
+
+Bug classes not eliminated yet:
+
+- runtime slot/state carry bugs
+- renderer/path bugs
+
+#### Step A3: Complete Pack/Manifest Artifacts
+
+Goal:
+Every target family should have a coherent offline pack contract.
+
+Required outcomes:
+
+- pack manifests complete and current
+- compiled research packs regenerated from current inputs
+- payload/index sidecars internally consistent
+- transition/prefetch planning outputs regenerated from the current surface
+
+Current `2026-03-21` Stage A3 status:
+
+- analyzer snapshot refreshed under `generated/scene_analysis_output_2026-03-21.*`
+- pack plan/manifests refreshed under `generated/scene_pack_plan_2026-03-21.json`
+  and `generated/scene_pack_manifests_2026-03-21/`
+- dirty-region templates refreshed under
+  `generated/dirty_region_templates_2026-03-21/`
+- compiled research packs refreshed under
+  `generated/compiled_packs_2026-03-21/`
+- transition/prefetch outputs refreshed under
+  `generated/scene_transition_prefetch_report_2026-03-21.*`
+
+Bug classes eliminated once complete:
+
+- uncertainty about whether a family was omitted from the pack pipeline
+- stale manifest/layout mismatches caused by outdated generated outputs
+- confusion about which assets should be in-disc vs dynamic overlap
+
+Bug classes not eliminated yet:
+
+- route-specific runtime read failures
+- PSB/BMP load-path divergence
+- dirty-row restore/upload correctness bugs
+
+#### Step A4: Complete Promotion-Readiness Artifacts
+
+Goal:
+Promotion decisions should be mechanically derived from artifacts, not from
+memory of past experiments.
+
+Required outcomes:
+
+- explicit per-scene/per-cluster readiness labels
+- explicit blocked-entry-path labels
+- explicit current/live/verified snapshot
+- docs and generated outputs agree on counts
+
+Bug classes eliminated once complete:
+
+- promoting the wrong route because docs disagree
+- wasting time validating routes whose offline contract is not actually ready
+
+#### Step A5: Lock The Artifact Boundary
+
+Goal:
+Finish the offline surface enough that later runtime bugs can no longer be
+blamed on missing artifact work by default.
+
+Definition of artifact-complete:
+
+- all intended scene families have current manifests/specs/clusters
+- generated docs/snapshots are internally consistent
+- blocked routes are blocked because of entry/runtime behavior, not because
+  offline artifacts are absent
+
+Why this matters:
+
+- once this stage is done, an entire class of "maybe the compiler/manifests are
+  incomplete" explanations can be ruled out first
+
+### Stage B: Runtime Conversion On Top Of A Finished Artifact Surface
+
+#### Step B1: Finish The Current Bring-Up Route
+
+Goal:
+Close the remaining `ACTIVITY.ADS tag 4` stale-frame bug and move it from
+bring-up to verified.
+
+Required outcomes:
+
+- remove the stale extra-Johnny climb frame
+- keep Johnny present/intact through the whole route
+- keep pack-authoritative behavior with no new fallback dependence
+
+Why this matters:
+
+- it proves the plan can take a still-buggy route all the way to verified
+
+#### Step B2: Close Remaining Tail Bugs On Live Families
+
+Goal:
+Drive the current promoted families from "visually valid" to "clean and
+deterministic."
+
+Current known tails:
+
+- `MISCGAG.ADS 2`: route-specific `JOHNWALK` pack/runtime tail
+- `JOHNNY` edge routes: validate remaining PSB/BMP-path consistency
+- `WALKSTUF`: remaining pack-read cleanup on the hot actor route
+
+Required outcomes:
+
+- identify whether each remaining tail is:
+  - pack read
+  - slot retention
+  - PSB/BMP divergence
+  - restore/clear artifact
+- fix it at that boundary, not with broader preload heuristics
+
+#### Step B3: Promote By Shared Contract, Not One Scene At A Time
+
+Goal:
+Use generated cluster specs as the rollout unit wherever entry paths are
+reproducible.
+
+Required outcomes:
+
+- promote clean clusters once edge scenes are validated
+- avoid one-off scene hooks when an existing shared contract already covers the
+  route
+- keep the live header aligned with actually validated contracts
+
+Success condition:
+
+- rollout effort scales by contract/family slice, not by all `63` scenes
+
+#### Step B4: Fix Blocked Entry Paths
+
+Goal:
+Turn currently blocked families into valid certification targets.
+
+Current blocked/unreliable families:
+
+- `BUILDING.ADS`
+- `FISHING.ADS`
+
+Required outcomes:
+
+- trustworthy `story scene <index>` or equivalent normal-context entry path
+- visual proof that the route is genuinely composed, not just "pack active"
+
+#### Step B5: Remove Replay As A Correctness Dependency Family By Family
+
+Goal:
+Once a family is verified and clean, stop using replay merge/carry/recovery as
+its correctness mechanism.
+
+Required outcomes:
+
+- scene-scoped restore policy provides the needed behavior
+- actor recovery stays only where it is still explicitly justified
+- no new family-wide heuristics are added
+
+Definition of done for a family:
+
+- verified entry path
+- no disappearing/ghosting actor bug on the canonical route
+- no unexplained active-pack fallback dependence
+- replay continuity is no longer required for correctness on that family
+
+#### Step B6: Reconcile PSB And BMP Hot Paths
+
+Goal:
+Finish the sprite-path simplification so hot actor assets do not depend on
+route-specific bypasses forever.
+
+Required outcomes:
+
+- prove whether `JOHNWALK` should stay on BMP temporarily or move back to PSB
+- remove temporary path divergences once visual behavior matches
+- keep the pack/compiler/runtime contract aligned with the chosen sprite path
+
+#### Step B7: Make Verification Artifacts The Promotion Truth
+
+Goal:
+Promotion should be driven by explicit evidence, not memory of old runs.
+
+Required outcomes:
+
+- current status snapshot stays accurate
+- live header, verified counts, and docs stay in sync
+- screenshots/telemetry for promotion edges are easy to find
+
+#### Step B8: Endgame Cleanup
+
+Goal:
+Once enough families are complete, simplify the runtime instead of preserving
+legacy branches indefinitely.
+
+Required outcomes:
+
+- remove or isolate family paths that still depend on old replay correctness
+- collapse temporary bring-up exceptions
+- keep only the SDL-lite contract, pack loader, and explicit restore policy
+  machinery that the finished port still needs
 
 ## Phase map
 
@@ -546,10 +829,15 @@ Current status:
   under `docs/ps1/research/archive/2026-03-19-rollout-snapshot/` because it
   still reports the older `5 live_proven` milestone and was starting to confuse
   current planning
-- `restore_scene_clusters_2026-03-19.*` compresses those `63` scenes into `34`
-  shared restore contracts; this is now the right promotion unit for runtime
-  enablement instead of single scenes or hand-picked family labels
-- `restore_cluster_specs_2026-03-19/` now materializes those `34` grouped
+- `restore_rollout_manifest_2026-03-21.*` is now the current generated
+  readiness manifest derived from the active status snapshot, with four clear
+  buckets: `verified_live`, `live_bringup`, `artifact_ready_unverified`, and
+  `blocked_entry_path_or_unreliable_route`
+- `restore_scene_clusters_2026-03-21.*` compresses those `63` scenes into `33`
+  shared restore contracts under the current status model; this is now the
+  right promotion unit for runtime enablement instead of single scenes or
+  hand-picked family labels
+- `restore_cluster_specs_2026-03-21/` now materializes those `33` grouped
   contracts as reusable cluster specs, so runtime promotion can consume the
   same generated-contract path we already use for pilot scenes
 - the header generator now treats missing per-TTM rects as disabled hook rows

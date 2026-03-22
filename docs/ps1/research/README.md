@@ -35,6 +35,41 @@ tags, of which `25 / 63` are currently counted as verified:
 The old one-off pilot reports and the old `2026-03-19` rollout manifest have
 been moved under [archive](/home/hunter/workspace/jc_reborn/docs/ps1/research/archive)
 so day-to-day work stops mixing historical milestones with the current rollout.
+The current generated readiness/cluster surface now lives under:
+
+- [generated/restore_rollout_manifest_2026-03-21.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/restore_rollout_manifest_2026-03-21.md)
+- [generated/restore_scene_clusters_2026-03-21.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/restore_scene_clusters_2026-03-21.md)
+- [generated/restore_cluster_specs_2026-03-21](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/restore_cluster_specs_2026-03-21)
+
+The current pack-side artifact surface now lives under:
+
+- [generated/scene_analysis_output_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-21.json)
+- [generated/scene_pack_plan_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_plan_2026-03-21.json)
+- [generated/scene_pack_manifests_2026-03-21](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_manifests_2026-03-21)
+- [generated/dirty_region_templates_2026-03-21](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/dirty_region_templates_2026-03-21)
+- [generated/compiled_packs_2026-03-21](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/compiled_packs_2026-03-21)
+- [generated/scene_transition_prefetch_report_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_transition_prefetch_report_2026-03-21.json)
+
+## Current Runtime Architecture
+
+The checked-in PS1 path is no longer just a replay-heavy software fallback.
+The real current architecture is:
+
+- family-scoped `.PAK` payloads staged under [jc_resources/packs](/home/hunter/workspace/jc_reborn/jc_resources/packs)
+- self-describing pack TOCs with pack-authoritative resource lookup once a
+  family pack is active
+- offline-transcoded `PSB` sprite bundles for hot BMPs, with runtime preference
+  for PSB over BMP where proven
+- a dirty-row tile renderer in [graphics_ps1.c](/home/hunter/workspace/jc_reborn/graphics_ps1.c)
+  that restores/uploads only touched tile rows instead of whole-frame tiles
+- O(1) resource lookup in [resource.c](/home/hunter/workspace/jc_reborn/resource.c)
+  and cached restore-pilot lookups in [ads.c](/home/hunter/workspace/jc_reborn/ads.c)
+  and [ttm.c](/home/hunter/workspace/jc_reborn/ttm.c)
+- scene-scoped restore pilots in [ps1_restore_pilots.h](/home/hunter/workspace/jc_reborn/ps1_restore_pilots.h)
+  rather than one-off hand-edited scene logic
+
+The old replay/recovery machinery still exists, but it is now the shrinking
+legacy boundary, not the whole architecture.
 
 ## What Each File Is For
 
@@ -46,6 +81,8 @@ so day-to-day work stops mixing historical milestones with the current rollout.
   Parallelizable work tracks and queue ideas.
 - [SDL_COMPAT_LITE_SPEC.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/SDL_COMPAT_LITE_SPEC.md)
   The runtime contract target.
+- [IMPLEMENTATION_PLAN.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/IMPLEMENTATION_PLAN.md#conversion-and-verification-program)
+  The step-by-step conversion and verification program.
 - [generated/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/README.md)
   Bulk generated datasets and intermediate outputs.
 - [ROLLOUT_HISTORY.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/ROLLOUT_HISTORY.md)
@@ -80,23 +117,39 @@ content fundamentally does not fit in RAM. The current static estimator says:
 Primary sources for those numbers:
 
 - [scene_analyzer.c](/home/hunter/workspace/jc_reborn/scene_analyzer.c)
-- [scene_analysis_output_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-17.json)
-- [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_plan_2026-03-17.json)
+- [scene_analysis_output_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-21.json)
+- [scene_pack_plan_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_plan_2026-03-21.json)
 
 That does not mean runtime RAM pressure is solved. It means the current bug surface
 is more about semantic mismatch than raw impossibility:
 
 - PC assumes persistent SDL layers with straightforward blit semantics.
-- PS1 currently emulates that with background-tile restore, sprite replay records,
-  actor recovery, and scene handoff heuristics.
-- Those heuristics are exactly where disappearing, ghosting, and double-painting
-  regressions keep appearing.
+- PS1 now uses pack-authoritative scene assets, dirty-row background restore,
+  PSB/BMP sprite loading, and a smaller remaining replay/recovery boundary.
+- The remaining regressions are concentrated where legacy replay continuity,
+  slot carry, or sprite-path divergence still leak into correctness.
 
 The most promising direction is:
 
 1. Define a strict `SDL-Compat Lite` runtime contract for PS1.
-2. Move complexity into offline asset compilation and static scheduling.
+2. Keep moving complexity into offline asset compilation and static scheduling.
 3. Spend ISO space on pretranscoded, prevalidated, scene-oriented data.
+4. Continue shrinking the remaining replay-era correctness boundary until it is
+   no longer required for validated families.
+
+The active execution sequence for finishing the port now lives in the
+`Conversion And Verification Program` section of
+[IMPLEMENTATION_PLAN.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/IMPLEMENTATION_PLAN.md#conversion-and-verification-program).
+That section is explicitly aimed at eliminating the six-month
+"Johnny disappears" bug class by:
+
+- completing the offline artifact surface first so missing-data/manifests/specs
+  stop being a default explanation
+- then closing current bring-up/tail routes on top of that finished artifact
+  boundary
+- promoting by shared contract where validation is trustworthy
+- fixing blocked entry paths
+- removing replay continuity as a correctness dependency family by family
 
 
 ## Rollout History

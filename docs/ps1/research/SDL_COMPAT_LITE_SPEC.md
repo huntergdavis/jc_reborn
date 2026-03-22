@@ -40,6 +40,8 @@ Functions:
 Required behavior:
 
 - runtime starts a frame from a deterministic base state
+- current PS1 implementation achieves this with clean-background tile copies plus
+  dirty-row restore, not full-frame rebuild every tick
 - runtime presents layers in deterministic order:
   - background
   - saved/restored zone overlay if used
@@ -63,6 +65,9 @@ Required behavior:
 - flipped draw is behaviorally equivalent to horizontal flip of the same source
 - sprite resources are loaded/released by slot, not by caller-managed surfaces
 - caller-visible semantics are position, image selection, and ordering only
+- the runtime may satisfy this through either legacy BMP decode or offline
+  transcoded PSB sprite bundles; that choice must not change gameplay-visible
+  semantics
 
 ### Primitive drawing
 
@@ -118,7 +123,9 @@ These are implementation details and should not leak back into gameplay logic:
 - actor continuity matching
 - handoff replay injection
 - background tile management
+- dirty-row tracking / partial tile upload
 - pack lookup and prefetch
+- PSB registry lookup
 - BMP/TTM caching policy
 
 ## Current gameplay dependency map
@@ -162,11 +169,11 @@ Legend:
 | Background load/base scene | Yes | Yes | Complete | PS1 uses clean background tiles internally. |
 | Frame present ordering | Yes | Yes | Complete | PS1 order is deterministic, though implemented differently. |
 | Frame begin/reset | Implicit | Explicit | Partial | PS1 requires `grBeginFrame()`; contract should standardize this lifecycle. |
-| Draw sprite | Yes | Yes | Complete | PS1 path is pack-backed and authoritative now. |
+| Draw sprite | Yes | Yes | Complete | PS1 path is pack-backed and authoritative now; sprite source may be BMP or PSB. |
 | Draw sprite flip | Yes | Yes | Complete | Same semantics, different backend. |
-| Transparent blit semantics | Yes | Yes | Partial | Works on current paths; still tied to RAM-composite implementation details on PS1. |
+| Transparent blit semantics | Yes | Yes | Partial | Works on current paths; still split across BMP and PSB backends and needs semantic convergence. |
 | Load/release BMP by slot | Yes | Yes | Complete | Runtime implementation differs, caller contract matches. |
-| Draw rect | Yes | Yes | Partial | PS1 uses software tile writes instead of SDL fill; good for current script usage. |
+| Draw rect | Yes | Yes | Partial | PS1 uses optimized software tile writes and dirty-row tracking instead of SDL fill; good for current script usage. |
 | Draw pixel | Yes | Yes | Complete | Present on both. |
 | Draw line | Yes | Weak | Partial | PS1 is still effectively stub/cosmetic for now. |
 | Draw circle | Yes | Weak | Partial | PS1 path is limited and should be validated against actual script usage. |
@@ -176,8 +183,10 @@ Legend:
 | Save zone | Yes | Yes | Partial | PS1 now tracks one active zone, matching current script assumptions. |
 | Restore zone | Yes | Yes | Partial | PS1 now restores from clean background tiles, but only for the simple active-zone pattern. |
 | Clear screen | Yes | Divergent | Partial | PS1 intentionally suppresses some clears to avoid blinking; this needs to become offline/runtime policy, not gameplay-visible behavior. |
-| Replay sprite | N/A | Yes | Leak | Current PS1-only workaround, not part of the target contract. |
-| Actor continuity / recovery injection | N/A | Yes | Leak | Must move out of gameplay-visible correctness path. |
+| Replay sprite | N/A | Yes | Leak | Legacy PS1-only workaround, now a shrinking boundary rather than the main render architecture. |
+| Actor continuity / recovery injection | N/A | Yes | Leak | Must continue moving out of gameplay-visible correctness path. |
+| Dirty-row tile restore/upload | N/A | Yes | Implementation detail | Current renderer optimization boundary; must stay invisible to gameplay semantics. |
+| PSB sprite path | N/A | Yes | Partial | Good fit for the target architecture, but still needs route-by-route convergence with legacy BMP behavior. |
 
 ## Kill list for long-standing bug sources
 
@@ -187,7 +196,8 @@ These are the highest-value leaks to remove as the new architecture advances:
 2. PS1-only interpretation of `CLEAR_SCREEN` to suppress blinking.
 3. PS1 frame correctness depending on remembered sprite identity rather than
    explicit restore data.
-4. Remaining stubbed zone/image operations that force unrelated replay behavior to carry
+4. Remaining sprite-path divergence where PSB and BMP do not yet behave identically.
+5. Remaining stubbed or partial zone/image operations that force unrelated replay behavior to carry
    correctness.
 
 ## Immediate next implementation targets

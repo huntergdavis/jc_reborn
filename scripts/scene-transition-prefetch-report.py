@@ -22,10 +22,10 @@ from pathlib import Path
 from typing import Dict, Iterable, List, Tuple
 
 
-DEFAULT_INPUT = Path("docs/ps1/research/scene_analysis_output_2026-03-17.json")
-DEFAULT_JSON_OUTPUT = Path("docs/ps1/research/scene_transition_prefetch_report_2026-03-17.json")
-DEFAULT_MD_OUTPUT = Path("docs/ps1/research/scene_transition_prefetch_report_2026-03-17.md")
-DEFAULT_SCHEMA_NOTE = Path("docs/ps1/research/TRANSITION_PREFETCH_SCHEMA.md")
+DEFAULT_INPUT = Path("docs/ps1/research/generated/scene_analysis_output_2026-03-21.json")
+DEFAULT_JSON_OUTPUT = Path("docs/ps1/research/generated/scene_transition_prefetch_report_2026-03-21.json")
+DEFAULT_MD_OUTPUT = Path("docs/ps1/research/generated/scene_transition_prefetch_report_2026-03-21.md")
+DEFAULT_SCHEMA_NOTE = Path("docs/ps1/research/generated/TRANSITION_PREFETCH_SCHEMA_NOTE_2026-03-21.md")
 PS1_MEMORY_BUDGET_BYTES = 614400
 
 
@@ -315,7 +315,7 @@ def compute_report(obj: dict) -> dict:
 
     return {
         "schema_version": 1,
-        "generated_from": "docs/ps1/research/scene_analysis_output_2026-03-17.json",
+        "generated_from": "docs/ps1/research/generated/scene_analysis_output_2026-03-21.json",
         "generated_note": "Derived post-processing output; not a runtime transition graph.",
         "validation": validation,
         "caveats": [
@@ -340,7 +340,7 @@ def write_markdown(path: Path, report: dict) -> None:
     lines: List[str] = []
     lines.append("# Scene Transition and Prefetch Report")
     lines.append("")
-    lines.append("Generated from `scene_analysis_output_2026-03-17.json`.")
+    lines.append("Generated from `scene_analysis_output_2026-03-21.json`.")
     lines.append("")
     lines.append("## Caveats")
     for caveat in report["caveats"]:
@@ -383,7 +383,7 @@ def write_schema_note(path: Path) -> None:
         """# Transition / Prefetch Schema Notes
 
 This file documents the post-processed planning artifacts generated from
-`scene_analysis_output_2026-03-17.json`.
+`scene_analysis_output_2026-03-21.json`.
 
 It is meant to feed the pack manifest draft in
 [PACK_MANIFEST_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_MANIFEST_SCHEMA.md).

@@ -8,8 +8,8 @@ import json
 from pathlib import Path
 
 
-DEFAULT_CLUSTER_REPORT = Path("docs/ps1/research/restore_scene_clusters_2026-03-19.json")
-DEFAULT_OUTPUT_DIR = Path("docs/ps1/research/restore_cluster_specs_2026-03-19")
+DEFAULT_CLUSTER_REPORT = Path("docs/ps1/research/generated/restore_scene_clusters_2026-03-21.json")
+DEFAULT_OUTPUT_DIR = Path("docs/ps1/research/generated/restore_cluster_specs_2026-03-21")
 
 
 def load_json(path: Path) -> dict:
@@ -26,7 +26,7 @@ def write_markdown(path: Path, spec: dict) -> None:
     lines = [
         "# Restore Cluster Spec",
         "",
-        "Date: 2026-03-19",
+        "Date: 2026-03-21",
         "",
         f"- ads: `{spec['selected_scene']['ads_name']}`",
         f"- selected tag: `{spec['selected_scene']['ads_tag']}`",
@@ -91,7 +91,7 @@ def build_summary(specs: list[dict], output_dir: Path) -> dict:
             }
         )
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "artifact_kind": "restore_cluster_spec_batch",
         "cluster_count": len(rows),
         "clusters": rows,

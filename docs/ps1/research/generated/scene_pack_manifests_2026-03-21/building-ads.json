@@ -1,0 +1,1352 @@
+{
+  "schema_version": 1,
+  "manifest_kind": "scene_pack_manifest",
+  "pack_id": "building-ads",
+  "cluster_key": "BUILDING.ADS",
+  "pack_strategy": "ads_cluster",
+  "scene_indices": [
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16
+  ],
+  "scene_count": 7,
+  "ads_names": [
+    "BUILDING.ADS"
+  ],
+  "resources": {
+    "ads": [
+      "BUILDING.ADS"
+    ],
+    "bmps": [
+      "JOHNWALK.BMP",
+      "GJBIPLAN.BMP",
+      "SHIPS.BMP",
+      "TRUNK.BMP",
+      "GJGULL1.BMP",
+      "LILIPUTS.BMP",
+      "SLEEP.BMP",
+      "STNDLAY.BMP",
+      "ZZZZS.BMP",
+      "FIRE.BMP",
+      "FIRE1.BMP",
+      "FIRE2.BMP",
+      "FIRE3.BMP",
+      "FIRE4.BMP",
+      "GJCASTLE.BMP",
+      "GJKINGKO.BMP",
+      "GJRUNAWA.BMP",
+      "MJSANDC.BMP",
+      "SANDCAST.BMP",
+      "SPLASH.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "GJGULIVR.TTM",
+      "MJFIRE.TTM",
+      "MJSAND.TTM"
+    ],
+    "shared_candidates": [
+      "FIRE.BMP",
+      "FIRE1.BMP",
+      "FIRE2.BMP",
+      "FIRE3.BMP",
+      "FIRE4.BMP",
+      "GJBIPLAN.BMP",
+      "GJCASTLE.BMP",
+      "GJGULIVR.TTM",
+      "GJGULL1.BMP",
+      "GJKINGKO.BMP",
+      "GJRUNAWA.BMP",
+      "ISLETEMP.SCR",
+      "JOHNWALK.BMP",
+      "LILIPUTS.BMP",
+      "MJFIRE.TTM",
+      "MJSAND.TTM",
+      "MJSANDC.BMP",
+      "SANDCAST.BMP",
+      "SHIPS.BMP",
+      "SLEEP.BMP",
+      "SPLASH.BMP",
+      "STNDLAY.BMP",
+      "TRUNK.BMP",
+      "ZZZZS.BMP"
+    ]
+  },
+  "runtime_requirements": {
+    "max_concurrent_threads": 20,
+    "max_sprite_frames": 252,
+    "peak_memory_bytes": 441980,
+    "memory_components": {
+      "bmp_indexed_bytes": 291528,
+      "ttm_bytes": 15960,
+      "ads_bytes": 4512,
+      "scr_bytes": 112000,
+      "sprite_pointer_bytes": 1008,
+      "ttm_slot_overhead_bytes": 24576
+    }
+  },
+  "transition_hints": {
+    "likely_next_pack_ids": [
+      "fishing-ads"
+    ],
+    "high_churn_transitions": [
+      {
+        "from_scene_index": 16,
+        "to_scene_index": 17,
+        "to_pack_id": "fishing-ads",
+        "total_resource_churn": 20,
+        "peak_memory_delta_bytes": 17394
+      }
+    ],
+    "transition_budget_notes": "Derived from analyzer post-processing; not runtime-validated."
+  },
+  "prefetch_hints": {
+    "candidate_scene_indices": [
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24
+    ],
+    "additional_bmps": [
+      "FISHMAN.BMP",
+      "GJCATCH1.BMP",
+      "GJCATCH2.BMP",
+      "GJCATCH3.BMP",
+      "GJFFFOOD.BMP",
+      "LILFISH.BMP",
+      "MJDIVE.BMP",
+      "MJFISH1.BMP",
+      "MJFISH2.BMP",
+      "MJFISH3.BMP",
+      "SHKNFIST.BMP"
+    ],
+    "additional_scrs": [
+      "ISLAND2.SCR"
+    ],
+    "additional_ttms": [
+      "FISHWALK.TTM",
+      "GFFFOOD.TTM",
+      "GJCATCH2.TTM",
+      "MJFISH.TTM",
+      "MJFISHC.TTM"
+    ],
+    "heuristic": "transition_churn_then_ads_family_union",
+    "confidence": "low"
+  },
+  "scenes": [
+    {
+      "scene_index": 10,
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 1,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 291528,
+        "bmp_15bit_bytes": 1166112,
+        "bmp_raw_bytes": 291528,
+        "ttm_bytes": 8720,
+        "ads_bytes": 4512,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 644,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 441980
+      },
+      "resource_counts": {
+        "bmps": 9,
+        "scrs": 1,
+        "ttms": 3
+      }
+    },
+    {
+      "scene_index": 11,
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 4,
+      "story_day": 0,
+      "flags": [
+        "FINAL",
+        "ISLAND",
+        "VARPOS_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 204468,
+        "bmp_15bit_bytes": 817872,
+        "bmp_raw_bytes": 204468,
+        "ttm_bytes": 15960,
+        "ads_bytes": 4512,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 1008,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 362524
+      },
+      "resource_counts": {
+        "bmps": 9,
+        "scrs": 1,
+        "ttms": 3
+      }
+    },
+    {
+      "scene_index": 12,
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 3,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 204468,
+        "bmp_15bit_bytes": 817872,
+        "bmp_raw_bytes": 204468,
+        "ttm_bytes": 15960,
+        "ads_bytes": 4512,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 1008,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 362524
+      },
+      "resource_counts": {
+        "bmps": 9,
+        "scrs": 1,
+        "ttms": 3
+      }
+    },
+    {
+      "scene_index": 13,
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 2,
+      "story_day": 0,
+      "flags": [
+        "FINAL",
+        "ISLAND",
+        "VARPOS_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 291528,
+        "bmp_15bit_bytes": 1166112,
+        "bmp_raw_bytes": 291528,
+        "ttm_bytes": 8720,
+        "ads_bytes": 4512,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 644,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 441980
+      },
+      "resource_counts": {
+        "bmps": 9,
+        "scrs": 1,
+        "ttms": 3
+      }
+    },
+    {
+      "scene_index": 14,
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 5,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 139312,
+        "bmp_15bit_bytes": 557248,
+        "bmp_raw_bytes": 139312,
+        "ttm_bytes": 10576,
+        "ads_bytes": 4512,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 652,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 291628
+      },
+      "resource_counts": {
+        "bmps": 7,
+        "scrs": 1,
+        "ttms": 3
+      }
+    },
+    {
+      "scene_index": 15,
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 7,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 139312,
+        "bmp_15bit_bytes": 557248,
+        "bmp_raw_bytes": 139312,
+        "ttm_bytes": 10576,
+        "ads_bytes": 4512,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 652,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 291628
+      },
+      "resource_counts": {
+        "bmps": 7,
+        "scrs": 1,
+        "ttms": 3
+      }
+    },
+    {
+      "scene_index": 16,
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 6,
+      "story_day": 0,
+      "flags": [
+        "FINAL",
+        "ISLAND",
+        "VARPOS_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 204468,
+        "bmp_15bit_bytes": 817872,
+        "bmp_raw_bytes": 204468,
+        "ttm_bytes": 15960,
+        "ads_bytes": 4512,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 1008,
+        "ttm_slot_overhead_bytes": 24576,
+        "peak_memory_bytes": 362524
+      },
+      "resource_counts": {
+        "bmps": 9,
+        "scrs": 1,
+        "ttms": 3
+      }
+    }
+  ],
+  "shared_bank": {
+    "bmps": [
+      {
+        "name": "JOHNWALK.BMP",
+        "global_scene_ref_count": 39,
+        "pack_scene_ref_count": 7,
+        "bytes": 48476,
+        "raw_bytes": 48476,
+        "indexed_bytes": 48476
+      },
+      {
+        "name": "GJBIPLAN.BMP",
+        "global_scene_ref_count": 5,
+        "pack_scene_ref_count": 5,
+        "bytes": 25400,
+        "raw_bytes": 25400,
+        "indexed_bytes": 25400
+      },
+      {
+        "name": "SHIPS.BMP",
+        "global_scene_ref_count": 5,
+        "pack_scene_ref_count": 5,
+        "bytes": 43324,
+        "raw_bytes": 43324,
+        "indexed_bytes": 43324
+      },
+      {
+        "name": "TRUNK.BMP",
+        "global_scene_ref_count": 34,
+        "pack_scene_ref_count": 5,
+        "bytes": 7440,
+        "raw_bytes": 7440,
+        "indexed_bytes": 7440
+      },
+      {
+        "name": "GJGULL1.BMP",
+        "global_scene_ref_count": 9,
+        "pack_scene_ref_count": 3,
+        "bytes": 17000,
+        "raw_bytes": 17000,
+        "indexed_bytes": 17000
+      },
+      {
+        "name": "LILIPUTS.BMP",
+        "global_scene_ref_count": 3,
+        "pack_scene_ref_count": 3,
+        "bytes": 19544,
+        "raw_bytes": 19544,
+        "indexed_bytes": 19544
+      },
+      {
+        "name": "SLEEP.BMP",
+        "global_scene_ref_count": 3,
+        "pack_scene_ref_count": 3,
+        "bytes": 24108,
+        "raw_bytes": 24108,
+        "indexed_bytes": 24108
+      },
+      {
+        "name": "STNDLAY.BMP",
+        "global_scene_ref_count": 3,
+        "pack_scene_ref_count": 3,
+        "bytes": 18980,
+        "raw_bytes": 18980,
+        "indexed_bytes": 18980
+      },
+      {
+        "name": "ZZZZS.BMP",
+        "global_scene_ref_count": 7,
+        "pack_scene_ref_count": 3,
+        "bytes": 196,
+        "raw_bytes": 196,
+        "indexed_bytes": 196
+      },
+      {
+        "name": "FIRE.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 26700,
+        "raw_bytes": 26700,
+        "indexed_bytes": 26700
+      },
+      {
+        "name": "FIRE1.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 8192,
+        "raw_bytes": 8192,
+        "indexed_bytes": 8192
+      },
+      {
+        "name": "FIRE2.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 6800,
+        "raw_bytes": 6800,
+        "indexed_bytes": 6800
+      },
+      {
+        "name": "FIRE3.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 4864,
+        "raw_bytes": 4864,
+        "indexed_bytes": 4864
+      },
+      {
+        "name": "FIRE4.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 36840,
+        "raw_bytes": 36840,
+        "indexed_bytes": 36840
+      },
+      {
+        "name": "GJCASTLE.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 10080,
+        "raw_bytes": 10080,
+        "indexed_bytes": 10080
+      },
+      {
+        "name": "GJKINGKO.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 42900,
+        "raw_bytes": 42900,
+        "indexed_bytes": 42900
+      },
+      {
+        "name": "GJRUNAWA.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 43556,
+        "raw_bytes": 43556,
+        "indexed_bytes": 43556
+      },
+      {
+        "name": "MJSANDC.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 22096,
+        "raw_bytes": 22096,
+        "indexed_bytes": 22096
+      },
+      {
+        "name": "SANDCAST.BMP",
+        "global_scene_ref_count": 2,
+        "pack_scene_ref_count": 2,
+        "bytes": 34184,
+        "raw_bytes": 34184,
+        "indexed_bytes": 34184
+      },
+      {
+        "name": "SPLASH.BMP",
+        "global_scene_ref_count": 6,
+        "pack_scene_ref_count": 2,
+        "bytes": 21512,
+        "raw_bytes": 21512,
+        "indexed_bytes": 21512
+      }
+    ],
+    "scrs": [
+      {
+        "name": "ISLETEMP.SCR",
+        "global_scene_ref_count": 54,
+        "pack_scene_ref_count": 7,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ],
+    "ttms": [
+      {
+        "name": "GJGULIVR.TTM",
+        "global_scene_ref_count": 7,
+        "pack_scene_ref_count": 7,
+        "bytes": 15960,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "MJFIRE.TTM",
+        "global_scene_ref_count": 7,
+        "pack_scene_ref_count": 7,
+        "bytes": 10576,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "MJSAND.TTM",
+        "global_scene_ref_count": 7,
+        "pack_scene_ref_count": 7,
+        "bytes": 8720,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ]
+  },
+  "resource_details": {
+    "bmps": [
+      {
+        "name": "JOHNWALK.BMP",
+        "pack_scene_ref_count": 7,
+        "global_scene_ref_count": 39,
+        "bytes": 48476,
+        "raw_bytes": 48476,
+        "indexed_bytes": 48476,
+        "source_scene_indices": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "metadata": {
+          "num_frames": 36,
+          "max_width": 48,
+          "max_height": 78,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 14,
+              "ttm_slot": 3,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 15,
+              "ttm_slot": 3,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJBIPLAN.BMP",
+        "pack_scene_ref_count": 5,
+        "global_scene_ref_count": 5,
+        "bytes": 25400,
+        "raw_bytes": 25400,
+        "indexed_bytes": 25400,
+        "source_scene_indices": [
+          10,
+          11,
+          12,
+          13,
+          16
+        ],
+        "metadata": {
+          "num_frames": 28,
+          "max_width": 120,
+          "max_height": 55,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "SHIPS.BMP",
+        "pack_scene_ref_count": 5,
+        "global_scene_ref_count": 5,
+        "bytes": 43324,
+        "raw_bytes": 43324,
+        "indexed_bytes": 43324,
+        "source_scene_indices": [
+          10,
+          11,
+          12,
+          13,
+          16
+        ],
+        "metadata": {
+          "num_frames": 21,
+          "max_width": 168,
+          "max_height": 136,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "TRUNK.BMP",
+        "pack_scene_ref_count": 5,
+        "global_scene_ref_count": 34,
+        "bytes": 7440,
+        "raw_bytes": 7440,
+        "indexed_bytes": 7440,
+        "source_scene_indices": [
+          11,
+          12,
+          14,
+          15,
+          16
+        ],
+        "metadata": {
+          "num_frames": 2,
+          "max_width": 152,
+          "max_height": 145,
+          "bindings": [
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 14,
+              "ttm_slot": 3,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 15,
+              "ttm_slot": 3,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJGULL1.BMP",
+        "pack_scene_ref_count": 3,
+        "global_scene_ref_count": 9,
+        "bytes": 17000,
+        "raw_bytes": 17000,
+        "indexed_bytes": 17000,
+        "source_scene_indices": [
+          11,
+          12,
+          16
+        ],
+        "metadata": {
+          "num_frames": 33,
+          "max_width": 64,
+          "max_height": 44,
+          "bindings": [
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "LILIPUTS.BMP",
+        "pack_scene_ref_count": 3,
+        "global_scene_ref_count": 3,
+        "bytes": 19544,
+        "raw_bytes": 19544,
+        "indexed_bytes": 19544,
+        "source_scene_indices": [
+          11,
+          12,
+          16
+        ],
+        "metadata": {
+          "num_frames": 102,
+          "max_width": 40,
+          "max_height": 37,
+          "bindings": [
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 1
+            }
+          ]
+        }
+      },
+      {
+        "name": "SLEEP.BMP",
+        "pack_scene_ref_count": 3,
+        "global_scene_ref_count": 3,
+        "bytes": 24108,
+        "raw_bytes": 24108,
+        "indexed_bytes": 24108,
+        "source_scene_indices": [
+          11,
+          12,
+          16
+        ],
+        "metadata": {
+          "num_frames": 17,
+          "max_width": 112,
+          "max_height": 48,
+          "bindings": [
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "STNDLAY.BMP",
+        "pack_scene_ref_count": 3,
+        "global_scene_ref_count": 3,
+        "bytes": 18980,
+        "raw_bytes": 18980,
+        "indexed_bytes": 18980,
+        "source_scene_indices": [
+          11,
+          12,
+          16
+        ],
+        "metadata": {
+          "num_frames": 10,
+          "max_width": 136,
+          "max_height": 101,
+          "bindings": [
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "ZZZZS.BMP",
+        "pack_scene_ref_count": 3,
+        "global_scene_ref_count": 7,
+        "bytes": 196,
+        "raw_bytes": 196,
+        "indexed_bytes": 196,
+        "source_scene_indices": [
+          11,
+          12,
+          16
+        ],
+        "metadata": {
+          "num_frames": 3,
+          "max_width": 16,
+          "max_height": 12,
+          "bindings": [
+            {
+              "scene_index": 11,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 12,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 16,
+              "ttm_slot": 2,
+              "bmp_slot": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "FIRE.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 26700,
+        "raw_bytes": 26700,
+        "indexed_bytes": 26700,
+        "source_scene_indices": [
+          14,
+          15
+        ],
+        "metadata": {
+          "num_frames": 34,
+          "max_width": 72,
+          "max_height": 70,
+          "bindings": [
+            {
+              "scene_index": 14,
+              "ttm_slot": 3,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 15,
+              "ttm_slot": 3,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "FIRE1.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 8192,
+        "raw_bytes": 8192,
+        "indexed_bytes": 8192,
+        "source_scene_indices": [
+          14,
+          15
+        ],
+        "metadata": {
+          "num_frames": 28,
+          "max_width": 40,
+          "max_height": 46,
+          "bindings": [
+            {
+              "scene_index": 14,
+              "ttm_slot": 3,
+              "bmp_slot": 4
+            },
+            {
+              "scene_index": 15,
+              "ttm_slot": 3,
+              "bmp_slot": 4
+            }
+          ]
+        }
+      },
+      {
+        "name": "FIRE2.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 6800,
+        "raw_bytes": 6800,
+        "indexed_bytes": 6800,
+        "source_scene_indices": [
+          14,
+          15
+        ],
+        "metadata": {
+          "num_frames": 25,
+          "max_width": 48,
+          "max_height": 36,
+          "bindings": [
+            {
+              "scene_index": 14,
+              "ttm_slot": 3,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 15,
+              "ttm_slot": 3,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "FIRE3.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 4864,
+        "raw_bytes": 4864,
+        "indexed_bytes": 4864,
+        "source_scene_indices": [
+          14,
+          15
+        ],
+        "metadata": {
+          "num_frames": 3,
+          "max_width": 72,
+          "max_height": 50,
+          "bindings": [
+            {
+              "scene_index": 14,
+              "ttm_slot": 3,
+              "bmp_slot": 5
+            },
+            {
+              "scene_index": 15,
+              "ttm_slot": 3,
+              "bmp_slot": 5
+            }
+          ]
+        }
+      },
+      {
+        "name": "FIRE4.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 36840,
+        "raw_bytes": 36840,
+        "indexed_bytes": 36840,
+        "source_scene_indices": [
+          14,
+          15
+        ],
+        "metadata": {
+          "num_frames": 35,
+          "max_width": 104,
+          "max_height": 63,
+          "bindings": [
+            {
+              "scene_index": 14,
+              "ttm_slot": 3,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 15,
+              "ttm_slot": 3,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJCASTLE.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 10080,
+        "raw_bytes": 10080,
+        "indexed_bytes": 10080,
+        "source_scene_indices": [
+          10,
+          13
+        ],
+        "metadata": {
+          "num_frames": 8,
+          "max_width": 48,
+          "max_height": 73,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJKINGKO.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 42900,
+        "raw_bytes": 42900,
+        "indexed_bytes": 42900,
+        "source_scene_indices": [
+          10,
+          13
+        ],
+        "metadata": {
+          "num_frames": 21,
+          "max_width": 96,
+          "max_height": 113,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "GJRUNAWA.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 43556,
+        "raw_bytes": 43556,
+        "indexed_bytes": 43556,
+        "source_scene_indices": [
+          10,
+          13
+        ],
+        "metadata": {
+          "num_frames": 14,
+          "max_width": 120,
+          "max_height": 110,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "MJSANDC.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 22096,
+        "raw_bytes": 22096,
+        "indexed_bytes": 22096,
+        "source_scene_indices": [
+          10,
+          13
+        ],
+        "metadata": {
+          "num_frames": 11,
+          "max_width": 88,
+          "max_height": 91,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 3
+            }
+          ]
+        }
+      },
+      {
+        "name": "SANDCAST.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 2,
+        "bytes": 34184,
+        "raw_bytes": 34184,
+        "indexed_bytes": 34184,
+        "source_scene_indices": [
+          10,
+          13
+        ],
+        "metadata": {
+          "num_frames": 15,
+          "max_width": 176,
+          "max_height": 105,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 2
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 2
+            }
+          ]
+        }
+      },
+      {
+        "name": "SPLASH.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 6,
+        "bytes": 21512,
+        "raw_bytes": 21512,
+        "indexed_bytes": 21512,
+        "source_scene_indices": [
+          10,
+          13
+        ],
+        "metadata": {
+          "num_frames": 7,
+          "max_width": 152,
+          "max_height": 112,
+          "bindings": [
+            {
+              "scene_index": 10,
+              "ttm_slot": 1,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 13,
+              "ttm_slot": 1,
+              "bmp_slot": 1
+            }
+          ]
+        }
+      }
+    ],
+    "scrs": [
+      {
+        "name": "ISLETEMP.SCR",
+        "pack_scene_ref_count": 7,
+        "global_scene_ref_count": 54,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "metadata": {
+          "bytes": 112000
+        }
+      }
+    ],
+    "ttms": [
+      {
+        "name": "GJGULIVR.TTM",
+        "pack_scene_ref_count": 7,
+        "global_scene_ref_count": 7,
+        "bytes": 15960,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "metadata": {
+          "slot_ids": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ]
+        }
+      },
+      {
+        "name": "MJFIRE.TTM",
+        "pack_scene_ref_count": 7,
+        "global_scene_ref_count": 7,
+        "bytes": 10576,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "metadata": {
+          "slot_ids": [
+            3,
+            3,
+            3,
+            3,
+            3,
+            3,
+            3
+          ]
+        }
+      },
+      {
+        "name": "MJSAND.TTM",
+        "pack_scene_ref_count": 7,
+        "global_scene_ref_count": 7,
+        "bytes": 8720,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16
+        ],
+        "metadata": {
+          "slot_ids": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      }
+    ]
+  },
+  "prefetch": {
+    "heuristic": "transition_churn_then_ads_family_union",
+    "candidate_pack_ids": [
+      "fishing-ads"
+    ],
+    "secondary_candidate_pack_ids": []
+  },
+  "max_peak_memory_bytes": 441980,
+  "total_peak_memory_bytes": 2554788
+}

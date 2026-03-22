@@ -27,9 +27,9 @@ Selected pilot: `ACTIVITY.ADS tag 7` from `activity-ads`
 
 ## TTM details
 
-- `GJDIVE.TTM`: rect `{'x': 96, 'y': 43, 'width': 400, 'height': 295}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 115}`
-- `GJNAT1.TTM`: rect `None`, clear regions `[0]`, op counts `{'region_id': 0, 'copy_zone_to_bg': 0, 'save_image1': 0, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 177}`
-- `GJNAT3.TTM`: rect `{'x': 0, 'y': 128, 'width': 640, 'height': 180}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 206}`
-- `MJBATH.TTM`: rect `{'x': 144, 'y': 77, 'width': 496, 'height': 273}`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 190}`
-- `MJDIVE.TTM`: rect `{'x': 155, 'y': 50, 'width': 336, 'height': 288}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 93}`
-- `MJREAD.TTM`: rect `{'x': 160, 'y': 60, 'width': 480, 'height': 290}`, clear regions `[0]`, op counts `{'region_id': 5, 'copy_zone_to_bg': 0, 'save_image1': 5, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 295}`
+- `GJDIVE.TTM`: rect `{'x': 96, 'y': 43, 'width': 400, 'height': 295}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 115}`
+- `GJNAT1.TTM`: rect `None`, region ids `[]`, clear regions `[0]`, op counts `{'region_id': 0, 'copy_zone_to_bg': 0, 'save_image1': 0, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 177}`
+- `GJNAT3.TTM`: rect `{'x': 0, 'y': 128, 'width': 640, 'height': 180}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 206}`
+- `MJBATH.TTM`: rect `{'x': 144, 'y': 77, 'width': 496, 'height': 273}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 190}`
+- `MJDIVE.TTM`: rect `{'x': 155, 'y': 50, 'width': 336, 'height': 288}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 93}`
+- `MJREAD.TTM`: rect `{'x': 160, 'y': 60, 'width': 480, 'height': 290}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 5, 'copy_zone_to_bg': 0, 'save_image1': 5, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 295}`

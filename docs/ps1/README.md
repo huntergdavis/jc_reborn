@@ -12,86 +12,94 @@ Quick start guide for building and testing the PS1 port.
 
 ```bash
 # Run the automated build script
-./build-ps1.sh
+./scripts/rebuild-and-let-run.sh noclean
 ```
 
 This will:
-1. Build the Docker development environment (first run only)
-2. Compile Johnny Reborn for PS1
-3. Generate CD image (jcreborn.bin/jcreborn.cue)
+1. Build inside the Docker container (`jc-reborn-ps1-dev:amd64`) with PSn00bSDK
+2. Compile Johnny Reborn for PS1 via CMake
+3. Generate CD image (jcreborn.bin/jcreborn.cue) via mkpsxiso
 
 ### Testing
 
 1. Open DuckStation emulator
-2. File → Boot Disc Image
+2. File -> Boot Disc Image
 3. Select `jcreborn.bin`
+
+The game boots, loads resources from CD, and cycles through scene animations.
 
 ## Project Status
 
-**Current Branch:** `ps1`  
-**Base Branch:** `4mb2025` (350KB memory usage)
+**Current Branch:** `ps1`
+**Last Updated:** 2026-03-21
 
-### ✅ Completed
+### Completed
 
-- [x] Research PSn00bSDK and PS1 development tools
-- [x] Download DuckStation emulator
-- [x] Create comprehensive porting documentation
-- [x] Set up Docker development environment
-- [x] Create build automation scripts
-- [x] Implement graphics layer
-- [x] Implement input layer
-- [x] Implement audio layer (skeleton)
+- [x] Docker + CMake + mkpsxiso build system (builds routinely)
+- [x] Graphics layer (~3300 lines, complete software compositing pipeline)
+- [x] CD-ROM I/O (2280 lines, reads from CD image)
+- [x] Input layer (controller mapping, pause, debug toggle)
+- [x] Resource system (hash-based O(1) lookups, LRU cache with pinning)
+- [x] Audio layer skeleton (SPU init, no playback)
+- [x] Scene restore pipeline (offline-authored scene contracts)
+- [x] Telemetry overlay (5-panel diagnostic system)
+- [x] Dirty-rect compositing optimization
+- [x] 4-bit indexed sprite format with palette LUTs
+- [x] 25/63 scenes verified on DuckStation
 
-### 🚧 In Progress
+### In Progress
 
-- [ ] Complete sprite rendering
-- [ ] CD-ROM resource loading
-- [ ] Audio playback implementation
-- [ ] Full integration testing
+- [ ] Expand verified scenes from 25 to 63 (restore contract promotion)
+- [ ] Fix ACTIVITY.ADS tag 4 bring-up (stale frame)
+- [ ] Unblock BUILDING.ADS and FISHING.ADS entry paths
+- [ ] Audio playback implementation (WAV -> VAG, SPU channels)
+- [ ] Automated validation harness
 
 ## Why PS1?
 
 Johnny Reborn's optimized memory usage (350KB) and native 640x480 resolution make it a perfect fit for PS1:
 - **PS1 System RAM**: 2MB (plenty of headroom)
 - **PS1 VRAM**: 1MB
-- **PS1 Native Resolution**: 640x480 ✓
+- **PS1 Native Resolution**: 640x480
 
 ### Architecture
 
-The port strategy keeps most of the codebase unchanged:
+The port keeps most of the codebase unchanged:
 
 **No changes needed:**
 - Core engine (ttm.c, ads.c, story.c)
-- Resource system (resource.c, uncompress.c)
 - Game logic (walk.c, calcpath.c, island.c)
 - Utilities (utils.c, config.c, bench.c)
 
 **PS1-specific implementations:**
-- `graphics_ps1.c` - SDL2 → PSn00bSDK GPU
-- `sound_ps1.c` - SDL_mixer → PSn00bSDK SPU
-- `events_ps1.c` - SDL events → PSX controller
-- `cdrom_ps1.c` - CD-ROM file I/O
+- `graphics_ps1.c` - SDL2 -> PSn00bSDK GPU (software compositing pipeline)
+- `sound_ps1.c` - SDL_mixer -> PSn00bSDK SPU (skeleton)
+- `events_ps1.c` - SDL events -> PSX controller
+- `cdrom_ps1.c` - CD-ROM file I/O (replaces stdio)
+- `ps1_restore_pilots.h` - Auto-generated scene restore contracts
+
+**Offline pipeline (scripts/):**
+- Scene analyzer -> restore specs -> cluster contracts -> pack compiler -> header generator
+- 63 scene specs, 34 cluster contracts, 26 restore pilots active
 
 ### Memory Layout
 
-- **Code + Data**: ~200KB
-- **Resource Cache**: 1.5MB (LRU with pinning)
+- **Code + Data**: ~120KB (PS-EXE)
+- **BSS**: ~57KB
+- **Resource Cache**: LRU with pinning
 - **VRAM**: 600KB framebuffers + texture cache
-- **SPU RAM**: 512KB for sound effects
+- **SPU RAM**: 512KB reserved for sound effects
 
 ## Building Manually
 
-If you prefer to build without Docker:
+If you prefer to build without the wrapper script:
 
 ```bash
-# Install PSn00bSDK (Linux only)
-# Download from: https://github.com/Lameguy64/PSn00bSDK/releases
+# Build inside Docker
+docker run --rm -v $(pwd):/project jc-reborn-ps1-dev:amd64 \
+  bash -c "cd /project/build-ps1 && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 jcreborn"
 
-# Build
-export PATH="/opt/psn00bsdk/bin:$PATH"
-make -f Makefile.ps1
-
-# Create CD image
+# Generate CD image
 mkpsxiso cd_layout.xml
 ```
 
@@ -103,12 +111,12 @@ mkpsxiso cd_layout.xml
 | Select | Toggle debug |
 | Triangle | Advance frame (paused) |
 | Circle | Toggle max speed |
-| X/□/L1/L2/R1/R2 | Reserved |
+| X/L1/L2/R1/R2 | Reserved |
 
 ## Documentation
 
 - **[Hardware Specs](hardware-specs.md)** - PS1 technical specifications
-- **[API Mapping](api-mapping.md)** - SDL2 → PSn00bSDK translation
+- **[API Mapping](api-mapping.md)** - SDL2 -> PSn00bSDK translation
 - **[Build System](build-system.md)** - CMake, Docker, CD generation
 - **[Graphics Layer](graphics-layer.md)** - GPU implementation details
 - **[Audio Layer](audio-layer.md)** - SPU implementation details
@@ -117,7 +125,7 @@ mkpsxiso cd_layout.xml
 - **[Toolchain Setup](toolchain-setup.md)** - Development environment
 - **[Development Workflow](development-workflow.md)** - Build and test procedures
 - **[Project History](project-history.md)** - Journey and lessons learned
-- **[Research Package](research/README.md)** - 2026-03-17 offline-surface / scene-pack simplification research
+- **[Research Package](research/README.md)** - 2026-03 scene-pack and restore research
 
 ## References
 

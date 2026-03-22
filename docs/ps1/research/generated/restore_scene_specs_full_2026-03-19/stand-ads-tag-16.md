@@ -27,5 +27,5 @@ Selected pilot: `STAND.ADS tag 16` from `stand-ads`
 
 ## TTM details
 
-- `MJAMBWLK.TTM`: rect `{'x': 248, 'y': 196, 'width': 344, 'height': 139}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 273}`
-- `MJTELE.TTM`: rect `{'x': 256, 'y': 197, 'width': 344, 'height': 139}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 121}`
+- `MJAMBWLK.TTM`: rect `{'x': 248, 'y': 196, 'width': 344, 'height': 139}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 273}`
+- `MJTELE.TTM`: rect `{'x': 256, 'y': 197, 'width': 344, 'height': 139}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 121}`

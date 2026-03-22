@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "dirty_region_template_summary",
+  "pack_count": 10,
+  "candidate_pack_ids": [
+    "activity-ads",
+    "building-ads",
+    "fishing-ads",
+    "johnny-ads",
+    "mary-ads",
+    "stand-ads",
+    "visitor-ads",
+    "walkstuf-ads"
+  ],
+  "candidate_scene_total": 59,
+  "packs": [
+    {
+      "pack_id": "activity-ads",
+      "ads_names": [
+        "ACTIVITY.ADS"
+      ],
+      "candidate_scene_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "restore_candidate_ttm_count": 4,
+      "scene_template_count": 10
+    },
+    {
+      "pack_id": "building-ads",
+      "ads_names": [
+        "BUILDING.ADS"
+      ],
+      "candidate_scene_indices": [
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "restore_candidate_ttm_count": 2,
+      "scene_template_count": 7
+    },
+    {
+      "pack_id": "fishing-ads",
+      "ads_names": [
+        "FISHING.ADS"
+      ],
+      "candidate_scene_indices": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24
+      ],
+      "restore_candidate_ttm_count": 2,
+      "scene_template_count": 8
+    },
+    {
+      "pack_id": "johnny-ads",
+      "ads_names": [
+        "JOHNNY.ADS"
+      ],
+      "candidate_scene_indices": [
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "restore_candidate_ttm_count": 1,
+      "scene_template_count": 6
+    },
+    {
+      "pack_id": "mary-ads",
+      "ads_names": [
+        "MARY.ADS"
+      ],
+      "candidate_scene_indices": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "restore_candidate_ttm_count": 4,
+      "scene_template_count": 5
+    },
+    {
+      "pack_id": "miscgag-ads",
+      "ads_names": [
+        "MISCGAG.ADS"
+      ],
+      "candidate_scene_indices": [],
+      "restore_candidate_ttm_count": 0,
+      "scene_template_count": 2
+    },
+    {
+      "pack_id": "stand-ads",
+      "ads_names": [
+        "STAND.ADS"
+      ],
+      "candidate_scene_indices": [
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51
+      ],
+      "restore_candidate_ttm_count": 2,
+      "scene_template_count": 14
+    },
+    {
+      "pack_id": "suzy-ads",
+      "ads_names": [
+        "SUZY.ADS"
+      ],
+      "candidate_scene_indices": [],
+      "restore_candidate_ttm_count": 0,
+      "scene_template_count": 2
+    },
+    {
+      "pack_id": "visitor-ads",
+      "ads_names": [
+        "VISITOR.ADS"
+      ],
+      "candidate_scene_indices": [
+        54,
+        55,
+        56,
+        57,
+        58,
+        59
+      ],
+      "restore_candidate_ttm_count": 3,
+      "scene_template_count": 6
+    },
+    {
+      "pack_id": "walkstuf-ads",
+      "ads_names": [
+        "WALKSTUF.ADS"
+      ],
+      "candidate_scene_indices": [
+        60,
+        61,
+        62
+      ],
+      "restore_candidate_ttm_count": 2,
+      "scene_template_count": 3
+    }
+  ]
+}

@@ -27,6 +27,6 @@ Selected pilot: `SUZY.ADS tag 1` from `suzy-ads`
 
 ## TTM details
 
-- `MEANWHIL.TTM`: rect `{'x': 224, 'y': 90, 'width': 160, 'height': 134}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 1, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 49}`
-- `SJMSUZY.TTM`: rect `{'x': 128, 'y': 77, 'width': 384, 'height': 268}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 85}`
-- `SUZYCITY.TTM`: rect `{'x': 128, 'y': 77, 'width': 384, 'height': 268}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 97}`
+- `MEANWHIL.TTM`: rect `{'x': 224, 'y': 90, 'width': 160, 'height': 134}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 1, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 49}`
+- `SJMSUZY.TTM`: rect `{'x': 128, 'y': 77, 'width': 384, 'height': 268}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 85}`
+- `SUZYCITY.TTM`: rect `{'x': 128, 'y': 77, 'width': 384, 'height': 268}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 97}`

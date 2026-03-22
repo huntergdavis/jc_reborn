@@ -4,12 +4,12 @@ The development journey, challenges, and lessons learned from porting Johnny Reb
 
 ## Project Overview
 
-Successfully created a comprehensive PlayStation 1 port of Johnny Reborn, starting from the optimized `4mb2025` branch (350KB memory usage). Implemented ~85% of the port including complete build infrastructure, input layer, and nearly complete graphics functionality.
+Started from the optimized `4mb2025` branch (350KB memory usage). The port now boots and runs on DuckStation, cycling through 25 verified scenes with a complete software compositing pipeline, CD-ROM I/O, and an offline scene-restore system.
 
-**Timeline**: Single development session (2025-10-18) + ongoing refinement  
-**Lines of Code**: 2,700+ (documentation + implementation)  
-**Branch**: `ps1` (based on `4mb2025`)  
+**Timeline**: Initial session (2025-10-18), ongoing development through 2026-03
+**Branch**: `ps1` (based on `4mb2025`)
 **Development Tools**: PSn00bSDK, Docker, DuckStation emulator
+**Binary Size**: 120KB PS-EXE
 
 ## Why PS1?
 
@@ -65,14 +65,95 @@ The PlayStation 1 is a perfect target for Johnny Reborn:
 **Goals**: Port platform-specific layers (graphics, sound, input)
 
 **Achievements**:
-- ✅ graphics_ps1.c/h (700 lines, 95% complete)
-- ✅ events_ps1.c/h (150 lines, 100% complete)
-- ✅ sound_ps1.c/h (170 lines, 40% complete)
+- graphics_ps1.c/h (initially 700 lines, later grew to 3300+)
+- events_ps1.c/h (136 lines, 100% complete)
+- sound_ps1.c/h (184 lines, 40% skeleton)
 
 **Key Decision**: Keep core engine unchanged
 - Only 3 files needed porting
 - 4,000+ lines reused without modification
 - 63% code reuse ratio
+
+### Phase 4: CD-ROM I/O and First Boot
+
+**Goals**: Load game data from disc, boot on DuckStation
+
+**Achievements**:
+- cdrom_ps1.c (2280 lines) -- complete CD-ROM file I/O replacing stdio
+- CdSearchFile / CdRead / CdSync integration with PSn00bSDK
+- Resource loading from CD image working end-to-end
+- First successful boot on DuckStation
+
+**Key Decision**: Keep fopen/fread abstraction thin
+- cdrom_ps1.c reimplements file I/O against CD sectors
+- Rest of resource.c unchanged
+
+### Phase 5: Scene Playback and Story Loop
+
+**Goals**: Play back TTM animations, cycle through story scenes
+
+**Achievements**:
+- Story loop driving scene selection
+- TTM animation playback running
+- ADS files decompressed at startup (~16KB total)
+- findTtmResource/findAdsResource/findScrResource return NULL on PS1 instead of fatalError
+
+**Key Challenge**: printf() crashes in the game loop on PS1
+- Discovered that vprintf (used by debugMsg) also crashes
+- Solution: visual debugging via colored pixels (LoadImage)
+- debugMode=0 disables text output paths
+
+### Phase 6: Performance Optimization (2026-03)
+
+**Goals**: Make compositing fast enough for smooth playback, reduce memory pressure
+
+**Achievements**:
+- 4-bit indexed sprite format (indexedPixels) -- ~4x RAM savings over 15-bit direct color
+- Palette LUT for compositing -- avoids per-pixel palette lookups
+- 4-pixel unrolled compositing loop
+- Opaque sprite fast-path (skips transparency checks)
+- Hash-based O(1) resource lookups replacing O(N) strcmp scanning
+- Dirty-rect system: ~80-95% reduction in per-frame data movement
+
+**Results**:
+- Binary reduced from ~124KB to ~120KB
+- Compositing ~15-25% faster
+- Per-frame data movement reduced by 80-95%
+
+### Phase 7: Scene Restore System (2026-03, current)
+
+**Goals**: Replace replay-based scene continuity with deterministic offline contracts
+
+**Problem**: The original engine relies on "replay continuity" -- playing prior scenes to establish state for the current scene. On PS1 with CD latency and 2MB RAM, this is impractical.
+
+**Solution**: Offline-authored scene restore contracts.
+
+**Offline Pipeline**:
+```
+scene analyzer -> restore specs -> cluster contracts -> pack compiler -> header generator
+```
+
+**Achievements**:
+- 63 scene-scoped restore specs generated (every scene across all ADS files)
+- Compressed into 34 cluster contracts (scenes sharing identical resource sets)
+- ps1_restore_pilots.h: auto-generated C header, 1000 lines, 26 active pilots
+- Pack-authoritative scene loading replacing generic runtime discovery
+- Replay continuity being removed family-by-family as correctness is proven
+- 25 scenes verified correct on DuckStation
+- 5-panel telemetry overlay for debugging restore state
+- Forced-scene boot harness for targeted validation
+
+**Key Insight**: Scenes within the same ADS family often share the same BMP/SCR resource set. Clustering reduces 63 individual restore specs down to 34 contracts, minimizing header bloat.
+
+**Scripts developed**:
+- build-restore-pilot-spec.py
+- cluster-restore-scene-specs.py
+- compile-scene-pack.py
+- generate-restore-pilots-header.py
+- rank-restore-candidates.py
+- plan-restore-rollout.py
+- extract-dirty-region-templates.py
+- decode-ps1-bars.py
 
 ## Challenges & Solutions
 
@@ -90,22 +171,34 @@ The PlayStation 1 is a perfect target for Johnny Reborn:
 **Lesson Learned**: Clean abstractions enable platform portability
 
 ### Challenge 3: VRAM Management
-**Problem**: 1MB VRAM limit, sprites must be cached efficiently  
-**Solution**: ⏳ Automatic allocation tracking, lazy loading
+**Problem**: 1MB VRAM limit, sprites must be cached efficiently
+**Solution**: Automatic allocation tracking with wraparound, LRU eviction
 
 **Lesson Learned**: Careful resource management critical for embedded systems
 
 ### Challenge 4: CD Latency
-**Problem**: CD-ROM 2x speed is slow (150ms seeks)  
-**Solution**: ⏳ LRU cache from 4mb2025, pre-loading critical data
+**Problem**: CD-ROM 2x speed is slow (150ms seeks)
+**Solution**: LRU cache with pinning, pre-loading critical data, scene-scoped restore contracts that declare exactly which resources are needed
 
-**Lesson Learned**: Caching essential for slow storage media
+**Lesson Learned**: Caching essential for slow storage media; offline analysis can eliminate speculative loads
 
 ### Challenge 5: Debugging Without printf()
-**Problem**: printf() doesn't output to DuckStation TTY  
-**Solution**: ✅ Visual debugging system (colored screens)
+**Problem**: printf() and vprintf() crash in the PS1 game loop (only safe during early init)
+**Solution**: Visual debugging via colored pixels (LoadImage), 5-panel telemetry overlay, debugMode=0 to disable text paths
 
-**Lesson Learned**: Creative debugging techniques for constrained environments
+**Lesson Learned**: Creative debugging techniques for constrained environments. Visual indicators are more useful than text output on embedded targets.
+
+### Challenge 6: Scene Continuity Without Replay
+**Problem**: Desktop engine relies on replaying prior scenes to establish state. Impractical on PS1 (CD latency, 2MB RAM).
+**Solution**: Offline scene-restore pipeline. Analyze every scene offline, author restore specs that declare required resources and dirty regions, compile into C header.
+
+**Lesson Learned**: Moving work from runtime to build time is a powerful strategy for constrained platforms.
+
+### Challenge 7: Sprite Memory Pressure
+**Problem**: 15-bit direct-color sprites consume too much RAM for multi-sprite scenes.
+**Solution**: 4-bit indexed format (~4x savings), palette LUT for compositing, background tiles stay 15-bit for direct framebuffer upload.
+
+**Lesson Learned**: Format-level optimization beats algorithmic optimization when the bottleneck is data size.
 
 ## Architecture Wins
 
@@ -185,43 +278,26 @@ The PlayStation 1 is a perfect target for Johnny Reborn:
 
 ## Statistics
 
-### Code Metrics
+### Code Metrics (as of 2026-03-21)
 ```
-Documentation:      1,300+ lines (6 files)
-Build System:         200+ lines (4 files)
-PS1 Graphics:         700 lines (graphics_ps1.c/h)
-PS1 Input:            150 lines (events_ps1.c/h)
-PS1 Audio:            170 lines (sound_ps1.c/h)
+PS1 Graphics:              3,359 lines (graphics_ps1.c)
+PS1 CD-ROM I/O:            2,280 lines (cdrom_ps1.c)
+PS1 Audio:                   184 lines (sound_ps1.c)
+PS1 Input:                   136 lines (events_ps1.c)
+Restore Pilots Header:     1,000 lines (ps1_restore_pilots.h, auto-generated)
+Offline Pipeline Scripts:  8 scripts
 ----------------------------------------------
-Total New Code:     2,700+ lines
+PS1-specific code:         ~7,000 lines
 
-Reused Code:        4,000+ lines (24 files)
-----------------------------------------------
-Total Project:      6,700+ lines
+Core Engine (reused):      4,000+ lines (24 files, mostly unchanged)
 ```
 
-**Reuse Ratio**: 63% ✅
-
-### Time Investment
+### Binary Metrics
 ```
-Research & Infrastructure:  ~2 hours
-Build System:               ~1 hour
-Implementation:             ~2 hours
-Documentation:              ~1 hour
-----------------------------------------------
-Total:                      ~6 hours
-```
-
-**Productivity**: ~450 lines/hour (including docs)
-
-### File Inventory
-```
-Documentation:   6 files (1,300+ lines)
-Build System:    4 files (200+ lines)
-Platform Code:   6 files (1,100+ lines)
-Core Engine:    24 files (4,000+ lines, unchanged)
-----------------------------------------------
-Total:          40 files (6,700+ lines)
+PS-EXE size:     120 KB
+Text segment:    ~107 KB
+Data segment:    ~10 KB
+BSS:             ~57 KB
 ```
 
 ## Lessons for Future Ports
@@ -278,29 +354,27 @@ Total:          40 files (6,700+ lines)
 
 ## Future Work
 
-### Immediate (MVP)
-- [ ] Complete CD-ROM I/O implementation
-- [ ] Test Docker build end-to-end
-- [ ] Boot in DuckStation successfully
+### Immediate (Scene Coverage)
+- [ ] Fix ACTIVITY.ADS tag 4 stale frame, promote to verified
+- [ ] Unblock BUILDING.ADS and FISHING.ADS entry paths
+- [ ] Expand verified scenes from 25 to 63 via cluster contract promotion
 
-### Short-term (Feature Parity)
-- [ ] Complete audio implementation (WAV → VAG conversion)
-- [ ] Optimize VRAM usage for sprite-heavy scenes
-- [ ] Performance profiling and optimization
+### Short-term (Completeness)
+- [ ] Build automated validation harness (batch scene verification)
+- [ ] Complete audio implementation (WAV to VAG, SPU playback)
+- [ ] PSB/BMP hot path reconciliation
 
 ### Long-term (Polish)
-- [ ] Title screen
-- [ ] Loading screens with progress bars
-- [ ] Memory card save/load
 - [ ] Real hardware testing
+- [ ] Title screen and loading screens
+- [ ] Screen effects (fade, rain)
+- [ ] Memory card save/load
 
 ## Conclusion
 
-The PS1 port demonstrates that classic screensaver entertainment can live on vintage hardware. The clean architecture, memory optimization, and thorough documentation made this port straightforward despite the 30-year-old target platform.
+The PS1 port boots and runs on DuckStation with 25 of 63 scenes verified correct. The offline scene-restore pipeline solved the hardest architectural problem -- eliminating replay continuity on a platform where CD latency and 2MB RAM make runtime replay impractical. The remaining work is expanding scene coverage (authored specs exist for all 63 scenes) and completing audio.
 
-**Key Takeaway**: With proper planning and clean separation of concerns, porting to exotic platforms becomes manageable. The 63% code reuse ratio proves that good architecture pays dividends.
-
-Johnny Castaway's adventures continue... now on PlayStation!
+**Key Takeaway**: Moving work from runtime to build time -- scene analysis, resource declarations, dirty-region contracts -- turned an intractable runtime problem into a straightforward offline pipeline.
 
 ## See Also
 

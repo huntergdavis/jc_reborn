@@ -92,11 +92,17 @@ take_duckstation_screenshot() {
     local out_var="$1"
     local marker="/tmp/.ps1_shot_marker_$$"
     : > "$marker"
+    local latest=""
+    local window_id=""
 
     if command -v xdotool >/dev/null 2>&1; then
-        xdotool search --name "DuckStation" windowactivate --sync key --window %@ F10 2>/dev/null || true
-        sleep 1
-        local latest
+        window_id=$(xdotool search --onlyvisible --name "DuckStation" 2>/dev/null | tail -1 || true)
+        if [ -n "$window_id" ]; then
+            xdotool windowactivate --sync "$window_id" 2>/dev/null || true
+            sleep 0.5
+            xdotool key --window "$window_id" F10 2>/dev/null || true
+            sleep 1
+        fi
         latest=$(find "$SCREENSHOT_DIR" -name "*.png" -newer "$marker" 2>/dev/null | sort | tail -1)
         if [ -n "$latest" ]; then
             printf -v "$out_var" '%s' "$latest"
@@ -105,14 +111,21 @@ take_duckstation_screenshot() {
         fi
     fi
 
-    if command -v spectacle >/dev/null 2>&1; then
+    if command -v spectacle >/dev/null 2>&1 && { [ -n "$window_id" ] || [ "${PS1_ALLOW_FALLBACK_CAPTURE:-0}" = "1" ]; }; then
+        if [ -n "$window_id" ] && command -v xdotool >/dev/null 2>&1; then
+            xdotool windowactivate --sync "$window_id" 2>/dev/null || true
+            sleep 0.5
+        fi
         local fallback="$SCREENSHOT_DIR/ps1-test-$(date +%Y%m%d-%H%M%S).png"
-        spectacle -b -n -a -e -S -o "$fallback"
-        printf -v "$out_var" '%s' "$fallback"
-        rm -f "$marker"
-        return 0
+        spectacle -b -n -a -e -S -d 300 -o "$fallback" >/dev/null 2>&1 || true
+        if [ -f "$fallback" ]; then
+            printf -v "$out_var" '%s' "$fallback"
+            rm -f "$marker"
+            return 0
+        fi
     fi
 
+    echo "WARNING: DuckStation-native screenshot capture failed; window fallback capture also failed." >&2
     rm -f "$marker"
     return 1
 }
@@ -178,7 +191,7 @@ if kill -0 "$DUCK_PID" 2>/dev/null; then
     SCREENSHOT_FILE2="$LAST_SCREENSHOT"
 
     if [ -z "$SCREENSHOT_FILE" ]; then
-        echo "ERROR: Unable to capture screenshot (xdotool/spectacle unavailable)"
+        echo "ERROR: Unable to capture screenshot (DuckStation capture failed and fallback capture was disabled or unsuccessful)"
     fi
 
     # Kill DuckStation if still running

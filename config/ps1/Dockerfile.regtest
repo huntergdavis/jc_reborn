@@ -1,0 +1,186 @@
+# Dockerfile.regtest — Build DuckStation's headless regression-test binary
+#
+# This is a multi-stage build:
+#   Stage 1 (builder): compile duckstation-regtest from source
+#   Stage 2 (runtime): slim image with just the binary + runtime libs
+#
+# The regtest binary runs PS1 games without any display, captures frames
+# as PNGs, and forwards PS1 printf/TTY output to stdout.
+#
+# Build:  docker build --platform linux/amd64 \
+#           -f config/ps1/Dockerfile.regtest -t jc-reborn-regtest:latest .
+#
+# Typical build time: 15-30 minutes (first run; Docker layer cache after that).
+
+# ============================================================================
+# Stage 1: Build DuckStation from source
+# ============================================================================
+FROM ubuntu:24.04 AS builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install build dependencies.
+# Ubuntu 24.04 ships clang-18 which supports C++20 structured bindings
+# in lambda captures (required by DuckStation's postprocessing code).
+RUN apt-get update && apt-get install -y \
+    autoconf \
+    automake \
+    build-essential \
+    ca-certificates \
+    clang \
+    cmake \
+    curl \
+    extra-cmake-modules \
+    git \
+    libasound2-dev \
+    libcurl4-openssl-dev \
+    libdbus-1-dev \
+    libdecor-0-dev \
+    libegl-dev \
+    libevdev-dev \
+    libfontconfig-dev \
+    libfreetype-dev \
+    libgtk-3-dev \
+    libgudev-1.0-dev \
+    libharfbuzz-dev \
+    libinput-dev \
+    libopengl-dev \
+    libpipewire-0.3-dev \
+    libpulse-dev \
+    libssl-dev \
+    libtool \
+    libudev-dev \
+    libva-dev \
+    libwayland-dev \
+    libx11-dev \
+    libx11-xcb-dev \
+    libxcb1-dev \
+    libxcb-composite0-dev \
+    libxcb-cursor-dev \
+    libxcb-damage0-dev \
+    libxcb-glx0-dev \
+    libxcb-icccm4-dev \
+    libxcb-image0-dev \
+    libxcb-keysyms1-dev \
+    libxcb-present-dev \
+    libxcb-randr0-dev \
+    libxcb-render0-dev \
+    libxcb-render-util0-dev \
+    libxcb-shape0-dev \
+    libxcb-shm0-dev \
+    libxcb-sync-dev \
+    libxcb-util-dev \
+    libxcb-xfixes0-dev \
+    libxcb-xinput-dev \
+    libxcb-xkb-dev \
+    libxext-dev \
+    libxkbcommon-x11-dev \
+    libxrandr-dev \
+    libxss-dev \
+    lld \
+    llvm \
+    nasm \
+    ninja-build \
+    pkg-config \
+    zlib1g-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone DuckStation (shallow clone to save time/space).
+WORKDIR /build
+RUN git clone --depth 1 https://github.com/stenzek/duckstation.git
+
+WORKDIR /build/duckstation
+
+# Download prebuilt third-party dependencies.
+# DuckStation ships a version file at dep/PREBUILT-VERSION that pins the
+# exact release tag in the duckstation/dependencies repo.  We read that
+# tag and fetch the matching Linux x64 tarball.
+RUN DEPS_VERSION=$(cat dep/PREBUILT-VERSION) && \
+    echo "Downloading prebuilt deps version: ${DEPS_VERSION}" && \
+    mkdir -p dep/prebuilt && \
+    curl -sSL \
+      "https://github.com/duckstation/dependencies/releases/download/${DEPS_VERSION}/deps-linux-x64.tar.xz" \
+      | tar -xJ -C dep/prebuilt
+
+# Configure with CMake.
+# Key flags:
+#   -DBUILD_REGTEST=ON   — build the headless regression-test binary
+#   We only build the regtest ninja target below, so the Qt frontend
+#   is configured but never actually compiled.
+RUN cmake -B build -G Ninja \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER=clang \
+    -DCMAKE_CXX_COMPILER=clang++ \
+    -DCMAKE_EXE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+    -DCMAKE_MODULE_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+    -DCMAKE_SHARED_LINKER_FLAGS_INIT="-fuse-ld=lld" \
+    -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=ON \
+    -DBUILD_REGTEST=ON
+
+# Build only the regtest target.
+RUN ninja -C build duckstation-regtest
+
+# Verify the binary was produced.
+RUN test -f build/bin/duckstation-regtest && \
+    echo "duckstation-regtest built successfully" && \
+    ls -lh build/bin/duckstation-regtest
+
+
+# ============================================================================
+# Stage 2: Minimal runtime image
+# ============================================================================
+FROM ubuntu:24.04 AS runtime
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install only the runtime libraries the regtest binary links against.
+# This is a conservative superset — the binary is mostly statically linked
+# via the prebuilt deps, but it still needs libc, libstdc++, SSL, and a
+# handful of system libs for software rendering and audio stubs.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libasound2t64 \
+    libc6 \
+    libcurl4t64 \
+    libdbus-1-3 \
+    libegl1 \
+    libevdev2 \
+    libfontconfig1 \
+    libfreetype6 \
+    libharfbuzz0b \
+    libinput10 \
+    libopengl0 \
+    libpulse0 \
+    libssl3t64 \
+    libstdc++6 \
+    libudev1 \
+    libwayland-client0 \
+    libx11-6 \
+    libxcb1 \
+    libxext6 \
+    libxkbcommon0 \
+    libxrandr2 \
+    zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy the regtest binary, resources, and prebuilt shared libraries.
+COPY --from=builder /build/duckstation/build/bin/duckstation-regtest /usr/local/bin/
+COPY --from=builder /build/duckstation/build/bin/resources /usr/local/bin/resources
+COPY --from=builder /build/duckstation/dep/prebuilt/linux-x64/lib/*.so* /usr/local/lib/
+RUN ldconfig
+
+# Create directories for game images and output.
+RUN mkdir -p /game /output /bios
+
+# The regtest binary needs a BIOS image.  Users bind-mount their BIOS
+# directory to /bios at runtime.  DuckStation looks for the BIOS in its
+# data directory or via a settings file.  We set the environment to help.
+ENV DUCKSTATION_BIOS_PATH=/bios
+
+WORKDIR /output
+
+# Default entrypoint is the regtest binary.
+ENTRYPOINT ["duckstation-regtest"]
+
+# Default arguments: software renderer, console logging, fast boot.
+CMD ["-renderer", "Software", "-log", "Info", "-console", "-help"]

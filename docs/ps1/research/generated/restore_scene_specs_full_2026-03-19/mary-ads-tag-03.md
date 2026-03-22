@@ -27,8 +27,8 @@ Selected pilot: `MARY.ADS tag 3` from `mary-ads`
 
 ## TTM details
 
-- `SASKDATE.TTM`: rect `{'x': 0, 'y': 174, 'width': 488, 'height': 176}`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 1, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 207}`
-- `SBREAKUP.TTM`: rect `{'x': 224, 'y': 125, 'width': 416, 'height': 225}`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 1, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 138}`
-- `SJGLIMPS.TTM`: rect `{'x': 0, 'y': 151, 'width': 640, 'height': 199}`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 201}`
-- `SJLEAVES.TTM`: rect `{'x': 88, 'y': 208, 'width': 544, 'height': 141}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 150}`
-- `SMDATE.TTM`: rect `{'x': 8, 'y': 124, 'width': 560, 'height': 211}`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 2, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 194}`
+- `SASKDATE.TTM`: rect `{'x': 0, 'y': 174, 'width': 488, 'height': 176}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 1, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 207}`
+- `SBREAKUP.TTM`: rect `{'x': 224, 'y': 125, 'width': 416, 'height': 225}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 1, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 138}`
+- `SJGLIMPS.TTM`: rect `{'x': 0, 'y': 151, 'width': 640, 'height': 199}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 2, 'copy_zone_to_bg': 0, 'save_image1': 2, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 201}`
+- `SJLEAVES.TTM`: rect `{'x': 88, 'y': 208, 'width': 544, 'height': 141}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 0, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 150}`
+- `SMDATE.TTM`: rect `{'x': 8, 'y': 124, 'width': 560, 'height': 211}`, region ids `[0]`, clear regions `[0]`, op counts `{'region_id': 1, 'copy_zone_to_bg': 2, 'save_image1': 1, 'save_zone': 0, 'restore_zone': 0, 'clear_screen': 194}`

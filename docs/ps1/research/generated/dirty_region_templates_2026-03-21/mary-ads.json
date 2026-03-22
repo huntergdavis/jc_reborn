@@ -1,0 +1,1926 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "dirty_region_template_pack",
+  "pack_id": "mary-ads",
+  "ads_names": [
+    "MARY.ADS"
+  ],
+  "scene_indices": [
+    31,
+    32,
+    33,
+    34,
+    35
+  ],
+  "summary": {
+    "ttm_count": 5,
+    "restore_candidate_ttm_count": 4,
+    "scene_template_count": 5,
+    "candidate_scene_indices": [
+      31,
+      32,
+      33,
+      34,
+      35
+    ]
+  },
+  "ttm_templates": [
+    {
+      "ttm_name": "SASKDATE.TTM",
+      "byte_size": 6010,
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 1,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 207
+      },
+      "unique_rect_count": 3,
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 174,
+          "width": 488,
+          "height": 176
+        },
+        {
+          "x": 248,
+          "y": 196,
+          "width": 240,
+          "height": 147
+        },
+        {
+          "x": 360,
+          "y": 243,
+          "width": 56,
+          "height": 76
+        }
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 174,
+        "width": 488,
+        "height": 176
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": true,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [
+            "ISLETEMP.SCR"
+          ],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 1,
+          "update_count": 4,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 248,
+              "y": 196,
+              "width": 240,
+              "height": 147
+            }
+          ],
+          "union_rect": {
+            "x": 248,
+            "y": 196,
+            "width": 240,
+            "height": 147
+          },
+          "stable_candidate": false
+        },
+        {
+          "tag": 5,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 111,
+          "update_count": 22,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 0,
+              "y": 174,
+              "width": 488,
+              "height": 176
+            }
+          ],
+          "union_rect": {
+            "x": 0,
+            "y": 174,
+            "width": 488,
+            "height": 176
+          },
+          "stable_candidate": false
+        },
+        {
+          "tag": 112,
+          "update_count": 8,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 114,
+          "update_count": 6,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 116,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 117,
+          "update_count": 9,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 119,
+          "update_count": 10,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 120,
+          "update_count": 6,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 121,
+          "update_count": 6,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 122,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 123,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 124,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 125,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 126,
+          "update_count": 18,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 127,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 128,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 129,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 130,
+          "update_count": 5,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 131,
+          "update_count": 8,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 132,
+          "update_count": 3,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 133,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 134,
+          "update_count": 5,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 135,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 136,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 137,
+          "update_count": 3,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 138,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 139,
+          "update_count": 3,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 140,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 141,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 142,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 143,
+          "update_count": 13,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 144,
+          "update_count": 13,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 145,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 146,
+          "update_count": 5,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 147,
+          "update_count": 13,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 148,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 360,
+              "y": 243,
+              "width": 56,
+              "height": 76
+            }
+          ],
+          "union_rect": {
+            "x": 360,
+            "y": 243,
+            "width": 56,
+            "height": 76
+          },
+          "stable_candidate": true
+        },
+        {
+          "tag": 149,
+          "update_count": 5,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 150,
+          "update_count": 3,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 151,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "slot_ids": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "ttm_name": "SBREAKUP.TTM",
+      "byte_size": 5402,
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 1,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 138
+      },
+      "unique_rect_count": 3,
+      "unique_rects": [
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        },
+        {
+          "x": 224,
+          "y": 162,
+          "width": 416,
+          "height": 152
+        },
+        {
+          "x": 504,
+          "y": 265,
+          "width": 136,
+          "height": 40
+        }
+      ],
+      "union_rect": {
+        "x": 224,
+        "y": 125,
+        "width": 416,
+        "height": 225
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": true,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [
+            "ISLETEMP.SCR"
+          ],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 19,
+          "update_count": 6,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 23,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 26,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 28,
+          "update_count": 6,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 30,
+          "update_count": 1,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 3,
+          "unique_rects": [
+            {
+              "x": 232,
+              "y": 125,
+              "width": 408,
+              "height": 225
+            },
+            {
+              "x": 224,
+              "y": 162,
+              "width": 416,
+              "height": 152
+            },
+            {
+              "x": 504,
+              "y": 265,
+              "width": 136,
+              "height": 40
+            }
+          ],
+          "union_rect": {
+            "x": 224,
+            "y": 125,
+            "width": 416,
+            "height": 225
+          },
+          "stable_candidate": true
+        },
+        {
+          "tag": 31,
+          "update_count": 12,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 33,
+          "update_count": 21,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 34,
+          "update_count": 75,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 35,
+          "update_count": 12,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 36,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 37,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "slot_ids": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "ttm_name": "SJGLIMPS.TTM",
+      "byte_size": 8522,
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 201
+      },
+      "unique_rect_count": 2,
+      "unique_rects": [
+        {
+          "x": 104,
+          "y": 151,
+          "width": 536,
+          "height": 182
+        },
+        {
+          "x": 0,
+          "y": 154,
+          "width": 416,
+          "height": 196
+        }
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 151,
+        "width": 640,
+        "height": 199
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": true,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [
+            "ISLETEMP.SCR"
+          ],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 2,
+          "update_count": 8,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 17,
+          "update_count": 20,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 104,
+          "update_count": 1,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 104,
+              "y": 151,
+              "width": 536,
+              "height": 182
+            }
+          ],
+          "union_rect": {
+            "x": 104,
+            "y": 151,
+            "width": 536,
+            "height": 182
+          },
+          "stable_candidate": true
+        },
+        {
+          "tag": 105,
+          "update_count": 22,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 106,
+          "update_count": 45,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 0,
+              "y": 154,
+              "width": 416,
+              "height": 196
+            }
+          ],
+          "union_rect": {
+            "x": 0,
+            "y": 154,
+            "width": 416,
+            "height": 196
+          },
+          "stable_candidate": false
+        },
+        {
+          "tag": 107,
+          "update_count": 10,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 108,
+          "update_count": 96,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "slot_ids": [
+        2,
+        2,
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "ttm_name": "SJLEAVES.TTM",
+      "byte_size": 7306,
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 150
+      },
+      "unique_rect_count": 1,
+      "unique_rects": [
+        {
+          "x": 88,
+          "y": 208,
+          "width": 544,
+          "height": 141
+        }
+      ],
+      "union_rect": {
+        "x": 88,
+        "y": 208,
+        "width": 544,
+        "height": 141
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": true,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [
+            "ISLAND2.SCR"
+          ],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 1,
+          "update_count": 1,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 88,
+              "y": 208,
+              "width": 544,
+              "height": 141
+            }
+          ],
+          "union_rect": {
+            "x": 88,
+            "y": 208,
+            "width": 544,
+            "height": 141
+          },
+          "stable_candidate": true
+        },
+        {
+          "tag": 2,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 3,
+          "update_count": 121,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 4,
+          "update_count": 28,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "slot_ids": [
+        6,
+        6,
+        6,
+        6,
+        6
+      ]
+    },
+    {
+      "ttm_name": "SMDATE.TTM",
+      "byte_size": 7052,
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 2,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 194
+      },
+      "unique_rect_count": 3,
+      "unique_rects": [
+        {
+          "x": 8,
+          "y": 124,
+          "width": 560,
+          "height": 211
+        },
+        {
+          "x": 416,
+          "y": 257,
+          "width": 112,
+          "height": 57
+        },
+        {
+          "x": 360,
+          "y": 233,
+          "width": 48,
+          "height": 64
+        }
+      ],
+      "union_rect": {
+        "x": 8,
+        "y": 124,
+        "width": 560,
+        "height": 211
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": false,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [
+            "ISLETEMP.SCR"
+          ],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 12,
+          "update_count": 77,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 416,
+              "y": 257,
+              "width": 112,
+              "height": 57
+            }
+          ],
+          "union_rect": {
+            "x": 416,
+            "y": 257,
+            "width": 112,
+            "height": 57
+          },
+          "stable_candidate": false
+        },
+        {
+          "tag": 16,
+          "update_count": 50,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 360,
+              "y": 233,
+              "width": 48,
+              "height": 64
+            }
+          ],
+          "union_rect": {
+            "x": 360,
+            "y": 233,
+            "width": 48,
+            "height": 64
+          },
+          "stable_candidate": false
+        },
+        {
+          "tag": 21,
+          "update_count": 11,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 24,
+          "update_count": 17,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 8,
+              "y": 124,
+              "width": 560,
+              "height": 211
+            }
+          ],
+          "union_rect": {
+            "x": 8,
+            "y": 124,
+            "width": 560,
+            "height": 211
+          },
+          "stable_candidate": false
+        },
+        {
+          "tag": 25,
+          "update_count": 7,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 28,
+          "update_count": 10,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 29,
+          "update_count": 11,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 30,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 31,
+          "update_count": 5,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 32,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "slot_ids": [
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    }
+  ],
+  "scene_templates": [
+    {
+      "scene_index": 31,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 174,
+          "width": 488,
+          "height": 176
+        },
+        {
+          "x": 248,
+          "y": 196,
+          "width": 240,
+          "height": 147
+        },
+        {
+          "x": 360,
+          "y": 243,
+          "width": 56,
+          "height": 76
+        },
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        },
+        {
+          "x": 224,
+          "y": 162,
+          "width": 416,
+          "height": 152
+        },
+        {
+          "x": 504,
+          "y": 265,
+          "width": 136,
+          "height": 40
+        },
+        {
+          "x": 104,
+          "y": 151,
+          "width": 536,
+          "height": 182
+        },
+        {
+          "x": 0,
+          "y": 154,
+          "width": 416,
+          "height": 196
+        },
+        {
+          "x": 88,
+          "y": 208,
+          "width": 544,
+          "height": 141
+        },
+        {
+          "x": 8,
+          "y": 124,
+          "width": 560,
+          "height": 211
+        },
+        {
+          "x": 416,
+          "y": 257,
+          "width": 112,
+          "height": 57
+        },
+        {
+          "x": 360,
+          "y": 233,
+          "width": 48,
+          "height": 64
+        }
+      ],
+      "clear_screen_count": 890,
+      "restore_candidate": true,
+      "unique_rect_count": 12,
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      }
+    },
+    {
+      "scene_index": 32,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 174,
+          "width": 488,
+          "height": 176
+        },
+        {
+          "x": 248,
+          "y": 196,
+          "width": 240,
+          "height": 147
+        },
+        {
+          "x": 360,
+          "y": 243,
+          "width": 56,
+          "height": 76
+        },
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        },
+        {
+          "x": 224,
+          "y": 162,
+          "width": 416,
+          "height": 152
+        },
+        {
+          "x": 504,
+          "y": 265,
+          "width": 136,
+          "height": 40
+        },
+        {
+          "x": 104,
+          "y": 151,
+          "width": 536,
+          "height": 182
+        },
+        {
+          "x": 0,
+          "y": 154,
+          "width": 416,
+          "height": 196
+        },
+        {
+          "x": 88,
+          "y": 208,
+          "width": 544,
+          "height": 141
+        },
+        {
+          "x": 8,
+          "y": 124,
+          "width": 560,
+          "height": 211
+        },
+        {
+          "x": 416,
+          "y": 257,
+          "width": 112,
+          "height": 57
+        },
+        {
+          "x": 360,
+          "y": 233,
+          "width": 48,
+          "height": 64
+        }
+      ],
+      "clear_screen_count": 890,
+      "restore_candidate": true,
+      "unique_rect_count": 12,
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      }
+    },
+    {
+      "scene_index": 33,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 174,
+          "width": 488,
+          "height": 176
+        },
+        {
+          "x": 248,
+          "y": 196,
+          "width": 240,
+          "height": 147
+        },
+        {
+          "x": 360,
+          "y": 243,
+          "width": 56,
+          "height": 76
+        },
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        },
+        {
+          "x": 224,
+          "y": 162,
+          "width": 416,
+          "height": 152
+        },
+        {
+          "x": 504,
+          "y": 265,
+          "width": 136,
+          "height": 40
+        },
+        {
+          "x": 104,
+          "y": 151,
+          "width": 536,
+          "height": 182
+        },
+        {
+          "x": 0,
+          "y": 154,
+          "width": 416,
+          "height": 196
+        },
+        {
+          "x": 88,
+          "y": 208,
+          "width": 544,
+          "height": 141
+        },
+        {
+          "x": 8,
+          "y": 124,
+          "width": 560,
+          "height": 211
+        },
+        {
+          "x": 416,
+          "y": 257,
+          "width": 112,
+          "height": 57
+        },
+        {
+          "x": 360,
+          "y": 233,
+          "width": 48,
+          "height": 64
+        }
+      ],
+      "clear_screen_count": 890,
+      "restore_candidate": true,
+      "unique_rect_count": 12,
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      }
+    },
+    {
+      "scene_index": 34,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 174,
+          "width": 488,
+          "height": 176
+        },
+        {
+          "x": 248,
+          "y": 196,
+          "width": 240,
+          "height": 147
+        },
+        {
+          "x": 360,
+          "y": 243,
+          "width": 56,
+          "height": 76
+        },
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        },
+        {
+          "x": 224,
+          "y": 162,
+          "width": 416,
+          "height": 152
+        },
+        {
+          "x": 504,
+          "y": 265,
+          "width": 136,
+          "height": 40
+        },
+        {
+          "x": 104,
+          "y": 151,
+          "width": 536,
+          "height": 182
+        },
+        {
+          "x": 0,
+          "y": 154,
+          "width": 416,
+          "height": 196
+        },
+        {
+          "x": 88,
+          "y": 208,
+          "width": 544,
+          "height": 141
+        },
+        {
+          "x": 8,
+          "y": 124,
+          "width": 560,
+          "height": 211
+        },
+        {
+          "x": 416,
+          "y": 257,
+          "width": 112,
+          "height": 57
+        },
+        {
+          "x": 360,
+          "y": 233,
+          "width": 48,
+          "height": 64
+        }
+      ],
+      "clear_screen_count": 890,
+      "restore_candidate": true,
+      "unique_rect_count": 12,
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      }
+    },
+    {
+      "scene_index": 35,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 174,
+          "width": 488,
+          "height": 176
+        },
+        {
+          "x": 248,
+          "y": 196,
+          "width": 240,
+          "height": 147
+        },
+        {
+          "x": 360,
+          "y": 243,
+          "width": 56,
+          "height": 76
+        },
+        {
+          "x": 232,
+          "y": 125,
+          "width": 408,
+          "height": 225
+        },
+        {
+          "x": 224,
+          "y": 162,
+          "width": 416,
+          "height": 152
+        },
+        {
+          "x": 504,
+          "y": 265,
+          "width": 136,
+          "height": 40
+        },
+        {
+          "x": 104,
+          "y": 151,
+          "width": 536,
+          "height": 182
+        },
+        {
+          "x": 0,
+          "y": 154,
+          "width": 416,
+          "height": 196
+        },
+        {
+          "x": 88,
+          "y": 208,
+          "width": 544,
+          "height": 141
+        },
+        {
+          "x": 8,
+          "y": 124,
+          "width": 560,
+          "height": 211
+        },
+        {
+          "x": 416,
+          "y": 257,
+          "width": 112,
+          "height": 57
+        },
+        {
+          "x": 360,
+          "y": 233,
+          "width": 48,
+          "height": 64
+        }
+      ],
+      "clear_screen_count": 890,
+      "restore_candidate": true,
+      "unique_rect_count": 12,
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      }
+    }
+  ]
+}

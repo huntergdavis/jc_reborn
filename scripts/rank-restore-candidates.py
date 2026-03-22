@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Dict, List
 
 
-DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/scene_pack_manifests_2026-03-17")
-DEFAULT_TEMPLATE_DIR = Path("docs/ps1/research/dirty_region_templates_2026-03-18")
+DEFAULT_MANIFEST_DIR = Path("docs/ps1/research/generated/scene_pack_manifests_2026-03-21")
+DEFAULT_TEMPLATE_DIR = Path("docs/ps1/research/generated/dirty_region_templates_2026-03-21")
 DEFAULT_JSON_OUTPUT = Path("docs/ps1/research/restore_candidate_report_2026-03-18.json")
 DEFAULT_MD_OUTPUT = Path("docs/ps1/research/restore_candidate_report_2026-03-18.md")
 

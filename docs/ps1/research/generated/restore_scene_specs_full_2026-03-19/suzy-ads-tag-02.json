@@ -123,6 +123,9 @@
           "height": 134
         }
       ],
+      "region_ids": [
+        0
+      ],
       "clear_region_ids": [
         0
       ],
@@ -151,6 +154,9 @@
           "height": 268
         }
       ],
+      "region_ids": [
+        0
+      ],
       "clear_region_ids": [
         0
       ],
@@ -178,6 +184,9 @@
           "width": 384,
           "height": 268
         }
+      ],
+      "region_ids": [
+        0
       ],
       "clear_region_ids": [
         0

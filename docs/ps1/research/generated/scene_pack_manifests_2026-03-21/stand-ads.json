@@ -1,0 +1,818 @@
+{
+  "schema_version": 1,
+  "manifest_kind": "scene_pack_manifest",
+  "pack_id": "stand-ads",
+  "cluster_key": "STAND.ADS",
+  "pack_strategy": "ads_cluster",
+  "scene_indices": [
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51
+  ],
+  "scene_count": 14,
+  "ads_names": [
+    "STAND.ADS"
+  ],
+  "resources": {
+    "ads": [
+      "STAND.ADS"
+    ],
+    "bmps": [
+      "MJ_AMB.BMP",
+      "MJTELE.BMP",
+      "MJTELE2.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ],
+    "shared_candidates": [
+      "ISLETEMP.SCR",
+      "MJAMBWLK.TTM",
+      "MJTELE.BMP",
+      "MJTELE.TTM",
+      "MJTELE2.BMP",
+      "MJ_AMB.BMP"
+    ]
+  },
+  "runtime_requirements": {
+    "max_concurrent_threads": 5,
+    "max_sprite_frames": 35,
+    "peak_memory_bytes": 166164,
+    "memory_components": {
+      "bmp_indexed_bytes": 31200,
+      "ttm_bytes": 7760,
+      "ads_bytes": 2396,
+      "scr_bytes": 112000,
+      "sprite_pointer_bytes": 140,
+      "ttm_slot_overhead_bytes": 16384
+    }
+  },
+  "transition_hints": {
+    "likely_next_pack_ids": [
+      "suzy-ads"
+    ],
+    "high_churn_transitions": [
+      {
+        "from_scene_index": 51,
+        "to_scene_index": 52,
+        "to_pack_id": "suzy-ads",
+        "total_resource_churn": 14,
+        "peak_memory_delta_bytes": 189598
+      }
+    ],
+    "transition_budget_notes": "Derived from analyzer post-processing; not runtime-validated."
+  },
+  "prefetch_hints": {
+    "candidate_scene_indices": [
+      52,
+      53
+    ],
+    "additional_bmps": [
+      "LITEBULB.BMP",
+      "MEANWHIL.BMP",
+      "MRAFT.BMP",
+      "SJMSUZY1.BMP",
+      "SJMSUZY2.BMP",
+      "SJMSUZY3.BMP",
+      "SSUZY1.BMP",
+      "SSUZY2.BMP",
+      "SSUZY3.BMP"
+    ],
+    "additional_scrs": [
+      "SUZBEACH.SCR"
+    ],
+    "additional_ttms": [
+      "MEANWHIL.TTM",
+      "SJMSUZY.TTM",
+      "SUZYCITY.TTM"
+    ],
+    "heuristic": "transition_churn_then_ads_family_union",
+    "confidence": "low"
+  },
+  "scenes": [
+    {
+      "scene_index": 38,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 1,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 39,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 2,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 40,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 3,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 41,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 4,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 42,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 5,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 43,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 6,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 44,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 7,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 45,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 8,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 46,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 9,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 47,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 10,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 48,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 11,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 49,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 12,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 27484,
+        "bmp_15bit_bytes": 109936,
+        "bmp_raw_bytes": 27484,
+        "ttm_bytes": 7760,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 140,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 166164
+      },
+      "resource_counts": {
+        "bmps": 1,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 50,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 15,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 31200,
+        "bmp_15bit_bytes": 124800,
+        "bmp_raw_bytes": 31200,
+        "ttm_bytes": 3826,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 104,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 165910
+      },
+      "resource_counts": {
+        "bmps": 2,
+        "scrs": 1,
+        "ttms": 2
+      }
+    },
+    {
+      "scene_index": 51,
+      "ads_name": "STAND.ADS",
+      "ads_tag": 16,
+      "story_day": 0,
+      "flags": [
+        "ISLAND",
+        "VARPOS_OK",
+        "LOWTIDE_OK"
+      ],
+      "memory": {
+        "bmp_indexed_bytes": 31200,
+        "bmp_15bit_bytes": 124800,
+        "bmp_raw_bytes": 31200,
+        "ttm_bytes": 3826,
+        "ads_bytes": 2396,
+        "scr_bytes": 112000,
+        "sprite_pointer_bytes": 104,
+        "ttm_slot_overhead_bytes": 16384,
+        "peak_memory_bytes": 165910
+      },
+      "resource_counts": {
+        "bmps": 2,
+        "scrs": 1,
+        "ttms": 2
+      }
+    }
+  ],
+  "shared_bank": {
+    "bmps": [
+      {
+        "name": "MJ_AMB.BMP",
+        "global_scene_ref_count": 12,
+        "pack_scene_ref_count": 12,
+        "bytes": 27484,
+        "raw_bytes": 27484,
+        "indexed_bytes": 27484
+      },
+      {
+        "name": "MJTELE.BMP",
+        "global_scene_ref_count": 3,
+        "pack_scene_ref_count": 2,
+        "bytes": 23824,
+        "raw_bytes": 23824,
+        "indexed_bytes": 23824
+      },
+      {
+        "name": "MJTELE2.BMP",
+        "global_scene_ref_count": 3,
+        "pack_scene_ref_count": 2,
+        "bytes": 7376,
+        "raw_bytes": 7376,
+        "indexed_bytes": 7376
+      }
+    ],
+    "scrs": [
+      {
+        "name": "ISLETEMP.SCR",
+        "global_scene_ref_count": 54,
+        "pack_scene_ref_count": 14,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ],
+    "ttms": [
+      {
+        "name": "MJAMBWLK.TTM",
+        "global_scene_ref_count": 14,
+        "pack_scene_ref_count": 14,
+        "bytes": 7760,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      },
+      {
+        "name": "MJTELE.TTM",
+        "global_scene_ref_count": 14,
+        "pack_scene_ref_count": 14,
+        "bytes": 3826,
+        "raw_bytes": 0,
+        "indexed_bytes": 0
+      }
+    ]
+  },
+  "resource_details": {
+    "bmps": [
+      {
+        "name": "MJ_AMB.BMP",
+        "pack_scene_ref_count": 12,
+        "global_scene_ref_count": 12,
+        "bytes": 27484,
+        "raw_bytes": 27484,
+        "indexed_bytes": 27484,
+        "source_scene_indices": [
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49
+        ],
+        "metadata": {
+          "num_frames": 35,
+          "max_width": 40,
+          "max_height": 77,
+          "bindings": [
+            {
+              "scene_index": 38,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 39,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 40,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 41,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 42,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 43,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 44,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 45,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 46,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 47,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 48,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 49,
+              "ttm_slot": 1,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "MJTELE.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 3,
+        "bytes": 23824,
+        "raw_bytes": 23824,
+        "indexed_bytes": 23824,
+        "source_scene_indices": [
+          50,
+          51
+        ],
+        "metadata": {
+          "num_frames": 22,
+          "max_width": 64,
+          "max_height": 75,
+          "bindings": [
+            {
+              "scene_index": 50,
+              "ttm_slot": 2,
+              "bmp_slot": 0
+            },
+            {
+              "scene_index": 51,
+              "ttm_slot": 2,
+              "bmp_slot": 0
+            }
+          ]
+        }
+      },
+      {
+        "name": "MJTELE2.BMP",
+        "pack_scene_ref_count": 2,
+        "global_scene_ref_count": 3,
+        "bytes": 7376,
+        "raw_bytes": 7376,
+        "indexed_bytes": 7376,
+        "source_scene_indices": [
+          50,
+          51
+        ],
+        "metadata": {
+          "num_frames": 4,
+          "max_width": 64,
+          "max_height": 74,
+          "bindings": [
+            {
+              "scene_index": 50,
+              "ttm_slot": 2,
+              "bmp_slot": 1
+            },
+            {
+              "scene_index": 51,
+              "ttm_slot": 2,
+              "bmp_slot": 1
+            }
+          ]
+        }
+      }
+    ],
+    "scrs": [
+      {
+        "name": "ISLETEMP.SCR",
+        "pack_scene_ref_count": 14,
+        "global_scene_ref_count": 54,
+        "bytes": 112000,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51
+        ],
+        "metadata": {
+          "bytes": 112000
+        }
+      }
+    ],
+    "ttms": [
+      {
+        "name": "MJAMBWLK.TTM",
+        "pack_scene_ref_count": 14,
+        "global_scene_ref_count": 14,
+        "bytes": 7760,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51
+        ],
+        "metadata": {
+          "slot_ids": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        }
+      },
+      {
+        "name": "MJTELE.TTM",
+        "pack_scene_ref_count": 14,
+        "global_scene_ref_count": 14,
+        "bytes": 3826,
+        "raw_bytes": 0,
+        "indexed_bytes": 0,
+        "source_scene_indices": [
+          38,
+          39,
+          40,
+          41,
+          42,
+          43,
+          44,
+          45,
+          46,
+          47,
+          48,
+          49,
+          50,
+          51
+        ],
+        "metadata": {
+          "slot_ids": [
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2,
+            2
+          ]
+        }
+      }
+    ]
+  },
+  "prefetch": {
+    "heuristic": "transition_churn_then_ads_family_union",
+    "candidate_pack_ids": [
+      "suzy-ads"
+    ],
+    "secondary_candidate_pack_ids": []
+  },
+  "max_peak_memory_bytes": 166164,
+  "total_peak_memory_bytes": 2325788
+}

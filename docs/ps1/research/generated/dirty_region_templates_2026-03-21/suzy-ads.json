@@ -1,0 +1,528 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "dirty_region_template_pack",
+  "pack_id": "suzy-ads",
+  "ads_names": [
+    "SUZY.ADS"
+  ],
+  "scene_indices": [
+    52,
+    53
+  ],
+  "summary": {
+    "ttm_count": 3,
+    "restore_candidate_ttm_count": 0,
+    "scene_template_count": 2,
+    "candidate_scene_indices": []
+  },
+  "ttm_templates": [
+    {
+      "ttm_name": "MEANWHIL.TTM",
+      "byte_size": 1856,
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 1,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 49
+      },
+      "unique_rect_count": 2,
+      "unique_rects": [
+        {
+          "x": 224,
+          "y": 91,
+          "width": 160,
+          "height": 131
+        },
+        {
+          "x": 232,
+          "y": 90,
+          "width": 144,
+          "height": 134
+        }
+      ],
+      "union_rect": {
+        "x": 224,
+        "y": 90,
+        "width": 160,
+        "height": 134
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": false,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 1,
+          "update_count": 49,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 2,
+          "unique_rects": [
+            {
+              "x": 224,
+              "y": 91,
+              "width": 160,
+              "height": 131
+            },
+            {
+              "x": 232,
+              "y": 90,
+              "width": 144,
+              "height": 134
+            }
+          ],
+          "union_rect": {
+            "x": 224,
+            "y": 90,
+            "width": 160,
+            "height": 134
+          },
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        52,
+        53
+      ],
+      "slot_ids": [
+        3,
+        3
+      ]
+    },
+    {
+      "ttm_name": "SJMSUZY.TTM",
+      "byte_size": 3334,
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 85
+      },
+      "unique_rect_count": 1,
+      "unique_rects": [
+        {
+          "x": 128,
+          "y": 77,
+          "width": 384,
+          "height": 268
+        }
+      ],
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": false,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 3,
+          "update_count": 5,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 4,
+          "update_count": 32,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 6,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 7,
+          "update_count": 47,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [
+            "SUZBEACH.SCR"
+          ],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 128,
+              "y": 77,
+              "width": 384,
+              "height": 268
+            }
+          ],
+          "union_rect": {
+            "x": 128,
+            "y": 77,
+            "width": 384,
+            "height": 268
+          },
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        52,
+        53
+      ],
+      "slot_ids": [
+        2,
+        2
+      ]
+    },
+    {
+      "ttm_name": "SUZYCITY.TTM",
+      "byte_size": 4684,
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 97
+      },
+      "unique_rect_count": 1,
+      "unique_rects": [
+        {
+          "x": 128,
+          "y": 77,
+          "width": 384,
+          "height": 268
+        }
+      ],
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      },
+      "unique_region_ids": [
+        0
+      ],
+      "clear_heavy": false,
+      "unique_clear_region_ids": [
+        0
+      ],
+      "restore_candidate": false,
+      "tag_templates": [
+        {
+          "tag": -1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 1,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 2,
+          "update_count": 10,
+          "region_ids": [
+            0
+          ],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [
+            "SUZBEACH.SCR"
+          ],
+          "unique_rect_count": 1,
+          "unique_rects": [
+            {
+              "x": 128,
+              "y": 77,
+              "width": 384,
+              "height": 268
+            }
+          ],
+          "union_rect": {
+            "x": 128,
+            "y": 77,
+            "width": 384,
+            "height": 268
+          },
+          "stable_candidate": false
+        },
+        {
+          "tag": 3,
+          "update_count": 4,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 5,
+          "update_count": 8,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 6,
+          "update_count": 27,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 7,
+          "update_count": 27,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 11,
+          "update_count": 3,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 12,
+          "update_count": 3,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 13,
+          "update_count": 2,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 14,
+          "update_count": 12,
+          "region_ids": [],
+          "clear_region_ids": [
+            0
+          ],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        },
+        {
+          "tag": 15,
+          "update_count": 1,
+          "region_ids": [],
+          "clear_region_ids": [],
+          "load_screens": [],
+          "unique_rect_count": 0,
+          "unique_rects": [],
+          "union_rect": null,
+          "stable_candidate": false
+        }
+      ],
+      "source_scene_indices": [
+        52,
+        53
+      ],
+      "slot_ids": [
+        1,
+        1
+      ]
+    }
+  ],
+  "scene_templates": [
+    {
+      "scene_index": 52,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSUZY.TTM",
+        "SUZYCITY.TTM"
+      ],
+      "unique_rects": [
+        {
+          "x": 224,
+          "y": 91,
+          "width": 160,
+          "height": 131
+        },
+        {
+          "x": 232,
+          "y": 90,
+          "width": 144,
+          "height": 134
+        },
+        {
+          "x": 128,
+          "y": 77,
+          "width": 384,
+          "height": 268
+        }
+      ],
+      "clear_screen_count": 231,
+      "restore_candidate": false,
+      "unique_rect_count": 3,
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      }
+    },
+    {
+      "scene_index": 53,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSUZY.TTM",
+        "SUZYCITY.TTM"
+      ],
+      "unique_rects": [
+        {
+          "x": 224,
+          "y": 91,
+          "width": 160,
+          "height": 131
+        },
+        {
+          "x": 232,
+          "y": 90,
+          "width": 144,
+          "height": 134
+        },
+        {
+          "x": 128,
+          "y": 77,
+          "width": 384,
+          "height": 268
+        }
+      ],
+      "clear_screen_count": 231,
+      "restore_candidate": false,
+      "unique_rect_count": 3,
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      }
+    }
+  ]
+}

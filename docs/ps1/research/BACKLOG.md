@@ -4,6 +4,19 @@ Date: 2026-03-17
 
 This backlog is designed for parallel execution by multiple agents.
 
+Use [CURRENT_STATUS_2026-03-21.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/CURRENT_STATUS_2026-03-21.md)
+for the active rollout picture and [generated/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/README.md)
+for bulk generated artifacts. This file is a work-queue reference, not the
+authoritative rollout-status snapshot.
+
+## How To Read This File
+
+- Use this when choosing the next workstream or parallelizing effort.
+- Use [IMPLEMENTATION_PLAN.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/IMPLEMENTATION_PLAN.md)
+  for sequence and architecture.
+- Use [README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/README.md)
+  as the front door.
+
 ## Track 1: Analyzer v2
 
 Goal:
@@ -13,8 +26,8 @@ compilation decisions.
 Current first consumer:
 
 - [scripts/plan-scene-packs.py](/home/hunter/workspace/jc_reborn/scripts/plan-scene-packs.py)
-- [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_plan_2026-03-17.json)
-- [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_manifests_2026-03-17)
+- [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_plan_2026-03-17.json)
+- [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_manifests_2026-03-17)
 
 Deliverables:
 
@@ -31,7 +44,7 @@ Suggested starting points:
 
 - [scene_analyzer.c](/home/hunter/workspace/jc_reborn/scene_analyzer.c)
 - [scripts/analyze-scenes.sh](/home/hunter/workspace/jc_reborn/scripts/analyze-scenes.sh)
-- [scene_analysis_output_2026-03-17.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.txt)
+- [scene_analysis_output_2026-03-17.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-17.txt)
 
 ## Track 2: Sprite transcoder prototype
 
@@ -115,7 +128,7 @@ Pack contents should likely include:
 Useful current artifacts:
 
 - [scene-transition-prefetch-report.py](/home/hunter/workspace/jc_reborn/scripts/scene-transition-prefetch-report.py)
-- [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.json)
+- [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_transition_prefetch_report_2026-03-17.json)
 - [TRANSITION_PREFETCH_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/TRANSITION_PREFETCH_SCHEMA.md)
 
 ## Track 5: Streaming and CD layout study

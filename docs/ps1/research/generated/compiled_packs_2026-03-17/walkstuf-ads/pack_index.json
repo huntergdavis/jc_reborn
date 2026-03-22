@@ -1,0 +1,628 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "compiled_scene_pack",
+  "pack_id": "walkstuf-ads",
+  "source_manifest": "docs/ps1/research/generated/scene_pack_manifests_2026-03-17/walkstuf-ads.json",
+  "pack_strategy": "ads_cluster",
+  "cluster_key": "WALKSTUF.ADS",
+  "ads_names": [
+    "WALKSTUF.ADS"
+  ],
+  "scene_indices": [
+    60,
+    61,
+    62
+  ],
+  "runtime_requirements": {
+    "max_concurrent_threads": 13,
+    "max_sprite_frames": 140,
+    "peak_memory_bytes": 341368,
+    "memory_components": {
+      "bmp_indexed_bytes": 190452,
+      "ttm_bytes": 13170,
+      "ads_bytes": 610,
+      "scr_bytes": 112000,
+      "sprite_pointer_bytes": 560,
+      "ttm_slot_overhead_bytes": 24576
+    }
+  },
+  "transition_hints": {
+    "likely_next_pack_ids": [],
+    "high_churn_transitions": [],
+    "transition_budget_notes": "Derived from analyzer post-processing; not runtime-validated."
+  },
+  "prefetch_hints": {
+    "candidate_scene_indices": [],
+    "additional_bmps": [],
+    "additional_scrs": [],
+    "additional_ttms": [],
+    "heuristic": "ads_family_union",
+    "confidence": "low"
+  },
+  "dirty_region_templates": {
+    "path": "docs/ps1/research/generated/compiled_packs_2026-03-17/walkstuf-ads/dirty_region_templates.json",
+    "source_path": "docs/ps1/research/generated/dirty_region_templates_2026-03-18/walkstuf-ads.json",
+    "available": true,
+    "candidate_scene_indices": [
+      60,
+      61,
+      62
+    ],
+    "restore_candidate_ttm_count": 2
+  },
+  "payload": {
+    "path": "docs/ps1/research/generated/compiled_packs_2026-03-17/walkstuf-ads/pack_payload.bin",
+    "alignment_bytes": 2048,
+    "payload_bytes": 2078720,
+    "resource_count": 51,
+    "padding_bytes": 51738,
+    "header_bytes": 1464,
+    "first_resource_offset": 2048,
+    "staged_path": "jc_resources/packs/WALKSTUF.PAK",
+    "staged_filename": "WALKSTUF.PAK",
+    "prefetch_ads_names": []
+  },
+  "entries": [
+    {
+      "resource_type": "ads",
+      "name": "WALKSTUF.ADS",
+      "source_path": "jc_resources/extracted/ads/WALKSTUF.ADS",
+      "offset_bytes": 2048,
+      "size_bytes": 610,
+      "aligned_size_bytes": 2048,
+      "sector_index": 1,
+      "sector_count": 1,
+      "sha256": "ce71e872b05d104bbc38d6b39e25f0d1d9d4054a639559117742865d1247c22a"
+    },
+    {
+      "resource_type": "scr",
+      "name": "ISLETEMP.SCR",
+      "source_path": "jc_resources/extracted/scr/ISLETEMP.SCR",
+      "offset_bytes": 4096,
+      "size_bytes": 112000,
+      "aligned_size_bytes": 112640,
+      "sector_index": 2,
+      "sector_count": 55,
+      "sha256": "656b9ac4e65fe5baf1d980b5c35fdcd966094f24123e1cf34d988eaefa14bf2d"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJJOG.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJJOG.TTM",
+      "offset_bytes": 116736,
+      "size_bytes": 4848,
+      "aligned_size_bytes": 6144,
+      "sector_index": 57,
+      "sector_count": 3,
+      "sha256": "c750432f783fc66d9eb39becb5467d22f02efb0c45e788a9676c22f381335d46"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJRAFT.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJRAFT.TTM",
+      "offset_bytes": 122880,
+      "size_bytes": 1130,
+      "aligned_size_bytes": 2048,
+      "sector_index": 60,
+      "sector_count": 1,
+      "sha256": "d823d302f005bd3ebdf8cb25606a3556e2d236dea159d324a773c5ce78ff20a5"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "WOULDBE.TTM",
+      "source_path": "jc_resources/extracted/ttm/WOULDBE.TTM",
+      "offset_bytes": 124928,
+      "size_bytes": 13170,
+      "aligned_size_bytes": 14336,
+      "sector_index": 61,
+      "sector_count": 7,
+      "sha256": "e4cfc66b150ff994fe71ef5ad9608cb10f3dca522c1b45d16cc5b0d268cbe89f"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "JOHNWALK.BMP",
+      "source_path": "jc_resources/extracted/bmp/JOHNWALK.BMP",
+      "offset_bytes": 139264,
+      "size_bytes": 48476,
+      "aligned_size_bytes": 49152,
+      "sector_index": 68,
+      "sector_count": 24,
+      "sha256": "02685f6036438814ef61e71554883c538428878c61841f1035af14c051ff09f4"
+    },
+    {
+      "resource_type": "psb",
+      "name": "JOHNWALK.PSB",
+      "source_path": "jc_resources/transcoded/JOHNWALK.PSB",
+      "offset_bytes": 188416,
+      "size_bytes": 48924,
+      "aligned_size_bytes": 49152,
+      "sector_index": 92,
+      "sector_count": 24,
+      "sha256": "3ea4fd2fe5857b992d676ac0b068fe6b00343b1fcf5f9c3a963157d5cb5f59c2"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "TRUNK.BMP",
+      "source_path": "jc_resources/extracted/bmp/TRUNK.BMP",
+      "offset_bytes": 237568,
+      "size_bytes": 7440,
+      "aligned_size_bytes": 8192,
+      "sector_index": 116,
+      "sector_count": 4,
+      "sha256": "6cdb78f47f0de158ea1fd143dfcca32cc42312a2e48a6ccba9b1259ecebc3afa"
+    },
+    {
+      "resource_type": "psb",
+      "name": "TRUNK.PSB",
+      "source_path": "jc_resources/transcoded/TRUNK.PSB",
+      "offset_bytes": 245760,
+      "size_bytes": 7480,
+      "aligned_size_bytes": 8192,
+      "sector_index": 120,
+      "sector_count": 4,
+      "sha256": "2a9f841fc8a2726d7c07fa3db6fb29f5f6720bf3dc7c5de508926b7c51523181"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "BOAT.BMP",
+      "source_path": "jc_resources/extracted/bmp/BOAT.BMP",
+      "offset_bytes": 253952,
+      "size_bytes": 7564,
+      "aligned_size_bytes": 8192,
+      "sector_index": 124,
+      "sector_count": 4,
+      "sha256": "9cd0bf9bf9e3c932e78239994dc9e3908b3782c0206a0bc489c3d0f1630f8e58"
+    },
+    {
+      "resource_type": "psb",
+      "name": "BOAT.PSB",
+      "source_path": "jc_resources/transcoded/BOAT.PSB",
+      "offset_bytes": 262144,
+      "size_bytes": 7592,
+      "aligned_size_bytes": 8192,
+      "sector_index": 128,
+      "sector_count": 4,
+      "sha256": "4c63c694cdf51b90b9b4a0d183d32e941335e0aa4434d5cae35185087be81ef7"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "DRUNKJON.BMP",
+      "source_path": "jc_resources/extracted/bmp/DRUNKJON.BMP",
+      "offset_bytes": 270336,
+      "size_bytes": 41068,
+      "aligned_size_bytes": 43008,
+      "sector_index": 132,
+      "sector_count": 21,
+      "sha256": "7b336fa6da81e8f70de4c3baa7b8df578d1587d5f5ba7656895b50b537c1ceb4"
+    },
+    {
+      "resource_type": "psb",
+      "name": "DRUNKJON.PSB",
+      "source_path": "jc_resources/transcoded/DRUNKJON.PSB",
+      "offset_bytes": 313344,
+      "size_bytes": 41372,
+      "aligned_size_bytes": 43008,
+      "sector_index": 153,
+      "sector_count": 21,
+      "sha256": "57b8f11babd1d1287d7a435fbaf8efcd42364582307a58b4d6776ebbac971ddb"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "JCHANGE.BMP",
+      "source_path": "jc_resources/extracted/bmp/JCHANGE.BMP",
+      "offset_bytes": 356352,
+      "size_bytes": 7400,
+      "aligned_size_bytes": 8192,
+      "sector_index": 174,
+      "sector_count": 4,
+      "sha256": "da5468e7febe0047cad002b64e2b07a0553cb0cbcfa98d7dd792c1c48dd277d0"
+    },
+    {
+      "resource_type": "psb",
+      "name": "JCHANGE.PSB",
+      "source_path": "jc_resources/transcoded/JCHANGE.PSB",
+      "offset_bytes": 364544,
+      "size_bytes": 7560,
+      "aligned_size_bytes": 8192,
+      "sector_index": 178,
+      "sector_count": 4,
+      "sha256": "0ea9ee46d4e42c40b77a67a58bdfd63d76bb985bbea1ee184ee8c406736cad69"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "JOHNWOUL.BMP",
+      "source_path": "jc_resources/extracted/bmp/JOHNWOUL.BMP",
+      "offset_bytes": 372736,
+      "size_bytes": 22652,
+      "aligned_size_bytes": 24576,
+      "sector_index": 182,
+      "sector_count": 12,
+      "sha256": "ae678998ec6db9b22fba5204fbc379d61fc3f856c27243943ed34b33c59cf77e"
+    },
+    {
+      "resource_type": "psb",
+      "name": "JOHNWOUL.PSB",
+      "source_path": "jc_resources/transcoded/JOHNWOUL.PSB",
+      "offset_bytes": 397312,
+      "size_bytes": 22872,
+      "aligned_size_bytes": 24576,
+      "sector_index": 194,
+      "sector_count": 12,
+      "sha256": "bfa7b9d5f9f1bdc11778497ebce0c42a244f750c13bca9c6388b8d3f23d849de"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "LITEBULB.BMP",
+      "source_path": "jc_resources/extracted/bmp/LITEBULB.BMP",
+      "offset_bytes": 421888,
+      "size_bytes": 5216,
+      "aligned_size_bytes": 6144,
+      "sector_index": 206,
+      "sector_count": 3,
+      "sha256": "c9bf50e00a0fa27145419bedb8d8bf045f3a14e62c080ebc78f9dcd157f374f8"
+    },
+    {
+      "resource_type": "psb",
+      "name": "LITEBULB.PSB",
+      "source_path": "jc_resources/transcoded/LITEBULB.PSB",
+      "offset_bytes": 428032,
+      "size_bytes": 5292,
+      "aligned_size_bytes": 6144,
+      "sector_index": 209,
+      "sector_count": 3,
+      "sha256": "751da1ca3394ffe27cc62016a1c848abd20c7d3f9bec8d17c82a0c3d11f1380b"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJJOG1.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJJOG1.BMP",
+      "offset_bytes": 434176,
+      "size_bytes": 29968,
+      "aligned_size_bytes": 30720,
+      "sector_index": 212,
+      "sector_count": 15,
+      "sha256": "1124efdf89ad2204618ed4a85ac8ce5c034c9f5e3317e0185adc12e9689f6b52"
+    },
+    {
+      "resource_type": "psb",
+      "name": "MJJOG1.PSB",
+      "source_path": "jc_resources/transcoded/MJJOG1.PSB",
+      "offset_bytes": 464896,
+      "size_bytes": 30164,
+      "aligned_size_bytes": 30720,
+      "sector_index": 227,
+      "sector_count": 15,
+      "sha256": "d4fd79a582ea438c5296070790cb5736fe198f0b624d017f2b77423b43b9963b"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJJOG2.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJJOG2.BMP",
+      "offset_bytes": 495616,
+      "size_bytes": 36852,
+      "aligned_size_bytes": 36864,
+      "sector_index": 242,
+      "sector_count": 18,
+      "sha256": "5634fb687003ac01de3683aed053edfb8fcbead0791698871f59fd4cfc9c39b5"
+    },
+    {
+      "resource_type": "psb",
+      "name": "MJJOG2.PSB",
+      "source_path": "jc_resources/transcoded/MJJOG2.PSB",
+      "offset_bytes": 532480,
+      "size_bytes": 37156,
+      "aligned_size_bytes": 38912,
+      "sector_index": 260,
+      "sector_count": 19,
+      "sha256": "3a92d1d7cf72457c65f58cf7ce9c9190934bdc3af90d9ef5fddefa3bbf7ca944"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJRAFT2.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJRAFT2.BMP",
+      "offset_bytes": 571392,
+      "size_bytes": 23184,
+      "aligned_size_bytes": 24576,
+      "sector_index": 279,
+      "sector_count": 12,
+      "sha256": "32340d74bdf667aca14e19c21718958f9964cb8992d0d023dec58befb88d108c"
+    },
+    {
+      "resource_type": "psb",
+      "name": "MJRAFT2.PSB",
+      "source_path": "jc_resources/transcoded/MJRAFT2.PSB",
+      "offset_bytes": 595968,
+      "size_bytes": 23752,
+      "aligned_size_bytes": 24576,
+      "sector_index": 291,
+      "sector_count": 12,
+      "sha256": "e3b8af66211832b1e616d2005513e5f94eb9d570140160653a586606890ddbf3"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "SJRAFT1.BMP",
+      "source_path": "jc_resources/extracted/bmp/SJRAFT1.BMP",
+      "offset_bytes": 620544,
+      "size_bytes": 13192,
+      "aligned_size_bytes": 14336,
+      "sector_index": 303,
+      "sector_count": 7,
+      "sha256": "652743e39a6340807dcd85ccb0698edb25e9db3a0d70a539ef751002324f37b0"
+    },
+    {
+      "resource_type": "psb",
+      "name": "SJRAFT1.PSB",
+      "source_path": "jc_resources/transcoded/SJRAFT1.PSB",
+      "offset_bytes": 634880,
+      "size_bytes": 13340,
+      "aligned_size_bytes": 14336,
+      "sector_index": 310,
+      "sector_count": 7,
+      "sha256": "3cf50d81016090babc9e63a8b4087c364058c6183f6bbfddc2456671479956e4"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "WOULDBE.BMP",
+      "source_path": "jc_resources/extracted/bmp/WOULDBE.BMP",
+      "offset_bytes": 649216,
+      "size_bytes": 58036,
+      "aligned_size_bytes": 59392,
+      "sector_index": 317,
+      "sector_count": 29,
+      "sha256": "8f7a7e0787406ffc2241793b7fffdf6abd0e49d9dce94317b39605cc7ce99d32"
+    },
+    {
+      "resource_type": "psb",
+      "name": "WOULDBE.PSB",
+      "source_path": "jc_resources/transcoded/WOULDBE.PSB",
+      "offset_bytes": 708608,
+      "size_bytes": 58712,
+      "aligned_size_bytes": 59392,
+      "sector_index": 346,
+      "sector_count": 29,
+      "sha256": "6a13f6dcdbf3a5ca9e1ece883c0e6740102ea4e261f5248af99694b34d317991"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN00.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN00.SCR",
+      "offset_bytes": 768000,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 375,
+      "sector_count": 75,
+      "sha256": "377867e13fa5683d36d5bdedd1e55b0f1a26fe4e1271a7eab7401f2a7a452491"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN01.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN01.SCR",
+      "offset_bytes": 921600,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 450,
+      "sector_count": 75,
+      "sha256": "06551ef375aaf9eb31d2d48a22aedfb2448727ffd4827e47d0bc154c3961422a"
+    },
+    {
+      "resource_type": "scr",
+      "name": "OCEAN02.SCR",
+      "source_path": "jc_resources/extracted/scr/OCEAN02.SCR",
+      "offset_bytes": 1075200,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 525,
+      "sector_count": 75,
+      "sha256": "9657e21fdc3bc36e847031cd5f743c9e36adb42b0cb9fe9b59be6ba815fe82db"
+    },
+    {
+      "resource_type": "scr",
+      "name": "NIGHT.SCR",
+      "source_path": "jc_resources/extracted/scr/NIGHT.SCR",
+      "offset_bytes": 1228800,
+      "size_bytes": 153600,
+      "aligned_size_bytes": 153600,
+      "sector_index": 600,
+      "sector_count": 75,
+      "sha256": "55da5ef584269b47aa49d5c97e747c26834cd1a45c2f75da1fecaf227b368271"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MRAFT.BMP",
+      "source_path": "jc_resources/extracted/bmp/MRAFT.BMP",
+      "offset_bytes": 1382400,
+      "size_bytes": 10616,
+      "aligned_size_bytes": 12288,
+      "sector_index": 675,
+      "sector_count": 6,
+      "sha256": "011cd73e41dc5ead9d3d43b3e07778cd9d4b4e763f1bb996406de30ce06689e9"
+    },
+    {
+      "resource_type": "psb",
+      "name": "MRAFT.PSB",
+      "source_path": "jc_resources/transcoded/MRAFT.PSB",
+      "offset_bytes": 1394688,
+      "size_bytes": 10716,
+      "aligned_size_bytes": 12288,
+      "sector_index": 681,
+      "sector_count": 6,
+      "sha256": "16fbb1c9691dcdc69945b753ace495c1bcd264549c2fb4d9d609c9a4d1a56a83"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "BACKGRND.BMP",
+      "source_path": "jc_resources/extracted/bmp/BACKGRND.BMP",
+      "offset_bytes": 1406976,
+      "size_bytes": 92656,
+      "aligned_size_bytes": 94208,
+      "sector_index": 687,
+      "sector_count": 46,
+      "sha256": "7a4485d04b7105b144f0afaf9736abfc2139c1428f4b1a3265118e6ee59978de"
+    },
+    {
+      "resource_type": "psb",
+      "name": "BACKGRND.PSB",
+      "source_path": "jc_resources/transcoded/BACKGRND.PSB",
+      "offset_bytes": 1501184,
+      "size_bytes": 93176,
+      "aligned_size_bytes": 94208,
+      "sector_index": 733,
+      "sector_count": 46,
+      "sha256": "f98185aad03932bf4b4f3e362b0bab678ea6106bf8913919e8452fd68ed354b0"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "HOLIDAY.BMP",
+      "source_path": "jc_resources/extracted/bmp/HOLIDAY.BMP",
+      "offset_bytes": 1595392,
+      "size_bytes": 8892,
+      "aligned_size_bytes": 10240,
+      "sector_index": 779,
+      "sector_count": 5,
+      "sha256": "3e24345bcef307aeb121d8a77261cee99237689a9e0a840d06daec5b5865436a"
+    },
+    {
+      "resource_type": "psb",
+      "name": "HOLIDAY.PSB",
+      "source_path": "jc_resources/transcoded/HOLIDAY.PSB",
+      "offset_bytes": 1605632,
+      "size_bytes": 8956,
+      "aligned_size_bytes": 10240,
+      "sector_index": 784,
+      "sector_count": 5,
+      "sha256": "db7cc32356e1d773fd909fdcc1d7a16094e3392ff5e8ea7f582e79e17d665d95"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "MJBATH.TTM",
+      "source_path": "jc_resources/extracted/ttm/MJBATH.TTM",
+      "offset_bytes": 1615872,
+      "size_bytes": 5108,
+      "aligned_size_bytes": 6144,
+      "sector_index": 789,
+      "sector_count": 3,
+      "sha256": "ec4b034c0ee7fd758f6861ac68e1544302e1ab0901c73449ebc7c40c61d10f07"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MJBATH.BMP",
+      "source_path": "jc_resources/extracted/bmp/MJBATH.BMP",
+      "offset_bytes": 1622016,
+      "size_bytes": 53664,
+      "aligned_size_bytes": 55296,
+      "sector_index": 792,
+      "sector_count": 27,
+      "sha256": "678821184e81e03d6bbc38e6d00897ff1df86911d0dc1fb7295611bef36adf2e"
+    },
+    {
+      "resource_type": "psb",
+      "name": "MJBATH.PSB",
+      "source_path": "jc_resources/transcoded/MJBATH.PSB",
+      "offset_bytes": 1677312,
+      "size_bytes": 54124,
+      "aligned_size_bytes": 55296,
+      "sector_index": 819,
+      "sector_count": 27,
+      "sha256": "5e5bd0fca635c1d27cbbd54f1983d7f707522df8b4e65d1c03e56d329a51fdbf"
+    },
+    {
+      "resource_type": "ttm",
+      "name": "SUZYCITY.TTM",
+      "source_path": "jc_resources/extracted/ttm/SUZYCITY.TTM",
+      "offset_bytes": 1732608,
+      "size_bytes": 4684,
+      "aligned_size_bytes": 6144,
+      "sector_index": 846,
+      "sector_count": 3,
+      "sha256": "4ffe7286f2f2e623ac421fdd2a1e1f18d1e8c527beed36842bc2a7cf9baa08ff"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "MEANWHIL.BMP",
+      "source_path": "jc_resources/extracted/bmp/MEANWHIL.BMP",
+      "offset_bytes": 1738752,
+      "size_bytes": 8648,
+      "aligned_size_bytes": 10240,
+      "sector_index": 849,
+      "sector_count": 5,
+      "sha256": "52085fa6118cb9b1b9e42428cc6ae2a8939da24c59b1f86e2fbc7fb1a9dae507"
+    },
+    {
+      "resource_type": "psb",
+      "name": "MEANWHIL.PSB",
+      "source_path": "jc_resources/transcoded/MEANWHIL.PSB",
+      "offset_bytes": 1748992,
+      "size_bytes": 8868,
+      "aligned_size_bytes": 10240,
+      "sector_index": 854,
+      "sector_count": 5,
+      "sha256": "dcabe0e0a809d9674b9c8a53fdcea36ee29ec27e8adb3279525cc35f9074ddb2"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "SSUZY1.BMP",
+      "source_path": "jc_resources/extracted/bmp/SSUZY1.BMP",
+      "offset_bytes": 1759232,
+      "size_bytes": 31396,
+      "aligned_size_bytes": 32768,
+      "sector_index": 859,
+      "sector_count": 16,
+      "sha256": "71350aad5e8dd546eb09143a6e817cd6d0e0cf062626435e22b7cebe9997f04f"
+    },
+    {
+      "resource_type": "psb",
+      "name": "SSUZY1.PSB",
+      "source_path": "jc_resources/transcoded/SSUZY1.PSB",
+      "offset_bytes": 1792000,
+      "size_bytes": 31556,
+      "aligned_size_bytes": 32768,
+      "sector_index": 875,
+      "sector_count": 16,
+      "sha256": "c9e92f2839c72e5305be9dcaea53ce036cd1cbba7e7510fe75922ff6c0134d47"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "SSUZY2.BMP",
+      "source_path": "jc_resources/extracted/bmp/SSUZY2.BMP",
+      "offset_bytes": 1824768,
+      "size_bytes": 48184,
+      "aligned_size_bytes": 49152,
+      "sector_index": 891,
+      "sector_count": 24,
+      "sha256": "37a1bee5fd3479c1b7f78d615d0a021cf45dbd17ef7c69e103de6b30192451b1"
+    },
+    {
+      "resource_type": "psb",
+      "name": "SSUZY2.PSB",
+      "source_path": "jc_resources/transcoded/SSUZY2.PSB",
+      "offset_bytes": 1873920,
+      "size_bytes": 48416,
+      "aligned_size_bytes": 49152,
+      "sector_index": 915,
+      "sector_count": 24,
+      "sha256": "53304e498866ec5be8da01d11347f86ce7b7a025635ba8c361a91695affeff1f"
+    },
+    {
+      "resource_type": "bmp",
+      "name": "SSUZY3.BMP",
+      "source_path": "jc_resources/extracted/bmp/SSUZY3.BMP",
+      "offset_bytes": 1923072,
+      "size_bytes": 76720,
+      "aligned_size_bytes": 77824,
+      "sector_index": 939,
+      "sector_count": 38,
+      "sha256": "80ea44d04d5d3a2be594f9aa9c991aff5ba67fa9dae6ba6389b22818c4859729"
+    },
+    {
+      "resource_type": "psb",
+      "name": "SSUZY3.PSB",
+      "source_path": "jc_resources/transcoded/SSUZY3.PSB",
+      "offset_bytes": 2000896,
+      "size_bytes": 77132,
+      "aligned_size_bytes": 77824,
+      "sector_index": 977,
+      "sector_count": 38,
+      "sha256": "5f202ddac455e976b31371e83f636f3f0849b4e5205a3619ef88dd39db8d4819"
+    }
+  ]
+}

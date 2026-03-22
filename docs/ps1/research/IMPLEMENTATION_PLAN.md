@@ -4,61 +4,48 @@ Date: 2026-03-17
 Status: In progress
 Owner: PS1 port refactor
 
+Reference navigation:
+
+- [CURRENT_STATUS_2026-03-21.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/CURRENT_STATUS_2026-03-21.md)
+  Active rollout snapshot.
+- [generated/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/README.md)
+  Bulk generated datasets and manifests.
+- [archive/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/archive/README.md)
+  Historical snapshots only.
+
 ## Execution status
 
-Phase 1 has started.
+Current active state:
 
-Completed on 2026-03-17:
+- offline analyzer, pack planning, pack compilation, restore-spec generation,
+  and clustering are all in place
+- the active rollout count is tracked in
+  [CURRENT_STATUS_2026-03-21.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/CURRENT_STATUS_2026-03-21.md)
+- scene assets are pack-authoritative once a family pack is active, and the
+  current bounded validation path decodes `pilot_pack ... fallbacks=0` on the
+  clean routes
+- baseline normal boot no longer collapses on the first island handoff after
+  `adsPlayWalk()` now resets `ttmSlots[0]`
 
-- `scene_analyzer` now supports `--json` output while preserving the text report
-- peak-memory accounting now uses explicit PS1-sized pointer overhead instead of
-  host `sizeof(void *)`
-- derived JSON outputs exist for:
-  - candidate scene clusters
-  - shared resource inventories
-  - transition churn ranking
-  - first-pass prefetch heuristics
-- analyzer JSON now has a post-processing path that emits:
-  - pack candidates
-  - adjacent transition edges
-  - ranked prefetch edges
-  - pack-boundary candidates
-- generated artifact:
-  [scene_analysis_output_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.json)
-- draft Phase 5 manifest contract:
-  [PACK_MANIFEST_SCHEMA.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_MANIFEST_SCHEMA.md)
-- draft pack payload layout:
-  [PACK_PAYLOAD_LAYOUT.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/PACK_PAYLOAD_LAYOUT.md)
-- derived artifact:
-  [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_transition_prefetch_report_2026-03-17.json)
-- first pack-planning consumer:
-  [scripts/plan-scene-packs.py](/home/hunter/workspace/jc_reborn/scripts/plan-scene-packs.py)
-- generated pack-planning artifacts:
-  [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_plan_2026-03-17.json)
-  and
-  [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_pack_manifests_2026-03-17)
-- compiled pack artifacts:
-  [compiled_packs_2026-03-17](/home/hunter/workspace/jc_reborn/docs/ps1/research/compiled_packs_2026-03-17)
-- staged CD payloads:
-  [jc_resources/packs](/home/hunter/workspace/jc_reborn/jc_resources/packs)
-- binary table-of-contents now embedded directly in each staged `.PAK`
-- generic runtime loader hook:
-  [cdrom_ps1.c](/home/hunter/workspace/jc_reborn/cdrom_ps1.c)
+Key supporting artifacts:
 
-Still pending inside Phase 1:
+- analyzer output:
+  [scene_analysis_output_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-17.json)
+- pack plan:
+  [scene_pack_plan_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_plan_2026-03-17.json)
+- pack manifests:
+  [scene_pack_manifests_2026-03-17/](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_pack_manifests_2026-03-17)
+- compiled research packs:
+  [compiled_packs_2026-03-17](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/compiled_packs_2026-03-17)
+- transition/prefetch report:
+  [scene_transition_prefetch_report_2026-03-17.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_transition_prefetch_report_2026-03-17.json)
+
+Near-term open work:
 
 - tighten heuristics into validated transition data where available
-- validate the binary table-of-contents path under real scene traversal and then
-  decide whether to keep `pack_index.json` as a research/debug sidecar only
-- continue shrinking fallback so only genuinely dynamic overlap cases remain;
-  current status: `ADS/SCR/TTM/BMP` scene assets are now pack-authoritative once
-  a family pack is active, and the current bounded validation path decodes
-  `pilot_pack ... fallbacks=0`
-- keep baseline progression on the normal boot path healthy while scene-scoped
-  rollout continues; current status: the first island handoff no longer
-  collapses to black after `adsPlayWalk()` now resets `ttmSlots[0]`, and the
-  longer `story phase=4` window on that route is understood as the walk/takeover
-  still running rather than a frozen story-state counter
+- keep shrinking the remaining route-specific pack tails
+- keep normal boot and story-scene handoffs healthy while the live restore set
+  expands
 
 ## Objective
 
@@ -100,7 +87,7 @@ The project already has several strong foundations:
 - static scene analysis:
   [scene_analyzer.c](/home/hunter/workspace/jc_reborn/scene_analyzer.c)
 - dated analyzer artifact:
-  [scene_analysis_output_2026-03-17.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/scene_analysis_output_2026-03-17.txt)
+  [scene_analysis_output_2026-03-17.txt](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/scene_analysis_output_2026-03-17.txt)
 - rendering mismatch documentation:
   [README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/README.md)
 - existing research backlog:
@@ -488,6 +475,9 @@ Tasks:
 
 Current status:
 
+- `CURRENT_STATUS_2026-03-21.*` is the active rollout snapshot; the chronology
+  below is preserved for implementation history and rationale, not as the
+  authoritative current scene-count report
 - PS1 now has a real `grSaveZone()` / `grRestoreZone()` implementation in the
   pilot runtime path, restoring bounded rectangles from clean background tiles
   instead of leaving `RESTORE_ZONE` stubbed out
@@ -548,9 +538,14 @@ Current status:
   `restore_scene_specs_full_2026-03-19/` emits `63` scene-scoped restore specs,
   one per ranked scene, so offline conversion can advance across the whole ADS
   surface without waiting for one-by-one runtime promotion
-- `restore_rollout_manifest_2026-03-19.*` classifies that full scene batch into
-  `live_proven` (`5` scenes), `offline_ready` (`56` scenes), and
-  `blocked_entry_path` (`2` scenes)
+- `CURRENT_STATUS_2026-03-21.*` is now the active rollout snapshot for
+  day-to-day work: `25 / 63` scenes are currently verified, `26` scene tags are
+  live in the generated header, and `ACTIVITY.ADS tag 4` is the current
+  bring-up route but is not yet counted as verified
+- the original `restore_rollout_manifest_2026-03-19.*` snapshot has been moved
+  under `docs/ps1/research/archive/2026-03-19-rollout-snapshot/` because it
+  still reports the older `5 live_proven` milestone and was starting to confuse
+  current planning
 - `restore_scene_clusters_2026-03-19.*` compresses those `63` scenes into `34`
   shared restore contracts; this is now the right promotion unit for runtime
   enablement instead of single scenes or hand-picked family labels
@@ -576,12 +571,13 @@ Current status:
   request through the normal `storyPlay()` final-scene flow instead of a custom
   boot shim, which is the right long-term shape for validating scene-scoped
   pilots that need real story/island setup
-- `ACTIVITY.ADS tag 4` remains blocked as a live pilot even with that corrected
-  story path: the pack activates, but the forced route still does not reach a
-  valid composed scene, so it stays offline-only for now
-- the runtime header has been re-tightened to the proven set only
-  (`STAND`, `JOHNNY`, `WALKSTUF`) so the tree cleanly distinguishes
-  scene-scoped offline conversion from scene-scoped live enablement
+- historical note: at this point in the rollout, `ACTIVITY.ADS tag 4` was still
+  blocked as a live pilot and the runtime header had been re-tightened to the
+  then-proven set only (`STAND`, `JOHNNY`, `WALKSTUF`)
+- current note: the header now also carries `MISCGAG.ADS 1-2` as verified and
+  `ACTIVITY.ADS 4` as an active bring-up route, while the verified count
+  remains `25 / 63` until `ACTIVITY` stops leaving a stale extra-Johnny climb
+  frame
 - the offline extractor now interprets TTM rect origins as signed coordinates
   and clamps them to the visible scene bounds before clustering; regenerating
   the full `63`-scene / `34`-cluster artifact set fixed wrapped `VISITOR`

@@ -17,7 +17,7 @@ itself.
 
 Default output directory:
 
-- [dirty_region_templates_2026-03-18](/home/hunter/workspace/jc_reborn/docs/ps1/research/dirty_region_templates_2026-03-18)
+- [dirty_region_templates_2026-03-18](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/dirty_region_templates_2026-03-18)
 
 ## Per-pack artifact
 

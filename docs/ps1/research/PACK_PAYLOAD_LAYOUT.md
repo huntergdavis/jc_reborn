@@ -21,7 +21,7 @@ The compiler currently emits two files per compiled pack:
 
 Current outputs:
 
-- [compiled pack directory](/home/hunter/workspace/jc_reborn/docs/ps1/research/compiled_packs_2026-03-17)
+- [compiled pack directory](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/compiled_packs_2026-03-17)
 
 ## `pack_payload.bin`
 

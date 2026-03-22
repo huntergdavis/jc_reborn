@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_rollout_status",
+  "date": "2026-03-21",
+  "scene_total": 63,
+  "current_verified_scene_count": 25,
+  "current_live_header_scene_count": 26,
+  "current_live_header_ads_names": [
+    "ACTIVITY.ADS",
+    "JOHNNY.ADS",
+    "MISCGAG.ADS",
+    "STAND.ADS",
+    "WALKSTUF.ADS"
+  ],
+  "current_verified": [
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tags": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        15,
+        16
+      ],
+      "scene_count": 14
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tags": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "scene_count": 6
+    },
+    {
+      "ads_name": "WALKSTUF.ADS",
+      "ads_tags": [
+        1,
+        2,
+        3
+      ],
+      "scene_count": 3
+    },
+    {
+      "ads_name": "MISCGAG.ADS",
+      "ads_tags": [
+        1,
+        2
+      ],
+      "scene_count": 2
+    }
+  ],
+  "current_bringup": [
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tags": [
+        4
+      ],
+      "scene_count": 1,
+      "status": "in_progress",
+      "notes": "Live in header, visually improved, not counted as verified until stale-frame artifact is removed."
+    }
+  ],
+  "current_blocked_families": [
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": null,
+      "status": "blocked_entry_path_or_unreliable_route"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 1,
+      "status": "blocked_entry_path_or_unreliable_route"
+    }
+  ],
+  "current_counts": {
+    "verified": 25,
+    "live_header_total": 26,
+    "live_bringup_not_verified": 1,
+    "remaining_unverified_or_unpromoted": 38
+  },
+  "notes": [
+    "This status snapshot supersedes the archived 2026-03-19 rollout manifest for day-to-day planning.",
+    "ACTIVITY.ADS tag 4 is intentionally excluded from verified count until the stale extra-Johnny climb frame is fixed.",
+    "The generated header currently includes 26 promoted scene tags: 25 verified plus 1 bring-up scene."
+  ]
+}

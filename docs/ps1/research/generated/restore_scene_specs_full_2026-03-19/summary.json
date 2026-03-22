@@ -1,0 +1,1327 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec_batch",
+  "pilot_count": 63,
+  "pilots": [
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 1,
+      "scene_index": 38,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-01.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 2,
+      "scene_index": 39,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-02.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 3,
+      "scene_index": 40,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-03.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-03.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 4,
+      "scene_index": 41,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-04.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-04.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 5,
+      "scene_index": 42,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-05.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-05.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 6,
+      "scene_index": 43,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-06.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-06.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 7,
+      "scene_index": 44,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-07.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-07.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 8,
+      "scene_index": 45,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-08.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-08.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 9,
+      "scene_index": 46,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-09.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-09.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 10,
+      "scene_index": 47,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-10.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-10.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 11,
+      "scene_index": 48,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-11.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-11.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 12,
+      "scene_index": 49,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-12.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-12.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 15,
+      "scene_index": 50,
+      "pack_id": "stand-ads",
+      "restore_score": 117,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-15.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-15.md"
+    },
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 16,
+      "scene_index": 51,
+      "pack_id": "stand-ads",
+      "restore_score": 117,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-16.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/stand-ads-tag-16.md"
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 1,
+      "scene_index": 25,
+      "pack_id": "johnny-ads",
+      "restore_score": 113,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-01.md"
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 6,
+      "scene_index": 30,
+      "pack_id": "johnny-ads",
+      "restore_score": 111,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-06.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-06.md"
+    },
+    {
+      "ads_name": "WALKSTUF.ADS",
+      "ads_tag": 2,
+      "scene_index": 61,
+      "pack_id": "walkstuf-ads",
+      "restore_score": 108,
+      "ttm_names": [
+        "MJJOG.TTM",
+        "MJRAFT.TTM",
+        "WOULDBE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 91,
+        "width": 640,
+        "height": 259
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-02.md"
+    },
+    {
+      "ads_name": "WALKSTUF.ADS",
+      "ads_tag": 3,
+      "scene_index": 62,
+      "pack_id": "walkstuf-ads",
+      "restore_score": 105,
+      "ttm_names": [
+        "MJJOG.TTM",
+        "MJRAFT.TTM",
+        "WOULDBE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 91,
+        "width": 640,
+        "height": 259
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-03.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-03.md"
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 2,
+      "scene_index": 26,
+      "pack_id": "johnny-ads",
+      "restore_score": 101,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-02.md"
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 3,
+      "scene_index": 27,
+      "pack_id": "johnny-ads",
+      "restore_score": 101,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-03.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-03.md"
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 4,
+      "scene_index": 28,
+      "pack_id": "johnny-ads",
+      "restore_score": 101,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-04.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-04.md"
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 5,
+      "scene_index": 29,
+      "pack_id": "johnny-ads",
+      "restore_score": 101,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-05.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/johnny-ads-tag-05.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 4,
+      "scene_index": 4,
+      "pack_id": "activity-ads",
+      "restore_score": 100,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-04.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-04.md"
+    },
+    {
+      "ads_name": "WALKSTUF.ADS",
+      "ads_tag": 1,
+      "scene_index": 60,
+      "pack_id": "walkstuf-ads",
+      "restore_score": 99,
+      "ttm_names": [
+        "MJJOG.TTM",
+        "MJRAFT.TTM",
+        "WOULDBE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 91,
+        "width": 640,
+        "height": 259
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/walkstuf-ads-tag-01.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 1,
+      "scene_index": 17,
+      "pack_id": "fishing-ads",
+      "restore_score": 95,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-01.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 2,
+      "scene_index": 18,
+      "pack_id": "fishing-ads",
+      "restore_score": 95,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-02.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 6,
+      "scene_index": 22,
+      "pack_id": "fishing-ads",
+      "restore_score": 95,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-06.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-06.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 5,
+      "scene_index": 21,
+      "pack_id": "fishing-ads",
+      "restore_score": 95,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-05.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-05.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 1,
+      "scene_index": 0,
+      "pack_id": "activity-ads",
+      "restore_score": 94,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-01.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 4,
+      "scene_index": 20,
+      "pack_id": "fishing-ads",
+      "restore_score": 94,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-04.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-04.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 7,
+      "scene_index": 23,
+      "pack_id": "fishing-ads",
+      "restore_score": 94,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-07.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-07.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 8,
+      "scene_index": 24,
+      "pack_id": "fishing-ads",
+      "restore_score": 94,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-08.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-08.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 8,
+      "scene_index": 8,
+      "pack_id": "activity-ads",
+      "restore_score": 93,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-08.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-08.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 11,
+      "scene_index": 2,
+      "pack_id": "activity-ads",
+      "restore_score": 93,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-11.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-11.md"
+    },
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 5,
+      "scene_index": 14,
+      "pack_id": "building-ads",
+      "restore_score": 91,
+      "ttm_names": [
+        "GJGULIVR.TTM",
+        "MJFIRE.TTM",
+        "MJSAND.TTM"
+      ],
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 600,
+        "height": 294
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-05.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-05.md"
+    },
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 7,
+      "scene_index": 15,
+      "pack_id": "building-ads",
+      "restore_score": 91,
+      "ttm_names": [
+        "GJGULIVR.TTM",
+        "MJFIRE.TTM",
+        "MJSAND.TTM"
+      ],
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 600,
+        "height": 294
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-07.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-07.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 5,
+      "scene_index": 5,
+      "pack_id": "activity-ads",
+      "restore_score": 91,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-05.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-05.md"
+    },
+    {
+      "ads_name": "VISITOR.ADS",
+      "ads_tag": 1,
+      "scene_index": 54,
+      "pack_id": "visitor-ads",
+      "restore_score": 85,
+      "ttm_names": [
+        "GJLILIPU.TTM",
+        "GJVIS3.TTM",
+        "GJVIS5.TTM",
+        "GJVIS6.TTM",
+        "MJCOCO.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 315
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-01.md"
+    },
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 3,
+      "scene_index": 12,
+      "pack_id": "building-ads",
+      "restore_score": 84,
+      "ttm_names": [
+        "GJGULIVR.TTM",
+        "MJFIRE.TTM",
+        "MJSAND.TTM"
+      ],
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 600,
+        "height": 294
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-03.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-03.md"
+    },
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 4,
+      "scene_index": 11,
+      "pack_id": "building-ads",
+      "restore_score": 84,
+      "ttm_names": [
+        "GJGULIVR.TTM",
+        "MJFIRE.TTM",
+        "MJSAND.TTM"
+      ],
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 600,
+        "height": 294
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-04.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-04.md"
+    },
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 6,
+      "scene_index": 16,
+      "pack_id": "building-ads",
+      "restore_score": 84,
+      "ttm_names": [
+        "GJGULIVR.TTM",
+        "MJFIRE.TTM",
+        "MJSAND.TTM"
+      ],
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 600,
+        "height": 294
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-06.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-06.md"
+    },
+    {
+      "ads_name": "MARY.ADS",
+      "ads_tag": 5,
+      "scene_index": 35,
+      "pack_id": "mary-ads",
+      "restore_score": 83,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-05.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-05.md"
+    },
+    {
+      "ads_name": "MARY.ADS",
+      "ads_tag": 3,
+      "scene_index": 32,
+      "pack_id": "mary-ads",
+      "restore_score": 83,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-03.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-03.md"
+    },
+    {
+      "ads_name": "MARY.ADS",
+      "ads_tag": 2,
+      "scene_index": 33,
+      "pack_id": "mary-ads",
+      "restore_score": 83,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-02.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 9,
+      "scene_index": 9,
+      "pack_id": "activity-ads",
+      "restore_score": 82,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-09.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-09.md"
+    },
+    {
+      "ads_name": "MARY.ADS",
+      "ads_tag": 4,
+      "scene_index": 34,
+      "pack_id": "mary-ads",
+      "restore_score": 81,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-04.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-04.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 6,
+      "scene_index": 6,
+      "pack_id": "activity-ads",
+      "restore_score": 81,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-06.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-06.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 7,
+      "scene_index": 7,
+      "pack_id": "activity-ads",
+      "restore_score": 81,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-07.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-07.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 10,
+      "scene_index": 3,
+      "pack_id": "activity-ads",
+      "restore_score": 81,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-10.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-10.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 12,
+      "scene_index": 1,
+      "pack_id": "activity-ads",
+      "restore_score": 81,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-12.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/activity-ads-tag-12.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 3,
+      "scene_index": 19,
+      "pack_id": "fishing-ads",
+      "restore_score": 81,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-03.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/fishing-ads-tag-03.md"
+    },
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 1,
+      "scene_index": 10,
+      "pack_id": "building-ads",
+      "restore_score": 80,
+      "ttm_names": [
+        "GJGULIVR.TTM",
+        "MJFIRE.TTM",
+        "MJSAND.TTM"
+      ],
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 600,
+        "height": 294
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-01.md"
+    },
+    {
+      "ads_name": "BUILDING.ADS",
+      "ads_tag": 2,
+      "scene_index": 13,
+      "pack_id": "building-ads",
+      "restore_score": 80,
+      "ttm_names": [
+        "GJGULIVR.TTM",
+        "MJFIRE.TTM",
+        "MJSAND.TTM"
+      ],
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 600,
+        "height": 294
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/building-ads-tag-02.md"
+    },
+    {
+      "ads_name": "VISITOR.ADS",
+      "ads_tag": 3,
+      "scene_index": 55,
+      "pack_id": "visitor-ads",
+      "restore_score": 78,
+      "ttm_names": [
+        "GJLILIPU.TTM",
+        "GJVIS3.TTM",
+        "GJVIS5.TTM",
+        "GJVIS6.TTM",
+        "MJCOCO.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 315
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-03.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-03.md"
+    },
+    {
+      "ads_name": "VISITOR.ADS",
+      "ads_tag": 5,
+      "scene_index": 59,
+      "pack_id": "visitor-ads",
+      "restore_score": 77,
+      "ttm_names": [
+        "GJLILIPU.TTM",
+        "GJVIS3.TTM",
+        "GJVIS5.TTM",
+        "GJVIS6.TTM",
+        "MJCOCO.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 315
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-05.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-05.md"
+    },
+    {
+      "ads_name": "VISITOR.ADS",
+      "ads_tag": 4,
+      "scene_index": 56,
+      "pack_id": "visitor-ads",
+      "restore_score": 76,
+      "ttm_names": [
+        "GJLILIPU.TTM",
+        "GJVIS3.TTM",
+        "GJVIS5.TTM",
+        "GJVIS6.TTM",
+        "MJCOCO.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 315
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-04.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-04.md"
+    },
+    {
+      "ads_name": "VISITOR.ADS",
+      "ads_tag": 6,
+      "scene_index": 57,
+      "pack_id": "visitor-ads",
+      "restore_score": 76,
+      "ttm_names": [
+        "GJLILIPU.TTM",
+        "GJVIS3.TTM",
+        "GJVIS5.TTM",
+        "GJVIS6.TTM",
+        "MJCOCO.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 315
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-06.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-06.md"
+    },
+    {
+      "ads_name": "VISITOR.ADS",
+      "ads_tag": 7,
+      "scene_index": 58,
+      "pack_id": "visitor-ads",
+      "restore_score": 76,
+      "ttm_names": [
+        "GJLILIPU.TTM",
+        "GJVIS3.TTM",
+        "GJVIS5.TTM",
+        "GJVIS6.TTM",
+        "MJCOCO.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 35,
+        "width": 640,
+        "height": 315
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-07.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/visitor-ads-tag-07.md"
+    },
+    {
+      "ads_name": "MARY.ADS",
+      "ads_tag": 1,
+      "scene_index": 31,
+      "pack_id": "mary-ads",
+      "restore_score": 72,
+      "ttm_names": [
+        "SASKDATE.TTM",
+        "SBREAKUP.TTM",
+        "SJGLIMPS.TTM",
+        "SJLEAVES.TTM",
+        "SMDATE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 124,
+        "width": 640,
+        "height": 226
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/mary-ads-tag-01.md"
+    },
+    {
+      "ads_name": "MISCGAG.ADS",
+      "ads_tag": 1,
+      "scene_index": 36,
+      "pack_id": "miscgag-ads",
+      "restore_score": 61,
+      "ttm_names": [
+        "GJGULL1.TTM",
+        "GJHOT.TTM",
+        "SHARK1.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 61,
+        "width": 640,
+        "height": 289
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-01.md"
+    },
+    {
+      "ads_name": "MISCGAG.ADS",
+      "ads_tag": 2,
+      "scene_index": 37,
+      "pack_id": "miscgag-ads",
+      "restore_score": 57,
+      "ttm_names": [
+        "GJGULL1.TTM",
+        "GJHOT.TTM",
+        "SHARK1.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 61,
+        "width": 640,
+        "height": 289
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/miscgag-ads-tag-02.md"
+    },
+    {
+      "ads_name": "SUZY.ADS",
+      "ads_tag": 1,
+      "scene_index": 52,
+      "pack_id": "suzy-ads",
+      "restore_score": 54,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSUZY.TTM",
+        "SUZYCITY.TTM"
+      ],
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/suzy-ads-tag-01.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/suzy-ads-tag-01.md"
+    },
+    {
+      "ads_name": "SUZY.ADS",
+      "ads_tag": 2,
+      "scene_index": 53,
+      "pack_id": "suzy-ads",
+      "restore_score": 45,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSUZY.TTM",
+        "SUZYCITY.TTM"
+      ],
+      "union_rect": {
+        "x": 128,
+        "y": 77,
+        "width": 384,
+        "height": 268
+      },
+      "json_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/suzy-ads-tag-02.json",
+      "md_path": "docs/ps1/research/generated/restore_scene_specs_full_2026-03-19/suzy-ads-tag-02.md"
+    }
+  ]
+}

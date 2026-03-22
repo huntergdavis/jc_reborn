@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec_batch",
+  "pilot_count": 5,
+  "pilots": [
+    {
+      "ads_name": "STAND.ADS",
+      "ads_tag": 1,
+      "scene_index": 38,
+      "pack_id": "stand-ads",
+      "restore_score": 118,
+      "ttm_names": [
+        "MJAMBWLK.TTM",
+        "MJTELE.TTM"
+      ],
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 352,
+        "height": 140
+      },
+      "json_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/stand-ads.json",
+      "md_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/stand-ads.md"
+    },
+    {
+      "ads_name": "JOHNNY.ADS",
+      "ads_tag": 1,
+      "scene_index": 25,
+      "pack_id": "johnny-ads",
+      "restore_score": 113,
+      "ttm_names": [
+        "MEANWHIL.TTM",
+        "SJMSSGE.TTM",
+        "SJWORK.TTM",
+        "THEEND.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 87,
+        "width": 528,
+        "height": 263
+      },
+      "json_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/johnny-ads.json",
+      "md_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/johnny-ads.md"
+    },
+    {
+      "ads_name": "WALKSTUF.ADS",
+      "ads_tag": 2,
+      "scene_index": 61,
+      "pack_id": "walkstuf-ads",
+      "restore_score": 108,
+      "ttm_names": [
+        "MJJOG.TTM",
+        "MJRAFT.TTM",
+        "WOULDBE.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 91,
+        "width": 640,
+        "height": 259
+      },
+      "json_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/walkstuf-ads.json",
+      "md_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/walkstuf-ads.md"
+    },
+    {
+      "ads_name": "ACTIVITY.ADS",
+      "ads_tag": 4,
+      "scene_index": 4,
+      "pack_id": "activity-ads",
+      "restore_score": 100,
+      "ttm_names": [
+        "GJDIVE.TTM",
+        "GJNAT1.TTM",
+        "GJNAT3.TTM",
+        "MJBATH.TTM",
+        "MJDIVE.TTM",
+        "MJREAD.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 43,
+        "width": 640,
+        "height": 307
+      },
+      "json_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/activity-ads.json",
+      "md_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/activity-ads.md"
+    },
+    {
+      "ads_name": "FISHING.ADS",
+      "ads_tag": 1,
+      "scene_index": 17,
+      "pack_id": "fishing-ads",
+      "restore_score": 95,
+      "ttm_names": [
+        "FISHWALK.TTM",
+        "GFFFOOD.TTM",
+        "GJCATCH2.TTM",
+        "MJFISH.TTM",
+        "MJFISHC.TTM"
+      ],
+      "union_rect": {
+        "x": 0,
+        "y": 111,
+        "width": 640,
+        "height": 239
+      },
+      "json_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/fishing-ads.json",
+      "md_path": "docs/ps1/research/generated/restore_pilot_specs_2026-03-19/fishing-ads.md"
+    }
+  ]
+}

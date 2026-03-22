@@ -179,6 +179,7 @@ void grClearScreen(PS1Surface *sfc);
 
 /* GPU sprite rendering — per-frame lifecycle */
 void grBeginFrame(void);
+void grDebugOverlayBox(int x, int y, int w, int h, uint16 color);
 void grReplaySprite(struct TDrawnSprite *ds);
 
 /* Background tiles - exported for dirty rectangle wiping */
@@ -194,6 +195,7 @@ void grPs1StatBmpShortLoad(uint16 requested, uint16 loaded);
 
 void grLoadPalette();
 void grLoadScreen(char *strArg);
+int grGetCurrentFrame(void);
 
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);

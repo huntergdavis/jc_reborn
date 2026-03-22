@@ -62,6 +62,7 @@ int fclose(FILE *stream);
 #include "sound_ps1.h"
 #include "cdrom_ps1.h"
 #include "ps1_debug.h"
+#include "pause_menu.h"
 #else
 #include "graphics.h"
 #include "events.h"
@@ -112,6 +113,12 @@ static char ps1BootArgStorage[3][32];
 static int ps1IsSpace(char c)
 {
     return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+}
+
+static int ps1HasBootOverridePending(void)
+{
+    return argBench || argTtm || argAds || argIsland || !argPlayAll || numArgs > 0 ||
+           storyHasBootOverridePending();
 }
 
 static void ps1ResetBootArgs(void)
@@ -181,13 +188,30 @@ static void ps1ApplyBootOverride(char *buffer)
         return;
     }
 
+#ifdef PS1_BUILD
+    printf("[BOOT] override='%s'\n", buffer);
+#endif
+
     if (!strcmp(tokens[0], "story")) {
+        if (tokenCount >= 3 && !strcmp(tokens[1], "single")) {
+#ifdef PS1_BUILD
+            printf("[BOOT] story single %d\n", atoi(tokens[2]));
+#endif
+            storySetBootSingleSceneIndex(atoi(tokens[2]));
+            return;
+        }
         if (tokenCount >= 3 &&
             (!strcmp(tokens[1], "scene") || !strcmp(tokens[1], "index"))) {
+#ifdef PS1_BUILD
+            printf("[BOOT] story scene %d\n", atoi(tokens[2]));
+#endif
             storySetBootSceneIndex(atoi(tokens[2]));
             return;
         }
         if (tokenCount >= 4 && !strcmp(tokens[1], "ads")) {
+#ifdef PS1_BUILD
+            printf("[BOOT] story ads %s %d\n", tokens[2], atoi(tokens[3]));
+#endif
             storySetBootScene(tokens[2], (uint16)atoi(tokens[3]));
             return;
         }
@@ -236,10 +260,36 @@ static void ps1LoadBootOverride(void)
     uint8 *rawData;
     char buffer[128];
     size_t readCount = 0;
+    CdlFILE fileInfo;
 
     ps1ResetBootArgs();
 
-    rawData = ps1_loadRawFile("\\BOOTMODE.TXT;1", &rawSize);
+    rawData = NULL;
+
+    /* Use the same direct CD read pattern as the title screen path first.
+     * This has proven more reliable under headless regtest than the older
+     * raw-file helper path. */
+    if (CdSearchFile(&fileInfo, "\\BOOTMODE.TXT;1")) {
+        uint32 fileSize = fileInfo.size;
+        int sectors = (int)((fileSize + 2047) / 2048);
+
+        rawData = (uint8 *)malloc((size_t)sectors * 2048u);
+        if (rawData != NULL) {
+            CdControl(CdlSetloc, (uint8 *)&fileInfo.pos, NULL);
+            CdRead(sectors, (uint32 *)rawData, CdlModeSpeed);
+            if (CdReadSync(0, 0) < 0) {
+                free(rawData);
+                rawData = NULL;
+            } else {
+                rawSize = fileSize;
+            }
+        }
+    }
+
+    if (rawData == NULL) {
+        rawData = ps1_loadRawFile("\\BOOTMODE.TXT;1", &rawSize);
+    }
+
     if (rawData != NULL) {
         readCount = (rawSize < (sizeof(buffer) - 1)) ? rawSize : (sizeof(buffer) - 1);
         memcpy(buffer, rawData, readCount);
@@ -326,6 +376,7 @@ static void loadTitleScreenEarly(void)
 
 #endif
 
+#ifndef PS1_BUILD
 static void usage()
 {
         printf("\n");
@@ -447,6 +498,7 @@ static void parseArgs(int argc, char **argv)
     if (argDump + argBench + argTtm + argAds == 0)
         argPlayAll = 1;
 }
+#endif
 
 
 int main(int argc, char **argv)
@@ -464,8 +516,13 @@ int main(int argc, char **argv)
 
     debugMode = 0;  /* Disable debug output on PS1 - vprintf crashes */
 
-    /* Show title screen FIRST - instant visual feedback */
-    loadTitleScreenEarly();
+    /* Read optional on-disc boot override before the early title path so
+     * exact-scene validation runs can bypass the title screen entirely. */
+    ps1LoadBootOverride();
+
+    /* Show title screen only for normal boot flow. */
+    if (!ps1HasBootOverridePending())
+        loadTitleScreenEarly();
 
     /* Parse resource files from CD - needed for background and sprites */
     parseResourceFiles("RESOURCE.MAP");
@@ -473,8 +530,6 @@ int main(int argc, char **argv)
     /* Seed RNG after CD/resource setup to avoid deterministic startup scenes. */
     ps1SeedRandom();
 
-    /* Optional on-disc boot override for targeted validation runs. */
-    ps1LoadBootOverride();
 #else
     /* Non-PS1: normal flow */
     parseArgs(argc, argv);
@@ -498,6 +553,7 @@ int main(int argc, char **argv)
     grGpuAlreadyInitialized = 1;
     graphicsInit();
     soundInit();
+    pauseMenuInit();
 
     if (numPalResources > 0 && palResources[0]) {
         grLoadPalette(palResources[0]);
@@ -554,28 +610,16 @@ int main(int argc, char **argv)
     }
 
     else if (argDump) {
-#ifdef PS1_BUILD
-        /* VISUAL DEBUG: ORANGE screen = argDump path */
-        showDebugScreen(255, 165, 0);
-#endif
         dumpAllResources();
     }
 
     else if (argBench) {
-#ifdef PS1_BUILD
-        /* VISUAL DEBUG: PINK screen = argBench path */
-        showDebugScreen(255, 192, 203);
-#endif
         graphicsInit();
         adsPlayBench();
         graphicsEnd();
     }
 
     else if (argTtm) {
-#ifdef PS1_BUILD
-        /* VISUAL DEBUG: YELLOW screen = Reached TTM section */
-        showDebugScreen(255, 255, 0);
-#endif
         graphicsInit();
 
 #ifdef PS1_BUILD

@@ -37,6 +37,7 @@ extern int rand(void);
 #ifdef PS1_BUILD
 #include "graphics_ps1.h"
 #include "sound_ps1.h"
+#include "cdrom_ps1.h"
 #else
 #include "graphics.h"
 #include "sound.h"
@@ -53,6 +54,14 @@ static int storyCurrentDay = 1;
 static char storyBootAdsName[13] = "";
 static int storyBootAdsTag = -1;
 static int storyBootSceneIndex = -1;
+static int storyBootSingleSceneIndex = -1;
+
+int storyHasBootOverridePending(void)
+{
+    return storyBootSingleSceneIndex >= 0 ||
+           storyBootSceneIndex >= 0 ||
+           (storyBootAdsName[0] != '\0' && storyBootAdsTag >= 0);
+}
 
 #ifdef PS1_BUILD
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
@@ -130,6 +139,7 @@ void storySetBootScene(const char *adsName, uint16 adsTag)
         storyBootAdsName[0] = '\0';
         storyBootAdsTag = -1;
         storyBootSceneIndex = -1;
+        storyBootSingleSceneIndex = -1;
         return;
     }
 
@@ -137,6 +147,7 @@ void storySetBootScene(const char *adsName, uint16 adsTag)
     storyBootAdsName[sizeof(storyBootAdsName) - 1] = '\0';
     storyBootAdsTag = (int)adsTag;
     storyBootSceneIndex = -1;
+    storyBootSingleSceneIndex = -1;
 }
 
 void storySetBootSceneIndex(int sceneIndex)
@@ -147,6 +158,20 @@ void storySetBootSceneIndex(int sceneIndex)
     }
 
     storyBootSceneIndex = sceneIndex;
+    storyBootAdsName[0] = '\0';
+    storyBootAdsTag = -1;
+    storyBootSingleSceneIndex = -1;
+}
+
+void storySetBootSingleSceneIndex(int sceneIndex)
+{
+    if (sceneIndex < 0 || sceneIndex >= NUM_SCENES) {
+        storyBootSingleSceneIndex = -1;
+        return;
+    }
+
+    storyBootSingleSceneIndex = sceneIndex;
+    storyBootSceneIndex = -1;
     storyBootAdsName[0] = '\0';
     storyBootAdsTag = -1;
 }
@@ -312,7 +337,8 @@ void storyPlay()
     struct TStoryScene *forcedIntermediateScene = NULL;
 
     adsInit();
-    adsPlayIntro();
+    if (!storyHasBootOverridePending())
+        adsPlayIntro();
 
     while (1) {
 #ifdef PS1_BUILD
@@ -325,16 +351,41 @@ void storyPlay()
 
         bootScene = NULL;
         forcedIntermediateScene = NULL;
-        if (storyBootSceneIndex >= 0 && storyBootSceneIndex < NUM_SCENES) {
+        if (storyBootSingleSceneIndex >= 0 && storyBootSingleSceneIndex < NUM_SCENES) {
+            bootScene = &storyScenes[storyBootSingleSceneIndex];
+#ifdef PS1_BUILD
+            printf("[STORY] boot single idx=%d ads=%s tag=%d flags=%u\n",
+                   storyBootSingleSceneIndex,
+                   bootScene->adsName,
+                   bootScene->adsTagNo,
+                   bootScene->flags);
+#endif
+            storyBootSingleSceneIndex = -1;
+        }
+        else if (storyBootSceneIndex >= 0 && storyBootSceneIndex < NUM_SCENES) {
             struct TStoryScene *requestedScene = &storyScenes[storyBootSceneIndex];
             if (requestedScene->flags & FINAL)
                 bootScene = requestedScene;
             else
                 forcedIntermediateScene = requestedScene;
+#ifdef PS1_BUILD
+            printf("[STORY] boot scene idx=%d ads=%s tag=%d flags=%u final=%d\n",
+                   storyBootSceneIndex,
+                   requestedScene->adsName,
+                   requestedScene->adsTagNo,
+                   requestedScene->flags,
+                   (requestedScene->flags & FINAL) ? 1 : 0);
+#endif
             storyBootSceneIndex = -1;
         }
         else if (storyBootAdsName[0] != '\0' && storyBootAdsTag >= 0) {
             bootScene = storyFindSceneByAds(storyBootAdsName, storyBootAdsTag);
+#ifdef PS1_BUILD
+            printf("[STORY] boot ads ads=%s tag=%d found=%d\n",
+                   storyBootAdsName,
+                   storyBootAdsTag,
+                   bootScene != NULL ? 1 : 0);
+#endif
             storyBootAdsName[0] = '\0';
             storyBootAdsTag = -1;
         }
@@ -360,6 +411,15 @@ void storyPlay()
         else {
             adsNoIsland();
         }
+
+#ifdef PS1_BUILD
+        printf("[STORY] final ads=%s tag=%d flags=%u island=%d boot=%d\n",
+               finalScene->adsName,
+               finalScene->adsTagNo,
+               finalScene->flags,
+               (finalScene->flags & ISLAND) ? 1 : 0,
+               bootScene != NULL ? 1 : 0);
+#endif
 
         int prevSpot = -1;
         int prevHdg  = -1;
@@ -424,6 +484,7 @@ void storyPlay()
                 ps1StoryDbgSceneTag = (uint16)scene->adsTagNo;
                 ps1StoryDbgNextSpot = (uint16)scene->spotEnd;
                 ps1StoryDbgNextHdg = (uint16)scene->hdgEnd;
+                ps1_pilotPrearmPackForAds(scene->adsName);
 #endif
                 adsPlay(scene->adsName, scene->adsTagNo);
 #ifdef PS1_BUILD
@@ -479,9 +540,14 @@ void storyPlay()
         ps1StoryDbgSceneTag = (uint16)finalScene->adsTagNo;
         ps1StoryDbgNextSpot = (uint16)finalScene->spotEnd;
         ps1StoryDbgNextHdg = (uint16)finalScene->hdgEnd;
+        ps1_pilotPrearmPackForAds(finalScene->adsName);
 #endif
         adsPlay(finalScene->adsName, finalScene->adsTagNo);
 #ifdef PS1_BUILD
+        printf("[STORY] ads launched=%d ads=%s tag=%d\n",
+               ps1AdsLastPlayLaunched,
+               finalScene->adsName,
+               finalScene->adsTagNo);
         if (!ps1AdsLastPlayLaunched) {
             /* Retry a fresh sequence immediately instead of idling on static background. */
             if (finalScene->flags & ISLAND)

@@ -25,6 +25,12 @@
 //    Types definitions
 //------------------------
 
+/* Resource type IDs for O(1) touch/pin/unpin dispatch */
+#define RESOURCE_TYPE_ADS 0
+#define RESOURCE_TYPE_BMP 1
+#define RESOURCE_TYPE_TTM 2
+#define RESOURCE_TYPE_SCR 3
+
 struct TMapFile {
     uint8 unknown1;
     uint8 unknown2;
@@ -48,6 +54,8 @@ struct TMapFileEntry {
 
 struct TAdsResource {
     char *resName;
+    uint8 resourceType;    /* RESOURCE_TYPE_ADS */
+    uint16 resourceIndex;  /* index in adsResources[] */
     uint32 versionSize;
     uint8 *versionString;
     uint8 adsUnknown1;
@@ -78,6 +86,8 @@ struct TAdsRes {
 
 struct TBmpResource {
     char *resName;
+    uint8 resourceType;    /* RESOURCE_TYPE_BMP */
+    uint16 resourceIndex;  /* index in bmpResources[] */
     uint16 width;
     uint16 height;
     uint32 dataSize;
@@ -113,6 +123,8 @@ struct TPalResource {
 
 struct TScrResource {
     char *resName;
+    uint8 resourceType;    /* RESOURCE_TYPE_SCR */
+    uint16 resourceIndex;  /* index in scrResources[] */
     uint16 totalSize;
     uint16 flags;
     uint32 dimSize;
@@ -130,6 +142,8 @@ struct TScrResource {
 
 struct TTtmResource {
     char *resName;
+    uint8 resourceType;    /* RESOURCE_TYPE_TTM */
+    uint16 resourceIndex;  /* index in ttmResources[] */
     uint32 versionSize;
     uint8 *versionString;
     uint32 numPages;

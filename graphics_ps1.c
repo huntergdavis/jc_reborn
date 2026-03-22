@@ -85,6 +85,81 @@ static uint16 *bgTile1Clean = NULL;
 static uint16 *bgTile3Clean = NULL;
 static uint16 *bgTile4Clean = NULL;
 
+/* Dirty-rect tracking: per-tile row-granularity restore/upload.
+ * Index: 0=bgTile0, 1=bgTile1, 2=bgTile3, 3=bgTile4.
+ * -1 means clean (no rows modified). */
+static int currDirtyMinY[4] = {-1, -1, -1, -1};
+static int currDirtyMaxY[4] = {-1, -1, -1, -1};
+static int prevDirtyMinY[4] = {-1, -1, -1, -1};
+static int prevDirtyMaxY[4] = {-1, -1, -1, -1};
+
+/* Byte-pair palette lookup tables (256 entries × 4 bytes = 1KB each).
+ * Each entry packs two resolved 16-bit colors for a packed byte:
+ *   low16 = even pixel color, high16 = odd pixel color.
+ * palLutSierra: high nibble = even (Sierra BMP format).
+ * palLutPsb:    low nibble = even (PSB pre-transcoded format). */
+static uint32 palLutSierra[256];
+static uint32 palLutPsb[256];
+
+static inline void markTileDirty(int idx, int minY, int maxY)
+{
+    if (currDirtyMinY[idx] < 0) {
+        currDirtyMinY[idx] = minY;
+        currDirtyMaxY[idx] = maxY;
+    } else {
+        if (minY < currDirtyMinY[idx]) currDirtyMinY[idx] = minY;
+        if (maxY > currDirtyMaxY[idx]) currDirtyMaxY[idx] = maxY;
+    }
+}
+
+static void grMarkAllTilesDirty(void)
+{
+    for (int i = 0; i < 4; i++) {
+        currDirtyMinY[i] = 0;
+        currDirtyMaxY[i] = 239;
+    }
+}
+
+/* Mark dirty region from a screen-space rectangle (x0,y0)-(x1,y1) exclusive */
+static void grMarkRectDirty(int x0, int y0, int x1, int y1)
+{
+    if (x0 < 0) x0 = 0;
+    if (y0 < 0) y0 = 0;
+    if (x1 > 640) x1 = 640;
+    if (y1 > 480) y1 = 480;
+    if (x0 >= x1 || y0 >= y1) return;
+
+    /* Top row tiles (screen y 0-239) */
+    if (y0 < 240) {
+        int ty0 = y0;
+        int ty1 = (y1 < 240) ? y1 - 1 : 239;
+        if (x0 < 320) markTileDirty(0, ty0, ty1);
+        if (x1 > 320) markTileDirty(1, ty0, ty1);
+    }
+    /* Bottom row tiles (screen y 240-479) */
+    if (y1 > 240) {
+        int ty0 = (y0 > 240) ? y0 - 240 : 0;
+        int ty1 = y1 - 240 - 1;
+        if (ty1 > 239) ty1 = 239;
+        if (x0 < 320) markTileDirty(2, ty0, ty1);
+        if (x1 > 320) markTileDirty(3, ty0, ty1);
+    }
+}
+
+static void grRebuildPaletteLuts(void)
+{
+    for (int i = 0; i < 256; i++) {
+        /* Sierra: high nibble = even pixel, low nibble = odd pixel */
+        uint16 pe = ttmPalette[(i >> 4) & 0x0F];
+        uint16 po = ttmPalette[i & 0x0F];
+        palLutSierra[i] = (uint32)pe | ((uint32)po << 16);
+        /* PSB: low nibble = even pixel, high nibble = odd pixel */
+        pe = ttmPalette[i & 0x0F];
+        po = ttmPalette[(i >> 4) & 0x0F];
+        palLutPsb[i] = (uint32)pe | ((uint32)po << 16);
+    }
+}
+
 struct TPs1SavedZone {
     uint16 x;
     uint16 y;
@@ -653,6 +728,9 @@ void grLoadPalette(struct TPalResource *palResource)
     RECT clutRect;
     setRECT(&clutRect, 640, 0, 16, 1);  /* 16 colors, 1 row, at (640, 0) */
     LoadImage(&clutRect, (uint32*)ttmPalette);
+
+    /* Rebuild byte-pair LUTs for compositing span functions */
+    grRebuildPaletteLuts();
 }
 
 /*
@@ -742,8 +820,19 @@ static int grUploadAndDrawGpuSprite(const uint8 *indexedPixels, uint16 w, uint16
         memcpy(dst, indexedPixels, indexedSize);
     } else {
         /* Sierra format: nibble-swap into swap buffer.
-         * Sierra: HIGH nibble = even pixel.  PS1: LOW nibble = pixel 0. */
-        for (uint32 i = 0; i < indexedSize; i++) {
+         * Sierra: HIGH nibble = even pixel.  PS1: LOW nibble = pixel 0.
+         * Process 4 bytes at a time via uint32 bitwise operations. */
+        uint32 i = 0;
+        const uint32 *src32 = (const uint32 *)indexedPixels;
+        uint32 *dst32 = (uint32 *)dst;
+        uint32 count32 = indexedSize >> 2;
+        for (uint32 j = 0; j < count32; j++) {
+            uint32 w = src32[j];
+            dst32[j] = ((w & 0x0F0F0F0Fu) << 4) | ((w >> 4) & 0x0F0F0F0Fu);
+        }
+        i = count32 << 2;
+        /* Handle remaining bytes */
+        for (; i < indexedSize; i++) {
             uint8 b = indexedPixels[i];
             dst[i] = ((b & 0x0F) << 4) | ((b >> 4) & 0x0F);
         }
@@ -1209,6 +1298,11 @@ static int grTryLoadPsb(struct TTtmSlot *ttmSlot, uint16 slotNo,
     int framesLoaded;
     uint32 frameTableEnd;
 
+    /* Diagnostic guard: keep JOHNWALK on the legacy BMP path until the
+     * new PSB-backed sprite route is proven correct across ACTIVITY/MISCGAG. */
+    if (strcmp(strArg, "JOHNWALK.BMP") == 0)
+        return 0;
+
     /* Fast registry lookup — avoids any CD access for unknown BMPs. */
     psbSize = psbRegistryLookup(strArg);
     if (psbSize == 0) return 0;
@@ -1525,7 +1619,8 @@ void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY)
     }
 }
 
-/* Fast indexed compositing helpers: decode two 4-bit pixels per byte whenever possible. */
+/* Fast indexed compositing helpers using byte-pair palette LUTs.
+ * 4-pixel unroll: reads 2 packed bytes per iteration, halving loop overhead. */
 static inline void compositeIndexedSpanFwd(uint16 *dst, const uint8 *src,
                                            uint32 pixelIdx, int count,
                                            const uint16 *pal)
@@ -1533,6 +1628,7 @@ static inline void compositeIndexedSpanFwd(uint16 *dst, const uint8 *src,
     int di = 0;
     if (count <= 0) return;
 
+    /* Handle odd start pixel */
     if (pixelIdx & 1) {
         uint8 packed = src[pixelIdx >> 1];
         uint16 p = pal[packed & 0x0F];
@@ -1542,10 +1638,28 @@ static inline void compositeIndexedSpanFwd(uint16 *dst, const uint8 *src,
         count--;
     }
 
-    while (count >= 2) {
-        uint8 packed = src[pixelIdx >> 1];
-        uint16 p0 = pal[(packed >> 4) & 0x0F];
-        uint16 p1 = pal[packed & 0x0F];
+    /* 4-pixel unrolled loop using Sierra palette LUT */
+    while (count >= 4) {
+        uint32 pair0 = palLutSierra[src[pixelIdx >> 1]];
+        uint32 pair1 = palLutSierra[src[(pixelIdx >> 1) + 1]];
+        uint16 p0 = (uint16)pair0;
+        uint16 p1 = (uint16)(pair0 >> 16);
+        uint16 p2 = (uint16)pair1;
+        uint16 p3 = (uint16)(pair1 >> 16);
+        if (p0) dst[di]     = p0;
+        if (p1) dst[di + 1] = p1;
+        if (p2) dst[di + 2] = p2;
+        if (p3) dst[di + 3] = p3;
+        di += 4;
+        pixelIdx += 4;
+        count -= 4;
+    }
+
+    /* Handle remaining 2 pixels */
+    if (count >= 2) {
+        uint32 pair = palLutSierra[src[pixelIdx >> 1]];
+        uint16 p0 = (uint16)pair;
+        uint16 p1 = (uint16)(pair >> 16);
         if (p0) dst[di] = p0;
         if (p1) dst[di + 1] = p1;
         di += 2;
@@ -1553,6 +1667,7 @@ static inline void compositeIndexedSpanFwd(uint16 *dst, const uint8 *src,
         count -= 2;
     }
 
+    /* Handle trailing pixel */
     if (count) {
         uint8 packed = src[pixelIdx >> 1];
         uint16 p = pal[(packed >> 4) & 0x0F];
@@ -1567,6 +1682,7 @@ static inline void compositeIndexedSpanRev(uint16 *dst, const uint8 *src,
     int di = 0;
     if (count <= 0) return;
 
+    /* Handle even start pixel (reversed iteration starts at rightmost) */
     if ((pixelIdx & 1) == 0) {
         uint8 packed = src[pixelIdx >> 1];
         uint16 p = pal[(packed >> 4) & 0x0F];
@@ -1576,10 +1692,27 @@ static inline void compositeIndexedSpanRev(uint16 *dst, const uint8 *src,
         count--;
     }
 
-    while (count >= 2) {
-        uint8 packed = src[pixelIdx >> 1];
-        uint16 p0 = pal[packed & 0x0F];
-        uint16 p1 = pal[(packed >> 4) & 0x0F];
+    /* 4-pixel unrolled loop using PSB LUT (reversed Sierra = PSB order) */
+    while (count >= 4) {
+        uint32 pair0 = palLutPsb[src[pixelIdx >> 1]];
+        uint32 pair1 = palLutPsb[src[(pixelIdx >> 1) - 1]];
+        uint16 p0 = (uint16)pair0;
+        uint16 p1 = (uint16)(pair0 >> 16);
+        uint16 p2 = (uint16)pair1;
+        uint16 p3 = (uint16)(pair1 >> 16);
+        if (p0) dst[di]     = p0;
+        if (p1) dst[di + 1] = p1;
+        if (p2) dst[di + 2] = p2;
+        if (p3) dst[di + 3] = p3;
+        di += 4;
+        pixelIdx -= 4;
+        count -= 4;
+    }
+
+    if (count >= 2) {
+        uint32 pair = palLutPsb[src[pixelIdx >> 1]];
+        uint16 p0 = (uint16)pair;
+        uint16 p1 = (uint16)(pair >> 16);
         if (p0) dst[di] = p0;
         if (p1) dst[di + 1] = p1;
         di += 2;
@@ -1616,11 +1749,27 @@ static inline void compositePsbSpanFwd(uint16 *dst, const uint8 *src,
         count--;
     }
 
-    /* Process two pixels at a time */
-    while (count >= 2) {
-        uint8 packed = src[pixelIdx >> 1];
-        uint16 p0 = pal[packed & 0x0F];         /* PSB: even pixel = LOW nibble */
-        uint16 p1 = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel  = HIGH nibble */
+    /* 4-pixel unrolled loop using PSB palette LUT */
+    while (count >= 4) {
+        uint32 pair0 = palLutPsb[src[pixelIdx >> 1]];
+        uint32 pair1 = palLutPsb[src[(pixelIdx >> 1) + 1]];
+        uint16 p0 = (uint16)pair0;
+        uint16 p1 = (uint16)(pair0 >> 16);
+        uint16 p2 = (uint16)pair1;
+        uint16 p3 = (uint16)(pair1 >> 16);
+        if (p0) dst[di]     = p0;
+        if (p1) dst[di + 1] = p1;
+        if (p2) dst[di + 2] = p2;
+        if (p3) dst[di + 3] = p3;
+        di += 4;
+        pixelIdx += 4;
+        count -= 4;
+    }
+
+    if (count >= 2) {
+        uint32 pair = palLutPsb[src[pixelIdx >> 1]];
+        uint16 p0 = (uint16)pair;
+        uint16 p1 = (uint16)(pair >> 16);
         if (p0) dst[di] = p0;
         if (p1) dst[di + 1] = p1;
         di += 2;
@@ -1653,11 +1802,27 @@ static inline void compositePsbSpanRev(uint16 *dst, const uint8 *src,
         count--;
     }
 
-    /* Process two pixels at a time (reversed) */
-    while (count >= 2) {
-        uint8 packed = src[pixelIdx >> 1];
-        uint16 p0 = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel  = HIGH nibble */
-        uint16 p1 = pal[packed & 0x0F];          /* PSB: even pixel = LOW nibble */
+    /* 4-pixel unrolled loop using Sierra LUT (reversed PSB = Sierra order) */
+    while (count >= 4) {
+        uint32 pair0 = palLutSierra[src[pixelIdx >> 1]];
+        uint32 pair1 = palLutSierra[src[(pixelIdx >> 1) - 1]];
+        uint16 p0 = (uint16)pair0;
+        uint16 p1 = (uint16)(pair0 >> 16);
+        uint16 p2 = (uint16)pair1;
+        uint16 p3 = (uint16)(pair1 >> 16);
+        if (p0) dst[di]     = p0;
+        if (p1) dst[di + 1] = p1;
+        if (p2) dst[di + 2] = p2;
+        if (p3) dst[di + 3] = p3;
+        di += 4;
+        pixelIdx -= 4;
+        count -= 4;
+    }
+
+    if (count >= 2) {
+        uint32 pair = palLutSierra[src[pixelIdx >> 1]];
+        uint16 p0 = (uint16)pair;
+        uint16 p1 = (uint16)(pair >> 16);
         if (p0) dst[di] = p0;
         if (p1) dst[di + 1] = p1;
         di += 2;
@@ -1710,6 +1875,10 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
     if (screenX < 0) startSx = -screenX;
     if (screenX + endSx > 640) endSx = 640 - screenX;
     if (startSx >= endSx) return;
+
+    /* Mark dirty region for this sprite */
+    grMarkRectDirty(screenX + startSx, screenY + startSy,
+                    screenX + endSx, screenY + endSy);
 
     const uint16 *pal = ttmPalette;
 
@@ -1861,13 +2030,14 @@ void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height
     if (y2 > 480) y2 = 480;
     if (x >= x2 || y >= y2) return;
 
+    /* Mark dirty region */
+    grMarkRectDirty(x, y, x2, y2);
+
+    /* Pack two pixels into uint32 for word-fill */
+    uint32 bgColor32 = (uint32)bgColor | ((uint32)bgColor << 16);
+
     for (sint16 py = y; py < y2; py++) {
-        int tileLocalY;
-        if (py < 240) {
-            tileLocalY = py;
-        } else {
-            tileLocalY = py - 240;
-        }
+        int tileLocalY = (py < 240) ? py : py - 240;
         PS1Surface *tileLeft = (py < 240) ? bgTile0 : bgTile3;
         PS1Surface *tileRight = (py < 240) ? bgTile1 : bgTile4;
 
@@ -1875,8 +2045,21 @@ void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height
             sint16 fillStart = x;
             sint16 fillEnd = (x2 < 320) ? x2 : 320;
             uint16 *dst = tileLeft->pixels + (tileLocalY * (int)tileLeft->width) + fillStart;
-            for (sint16 i = fillStart; i < fillEnd; i++) {
+            int fillCount = fillEnd - fillStart;
+            /* Word-align: handle odd start pixel */
+            if (fillCount > 0 && ((uintptr_t)dst & 2)) {
                 *dst++ = bgColor;
+                fillCount--;
+            }
+            /* Fill 2 pixels per uint32 store */
+            uint32 *dst32 = (uint32 *)dst;
+            while (fillCount >= 2) {
+                *dst32++ = bgColor32;
+                fillCount -= 2;
+            }
+            /* Handle trailing pixel */
+            if (fillCount) {
+                *(uint16 *)dst32 = bgColor;
             }
         }
 
@@ -1884,8 +2067,18 @@ void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height
             sint16 fillStart = (x > 320) ? x : 320;
             sint16 fillEnd = x2;
             uint16 *dst = tileRight->pixels + (tileLocalY * (int)tileRight->width) + (fillStart - 320);
-            for (sint16 i = fillStart; i < fillEnd; i++) {
+            int fillCount = fillEnd - fillStart;
+            if (fillCount > 0 && ((uintptr_t)dst & 2)) {
                 *dst++ = bgColor;
+                fillCount--;
+            }
+            uint32 *dst32 = (uint32 *)dst;
+            while (fillCount >= 2) {
+                *dst32++ = bgColor32;
+                fillCount -= 2;
+            }
+            if (fillCount) {
+                *(uint16 *)dst32 = bgColor;
             }
         }
     }
@@ -1911,20 +2104,25 @@ static void grRecordReplaySprite(struct TTtmThread *thread,
     if (!thread || !sprite || !sprite->indexedPixels) return;
 
     /* Deduplicate exact same draw within the frame.
-     * Multiple actors can share imageNo/spriteNo; keep distinct positions. */
-    for (uint16 i = 0; i < thread->numDrawnSprites; i++) {
-        struct TDrawnSprite *ds = &thread->drawnSprites[i];
-        if (ds->imageNo == imageNo &&
-            ds->spriteNo == spriteNo &&
-            ds->flip == flip &&
-            ds->x == x &&
-            ds->y == y &&
-            ds->sceneEpoch == thread->sceneEpoch) {
-            ds->indexedPixels = sprite->indexedPixels;
-            ds->width = sprite->width;
-            ds->height = sprite->height;
-            ds->psbNibbles = sprite->psbNibbles;
-            return;
+     * Fast-path: check last 8 entries first (draws are sequential). */
+    int scanStart = (thread->numDrawnSprites > 8) ? thread->numDrawnSprites - 8 : 0;
+    for (int pass = 0; pass < 2; pass++) {
+        int lo = (pass == 0) ? scanStart : 0;
+        int hi = (pass == 0) ? thread->numDrawnSprites : scanStart;
+        for (int i = lo; i < hi; i++) {
+            struct TDrawnSprite *ds = &thread->drawnSprites[i];
+            if (ds->imageNo == imageNo &&
+                ds->spriteNo == spriteNo &&
+                ds->flip == flip &&
+                ds->x == x &&
+                ds->y == y &&
+                ds->sceneEpoch == thread->sceneEpoch) {
+                ds->indexedPixels = sprite->indexedPixels;
+                ds->width = sprite->width;
+                ds->height = sprite->height;
+                ds->psbNibbles = sprite->psbNibbles;
+                return;
+            }
         }
     }
 
@@ -2063,6 +2261,9 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
     int endDestX = screenX + sprW;
     if (endDestX > 640) endDestX = 640;
     if (startDestX >= endDestX) return;
+
+    /* Mark dirty region for this flipped sprite */
+    grMarkRectDirty(startDestX, screenY + startSy, endDestX, screenY + endSy);
 
     const uint16 *pal = ttmPalette;
 
@@ -2380,35 +2581,37 @@ void grSaveCleanBgTiles(void)
 {
     uint32 tileSize = 320 * 240 * 2;  /* 320x240 @ 16-bit = 153,600 bytes per tile */
 
-    /* Top tiles - always update to current state */
-    if (bgTile0Clean) { free(bgTile0Clean); bgTile0Clean = NULL; }
-    if (bgTile1Clean) { free(bgTile1Clean); bgTile1Clean = NULL; }
-
+    /* Reuse existing buffers when possible to avoid 600KB free+malloc churn.
+     * Only allocate if buffer doesn't exist yet; always overwrite content. */
     if (bgTile0 && bgTile0->pixels) {
-        bgTile0Clean = (uint16*)malloc(tileSize);
+        if (!bgTile0Clean) bgTile0Clean = (uint16*)malloc(tileSize);
         if (bgTile0Clean) memcpy(bgTile0Clean, bgTile0->pixels, tileSize);
-    }
+    } else if (bgTile0Clean) { free(bgTile0Clean); bgTile0Clean = NULL; }
+
     if (bgTile1 && bgTile1->pixels) {
-        bgTile1Clean = (uint16*)malloc(tileSize);
+        if (!bgTile1Clean) bgTile1Clean = (uint16*)malloc(tileSize);
         if (bgTile1Clean) memcpy(bgTile1Clean, bgTile1->pixels, tileSize);
-    }
+    } else if (bgTile1Clean) { free(bgTile1Clean); bgTile1Clean = NULL; }
 
-    /* Bottom tiles - always update to current state
-     * For partial height images (like ISLETEMP), the bottom tiles have been
-     * composited with scene data over the ocean base. We need to save this
-     * composited state so sprites can be properly erased each frame. */
-    if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
-    if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
-
+    /* Bottom tiles - for partial height images (like ISLETEMP), the bottom
+     * tiles have been composited with scene data over the ocean base. */
     if (bgTile3 && bgTile3->pixels) {
-        bgTile3Clean = (uint16*)malloc(tileSize);
+        if (!bgTile3Clean) bgTile3Clean = (uint16*)malloc(tileSize);
         if (bgTile3Clean) memcpy(bgTile3Clean, bgTile3->pixels, tileSize);
-    }
-    if (bgTile4 && bgTile4->pixels) {
-        bgTile4Clean = (uint16*)malloc(tileSize);
-        if (bgTile4Clean) memcpy(bgTile4Clean, bgTile4->pixels, tileSize);
-    }
+    } else if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
 
+    if (bgTile4 && bgTile4->pixels) {
+        if (!bgTile4Clean) bgTile4Clean = (uint16*)malloc(tileSize);
+        if (bgTile4Clean) memcpy(bgTile4Clean, bgTile4->pixels, tileSize);
+    } else if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
+
+    /* New clean baseline: mark all tiles dirty so first frame uploads everything.
+     * Set prevDirty too since the framebuffer may not match the new background. */
+    grMarkAllTilesDirty();
+    for (int i = 0; i < 4; i++) {
+        prevDirtyMinY[i] = 0;
+        prevDirtyMaxY[i] = 239;
+    }
 }
 
 /*
@@ -2421,6 +2624,13 @@ void grFreeCleanBgTiles(void)
     if (bgTile1Clean) { free(bgTile1Clean); bgTile1Clean = NULL; }
     if (bgTile3Clean) { free(bgTile3Clean); bgTile3Clean = NULL; }
     if (bgTile4Clean) { free(bgTile4Clean); bgTile4Clean = NULL; }
+
+    /* No clean copies → force full upload on next frame */
+    grMarkAllTilesDirty();
+    for (int i = 0; i < 4; i++) {
+        prevDirtyMinY[i] = 0;
+        prevDirtyMaxY[i] = 239;
+    }
 }
 
 /*
@@ -2436,23 +2646,32 @@ void grEnsureCleanBgTiles(void)
 
 /*
  * Restore background tiles from clean copies (call at start of each frame).
- * This erases any previously composited sprites so new frame starts fresh.
+ * Only restores rows that were dirtied by the previous frame's compositing.
+ * prevDirty is preserved for grDrawBackground's union upload.
  */
 void grRestoreBgTiles(void)
 {
-    uint32 tileSize = 320 * 240 * 2;
+    PS1Surface *tiles[4] = { bgTile0, bgTile1, bgTile3, bgTile4 };
+    const uint16 *clean[4] = { bgTile0Clean, bgTile1Clean, bgTile3Clean, bgTile4Clean };
 
-    if (bgTile0Clean && bgTile0 && bgTile0->pixels) {
-        memcpy(bgTile0->pixels, bgTile0Clean, tileSize);
+    /* Clear currDirty for new frame's compositing */
+    for (int i = 0; i < 4; i++) {
+        currDirtyMinY[i] = -1;
+        currDirtyMaxY[i] = -1;
     }
-    if (bgTile1Clean && bgTile1 && bgTile1->pixels) {
-        memcpy(bgTile1->pixels, bgTile1Clean, tileSize);
-    }
-    if (bgTile3Clean && bgTile3 && bgTile3->pixels) {
-        memcpy(bgTile3->pixels, bgTile3Clean, tileSize);
-    }
-    if (bgTile4Clean && bgTile4 && bgTile4->pixels) {
-        memcpy(bgTile4->pixels, bgTile4Clean, tileSize);
+
+    for (int i = 0; i < 4; i++) {
+        if (!tiles[i] || !tiles[i]->pixels || !clean[i]) continue;
+
+        int minY = prevDirtyMinY[i];
+        int maxY = prevDirtyMaxY[i];
+        if (minY < 0) continue;  /* tile was clean last frame */
+
+        uint32 w = tiles[i]->width;
+        uint16 *dst = tiles[i]->pixels + minY * w;
+        const uint16 *src = clean[i] + minY * w;
+        uint32 copyBytes = (uint32)(maxY - minY + 1) * w * sizeof(uint16);
+        memcpy(dst, src, copyBytes);
     }
 }
 
@@ -2518,6 +2737,9 @@ static void grRestoreRectFromCleanBg(int x, int y, int width, int height)
         width = SCREEN_WIDTH - x;
     if (y + height > SCREEN_HEIGHT)
         height = SCREEN_HEIGHT - y;
+
+    /* Tile pixels are being modified — mark dirty for upload */
+    grMarkRectDirty(x, y, x + width, y + height);
     if (width <= 0 || height <= 0)
         return;
 
@@ -2616,33 +2838,48 @@ void grClearScreen(PS1Surface *sfc)
  */
 void grDrawBackground(void)
 {
-    /* Use separate RECTs for each LoadImage - LoadImage may be async and
-     * could read RECT after function returns. Reusing a single RECT could
-     * cause corruption if DMA reads stale/overwritten values. */
-    RECT rect0, rect1, rect3, rect4;
+    /* Upload only dirty rows: union(prevDirty, currDirty) per tile.
+     * prevDirty = rows restored at frame start (framebuffer still has old content).
+     * currDirty = rows composited this frame (framebuffer has clean/old content). */
+    PS1Surface *tiles[4] = { bgTile0, bgTile1, bgTile3, bgTile4 };
+    int screenX[4] = { 0, 320, 0, 320 };
+    int screenY[4] = { 0, 0, 240, 240 };
+    RECT rects[4];  /* Separate RECTs — LoadImage may read asynchronously */
 
-    /* Top row tiles (y=0-239) */
-    if (bgTile0 && bgTile0->pixels) {
-        setRECT(&rect0, 0, 0, bgTile0->width, bgTile0->height);
-        LoadImage(&rect0, (uint32*)bgTile0->pixels);
-    }
-    if (bgTile1 && bgTile1->pixels) {
-        setRECT(&rect1, 320, 0, bgTile1->width, bgTile1->height);
-        LoadImage(&rect1, (uint32*)bgTile1->pixels);
+    for (int i = 0; i < 4; i++) {
+        if (!tiles[i] || !tiles[i]->pixels) continue;
+
+        /* Compute upload range = union(prevDirty, currDirty) */
+        int minY = -1, maxY = -1;
+        if (prevDirtyMinY[i] >= 0) {
+            minY = prevDirtyMinY[i];
+            maxY = prevDirtyMaxY[i];
+        }
+        if (currDirtyMinY[i] >= 0) {
+            if (minY < 0) {
+                minY = currDirtyMinY[i];
+                maxY = currDirtyMaxY[i];
+            } else {
+                if (currDirtyMinY[i] < minY) minY = currDirtyMinY[i];
+                if (currDirtyMaxY[i] > maxY) maxY = currDirtyMaxY[i];
+            }
+        }
+        if (minY < 0) continue;  /* tile is fully clean — skip upload */
+
+        int h = maxY - minY + 1;
+        uint32 w = tiles[i]->width;
+        setRECT(&rects[i], screenX[i], screenY[i] + minY, w, h);
+        LoadImage(&rects[i], (uint32 *)(tiles[i]->pixels + minY * w));
     }
 
-    /* Bottom row tiles (y=240-479) */
-    if (bgTile3 && bgTile3->pixels) {
-        setRECT(&rect3, 0, 240, bgTile3->width, bgTile3->height);
-        LoadImage(&rect3, (uint32*)bgTile3->pixels);
-    }
-    if (bgTile4 && bgTile4->pixels) {
-        setRECT(&rect4, 320, 240, bgTile4->width, bgTile4->height);
-        LoadImage(&rect4, (uint32*)bgTile4->pixels);
-    }
-
-    /* Wait for DMA completion before drawing sprites */
+    /* Wait for DMA completion */
     DrawSync(0);
+
+    /* Advance dirty state: this frame's compositing becomes next frame's restore set */
+    for (int i = 0; i < 4; i++) {
+        prevDirtyMinY[i] = currDirtyMinY[i];
+        prevDirtyMaxY[i] = currDirtyMaxY[i];
+    }
 }
 
 /*
@@ -2650,22 +2887,33 @@ void grDrawBackground(void)
  */
 void grFadeOut()
 {
-    /* 16 fade steps, ~2 frames each = ~0.5 sec at 60fps */
+    /* Force full dirty for fade — modifies all pixels */
+    grMarkAllTilesDirty();
+    for (int i = 0; i < 4; i++) {
+        prevDirtyMinY[i] = 0;
+        prevDirtyMaxY[i] = 239;
+    }
+
+    /* 16 fade steps, ~2 frames each = ~0.5 sec at 60fps.
+     * Uses (c >> 1) & 0x3DEF to halve all 3 color channels simultaneously:
+     * the mask prevents bit leakage between R/G/B fields and clears STP. */
     for (int step = 0; step < 16; step++) {
         PS1Surface *tiles[] = { bgTile0, bgTile1, bgTile3, bgTile4 };
         for (int t = 0; t < 4; t++) {
             if (!tiles[t] || !tiles[t]->pixels) continue;
             uint32 count = tiles[t]->width * tiles[t]->height;
-            uint16 *px = tiles[t]->pixels;
-            for (uint32 i = 0; i < count; i++) {
-                uint16 c = px[i];
-                if (c == 0) continue;
-                uint16 r = (c & 0x001F) >> 1;
-                uint16 g = ((c >> 5) & 0x1F) >> 1;
-                uint16 b = ((c >> 10) & 0x1F) >> 1;
-                px[i] = (b << 10) | (g << 5) | r;
+            uint32 *px32 = (uint32 *)tiles[t]->pixels;
+            uint32 count32 = count >> 1;
+            /* Process 2 pixels per uint32.
+             * (c >> 1) & 0x3DEF works per-pixel; the mask at bit 15
+             * also prevents leakage between the two packed pixels. */
+            for (uint32 i = 0; i < count32; i++) {
+                px32[i] = (px32[i] >> 1) & 0x3DEF3DEFu;
             }
         }
+
+        /* Mark all dirty for each step's upload */
+        grMarkAllTilesDirty();
 
         VSync(0);
         grDrawBackground();
@@ -2700,23 +2948,30 @@ static PS1Surface *createBgTile(uint8 *src, uint16 srcWidth,
 
     uint16 *dst = tile->pixels;
 
-    /* 1:1 pixel copy from source region */
+    /* Process 2 pixels per byte using palette LUT.
+     * Row base increment avoids per-pixel multiply. */
+    uint32 srcRowBase = (uint32)srcStartX;
     for (uint16 y = 0; y < BG_TILE_HEIGHT; y++) {
-        for (uint16 x = 0; x < tileWidth; x++) {
-            uint32 srcX = srcStartX + x;
-            uint32 srcY = y;
-
-            /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
-            uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
-
-            uint8 palIndex;
-            if (srcX & 1) {
-                palIndex = src[srcOffset] & 0x0F;
-            } else {
-                palIndex = (src[srcOffset] >> 4) & 0x0F;
-            }
-
-            dst[y * tileWidth + x] = ttmPalette[palIndex & 0x0F];
+        uint32 srcOff = (uint32)y * (uint32)srcWidth + srcRowBase;
+        uint16 *dstRow = dst + (uint32)y * tileWidth;
+        uint16 x = 0;
+        /* Handle odd start pixel */
+        if (srcStartX & 1) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[0] = ttmPalette[packed & 0x0F];
+            x = 1;
+            srcOff++;
+        }
+        /* Process 2 pixels per byte */
+        for (; x + 1 < tileWidth; x += 2, srcOff += 2) {
+            uint32 pair = palLutSierra[src[srcOff >> 1]];
+            dstRow[x]     = (uint16)pair;
+            dstRow[x + 1] = (uint16)(pair >> 16);
+        }
+        /* Handle trailing pixel */
+        if (x < tileWidth) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[x] = ttmPalette[(packed >> 4) & 0x0F];
         }
     }
 
@@ -2763,29 +3018,43 @@ static PS1Surface *createBgTileRAMPartial(uint8 *src, uint16 srcWidth, uint16 sr
 
     uint16 *dst = tile->pixels;
 
-    /* 1:1 pixel copy from source region, with bounds checking */
+    /* Process 2 pixels per byte using palette LUT, with bounds checking.
+     * Row base increment avoids per-pixel multiply. */
     for (uint16 y = 0; y < BG_TILE_HEIGHT; y++) {
-        for (uint16 x = 0; x < tileWidth; x++) {
-            uint32 srcX = srcStartX + x;
-            uint32 srcY = srcStartY + y;
-
-            /* Check if within source bounds */
-            if (srcY < srcHeight && srcX < srcWidth) {
-                /* Source is 4-bit packed: 2 pixels per byte, high nibble first */
-                uint32 srcOffset = (srcY * srcWidth + srcX) / 2;
-
-                uint8 palIndex;
-                if (srcX & 1) {
-                    palIndex = src[srcOffset] & 0x0F;
-                } else {
-                    palIndex = (src[srcOffset] >> 4) & 0x0F;
-                }
-
-                dst[y * tileWidth + x] = ttmPalette[palIndex & 0x0F];
-            } else {
-                /* Outside source bounds - fill with black */
-                dst[y * tileWidth + x] = 0x0000;
-            }
+        uint32 srcY = srcStartY + y;
+        uint16 *dstRow = dst + (uint32)y * tileWidth;
+        if (srcY >= srcHeight) {
+            /* Entire row is outside source bounds — fill with black */
+            memset(dstRow, 0, tileWidth * sizeof(uint16));
+            continue;
+        }
+        uint32 srcOff = srcY * (uint32)srcWidth + srcStartX;
+        /* Calculate how many pixels are within source bounds */
+        uint16 validW = (srcStartX + tileWidth <= srcWidth) ? tileWidth
+                        : (srcStartX < srcWidth ? srcWidth - srcStartX : 0);
+        uint16 x = 0;
+        /* Handle odd start pixel */
+        if ((srcStartX & 1) && x < validW) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[0] = ttmPalette[packed & 0x0F];
+            x = 1;
+            srcOff++;
+        }
+        /* Process 2 pixels per byte */
+        for (; x + 1 < validW; x += 2, srcOff += 2) {
+            uint32 pair = palLutSierra[src[srcOff >> 1]];
+            dstRow[x]     = (uint16)pair;
+            dstRow[x + 1] = (uint16)(pair >> 16);
+        }
+        /* Handle trailing valid pixel */
+        if (x < validW) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[x] = ttmPalette[(packed >> 4) & 0x0F];
+            x++;
+        }
+        /* Fill remaining with black */
+        if (x < tileWidth) {
+            memset(&dstRow[x], 0, (tileWidth - x) * sizeof(uint16));
         }
     }
 

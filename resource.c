@@ -78,6 +78,51 @@ int numPalResources = 0;
 int numScrResources = 0;
 int numTtmResources = 0;
 
+/* ============================================================================
+ * Hash table for O(1) resource lookups by name
+ * ============================================================================ */
+
+#define RESOURCE_HASH_SIZE 256  /* power of 2, must be > max resource count (200) */
+
+struct TResourceHashEntry {
+    const char *name;
+    uint16 index;  /* index into the resource array */
+};
+
+static struct TResourceHashEntry bmpHashTable[RESOURCE_HASH_SIZE];
+static struct TResourceHashEntry ttmHashTable[RESOURCE_HASH_SIZE];
+static struct TResourceHashEntry adsHashTable[RESOURCE_HASH_SIZE];
+static struct TResourceHashEntry scrHashTable[RESOURCE_HASH_SIZE];
+
+static uint32 hashString(const char *str) {
+    uint32 hash = 5381;
+    int c;
+    while ((c = *str++))
+        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+    return hash;
+}
+
+static void hashInsert(struct TResourceHashEntry *table, uint32 tableSize,
+                       const char *name, uint16 index) {
+    uint32 h = hashString(name) & (tableSize - 1);
+    while (table[h].name != NULL) {
+        h = (h + 1) & (tableSize - 1);
+    }
+    table[h].name = name;
+    table[h].index = index;
+}
+
+static int hashLookup(const struct TResourceHashEntry *table, uint32 tableSize,
+                      const char *name) {
+    uint32 h = hashString(name) & (tableSize - 1);
+    while (table[h].name != NULL) {
+        if (strcmp(table[h].name, name) == 0)
+            return table[h].index;
+        h = (h + 1) & (tableSize - 1);
+    }
+    return -1;  /* not found */
+}
+
 static struct TMapFile mapFile;
 
 /* LRU Cache globals */
@@ -522,12 +567,18 @@ static void parseResourceFile(char * filename)
         if (!strcmp(resType, ".ADS")) {
             adsResources[numAdsResources] = ps1_parseAdsResource(f, resName);
             if (adsResources[numAdsResources] != NULL) {
+                adsResources[numAdsResources]->resourceType = RESOURCE_TYPE_ADS;
+                adsResources[numAdsResources]->resourceIndex = (uint16)numAdsResources;
+                hashInsert(adsHashTable, RESOURCE_HASH_SIZE, adsResources[numAdsResources]->resName, (uint16)numAdsResources);
                 numAdsResources++;
             }
         }
         else if (!strcmp(resType, ".BMP")) {
             bmpResources[numBmpResources] = ps1_parseBmpResource(f, resName);
             if (bmpResources[numBmpResources] != NULL) {
+                bmpResources[numBmpResources]->resourceType = RESOURCE_TYPE_BMP;
+                bmpResources[numBmpResources]->resourceIndex = (uint16)numBmpResources;
+                hashInsert(bmpHashTable, RESOURCE_HASH_SIZE, bmpResources[numBmpResources]->resName, (uint16)numBmpResources);
                 numBmpResources++;
             }
         }
@@ -540,12 +591,18 @@ static void parseResourceFile(char * filename)
         else if (!strcmp(resType, ".SCR")) {
             scrResources[numScrResources] = ps1_parseScrResource(f, resName);
             if (scrResources[numScrResources] != NULL) {
+                scrResources[numScrResources]->resourceType = RESOURCE_TYPE_SCR;
+                scrResources[numScrResources]->resourceIndex = (uint16)numScrResources;
+                hashInsert(scrHashTable, RESOURCE_HASH_SIZE, scrResources[numScrResources]->resName, (uint16)numScrResources);
                 numScrResources++;
             }
         }
         else if (!strcmp(resType, ".TTM")) {
             ttmResources[numTtmResources] = ps1_parseTtmResource(f, resName);
             if (ttmResources[numTtmResources] != NULL) {
+                ttmResources[numTtmResources]->resourceType = RESOURCE_TYPE_TTM;
+                ttmResources[numTtmResources]->resourceIndex = (uint16)numTtmResources;
+                hashInsert(ttmHashTable, RESOURCE_HASH_SIZE, ttmResources[numTtmResources]->resName, (uint16)numTtmResources);
                 numTtmResources++;
             }
         }
@@ -588,11 +645,17 @@ static void parseResourceFile(char * filename)
         if (!strcmp(resType, ".ADS")) {
             adsResources[numAdsResources] = parseAdsResource(f);
             adsResources[numAdsResources]->resName = resName;
+            adsResources[numAdsResources]->resourceType = RESOURCE_TYPE_ADS;
+            adsResources[numAdsResources]->resourceIndex = (uint16)numAdsResources;
+            hashInsert(adsHashTable, RESOURCE_HASH_SIZE, resName, (uint16)numAdsResources);
             numAdsResources++;
         }
         else if (!strcmp(resType, ".BMP")) {
             bmpResources[numBmpResources] = parseBmpResource(f);
             bmpResources[numBmpResources]->resName = resName;
+            bmpResources[numBmpResources]->resourceType = RESOURCE_TYPE_BMP;
+            bmpResources[numBmpResources]->resourceIndex = (uint16)numBmpResources;
+            hashInsert(bmpHashTable, RESOURCE_HASH_SIZE, resName, (uint16)numBmpResources);
             numBmpResources++;
         }
         else if (!strcmp(resType, ".PAL")) {
@@ -603,11 +666,17 @@ static void parseResourceFile(char * filename)
         else if (!strcmp(resType, ".SCR")) {
             scrResources[numScrResources] = parseScrResource(f);
             scrResources[numScrResources]->resName = resName;
+            scrResources[numScrResources]->resourceType = RESOURCE_TYPE_SCR;
+            scrResources[numScrResources]->resourceIndex = (uint16)numScrResources;
+            hashInsert(scrHashTable, RESOURCE_HASH_SIZE, resName, (uint16)numScrResources);
             numScrResources++;
         }
         else if (!strcmp(resType, ".TTM")) {
             ttmResources[numTtmResources] = parseTtmResource(f);
             ttmResources[numTtmResources]->resName = resName;
+            ttmResources[numTtmResources]->resourceType = RESOURCE_TYPE_TTM;
+            ttmResources[numTtmResources]->resourceIndex = (uint16)numTtmResources;
+            hashInsert(ttmHashTable, RESOURCE_HASH_SIZE, resName, (uint16)numTtmResources);
             numTtmResources++;
         }
         // Note: there is one .VIN type file too (FILES.VIN)
@@ -632,86 +701,63 @@ void parseResourceFiles(char * filename)
 
 struct TAdsResource *findAdsResource(char *searchString)
 {
-    struct TAdsResource *result = NULL;
+    int idx = hashLookup(adsHashTable, RESOURCE_HASH_SIZE, searchString);
+    if (idx >= 0)
+        return adsResources[idx];
 
-    for (int i=0; i < numAdsResources && result == NULL; i++) {
-        if (!strcmp(adsResources[i]->resName, searchString))
-            result = adsResources[i];
-    }
-
-    if (result == NULL) {
 #ifdef PS1_BUILD
-        return NULL;  /* Caller handles gracefully */
+    return NULL;  /* Caller handles gracefully */
 #else
-        fatalError("ADS resource %s not found.", searchString);
+    fatalError("ADS resource %s not found.", searchString);
+    return NULL;
 #endif
-    }
-
-    return result;
 }
 
 
 struct TBmpResource *findBmpResource(char *searchString)
 {
-    struct TBmpResource *result = NULL;
+    int idx = hashLookup(bmpHashTable, RESOURCE_HASH_SIZE, searchString);
+    if (idx >= 0)
+        return bmpResources[idx];
 
-    for (int i=0; i < numBmpResources && result == NULL; i++) {
-        if (!strcmp(bmpResources[i]->resName, searchString))
-            result = bmpResources[i];
-    }
-
-    if (result == NULL) {
 #ifdef PS1_BUILD
-        /* On PS1, return NULL to allow graceful handling of missing resources.
-         * No printf here - it crashes PS1 in the game loop. */
+    /* On PS1, return NULL to allow graceful handling of missing resources.
+     * No printf here - it crashes PS1 in the game loop. */
+    return NULL;
 #else
-        fatalError("BMP resource %s not found.", searchString);
+    fatalError("BMP resource %s not found.", searchString);
+    return NULL;
 #endif
-    }
-
-    return result;
 }
 
 
 struct TScrResource *findScrResource(char *searchString)
 {
-    struct TScrResource *result = NULL;
+    int idx = hashLookup(scrHashTable, RESOURCE_HASH_SIZE, searchString);
+    if (idx >= 0)
+        return scrResources[idx];
 
-    for (int i=0; i < numScrResources && result == NULL; i++) {
-        if (!strcmp(scrResources[i]->resName, searchString))
-            result = scrResources[i];
-    }
-
-    if (result == NULL) {
 #ifdef PS1_BUILD
-        return NULL;  /* Caller handles gracefully */
+    return NULL;  /* Caller handles gracefully */
 #else
-        fatalError("SCR resource %s not found.", searchString);
+    fatalError("SCR resource %s not found.", searchString);
+    return NULL;
 #endif
-    }
-
-    return result;
 }
 
 
 struct TTtmResource *findTtmResource(char *searchString)
 {
-    struct TTtmResource *result = NULL;
+    int idx = hashLookup(ttmHashTable, RESOURCE_HASH_SIZE, searchString);
+    if (idx >= 0)
+        return ttmResources[idx];
 
-    for (int i=0; i < numTtmResources && result == NULL; i++) {
-        if (!strcmp(ttmResources[i]->resName, searchString))
-            result = ttmResources[i];
-    }
-
-    if (result == NULL) {
 #ifdef PS1_BUILD
-        return NULL;  /* Caller handles gracefully */
+    return NULL;  /* Caller handles gracefully */
 #else
-        fatalError("TTM resource %s not found.", searchString);
+    fatalError("TTM resource %s not found.", searchString);
+    return NULL;
 #endif
-    }
-
-    return result;
 }
 
 
@@ -757,88 +803,88 @@ void initLRUCache(void) {
 }
 
 void touchResource(void *resource) {
+    /* All resource structs share the same layout for the first 3 fields:
+     *   char *resName; uint8 resourceType; uint16 resourceIndex;
+     * So we can cast to any struct type to read resourceType. */
+    struct TAdsResource *r = (struct TAdsResource *)resource;
     globalTick++;
-    
-    /* Update lastUsedTick based on resource type */
-    for (int i = 0; i < numAdsResources; i++) {
-        if (adsResources[i] == resource) {
-            adsResources[i]->lastUsedTick = globalTick;
-            return;
-        }
-    }
-    for (int i = 0; i < numBmpResources; i++) {
-        if (bmpResources[i] == resource) {
-            bmpResources[i]->lastUsedTick = globalTick;
-            return;
-        }
-    }
-    for (int i = 0; i < numScrResources; i++) {
-        if (scrResources[i] == resource) {
-            scrResources[i]->lastUsedTick = globalTick;
-            return;
-        }
-    }
-    for (int i = 0; i < numTtmResources; i++) {
-        if (ttmResources[i] == resource) {
-            ttmResources[i]->lastUsedTick = globalTick;
-            return;
-        }
+
+    switch (r->resourceType) {
+    case RESOURCE_TYPE_ADS:
+        adsResources[r->resourceIndex]->lastUsedTick = globalTick;
+        break;
+    case RESOURCE_TYPE_BMP:
+        bmpResources[((struct TBmpResource *)resource)->resourceIndex]->lastUsedTick = globalTick;
+        break;
+    case RESOURCE_TYPE_SCR:
+        scrResources[((struct TScrResource *)resource)->resourceIndex]->lastUsedTick = globalTick;
+        break;
+    case RESOURCE_TYPE_TTM:
+        ttmResources[((struct TTtmResource *)resource)->resourceIndex]->lastUsedTick = globalTick;
+        break;
     }
 }
 
 void pinResource(void *resource, uint32 size, const char *type) {
+    struct TAdsResource *r = (struct TAdsResource *)resource;
     touchResource(resource);
 
-    /* Increment pin count; only add to memory tracking on first pin */
-    for (int i = 0; i < numAdsResources; i++) {
-        if (adsResources[i] == resource) {
-            if (adsResources[i]->pinCount == 0 && adsResources[i]->uncompressedData != NULL) {
-                totalMemoryUsed += size;
-            }
-            adsResources[i]->pinCount++;
-            return;
+    /* O(1) dispatch using resourceType field */
+    switch (r->resourceType) {
+    case RESOURCE_TYPE_ADS: {
+        struct TAdsResource *ads = (struct TAdsResource *)resource;
+        if (ads->pinCount == 0 && ads->uncompressedData != NULL) {
+            totalMemoryUsed += size;
         }
+        ads->pinCount++;
+        break;
     }
-    for (int i = 0; i < numTtmResources; i++) {
-        if (ttmResources[i] == resource) {
-            if (ttmResources[i]->pinCount == 0 && ttmResources[i]->uncompressedData != NULL) {
-                totalMemoryUsed += size;
-            }
-            ttmResources[i]->pinCount++;
-            return;
+    case RESOURCE_TYPE_TTM: {
+        struct TTtmResource *ttm = (struct TTtmResource *)resource;
+        if (ttm->pinCount == 0 && ttm->uncompressedData != NULL) {
+            totalMemoryUsed += size;
         }
+        ttm->pinCount++;
+        break;
+    }
+    default:
+        break;
     }
 }
 
 void unpinResource(void *resource, const char *type) {
-    /* Decrement pin count; subtract from memory tracking when fully unpinned */
-    for (int i = 0; i < numAdsResources; i++) {
-        if (adsResources[i] == resource) {
-            if (adsResources[i]->pinCount > 0) {
-                adsResources[i]->pinCount--;
-                if (adsResources[i]->pinCount == 0 && adsResources[i]->uncompressedData != NULL) {
-                    if (totalMemoryUsed >= adsResources[i]->uncompressedSize)
-                        totalMemoryUsed -= adsResources[i]->uncompressedSize;
-                    else
-                        totalMemoryUsed = 0;
-                }
+    struct TAdsResource *r = (struct TAdsResource *)resource;
+
+    /* O(1) dispatch using resourceType field */
+    switch (r->resourceType) {
+    case RESOURCE_TYPE_ADS: {
+        struct TAdsResource *ads = (struct TAdsResource *)resource;
+        if (ads->pinCount > 0) {
+            ads->pinCount--;
+            if (ads->pinCount == 0 && ads->uncompressedData != NULL) {
+                if (totalMemoryUsed >= ads->uncompressedSize)
+                    totalMemoryUsed -= ads->uncompressedSize;
+                else
+                    totalMemoryUsed = 0;
             }
-            return;
         }
+        break;
     }
-    for (int i = 0; i < numTtmResources; i++) {
-        if (ttmResources[i] == resource) {
-            if (ttmResources[i]->pinCount > 0) {
-                ttmResources[i]->pinCount--;
-                if (ttmResources[i]->pinCount == 0 && ttmResources[i]->uncompressedData != NULL) {
-                    if (totalMemoryUsed >= ttmResources[i]->uncompressedSize)
-                        totalMemoryUsed -= ttmResources[i]->uncompressedSize;
-                    else
-                        totalMemoryUsed = 0;
-                }
+    case RESOURCE_TYPE_TTM: {
+        struct TTtmResource *ttm = (struct TTtmResource *)resource;
+        if (ttm->pinCount > 0) {
+            ttm->pinCount--;
+            if (ttm->pinCount == 0 && ttm->uncompressedData != NULL) {
+                if (totalMemoryUsed >= ttm->uncompressedSize)
+                    totalMemoryUsed -= ttm->uncompressedSize;
+                else
+                    totalMemoryUsed = 0;
             }
-            return;
         }
+        break;
+    }
+    default:
+        break;
     }
 }
 

@@ -36,8 +36,16 @@ extern int fprintf(FILE *stream, const char *format, ...);
 #include <stdlib.h>  /* For free() */
 #endif
 
+#include <string.h>
 #include "mytypes.h"
 #include "utils.h"
+
+/* (#77) On PS1, make debugMsg a no-op macro to eliminate argument evaluation */
+#ifdef PS1_BUILD
+#undef debugMsg
+#define debugMsg(...) ((void)0)
+#endif
+
 #include "resource.h"
 /* Platform-specific graphics and sound headers */
 #ifdef PS1_BUILD
@@ -59,15 +67,9 @@ int ttmDy = 0;
 #ifdef PS1_BUILD
 static int ttmStringEquals(const char *a, const char *b)
 {
-    int i = 0;
     if (a == NULL || b == NULL)
         return 0;
-    while (a[i] != '\0' && b[i] != '\0') {
-        if (a[i] != b[i])
-            return 0;
-        i++;
-    }
-    return a[i] == b[i];
+    return strcmp(a, b) == 0;
 }
 
 static int ttmPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
@@ -84,17 +86,41 @@ static int ttmPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 a
 
 static const struct TPs1RestorePilot *ttmFindActiveRestorePilot(void)
 {
+    /* (#26) Cache the last pilot lookup keyed by ADS name+tag */
+    static char cachedName[16] = "";
+    static uint16 cachedTag = 0xFFFF;
+    static const struct TPs1RestorePilot *cachedPilot = NULL;
+    static int cacheValid = 0;
     uint16 i;
 
+    /* Check if cache is still valid */
+    if (cacheValid && cachedTag == ps1AdsCurrentTag &&
+        strcmp(cachedName, ps1AdsCurrentName) == 0)
+        return cachedPilot;
+
+    /* Cache miss - do the full lookup */
+    cachedPilot = NULL;
     for (i = 0; i < PS1_RESTORE_PILOT_COUNT; i++) {
         const struct TPs1RestorePilot *pilot = &gPs1RestorePilots[i];
         if (!ttmStringEquals(ps1AdsCurrentName, pilot->adsName))
             continue;
-        if (ttmPilotContainsAdsTag(pilot, ps1AdsCurrentTag))
-            return pilot;
+        if (ttmPilotContainsAdsTag(pilot, ps1AdsCurrentTag)) {
+            cachedPilot = pilot;
+            break;
+        }
     }
 
-    return NULL;
+    /* Store cache key */
+    {
+        int j;
+        for (j = 0; j < 15 && ps1AdsCurrentName[j] != '\0'; j++)
+            cachedName[j] = ps1AdsCurrentName[j];
+        cachedName[j] = '\0';
+    }
+    cachedTag = ps1AdsCurrentTag;
+    cacheValid = 1;
+
+    return cachedPilot;
 }
 
 static const struct TPs1RestorePilotTtm *ttmFindRestorePilotTtm(const struct TPs1RestorePilot *pilot,
@@ -170,13 +196,18 @@ static int ttmApplyRestorePilotSaveImage1(struct TTtmThread *ttmThread)
 
 static uint32 ttmFindPreviousTag(struct TTtmSlot *ttmSlot, uint32 offset)
 {
+    /* (#41) Binary search (upper_bound - 1) since tags are sorted by offset */
+    int lo = 0, hi = ttmSlot->numTags - 1;
     uint32 result = 0;
-    int i = 0;
 
-    /* Bounds check to prevent reading past tags array */
-    while (i < ttmSlot->numTags && ttmSlot->tags[i].offset < offset) {
-        result = ttmSlot->tags[i].offset;
-        i++;
+    while (lo <= hi) {
+        int mid = (lo + hi) / 2;
+        if (ttmSlot->tags[mid].offset < offset) {
+            result = ttmSlot->tags[mid].offset;
+            lo = mid + 1;
+        } else {
+            hi = mid - 1;
+        }
     }
 
     return result;
@@ -185,21 +216,35 @@ static uint32 ttmFindPreviousTag(struct TTtmSlot *ttmSlot, uint32 offset)
 
 uint32 ttmFindTag(struct TTtmSlot *ttmSlot, uint16 reqdTag)
 {
-    uint32 result = 0;
-    int i = 0;
+    /* (#40) Tags are sorted by offset, not ID - use last-hit cache */
+    static int lastHit = 0;
+    int i, n = ttmSlot->numTags;
 
-    while (result == 0 && i < ttmSlot->numTags) {
-
-        if (ttmSlot->tags[i].id == reqdTag)
-            result = ttmSlot->tags[i].offset;
-        else
-            i++;
+    /* Check last hit and nearby tags first (common case: sequential access) */
+    if (lastHit < n) {
+        int start = (lastHit > 2) ? lastHit - 2 : 0;
+        int end = (lastHit + 3 < n) ? lastHit + 3 : n;
+        for (i = start; i < end; i++) {
+            if (ttmSlot->tags[i].id == reqdTag) {
+                lastHit = i;
+                return ttmSlot->tags[i].offset;
+            }
+        }
     }
 
-    if (result == 0)
-        fprintf(stderr, "Warning : TTM tag #%d not found, returning offset 0000\n", reqdTag);
+    /* Full linear scan fallback */
+    for (i = 0; i < n; i++) {
+        if (ttmSlot->tags[i].id == reqdTag) {
+            lastHit = i;
+            return ttmSlot->tags[i].offset;
+        }
+    }
 
-    return result;
+#ifndef PS1_BUILD
+    fprintf(stderr, "Warning : TTM tag #%d not found, returning offset 0000\n", reqdTag);
+#endif
+
+    return 0;
 }
 
 
@@ -292,6 +337,30 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
     // TODO : in SASKDATE.TTM, num SET_SCENE != ttmResource->numTags
     while (tagNo < ttmSlot->numTags)
         ttmSlot->tags[tagNo++].id = 0;  // TODO is this useful ?
+
+#ifdef PS1_BUILD
+    /* (#43) One-time TTM data verification - moved from ttmPlay() to avoid
+     * per-frame static-flag check overhead */
+    {
+        static int verifyDone = 0;
+        if (!verifyDone && ttmSlot->data != NULL && ttmSlot->dataSize >= 0x2C) {
+            uint16 firstOpcode = ttmSlot->data[0] | (ttmSlot->data[1] << 8);
+            static uint16 checkPixels[16];
+            if (firstOpcode == 0x1061) {
+                /* Small GREEN dot at top-right = TTM data valid */
+                for (int i = 0; i < 16; i++) checkPixels[i] = (0 << 10) | (31 << 5) | 0;
+            } else {
+                /* Small RED dot = TTM data invalid */
+                for (int i = 0; i < 16; i++) checkPixels[i] = (0 << 10) | (0 << 5) | 31;
+            }
+            RECT checkRect;
+            setRECT(&checkRect, 620, 10, 8, 8);
+            LoadImage(&checkRect, (uint32*)checkPixels);
+            DrawSync(0);
+            verifyDone = 1;
+        }
+    }
+#endif
 }
 
 
@@ -299,16 +368,11 @@ void ttmInitSlot(struct TTtmSlot *ttmSlot)
 {
     ttmSlot->data = NULL;
     ttmSlot->ttmResource = NULL;
-    for (int i=0; i < MAX_BMP_SLOTS; i++) {
-        ttmSlot->numSprites[i] = 0;
-        ttmSlot->spriteGen[i] = 0;
-        ttmSlot->loadedBmp[i] = NULL;
-        ttmSlot->psbData[i] = NULL;
-        /* Zero out sprite pointers to prevent garbage pointer access */
-        for (int j=0; j < MAX_SPRITES_PER_BMP; j++) {
-            ttmSlot->sprites[i][j] = NULL;
-        }
-    }
+    /* (#93) Use memset instead of nested loops for sprite pointer init */
+    memset(ttmSlot->sprites, 0, sizeof(ttmSlot->sprites));
+    memset(ttmSlot->numSprites, 0, sizeof(ttmSlot->numSprites));
+    memset(ttmSlot->spriteGen, 0, sizeof(ttmSlot->spriteGen));
+    memset(ttmSlot->loadedBmp, 0, sizeof(ttmSlot->loadedBmp));
 }
 
 
@@ -350,30 +414,6 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
     ttmSlot = ttmThread->ttmSlot;
     offset = ttmThread->ip;
     data = ttmSlot->data;
-
-#ifdef PS1_BUILD
-    /* DEBUG: Minimal - just show one indicator if TTM data looks valid */
-    {
-        static int verifyDone = 0;
-        if (!verifyDone && data != NULL && ttmSlot->dataSize >= 0x2C) {
-            /* Check first opcode is SET_PALETTE_SLOT (0x1061) */
-            uint16 firstOpcode = data[0] | (data[1] << 8);
-            static uint16 checkPixels[16];
-            if (firstOpcode == 0x1061) {
-                /* Small GREEN dot at top-right = TTM data valid */
-                for (int i = 0; i < 16; i++) checkPixels[i] = (0 << 10) | (31 << 5) | 0;
-            } else {
-                /* Small RED dot = TTM data invalid */
-                for (int i = 0; i < 16; i++) checkPixels[i] = (0 << 10) | (0 << 5) | 31;
-            }
-            RECT checkRect;
-            setRECT(&checkRect, 620, 10, 8, 8);
-            LoadImage(&checkRect, (uint32*)checkPixels);
-            DrawSync(0);
-            verifyDone = 1;
-        }
-    }
-#endif
 
     while (continueLoop) {
         if (offset + 1 >= ttmSlot->dataSize) {

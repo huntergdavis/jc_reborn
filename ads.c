@@ -38,9 +38,8 @@ extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern int fprintf(FILE *stream, const char *format, ...);
 extern int printf(const char *format, ...);
-extern size_t strlen(const char *s);
-extern int strcmp(const char *s1, const char *s2);
 extern void *memcpy(void *dest, const void *src, size_t n);
+extern int strcmp(const char *s1, const char *s2);
 #define stderr ((FILE*)2)
 #endif
 
@@ -118,7 +117,12 @@ char ps1AdsCurrentName[16] = "";
 uint16 ps1AdsCurrentTag = 0;
 
 static void adsStopScene(int sceneNo);
-static int adsSlotInUseByOtherScene(uint16 ttmSlotNo, int excludeSceneNo);
+
+#ifdef PS1_BUILD
+static const struct TPs1RestorePilot *cachedPilot = NULL;
+static char cachedPilotAdsName[16] = {0};
+static uint16 cachedPilotAdsTag = 0xFFFF;
+#endif
 
 static void adsSetCurrentScene(char *adsName, uint16 adsTag)
 {
@@ -128,17 +132,17 @@ static void adsSetCurrentScene(char *adsName, uint16 adsTag)
         ps1AdsCurrentName[i] = adsName[i];
     ps1AdsCurrentName[i] = '\0';
     ps1AdsCurrentTag = adsTag;
+
+#ifdef PS1_BUILD
+    /* Invalidate pilot cache when scene changes */
+    cachedPilotAdsName[0] = '\0';
+#endif
 }
 
 static int adsStringEquals(const char *a, const char *b)
 {
     if (!a || !b) return 0;
-    while (*a && *b) {
-        if (*a != *b) return 0;
-        a++;
-        b++;
-    }
-    return (*a == '\0' && *b == '\0');
+    return strcmp(a, b) == 0;
 }
 
 static int adsPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
@@ -157,14 +161,33 @@ static const struct TPs1RestorePilot *adsFindActiveRestorePilot(void)
 {
     int i;
 
+    /* Return cached result if name+tag haven't changed */
+    if (cachedPilotAdsName[0] != '\0' &&
+        cachedPilotAdsTag == ps1AdsCurrentTag &&
+        adsStringEquals(cachedPilotAdsName, ps1AdsCurrentName))
+        return cachedPilot;
+
     for (i = 0; i < PS1_RESTORE_PILOT_COUNT; i++) {
         const struct TPs1RestorePilot *pilot = &gPs1RestorePilots[i];
         if (!adsStringEquals(ps1AdsCurrentName, pilot->adsName))
             continue;
-        if (adsPilotContainsAdsTag(pilot, ps1AdsCurrentTag))
+        if (adsPilotContainsAdsTag(pilot, ps1AdsCurrentTag)) {
+            /* Cache the result */
+            cachedPilot = pilot;
+            cachedPilotAdsTag = ps1AdsCurrentTag;
+            for (i = 0; i < 15 && ps1AdsCurrentName[i]; i++)
+                cachedPilotAdsName[i] = ps1AdsCurrentName[i];
+            cachedPilotAdsName[i] = '\0';
             return pilot;
+        }
     }
 
+    /* Cache the negative result too */
+    cachedPilot = NULL;
+    cachedPilotAdsTag = ps1AdsCurrentTag;
+    for (i = 0; i < 15 && ps1AdsCurrentName[i]; i++)
+        cachedPilotAdsName[i] = ps1AdsCurrentName[i];
+    cachedPilotAdsName[i] = '\0';
     return NULL;
 }
 
@@ -173,97 +196,7 @@ static int adsUseRestorePilotReplayPolicy(void)
     return adsFindActiveRestorePilot() != NULL;
 }
 
-static int adsUseRestorePilotHandoffSeed(void)
-{
-    const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
-
-    if (pilot == NULL)
-        return 0;
-
-    /* WALKSTUF still depends on a one-shot actor carry into the opening frame.
-     * Keep this exception narrow instead of re-enabling the older replay merge
-     * policy for all pilot-scoped scenes. */
-    return adsStringEquals(pilot->adsName, "WALKSTUF.ADS");
-}
-
-static int adsUseRestorePilotActorRecovery(void)
-{
-    const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
-
-    if (pilot == NULL)
-        return 0;
-
-    /* WALKSTUF still shows a one-frame actor gap on scene entry. Keep the
-     * recovery scoped to the affected route instead of re-enabling the older
-     * replay merge/carry policy for all pilot scenes. */
-    return adsStringEquals(pilot->adsName, "WALKSTUF.ADS");
-}
-
 #ifdef PS1_BUILD
-static int adsHasExtension(const char *name, const char *extension)
-{
-    size_t nameLen;
-    size_t extLen;
-
-    if (name == NULL || extension == NULL)
-        return 0;
-
-    nameLen = strlen(name);
-    extLen = strlen(extension);
-    if (nameLen < extLen)
-        return 0;
-
-    return strcmp(name + (nameLen - extLen), extension) == 0;
-}
-
-static void adsPrimeAdsResourceSet(struct TAdsResource *adsResource)
-{
-    uint16 i;
-
-    if (adsResource == NULL || adsResource->res == NULL)
-        return;
-
-    for (i = 0; i < adsResource->numRes; i++) {
-        const char *name = adsResource->res[i].name;
-
-        if (name == NULL)
-            continue;
-
-        if (adsHasExtension(name, ".SCR")) {
-            struct TScrResource *scrResource = findScrResource((char *)name);
-            if (scrResource != NULL && scrResource->uncompressedData == NULL)
-                ps1_loadScrData(scrResource);
-            continue;
-        }
-
-        if (adsHasExtension(name, ".TTM")) {
-            struct TTtmResource *ttmResource = findTtmResource((char *)name);
-            if (ttmResource != NULL && ttmResource->uncompressedData == NULL)
-                ps1_loadTtmData(ttmResource);
-            continue;
-        }
-
-        if (adsHasExtension(name, ".BMP")) {
-            struct TBmpResource *bmpResource = findBmpResource((char *)name);
-            if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
-                ps1_loadBmpData(bmpResource);
-        }
-    }
-}
-
-static int adsShouldPrimeFullResourceSet(void)
-{
-    const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
-
-    if (pilot == NULL)
-        return 0;
-
-    /* WALKSTUF still relies on wider resource warmup for its opening-frame
-     * stability. Keep broader ADS-family priming scoped there instead of
-     * inflating every validated pilot route. */
-    return adsStringEquals(pilot->adsName, "WALKSTUF.ADS");
-}
-
 static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
 {
     uint16 i;
@@ -277,25 +210,13 @@ static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
             ps1_loadScrData(scrResource);
     }
 
-    /* Warm Johnny's sprite sheet first when present. Several live island
-     * routes depend on that actor being available for the first composed frame,
-     * and leaving it until the end of the BMP queue has been fragile. */
-    for (i = 0; i < pilot->bmpCount; i++) {
-        if (!adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP"))
-            continue;
-
-        {
-            struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
-            if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
-                ps1_loadBmpData(bmpResource);
-        }
-        break;
+    for (i = 0; i < pilot->sceneTtmCount; i++) {
+        struct TTtmResource *ttmResource = findTtmResource((char *)pilot->sceneTtms[i]);
+        if (ttmResource != NULL && ttmResource->uncompressedData == NULL)
+            ps1_loadTtmData(ttmResource);
     }
 
     for (i = 0; i < pilot->bmpCount; i++) {
-        if (adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP"))
-            continue;
-
         struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
         if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
             ps1_loadBmpData(bmpResource);
@@ -326,11 +247,8 @@ static struct TDrawnSprite gPrevReplayScratch[MAX_DRAWN_SPRITES];
 static struct TDrawnSprite gHandoffReplay[MAX_DRAWN_SPRITES];
 static uint8 gHandoffReplayCount = 0;
 static uint8 gHandoffReplayValid = 0;
-/* Owned pixel buffer for handoff — avoids dangling pointer when source BMP is freed. */
-#define HANDOFF_PIXEL_BUF_SIZE 2048
-static uint8 gHandoffPixelBuf[HANDOFF_PIXEL_BUF_SIZE];
 
-static void adsDbgAddU16(uint16 *acc, uint16 add)
+static inline void adsDbgAddU16(uint16 *acc, uint16 add)
 {
     uint32 sum;
     if (!acc) return;
@@ -342,26 +260,23 @@ static int adsIsActorCandidate(const struct TDrawnSprite *ds)
 {
     uint32 area;
     if (!ds) return 0;
-    if (ds->width < 8 || ds->height < 16) return 0;
-    if (ds->width > 96 || ds->height > 140) return 0;
-    area = (uint32)ds->width * (uint32)ds->height;
-    if (area < 180 || area > 4500) return 0;
-    return 1;
+    if (ds->width >= 8 && ds->height >= 16 &&
+        ds->width <= 96 && ds->height <= 140) {
+        area = (uint32)ds->width * (uint32)ds->height;
+        if (area >= 180 && area <= 4500)
+            return 1;
+    }
+    return 0;
 }
 
 static int adsActorNearMatch(const struct TDrawnSprite *a, const struct TDrawnSprite *b)
 {
-    int dx, dy, dw, dh;
     if (!a || !b) return 0;
-    dx = (int)a->x - (int)b->x;
-    dy = (int)a->y - (int)b->y;
-    dw = (int)a->width - (int)b->width;
-    dh = (int)a->height - (int)b->height;
-    if (dx < 0) dx = -dx;
-    if (dy < 0) dy = -dy;
-    if (dw < 0) dw = -dw;
-    if (dh < 0) dh = -dh;
-    return (dx <= 18 && dy <= 18 && dw <= 12 && dh <= 12);
+    if ((unsigned)((int)a->x - (int)b->x + 18) > 36u) return 0;
+    if ((unsigned)((int)a->y - (int)b->y + 18) > 36u) return 0;
+    if ((unsigned)((int)a->width - (int)b->width + 12) > 24u) return 0;
+    if ((unsigned)((int)a->height - (int)b->height + 12) > 24u) return 0;
+    return 1;
 }
 
 static uint8 adsCaptureReplayRecords(struct TTtmThread *thread)
@@ -432,22 +347,13 @@ static uint8 adsMergeReplayByProximity(struct TTtmThread *thread,
                            adsActorNearMatch(prev, &thread->lastActorReplay));
         for (uint8 n = 0; n < thread->numDrawnSprites; n++) {
             const struct TDrawnSprite *cur = &thread->drawnSprites[n];
-            int dx = (int)cur->x - (int)prev->x;
-            int dy = (int)cur->y - (int)prev->y;
-            int dw = (int)cur->width - (int)prev->width;
-            int dh = (int)cur->height - (int)prev->height;
-            int ds = (int)cur->spriteNo - (int)prev->spriteNo;
-            if (dx < 0) dx = -dx;
-            if (dy < 0) dy = -dy;
-            if (dw < 0) dw = -dw;
-            if (dh < 0) dh = -dh;
-            if (ds < 0) ds = -ds;
 
             /* Treat as same logical actor when it's near the prior position and
              * uses the same image bank with close animation frame index. */
             if (cur->imageNo == prev->imageNo &&
-                ds <= 8 &&
-                dx <= 24 && dy <= 24) {
+                (unsigned)((int)cur->spriteNo - (int)prev->spriteNo + 8) <= 16u &&
+                (unsigned)((int)cur->x - (int)prev->x + 24) <= 48u &&
+                (unsigned)((int)cur->y - (int)prev->y + 24) <= 48u) {
                 /* Don't let a small prop/fire sprite replace the main actor. */
                 if (prevIsActor && !adsIsActorCandidate(cur))
                     continue;
@@ -456,8 +362,10 @@ static uint8 adsMergeReplayByProximity(struct TTtmThread *thread,
             }
 
             /* Tight fallback for static/slow props with same dimensions. */
-            if (dw <= 4 && dh <= 4 &&
-                dx <= 8 && dy <= 8) {
+            if ((unsigned)((int)cur->width - (int)prev->width + 4) <= 8u &&
+                (unsigned)((int)cur->height - (int)prev->height + 4) <= 8u &&
+                (unsigned)((int)cur->x - (int)prev->x + 8) <= 16u &&
+                (unsigned)((int)cur->y - (int)prev->y + 8) <= 16u) {
                 if (prevIsActor && !adsIsActorCandidate(cur))
                     continue;
                 matched = 1;
@@ -471,12 +379,9 @@ static uint8 adsMergeReplayByProximity(struct TTtmThread *thread,
             int dup = 0;
             for (uint8 n = 0; n < thread->numDrawnSprites; n++) {
                 const struct TDrawnSprite *cur = &thread->drawnSprites[n];
-                int dx = (int)cur->x - (int)prev->x;
-                int dy = (int)cur->y - (int)prev->y;
-                if (dx < 0) dx = -dx;
-                if (dy < 0) dy = -dy;
                 if (cur->imageNo == prev->imageNo &&
-                    dx <= 6 && dy <= 6) {
+                    (unsigned)((int)cur->x - (int)prev->x + 6) <= 12u &&
+                    (unsigned)((int)cur->y - (int)prev->y + 6) <= 12u) {
                     dup = 1;
                     break;
                 }
@@ -495,7 +400,7 @@ static void adsCaptureHandoffReplay(struct TTtmThread *thread)
     int bestArea = -1;
     if (!thread || thread->numDrawnSprites == 0) return;
 
-    if (adsUseRestorePilotReplayPolicy() && !adsUseRestorePilotHandoffSeed()) {
+    if (adsUseRestorePilotReplayPolicy()) {
         gHandoffReplayValid = 0;
         gHandoffReplayCount = 0;
         return;
@@ -519,25 +424,6 @@ static void adsCaptureHandoffReplay(struct TTtmThread *thread)
         return;
     }
 
-    /* Copy pixel data into owned buffer so handoff survives BMP free. */
-    {
-        uint16 w = gHandoffReplay[0].width;
-        uint16 h = gHandoffReplay[0].height;
-        if (w == 0 || h == 0 || !gHandoffReplay[0].indexedPixels) {
-            gHandoffReplayValid = 0;
-            gHandoffReplayCount = 0;
-            return;
-        }
-        uint32 pixelSize = ((uint32)w * (uint32)h + 1) / 2;
-        if (pixelSize > HANDOFF_PIXEL_BUF_SIZE) {
-            gHandoffReplayValid = 0;
-            gHandoffReplayCount = 0;
-            return;
-        }
-        memcpy(gHandoffPixelBuf, gHandoffReplay[0].indexedPixels, pixelSize);
-        gHandoffReplay[0].indexedPixels = gHandoffPixelBuf;
-    }
-
     gHandoffReplayCount = 1;
     gHandoffReplayValid = 1;
 }
@@ -545,7 +431,7 @@ static void adsCaptureHandoffReplay(struct TTtmThread *thread)
 static void adsSeedFromHandoffReplay(struct TTtmThread *thread)
 {
     if (!thread || !gHandoffReplayValid || gHandoffReplayCount == 0) return;
-    if (adsUseRestorePilotReplayPolicy() && !adsUseRestorePilotHandoffSeed()) return;
+    if (adsUseRestorePilotReplayPolicy()) return;
     if (thread->numDrawnSprites != 0) return;
 
     memcpy(thread->drawnSprites, gHandoffReplay,
@@ -790,18 +676,6 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 
     struct TTtmThread *ttmThread = &ttmThreads[i];
 
-#ifdef PS1_BUILD
-    /* Shared TTM slots persist across scene tags within one ADS route. Flush
-     * stale BMP state before a fresh scene starts unless another live thread
-     * still owns that slot. */
-    if (ttmSlotNo < MAX_TTM_SLOTS && !adsSlotInUseByOtherScene(ttmSlotNo, -1)) {
-        for (int bmpSlot = 0; bmpSlot < MAX_BMP_SLOTS; bmpSlot++) {
-            if (ttmSlots[ttmSlotNo].numSprites[bmpSlot] > 0)
-                grReleaseBmp(&ttmSlots[ttmSlotNo], bmpSlot);
-        }
-    }
-#endif
-
     ttmThread->ttmSlot         = &ttmSlots[ttmSlotNo];
     ttmThread->isRunning       = 1;
     ttmThread->sceneSlot       = ttmSlotNo;
@@ -887,20 +761,6 @@ static int isSceneRunning(uint16 ttmSlotNo, uint16 ttmTag)
              && thread.sceneTag  == ttmTag    ) {
             return 1;
         }
-    }
-
-    return 0;
-}
-
-
-static int adsSlotInUseByOtherScene(uint16 ttmSlotNo, int excludeSceneNo)
-{
-    for (int i = 0; i < MAX_TTM_THREADS; i++) {
-        if (i == excludeSceneNo)
-            continue;
-        if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING &&
-            ttmThreads[i].sceneSlot == ttmSlotNo)
-            return 1;
     }
 
     return 0;
@@ -1332,6 +1192,7 @@ void adsPlay(char *adsName, uint16 adsTag)
         if (adsResource->uncompressedData == NULL) {
             return;  /* ADS data load failed - skip scene */
         }
+        adsPrimeRestorePilotResources(adsFindActiveRestorePilot());
 #else
         char extractedPath[512];
         snprintf(extractedPath, sizeof(extractedPath), "extracted/ads/%s",
@@ -1354,18 +1215,6 @@ void adsPlay(char *adsName, uint16 adsTag)
         }
 #endif
     }
-
-#ifdef PS1_BUILD
-    {
-        const struct TPs1RestorePilot *pilot = adsFindActiveRestorePilot();
-        /* Keep pilot resource priming tied to every scene launch, not only the
-         * first ADS bytecode load. Some validated routes revisit a resident ADS
-         * and still need the scene-scoped BMP/SCR/TTM contract re-established. */
-        adsPrimeRestorePilotResources(pilot);
-        if (adsShouldPrimeFullResourceSet())
-            adsPrimeAdsResourceSet(adsResource);
-    }
-#endif
 
     /* Pin ADS resource to prevent eviction while in use */
     pinResource(adsResource, adsResource->uncompressedSize, "ADS");
@@ -1444,24 +1293,26 @@ void adsPlay(char *adsName, uint16 adsTag)
             }
             numThreads = activeRunning;
 #ifdef PS1_BUILD
-            ps1AdsDbgActiveThreads = (uint16)activeRunning;
-            ps1AdsDbgRunningThreads = (uint16)runningCount;
-            ps1AdsDbgTerminatedThreads = (uint16)terminatedCount;
-            if (firstIdx >= 0) {
-                ps1AdsDbgSceneSlot = ttmThreads[firstIdx].sceneSlot;
-                ps1AdsDbgSceneTag  = ttmThreads[firstIdx].sceneTag;
-                ps1AdsDbgReplayCount = ttmThreads[firstIdx].numDrawnSprites;
-            } else {
-                ps1AdsDbgSceneSlot = 0;
-                ps1AdsDbgSceneTag  = 0;
-                ps1AdsDbgReplayCount = 0;
+            if (grPs1TelemetryEnabled) {
+                ps1AdsDbgActiveThreads = (uint16)activeRunning;
+                ps1AdsDbgRunningThreads = (uint16)runningCount;
+                ps1AdsDbgTerminatedThreads = (uint16)terminatedCount;
+                if (firstIdx >= 0) {
+                    ps1AdsDbgSceneSlot = ttmThreads[firstIdx].sceneSlot;
+                    ps1AdsDbgSceneTag  = ttmThreads[firstIdx].sceneTag;
+                    ps1AdsDbgReplayCount = ttmThreads[firstIdx].numDrawnSprites;
+                } else {
+                    ps1AdsDbgSceneSlot = 0;
+                    ps1AdsDbgSceneTag  = 0;
+                    ps1AdsDbgReplayCount = 0;
+                }
+                ps1AdsDbgReplayTryFrame = 0;
+                ps1AdsDbgReplayDrawFrame = 0;
+                ps1AdsDbgMergeCarryFrame = 0;
+                ps1AdsDbgNoDrawThreadsFrame = 0;
+                ps1AdsDbgPlayedThreadsFrame = 0;
+                ps1AdsDbgRecordedSpritesFrame = 0;
             }
-            ps1AdsDbgReplayTryFrame = 0;
-            ps1AdsDbgReplayDrawFrame = 0;
-            ps1AdsDbgMergeCarryFrame = 0;
-            ps1AdsDbgNoDrawThreadsFrame = 0;
-            ps1AdsDbgPlayedThreadsFrame = 0;
-            ps1AdsDbgRecordedSpritesFrame = 0;
 #endif
         }
 
@@ -1489,10 +1340,12 @@ void adsPlay(char *adsName, uint16 adsTag)
                 ttmThreads[i].timer = ttmThreads[i].delay;
 #ifdef PS1_BUILD
                 uint8 prevCount = adsCaptureReplayRecords(&ttmThreads[i]);
-                adsDbgAddU16(&ps1AdsDbgReplayTryFrame, prevCount);
+                if (grPs1TelemetryEnabled)
+                    adsDbgAddU16(&ps1AdsDbgReplayTryFrame, prevCount);
                 ttmThreads[i].numDrawnSprites = 0;
                 grCurrentThread = &ttmThreads[i];
-                adsDbgAddU16(&ps1AdsDbgPlayedThreadsFrame, 1);
+                if (grPs1TelemetryEnabled)
+                    adsDbgAddU16(&ps1AdsDbgPlayedThreadsFrame, 1);
 #endif
                 ttmPlay(&ttmThreads[i]);
 #ifdef PS1_BUILD
@@ -1504,14 +1357,14 @@ void adsPlay(char *adsName, uint16 adsTag)
                                                               gPrevReplayScratch,
                                                               prevCount);
                     adsRecoverMissingActor(&ttmThreads[i], gPrevReplayScratch, prevCount);
-                    adsDbgAddU16(&ps1AdsDbgMergeCarryFrame, carried);
-                } else if (adsUseRestorePilotActorRecovery()) {
-                    adsRecoverMissingActor(&ttmThreads[i], gPrevReplayScratch, prevCount);
+                    if (grPs1TelemetryEnabled)
+                        adsDbgAddU16(&ps1AdsDbgMergeCarryFrame, carried);
                 }
-                if (ttmThreads[i].numDrawnSprites == 0) {
-                    adsDbgAddU16(&ps1AdsDbgNoDrawThreadsFrame, 1);
+                if (grPs1TelemetryEnabled) {
+                    if (ttmThreads[i].numDrawnSprites == 0)
+                        adsDbgAddU16(&ps1AdsDbgNoDrawThreadsFrame, 1);
+                    adsDbgAddU16(&ps1AdsDbgRecordedSpritesFrame, ttmThreads[i].numDrawnSprites);
                 }
-                adsDbgAddU16(&ps1AdsDbgRecordedSpritesFrame, ttmThreads[i].numDrawnSprites);
 #endif
             }
 #ifdef PS1_BUILD
@@ -1519,14 +1372,17 @@ void adsPlay(char *adsName, uint16 adsTag)
                      ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
                 /* Replay via GPU path */
                 for (int j = 0; j < ttmThreads[i].numDrawnSprites; j++) {
-                    adsDbgAddU16(&ps1AdsDbgReplayTryFrame, 1);
-                    adsDbgAddU16(&ps1AdsDbgReplayDrawFrame, 1);
+                    if (grPs1TelemetryEnabled) {
+                        adsDbgAddU16(&ps1AdsDbgReplayTryFrame, 1);
+                        adsDbgAddU16(&ps1AdsDbgReplayDrawFrame, 1);
+                    }
                     grReplaySprite(&ttmThreads[i].drawnSprites[j]);
                 }
             }
 #endif
         }
 
+#ifndef PS1_BUILD
         if (debugMode) {
 
             debugMsg("\n  +------ THREADS: %d -------", numThreads);
@@ -1553,6 +1409,7 @@ void adsPlay(char *adsName, uint16 adsTag)
 
             debugMsg("  +-------------------------\n");
         }
+#endif
 
         // Refresh display
 #ifdef PS1_BUILD
@@ -1561,46 +1418,49 @@ void adsPlay(char *adsName, uint16 adsTag)
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
 #endif
 
-        // Determine min timer through all threads
-        uint16 mini = 300;
+        // Determine min timer and collect active indices in a single pass
+        {
+            uint16 mini = 300;
+            int activeIdx[MAX_TTM_THREADS];
+            int numActive = 0;
 
-        if (ttmBackgroundThread.isRunning)
-            mini = ttmBackgroundThread.timer;
+            if (ttmBackgroundThread.isRunning)
+                mini = ttmBackgroundThread.timer;
 
-        for (int i=0; i < MAX_TTM_THREADS; i++) {
-
-            if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) {
-
-                if (ttmThreads[i].delay < mini)
-                    mini = ttmThreads[i].delay;
-
-                if (ttmThreads[i].timer < mini)
-                    mini = ttmThreads[i].timer;
+            for (int i = 0; i < MAX_TTM_THREADS; i++) {
+                if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) {
+                    activeIdx[numActive++] = i;
+                    if (ttmThreads[i].delay < mini)
+                        mini = ttmThreads[i].delay;
+                    if (ttmThreads[i].timer < mini)
+                        mini = ttmThreads[i].timer;
+                }
             }
-        }
 
-        /* Prevent zero-tick loops from starving progression and display updates. */
-        if (mini == 0) mini = 1;
+            /* Prevent zero-tick loops from starving progression and display updates. */
+            if (mini == 0) mini = 1;
 
-        // Decrease all timers by the shortest one, and wait that amount of time
+            // Decrease all timers by the shortest one, and wait that amount of time
 #ifdef PS1_BUILD
-        ps1AdsDbgMini = mini;
+            if (grPs1TelemetryEnabled)
+                ps1AdsDbgMini = mini;
 #endif
-        if (ttmBackgroundThread.timer > mini)
-            ttmBackgroundThread.timer -= mini;
-        else
-            ttmBackgroundThread.timer = 0;
+            if (ttmBackgroundThread.timer > mini)
+                ttmBackgroundThread.timer -= mini;
+            else
+                ttmBackgroundThread.timer = 0;
 
-        for (int i=0; i < MAX_TTM_THREADS; i++)
-            if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING) {
-                if (ttmThreads[i].timer > mini)
-                    ttmThreads[i].timer -= mini;
+            for (int j = 0; j < numActive; j++) {
+                int idx = activeIdx[j];
+                if (ttmThreads[idx].timer > mini)
+                    ttmThreads[idx].timer -= mini;
                 else
-                    ttmThreads[i].timer = 0;
+                    ttmThreads[idx].timer = 0;
             }
 
-        debugMsg(" ******* WAIT: %d ticks *******\n", mini);
-        grUpdateDelay = mini;
+            debugMsg(" ******* WAIT: %d ticks *******\n", mini);
+            grUpdateDelay = mini;
+        }
 
         // Various threads processes
         for (int i=0; i < MAX_TTM_THREADS; i++) {
@@ -1648,7 +1508,7 @@ void adsPlay(char *adsName, uint16 adsTag)
 #ifdef PS1_BUILD
                     /* If handoff wasn't consumed (no new thread started),
                      * inject actor into a surviving thread to prevent vanish. */
-                    if ((!adsUseRestorePilotReplayPolicy() || adsUseRestorePilotHandoffSeed()) &&
+                    if (!adsUseRestorePilotReplayPolicy() &&
                         gHandoffReplayValid && gHandoffReplayCount > 0) {
                         for (int k = 0; k < MAX_TTM_THREADS; k++) {
                             if (ttmThreads[k].isRunning == ADS_THREAD_RUNNING &&
@@ -1938,5 +1798,4 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
     }
 
     adsStopScene(0);
-    ttmResetSlot(&ttmSlots[0]);
 }

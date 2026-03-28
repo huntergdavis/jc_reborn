@@ -21,6 +21,8 @@
  *
  */
 
+struct TTtmThread;
+
 void adsInit();
 void adsInitIsland();
 void adsReleaseIsland();
@@ -36,3 +38,8 @@ void adsRequestStop(void);
 extern int ps1AdsLastPlayLaunched;
 extern char ps1AdsCurrentName[16];
 extern uint16 ps1AdsCurrentTag;
+
+#ifdef PS1_BUILD
+int adsShouldForceBuildingMjsandFullRestore(void);
+int adsPs1DrawBackground(struct TTtmThread *thread);
+#endif

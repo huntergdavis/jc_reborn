@@ -1,0 +1,45 @@
+{
+  "scene": {
+    "ads_name": "JOHNNY",
+    "tag": 1,
+    "scene_index": 25,
+    "status": "verified",
+    "boot_string": "window nosound story single 25 seed 1",
+    "mode": "scene-default"
+  },
+  "config": {
+    "frames": 600,
+    "interval": 1,
+    "until_exit": true,
+    "timeout": null,
+    "cpu_mode": "host",
+    "forced_seed": 1,
+    "forced_island_position": null,
+    "forced_low_tide": null
+  },
+  "outcome": {
+    "exit_code": 0,
+    "timed_out": false,
+    "frames_captured": 119,
+    "state_hash": "1e83c88cfc7c4fda5c14b0e631b51ee81a4c102515a5825b87b1b67d00a446b1",
+    "has_fatal_error": false,
+    "likely_scene_not_started": false,
+    "likely_scene_broken": false,
+    "likely_visual_broken": false,
+    "scene_markers_last": {
+      "launched": false,
+      "bmp_ok": false,
+      "bmp_fail": false,
+      "sprite_count_estimate": 0
+    },
+    "visual_last": {},
+    "visual_timeline": []
+  },
+  "paths": {
+    "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-1",
+    "frames_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-1/frames",
+    "visual": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-1/visual.json",
+    "visual_batch": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-1/visual-batch.json"
+  },
+  "capture_date": "2026-03-28T15:33:19Z"
+}

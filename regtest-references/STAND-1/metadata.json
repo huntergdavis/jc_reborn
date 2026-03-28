@@ -1,0 +1,28 @@
+{
+  "ads_name": "STAND",
+  "ads_file": "STAND.ADS",
+  "tag": 1,
+  "scene_index": 38,
+  "status": "verified",
+  "boot_string": "window nosound story single 38 seed 1",
+  "mode": "scene-default",
+  "forced_seed": 1,
+  "forced_island_position": null,
+  "forced_low_tide": null,
+  "capture_date": "2026-03-28T15:41:03Z",
+  "frame_count": 8,
+  "frames": [
+    "frame_00000.bmp",
+    "frame_00001.bmp",
+    "frame_00002.bmp",
+    "frame_00003.bmp",
+    "frame_00004.bmp",
+    "frame_00005.bmp",
+    "frame_00006.bmp",
+    "frame_00007.bmp"
+  ],
+  "visual_last": {},
+  "visual_best": null,
+  "visual_entry_scene": null,
+  "visual_last_scene": null
+}

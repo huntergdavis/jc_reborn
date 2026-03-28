@@ -1,0 +1,45 @@
+{
+  "scene": {
+    "ads_name": "FISHING",
+    "tag": 1,
+    "scene_index": 17,
+    "status": "verified",
+    "boot_string": "window nosound story single 17 seed 1",
+    "mode": "scene-default"
+  },
+  "config": {
+    "frames": 600,
+    "interval": 1,
+    "until_exit": true,
+    "timeout": null,
+    "cpu_mode": "host",
+    "forced_seed": 1,
+    "forced_island_position": null,
+    "forced_low_tide": null
+  },
+  "outcome": {
+    "exit_code": 0,
+    "timed_out": false,
+    "frames_captured": 82,
+    "state_hash": "ec4f7be9f7f3b5991301e830f0e7fb56a4dc0c2f55378bb095d91100a633d4fe",
+    "has_fatal_error": false,
+    "likely_scene_not_started": false,
+    "likely_scene_broken": false,
+    "likely_visual_broken": false,
+    "scene_markers_last": {
+      "launched": false,
+      "bmp_ok": false,
+      "bmp_fail": false,
+      "sprite_count_estimate": 0
+    },
+    "visual_last": {},
+    "visual_timeline": []
+  },
+  "paths": {
+    "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-1",
+    "frames_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-1/frames",
+    "visual": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-1/visual.json",
+    "visual_batch": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-1/visual-batch.json"
+  },
+  "capture_date": "2026-03-28T15:30:44Z"
+}

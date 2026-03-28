@@ -1,0 +1,1201 @@
+{
+  "rows": [
+    {
+      "scene_label": "ACTIVITY 1",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 1,
+      "scene_index": 0,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "0"
+      ],
+      "boot_mode": "story single 0",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-1/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 4",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 4,
+      "scene_index": 4,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "4"
+      ],
+      "boot_mode": "story single 4",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-4",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-4",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-4/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-4/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 5",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 5,
+      "scene_index": 5,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "5"
+      ],
+      "boot_mode": "story single 5",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-5",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-5",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-5/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-5/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 6",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 6,
+      "scene_index": 6,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "6"
+      ],
+      "boot_mode": "story single 6",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-6",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-6",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-6/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-6/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 7",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 7,
+      "scene_index": 7,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "7"
+      ],
+      "boot_mode": "story single 7",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-7",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-7",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-7/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-7/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 8",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 8,
+      "scene_index": 8,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "8"
+      ],
+      "boot_mode": "story single 8",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-8",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-8",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-8/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-8/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 9",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 9,
+      "scene_index": 9,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "9"
+      ],
+      "boot_mode": "story single 9",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-9",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-9",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-9/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-9/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 10",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 10,
+      "scene_index": 3,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "3"
+      ],
+      "boot_mode": "story single 3",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-10",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-10",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-10/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-10/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 11",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 11,
+      "scene_index": 2,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "2"
+      ],
+      "boot_mode": "story single 2",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-11",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-11",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-11/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-11/result.json"
+    },
+    {
+      "scene_label": "ACTIVITY 12",
+      "ads_name": "ACTIVITY",
+      "ads_file": "ACTIVITY.ADS",
+      "tag": 12,
+      "scene_index": 1,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "1"
+      ],
+      "boot_mode": "story single 1",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "ACTIVITY-12",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-12",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-12/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/ACTIVITY-12/result.json"
+    },
+    {
+      "scene_label": "BUILDING 1",
+      "ads_name": "BUILDING",
+      "ads_file": "BUILDING.ADS",
+      "tag": 1,
+      "scene_index": 10,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "10"
+      ],
+      "boot_mode": "story single 10",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "BUILDING-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-1/result.json"
+    },
+    {
+      "scene_label": "BUILDING 2",
+      "ads_name": "BUILDING",
+      "ads_file": "BUILDING.ADS",
+      "tag": 2,
+      "scene_index": 13,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "13"
+      ],
+      "boot_mode": "story single 13",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "BUILDING-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-2/result.json"
+    },
+    {
+      "scene_label": "BUILDING 3",
+      "ads_name": "BUILDING",
+      "ads_file": "BUILDING.ADS",
+      "tag": 3,
+      "scene_index": 12,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "12"
+      ],
+      "boot_mode": "story single 12",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "BUILDING-3",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-3",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-3/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-3/result.json"
+    },
+    {
+      "scene_label": "BUILDING 4",
+      "ads_name": "BUILDING",
+      "ads_file": "BUILDING.ADS",
+      "tag": 4,
+      "scene_index": 11,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "11"
+      ],
+      "boot_mode": "story single 11",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "BUILDING-4",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-4",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-4/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-4/result.json"
+    },
+    {
+      "scene_label": "BUILDING 5",
+      "ads_name": "BUILDING",
+      "ads_file": "BUILDING.ADS",
+      "tag": 5,
+      "scene_index": 14,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "14"
+      ],
+      "boot_mode": "story single 14",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "BUILDING-5",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-5",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-5/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-5/result.json"
+    },
+    {
+      "scene_label": "BUILDING 6",
+      "ads_name": "BUILDING",
+      "ads_file": "BUILDING.ADS",
+      "tag": 6,
+      "scene_index": 16,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "16"
+      ],
+      "boot_mode": "story single 16",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "BUILDING-6",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-6",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-6/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-6/result.json"
+    },
+    {
+      "scene_label": "BUILDING 7",
+      "ads_name": "BUILDING",
+      "ads_file": "BUILDING.ADS",
+      "tag": 7,
+      "scene_index": 15,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "15"
+      ],
+      "boot_mode": "story single 15",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "BUILDING-7",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-7",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-7/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-7/result.json"
+    },
+    {
+      "scene_label": "FISHING 1",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 1,
+      "scene_index": 17,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "17"
+      ],
+      "boot_mode": "story single 17",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-1/result.json"
+    },
+    {
+      "scene_label": "FISHING 2",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 2,
+      "scene_index": 18,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "18"
+      ],
+      "boot_mode": "story single 18",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-2/result.json"
+    },
+    {
+      "scene_label": "FISHING 3",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 3,
+      "scene_index": 19,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "19"
+      ],
+      "boot_mode": "story single 19",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-3",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-3",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-3/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-3/result.json"
+    },
+    {
+      "scene_label": "FISHING 4",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 4,
+      "scene_index": 20,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "20"
+      ],
+      "boot_mode": "story single 20",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-4",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-4",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-4/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-4/result.json"
+    },
+    {
+      "scene_label": "FISHING 5",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 5,
+      "scene_index": 21,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "21"
+      ],
+      "boot_mode": "story single 21",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-5",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-5",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-5/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-5/result.json"
+    },
+    {
+      "scene_label": "FISHING 6",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 6,
+      "scene_index": 22,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "22"
+      ],
+      "boot_mode": "story single 22",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-6",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-6",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-6/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-6/result.json"
+    },
+    {
+      "scene_label": "FISHING 7",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 7,
+      "scene_index": 23,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "23"
+      ],
+      "boot_mode": "story single 23",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-7",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-7",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-7/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-7/result.json"
+    },
+    {
+      "scene_label": "FISHING 8",
+      "ads_name": "FISHING",
+      "ads_file": "FISHING.ADS",
+      "tag": 8,
+      "scene_index": 24,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "24"
+      ],
+      "boot_mode": "story single 24",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "FISHING-8",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-8",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-8/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/FISHING-8/result.json"
+    },
+    {
+      "scene_label": "JOHNNY 1",
+      "ads_name": "JOHNNY",
+      "ads_file": "JOHNNY.ADS",
+      "tag": 1,
+      "scene_index": 25,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "25"
+      ],
+      "boot_mode": "story single 25",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "JOHNNY-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-1/result.json"
+    },
+    {
+      "scene_label": "JOHNNY 2",
+      "ads_name": "JOHNNY",
+      "ads_file": "JOHNNY.ADS",
+      "tag": 2,
+      "scene_index": 26,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "26"
+      ],
+      "boot_mode": "story single 26",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "JOHNNY-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-2/result.json"
+    },
+    {
+      "scene_label": "JOHNNY 3",
+      "ads_name": "JOHNNY",
+      "ads_file": "JOHNNY.ADS",
+      "tag": 3,
+      "scene_index": 27,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "27"
+      ],
+      "boot_mode": "story single 27",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "JOHNNY-3",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-3",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-3/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-3/result.json"
+    },
+    {
+      "scene_label": "JOHNNY 4",
+      "ads_name": "JOHNNY",
+      "ads_file": "JOHNNY.ADS",
+      "tag": 4,
+      "scene_index": 28,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "28"
+      ],
+      "boot_mode": "story single 28",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "JOHNNY-4",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-4",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-4/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-4/result.json"
+    },
+    {
+      "scene_label": "JOHNNY 5",
+      "ads_name": "JOHNNY",
+      "ads_file": "JOHNNY.ADS",
+      "tag": 5,
+      "scene_index": 29,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "29"
+      ],
+      "boot_mode": "story single 29",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "JOHNNY-5",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-5",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-5/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-5/result.json"
+    },
+    {
+      "scene_label": "JOHNNY 6",
+      "ads_name": "JOHNNY",
+      "ads_file": "JOHNNY.ADS",
+      "tag": 6,
+      "scene_index": 30,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "30"
+      ],
+      "boot_mode": "story single 30",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "JOHNNY-6",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-6",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-6/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/JOHNNY-6/result.json"
+    },
+    {
+      "scene_label": "MARY 1",
+      "ads_name": "MARY",
+      "ads_file": "MARY.ADS",
+      "tag": 1,
+      "scene_index": 31,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "31"
+      ],
+      "boot_mode": "story single 31",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "MARY-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-1/result.json"
+    },
+    {
+      "scene_label": "MARY 2",
+      "ads_name": "MARY",
+      "ads_file": "MARY.ADS",
+      "tag": 2,
+      "scene_index": 33,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "33"
+      ],
+      "boot_mode": "story single 33",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "MARY-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-2/result.json"
+    },
+    {
+      "scene_label": "MARY 3",
+      "ads_name": "MARY",
+      "ads_file": "MARY.ADS",
+      "tag": 3,
+      "scene_index": 32,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "32"
+      ],
+      "boot_mode": "story single 32",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "MARY-3",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-3",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-3/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-3/result.json"
+    },
+    {
+      "scene_label": "MARY 4",
+      "ads_name": "MARY",
+      "ads_file": "MARY.ADS",
+      "tag": 4,
+      "scene_index": 34,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "34"
+      ],
+      "boot_mode": "story single 34",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "MARY-4",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-4",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-4/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-4/result.json"
+    },
+    {
+      "scene_label": "MARY 5",
+      "ads_name": "MARY",
+      "ads_file": "MARY.ADS",
+      "tag": 5,
+      "scene_index": 35,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "35"
+      ],
+      "boot_mode": "story single 35",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "MARY-5",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-5",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-5/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/MARY-5/result.json"
+    },
+    {
+      "scene_label": "MISCGAG 1",
+      "ads_name": "MISCGAG",
+      "ads_file": "MISCGAG.ADS",
+      "tag": 1,
+      "scene_index": 36,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "36"
+      ],
+      "boot_mode": "story single 36",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "MISCGAG-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/MISCGAG-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/MISCGAG-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/MISCGAG-1/result.json"
+    },
+    {
+      "scene_label": "MISCGAG 2",
+      "ads_name": "MISCGAG",
+      "ads_file": "MISCGAG.ADS",
+      "tag": 2,
+      "scene_index": 37,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "37"
+      ],
+      "boot_mode": "story single 37",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "MISCGAG-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/MISCGAG-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/MISCGAG-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/MISCGAG-2/result.json"
+    },
+    {
+      "scene_label": "STAND 1",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 1,
+      "scene_index": 38,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "38"
+      ],
+      "boot_mode": "story single 38",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/result.json"
+    },
+    {
+      "scene_label": "STAND 2",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 2,
+      "scene_index": 39,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "39"
+      ],
+      "boot_mode": "story single 39",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-2/result.json"
+    },
+    {
+      "scene_label": "STAND 3",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 3,
+      "scene_index": 40,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "40"
+      ],
+      "boot_mode": "story single 40",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-3",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/result.json"
+    },
+    {
+      "scene_label": "STAND 4",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 4,
+      "scene_index": 41,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "41"
+      ],
+      "boot_mode": "story single 41",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-4",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-4",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-4/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-4/result.json"
+    },
+    {
+      "scene_label": "STAND 5",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 5,
+      "scene_index": 42,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "42"
+      ],
+      "boot_mode": "story single 42",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-5",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-5",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-5/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-5/result.json"
+    },
+    {
+      "scene_label": "STAND 6",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 6,
+      "scene_index": 43,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "43"
+      ],
+      "boot_mode": "story single 43",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-6",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-6",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-6/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-6/result.json"
+    },
+    {
+      "scene_label": "STAND 7",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 7,
+      "scene_index": 44,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "44"
+      ],
+      "boot_mode": "story single 44",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-7",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-7",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-7/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-7/result.json"
+    },
+    {
+      "scene_label": "STAND 8",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 8,
+      "scene_index": 45,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "45"
+      ],
+      "boot_mode": "story single 45",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-8",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-8",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-8/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-8/result.json"
+    },
+    {
+      "scene_label": "STAND 9",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 9,
+      "scene_index": 46,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "46"
+      ],
+      "boot_mode": "story single 46",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-9",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-9",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-9/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-9/result.json"
+    },
+    {
+      "scene_label": "STAND 10",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 10,
+      "scene_index": 47,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "47"
+      ],
+      "boot_mode": "story single 47",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-10",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-10",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-10/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-10/result.json"
+    },
+    {
+      "scene_label": "STAND 11",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 11,
+      "scene_index": 48,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "48"
+      ],
+      "boot_mode": "story single 48",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-11",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-11",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-11/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-11/result.json"
+    },
+    {
+      "scene_label": "STAND 12",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 12,
+      "scene_index": 49,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "49"
+      ],
+      "boot_mode": "story single 49",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-12",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-12",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-12/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-12/result.json"
+    },
+    {
+      "scene_label": "STAND 15",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 15,
+      "scene_index": 50,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "50"
+      ],
+      "boot_mode": "story single 50",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-15",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-15",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-15/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-15/result.json"
+    },
+    {
+      "scene_label": "STAND 16",
+      "ads_name": "STAND",
+      "ads_file": "STAND.ADS",
+      "tag": 16,
+      "scene_index": 51,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "51"
+      ],
+      "boot_mode": "story single 51",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "STAND-16",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-16",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-16/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-16/result.json"
+    },
+    {
+      "scene_label": "SUZY 1",
+      "ads_name": "SUZY",
+      "ads_file": "SUZY.ADS",
+      "tag": 1,
+      "scene_index": 52,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "52"
+      ],
+      "boot_mode": "story single 52",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "SUZY-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-1/result.json"
+    },
+    {
+      "scene_label": "SUZY 2",
+      "ads_name": "SUZY",
+      "ads_file": "SUZY.ADS",
+      "tag": 2,
+      "scene_index": 53,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "53"
+      ],
+      "boot_mode": "story single 53",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "SUZY-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-2/result.json"
+    },
+    {
+      "scene_label": "VISITOR 1",
+      "ads_name": "VISITOR",
+      "ads_file": "VISITOR.ADS",
+      "tag": 1,
+      "scene_index": 54,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "54"
+      ],
+      "boot_mode": "story single 54",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "VISITOR-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-1/result.json"
+    },
+    {
+      "scene_label": "VISITOR 3",
+      "ads_name": "VISITOR",
+      "ads_file": "VISITOR.ADS",
+      "tag": 3,
+      "scene_index": 55,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "55"
+      ],
+      "boot_mode": "story single 55",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "VISITOR-3",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-3",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-3/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-3/result.json"
+    },
+    {
+      "scene_label": "VISITOR 4",
+      "ads_name": "VISITOR",
+      "ads_file": "VISITOR.ADS",
+      "tag": 4,
+      "scene_index": 56,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "56"
+      ],
+      "boot_mode": "story single 56",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "VISITOR-4",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-4",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-4/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-4/result.json"
+    },
+    {
+      "scene_label": "VISITOR 5",
+      "ads_name": "VISITOR",
+      "ads_file": "VISITOR.ADS",
+      "tag": 5,
+      "scene_index": 59,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "59"
+      ],
+      "boot_mode": "story single 59",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "VISITOR-5",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-5",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-5/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-5/result.json"
+    },
+    {
+      "scene_label": "VISITOR 6",
+      "ads_name": "VISITOR",
+      "ads_file": "VISITOR.ADS",
+      "tag": 6,
+      "scene_index": 57,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "57"
+      ],
+      "boot_mode": "story single 57",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "VISITOR-6",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-6",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-6/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-6/result.json"
+    },
+    {
+      "scene_label": "VISITOR 7",
+      "ads_name": "VISITOR",
+      "ads_file": "VISITOR.ADS",
+      "tag": 7,
+      "scene_index": 58,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "58"
+      ],
+      "boot_mode": "story single 58",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "VISITOR-7",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-7",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-7/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/VISITOR-7/result.json"
+    },
+    {
+      "scene_label": "WALKSTUF 1",
+      "ads_name": "WALKSTUF",
+      "ads_file": "WALKSTUF.ADS",
+      "tag": 1,
+      "scene_index": 60,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "60"
+      ],
+      "boot_mode": "story single 60",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "WALKSTUF-1",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-1",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-1/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-1/result.json"
+    },
+    {
+      "scene_label": "WALKSTUF 2",
+      "ads_name": "WALKSTUF",
+      "ads_file": "WALKSTUF.ADS",
+      "tag": 2,
+      "scene_index": 61,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "61"
+      ],
+      "boot_mode": "story single 61",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "WALKSTUF-2",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-2",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-2/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-2/result.json"
+    },
+    {
+      "scene_label": "WALKSTUF 3",
+      "ads_name": "WALKSTUF",
+      "ads_file": "WALKSTUF.ADS",
+      "tag": 3,
+      "scene_index": 62,
+      "status": "verified",
+      "boot_tokens": [
+        "story",
+        "single",
+        "62"
+      ],
+      "boot_mode": "story single 62",
+      "capture_mode": "engine-truth scene-end",
+      "slug": "WALKSTUF-3",
+      "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-3",
+      "review_html": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-3/review.html",
+      "result_json": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-3/result.json"
+    }
+  ]
+}

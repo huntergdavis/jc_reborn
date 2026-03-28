@@ -1,0 +1,45 @@
+{
+  "scene": {
+    "ads_name": "BUILDING",
+    "tag": 6,
+    "scene_index": 16,
+    "status": "verified",
+    "boot_string": "window nosound story single 16 seed 1",
+    "mode": "scene-default"
+  },
+  "config": {
+    "frames": 600,
+    "interval": 1,
+    "until_exit": true,
+    "timeout": null,
+    "cpu_mode": "host",
+    "forced_seed": 1,
+    "forced_island_position": null,
+    "forced_low_tide": null
+  },
+  "outcome": {
+    "exit_code": 0,
+    "timed_out": false,
+    "frames_captured": 514,
+    "state_hash": "f891bf8d2e4b2baee64f425ab8d5a6daeedbd1a2ffa42a66e015d54892e0b85b",
+    "has_fatal_error": false,
+    "likely_scene_not_started": false,
+    "likely_scene_broken": false,
+    "likely_visual_broken": false,
+    "scene_markers_last": {
+      "launched": false,
+      "bmp_ok": false,
+      "bmp_fail": false,
+      "sprite_count_estimate": 0
+    },
+    "visual_last": {},
+    "visual_timeline": []
+  },
+  "paths": {
+    "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-6",
+    "frames_dir": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-6/frames",
+    "visual": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-6/visual.json",
+    "visual_batch": "/home/hunter/workspace/jc_reborn/regtest-references/BUILDING-6/visual-batch.json"
+  },
+  "capture_date": "2026-03-28T15:28:38Z"
+}

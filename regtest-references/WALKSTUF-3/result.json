@@ -1,0 +1,45 @@
+{
+  "scene": {
+    "ads_name": "WALKSTUF",
+    "tag": 3,
+    "scene_index": 62,
+    "status": "verified",
+    "boot_string": "window nosound story single 62 seed 1",
+    "mode": "scene-default"
+  },
+  "config": {
+    "frames": 600,
+    "interval": 1,
+    "until_exit": true,
+    "timeout": null,
+    "cpu_mode": "host",
+    "forced_seed": 1,
+    "forced_island_position": null,
+    "forced_low_tide": null
+  },
+  "outcome": {
+    "exit_code": 0,
+    "timed_out": false,
+    "frames_captured": 447,
+    "state_hash": "96876c86be0409ca0c1d9e667a706c5e69824a9b28cfbafbabbcd9bee0789f69",
+    "has_fatal_error": false,
+    "likely_scene_not_started": false,
+    "likely_scene_broken": false,
+    "likely_visual_broken": false,
+    "scene_markers_last": {
+      "launched": false,
+      "bmp_ok": false,
+      "bmp_fail": false,
+      "sprite_count_estimate": 0
+    },
+    "visual_last": {},
+    "visual_timeline": []
+  },
+  "paths": {
+    "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-3",
+    "frames_dir": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-3/frames",
+    "visual": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-3/visual.json",
+    "visual_batch": "/home/hunter/workspace/jc_reborn/regtest-references/WALKSTUF-3/visual-batch.json"
+  },
+  "capture_date": "2026-03-28T15:48:44Z"
+}

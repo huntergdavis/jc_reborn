@@ -28,6 +28,7 @@
 #include <string.h>
 #else
 #include <stddef.h>
+#include <string.h>
 #include <psxgpu.h>  /* For RECT, LoadImage, setRECT */
 #ifndef _FILE_DEFINED
 #define _FILE_DEFINED
@@ -115,8 +116,100 @@ void adsRequestStop(void) { adsStopRequested = 1; }
 int ps1AdsLastPlayLaunched = 0;
 char ps1AdsCurrentName[16] = "";
 uint16 ps1AdsCurrentTag = 0;
+static uint16 ps1AdsCurrentTriggerSlot = 0xFFFF;
+static uint16 ps1AdsCurrentTriggerTag = 0xFFFF;
 
 static void adsStopScene(int sceneNo);
+
+#ifndef PS1_BUILD
+struct TAdsLoopStateSig {
+    uint64_t a;
+    uint64_t b;
+};
+
+static uint64_t adsLoopHashMix(uint64_t hash, uint64_t value)
+{
+    hash ^= value + 0x9e3779b97f4a7c15ULL + (hash << 6) + (hash >> 2);
+    return hash;
+}
+
+static void adsLoopHashAddU32(struct TAdsLoopStateSig *sig, uint32 value)
+{
+    sig->a = adsLoopHashMix(sig->a, (uint64_t)value);
+    sig->b = adsLoopHashMix(sig->b, ((uint64_t)value << 32) | value);
+}
+
+static void adsLoopHashAddStr(struct TAdsLoopStateSig *sig, const char *value)
+{
+    while (value != NULL && *value != '\0') {
+        adsLoopHashAddU32(sig, (uint8)*value);
+        value++;
+    }
+}
+
+static int adsShouldDetectCaptureLoop(void)
+{
+    return grCaptureDir != NULL && grCaptureFrameStart >= 0 && grCaptureFrameEnd < 0;
+}
+
+static struct TAdsLoopStateSig adsBuildLoopStateSig(const char *adsName,
+                                                    uint16 adsTag)
+{
+    struct TAdsLoopStateSig sig;
+
+    sig.a = UINT64_C(0xcbf29ce484222325);
+    sig.b = UINT64_C(0x84222325cbf29ce4);
+
+    adsLoopHashAddStr(&sig, adsName);
+    adsLoopHashAddU32(&sig, adsTag);
+    adsLoopHashAddU32(&sig, (uint32)numThreads);
+
+    adsLoopHashAddU32(&sig, (uint32)ttmBackgroundThread.isRunning);
+    adsLoopHashAddU32(&sig, (uint32)ttmBackgroundThread.delay);
+    adsLoopHashAddU32(&sig, (uint32)ttmBackgroundThread.timer);
+
+    adsLoopHashAddU32(&sig, (uint32)ttmHolidayThread.isRunning);
+    adsLoopHashAddU32(&sig, (uint32)ttmHolidayThread.delay);
+    adsLoopHashAddU32(&sig, (uint32)ttmHolidayThread.timer);
+
+    for (int i = 0; i < MAX_TTM_THREADS; i++) {
+        if (ttmThreads[i].isRunning != 0) {
+            adsLoopHashAddU32(&sig, (uint32)i);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].isRunning);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].sceneSlot);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].sceneTag);
+            adsLoopHashAddU32(&sig, (uint32)(uint16)ttmThreads[i].sceneTimer);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].sceneIterations);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].ip);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].delay);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].timer);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].nextGotoOffset);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].selectedBmpSlot);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].fgColor);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].bgColor);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].currentRegionId);
+            adsLoopHashAddU32(&sig, (uint32)ttmThreads[i].sceneEpoch);
+        }
+    }
+
+    return sig;
+}
+
+static int adsLoopSigEquals(struct TAdsLoopStateSig a, struct TAdsLoopStateSig b)
+{
+    return a.a == b.a && a.b == b.b;
+}
+#endif
+
+static int adsIsBuildingScene(const char *adsName)
+{
+#ifdef PS1_BUILD
+    return adsName != NULL && strcmp(adsName, "BUILDING.ADS") == 0;
+#else
+    (void)adsName;
+    return 0;
+#endif
+}
 
 #ifdef PS1_BUILD
 static const struct TPs1RestorePilot *cachedPilot = NULL;
@@ -156,6 +249,7 @@ static int adsStringEquals(const char *a, const char *b)
     return strcmp(a, b) == 0;
 }
 
+#ifdef PS1_BUILD
 static int adsPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
 {
     int i;
@@ -218,6 +312,49 @@ static int adsUseRestorePilotReplayPolicy(void)
     return 1;
 }
 
+static uint32 adsChecksumBytes(const uint8 *data, uint32 size)
+{
+    uint32 hash = 2166136261u;
+    uint32 i;
+
+    if (data == NULL)
+        return 0;
+
+    for (i = 0; i < size; i++) {
+        hash ^= data[i];
+        hash *= 16777619u;
+    }
+
+    return hash;
+}
+
+#else
+static const void *adsFindActiveRestorePilot(void)
+{
+    return NULL;
+}
+
+static int adsUseRestorePilotReplayPolicy(void)
+{
+    return 0;
+}
+
+static void adsPrimeRestorePilotResources(const void *pilot)
+{
+    (void)pilot;
+}
+
+static const int grPs1TelemetryEnabled = 0;
+static uint16 ps1AdsDbgMjsandTagBitsFrame = 0;
+static uint16 ps1AdsDbgBuildingTag2Timer = 0;
+static uint16 ps1AdsDbgBuildingTag2Delay = 0;
+
+static uint16 adsDbgCollectBuildingMjsandBits(void)
+{
+    return 0;
+}
+#endif
+
 
 #ifdef PS1_BUILD
 static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
@@ -250,6 +387,7 @@ static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
         preloadJohnwalk = 0;
     }
 
+
     /* Several island routes still need JOHNWALK ready for the first composed
      * frame. Load it first when the pilot contract includes it. */
     for (i = 0; i < pilot->bmpCount; i++) {
@@ -280,9 +418,10 @@ static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
 }
 #endif
 
-#ifdef PS1_BUILD
 #define ADS_THREAD_RUNNING 1
 #define ADS_THREAD_TERMINATED 2
+
+#ifdef PS1_BUILD
 
 /* Persistent debug telemetry for overlay (kept globals). */
 uint16 ps1AdsDbgActiveThreads = 0;
@@ -301,12 +440,30 @@ uint16 ps1AdsDbgRecordedSpritesFrame = 0;
 uint16 ps1AdsDbgAddSceneCalls = 0;
 uint16 ps1AdsDbgTagLookupHits = 0;
 uint16 ps1AdsDbgTagLookupMisses = 0;
+uint16 ps1AdsDbgMjsandTagBitsFrame = 0;
+uint16 ps1AdsDbgLastEndedTag = 0;
+uint16 ps1AdsDbgLastLaunchedTag = 0;
+uint16 ps1AdsDbgLastTriggeredTag = 0;
+uint16 ps1AdsDbgDrawBgRestoreCount = 0;
+uint16 ps1AdsDbgDrawBgRestoreSlot = 0;
+uint16 ps1AdsDbgBuildingTag2Timer = 0;
+uint16 ps1AdsDbgBuildingTag2Delay = 0;
+uint16 ps1AdsDbgDrawBgMinXq = 0;
+uint16 ps1AdsDbgDrawBgMaxXq = 0;
+uint16 ps1AdsDbgDrawBgMinYq = 0;
+uint16 ps1AdsDbgDrawBgMaxYq = 0;
+uint16 ps1AdsDbgReplayScratchSlotBits = 0;
+uint16 ps1AdsDbgReplayScratchCount = 0;
 
 static struct TDrawnSprite gPrevReplayScratch[MAX_DRAWN_SPRITES];
+static uint8 gPrevReplayScratchCount = 0;
 /* One-shot carry used to bridge scene/thread handoff gaps. */
 static struct TDrawnSprite gHandoffReplay[MAX_DRAWN_SPRITES];
 static uint8 gHandoffReplayCount = 0;
 static uint8 gHandoffReplayValid = 0;
+static struct TDrawnSprite gBuildingMjsandTag16Replay[MAX_DRAWN_SPRITES];
+static uint8 gBuildingMjsandTag16ReplayCount = 0;
+static uint8 gBuildingMjsandTag16ReplayValid = 0;
 
 static inline void adsDbgAddU16(uint16 *acc, uint16 add)
 {
@@ -314,6 +471,81 @@ static inline void adsDbgAddU16(uint16 *acc, uint16 add)
     if (!acc) return;
     sum = (uint32)(*acc) + (uint32)add;
     *acc = (sum > 0xFFFFU ? 0xFFFFU : (uint16)sum);
+}
+
+static uint16 adsDbgBuildingMjsandBit(uint16 sceneTag)
+{
+    switch (sceneTag) {
+        case 1:  return (1U << 0);
+        case 2:  return (1U << 1);
+        case 3:  return (1U << 2);
+        case 5:  return (1U << 3);
+        case 14: return (1U << 4);
+        case 15: return (1U << 5);
+        default: return 0;
+    }
+}
+
+static uint16 adsDbgCollectBuildingMjsandBits(void)
+{
+    int i;
+    uint16 bits = 0;
+
+    if (!adsIsBuildingScene(ps1AdsCurrentName))
+        return 0;
+
+    for (i = 0; i < MAX_TTM_THREADS; i++) {
+        const struct TTtmThread *ttmThread = &ttmThreads[i];
+        const struct TTtmSlot *slot;
+        const struct TTtmResource *resource;
+
+        if (ttmThread->isRunning != ADS_THREAD_RUNNING &&
+            ttmThread->isRunning != ADS_THREAD_TERMINATED)
+            continue;
+
+        slot = ttmThread->ttmSlot;
+        if (slot == NULL)
+            continue;
+        resource = slot->ttmResource;
+        if (resource == NULL || resource->resName == NULL)
+            continue;
+        if (!adsStringEquals(resource->resName, "MJSAND.TTM"))
+            continue;
+
+        bits |= adsDbgBuildingMjsandBit(ttmThread->sceneTag);
+    }
+
+    return bits;
+}
+
+static int adsShouldBypassBuildingMjsandReplayMerge(const struct TTtmThread *thread)
+{
+    (void)thread;
+    return 0;
+}
+
+
+int adsShouldForceBuildingMjsandFullRestore(void)
+{
+    /* Disable late BUILDING-specific full-restore forcing while restoring a
+     * sane gameplay baseline. */
+    return 0;
+}
+
+static void adsClearBuildingMjsandTag16Replay(void)
+{
+    gBuildingMjsandTag16ReplayCount = 0;
+    gBuildingMjsandTag16ReplayValid = 0;
+}
+
+static void adsCaptureBuildingMjsandTag16Replay(const struct TTtmThread *thread)
+{
+    (void)thread;
+}
+
+static void adsSeedBuildingMjsandTag2Replay(struct TTtmThread *thread)
+{
+    (void)thread;
 }
 
 static int adsIsActorCandidate(const struct TDrawnSprite *ds)
@@ -342,16 +574,26 @@ static int adsActorNearMatch(const struct TDrawnSprite *a, const struct TDrawnSp
 static uint8 adsCaptureReplayRecords(struct TTtmThread *thread)
 {
     uint8 count;
+    uint16 slotBits = 0;
     if (!thread) return 0;
+    adsCaptureBuildingMjsandTag16Replay(thread);
     count = thread->numDrawnSprites;
+    gPrevReplayScratchCount = count;
+    ps1AdsDbgReplayScratchCount = count;
     if (count > 0) {
         int bestArea = -1;
         int haveNear = 0;
         memcpy(gPrevReplayScratch, thread->drawnSprites,
                (size_t)count * sizeof(struct TDrawnSprite));
+        if (count < MAX_DRAWN_SPRITES) {
+            memset(gPrevReplayScratch + count, 0,
+                   (size_t)(MAX_DRAWN_SPRITES - count) * sizeof(struct TDrawnSprite));
+        }
         for (uint8 i = 0; i < count; i++) {
             const struct TDrawnSprite *ds = &thread->drawnSprites[i];
             int area;
+            if (ds->imageNo < 16)
+                slotBits |= (uint16)(1U << ds->imageNo);
             if (!adsIsActorCandidate(ds)) continue;
             if (thread->lastActorReplayValid &&
                 !adsActorNearMatch(ds, &thread->lastActorReplay)) {
@@ -382,7 +624,192 @@ static uint8 adsCaptureReplayRecords(struct TTtmThread *thread)
         }
         if (haveNear) thread->lastActorReplayValid = 1;
     }
+    ps1AdsDbgReplayScratchSlotBits = slotBits;
     return count;
+}
+
+#ifdef PS1_BUILD
+static int adsShouldTraceBuildingMjsandTag2DrawBg(const struct TTtmThread *thread)
+{
+    const struct TTtmSlot *slot;
+    const struct TTtmResource *resource;
+
+    if (!thread)
+        return 0;
+    if (!adsStringEquals(ps1AdsCurrentName, "BUILDING.ADS"))
+        return 0;
+    if (ps1AdsCurrentTag != 1)
+        return 0;
+    if (thread->sceneTag != 2)
+        return 0;
+
+    slot = thread->ttmSlot;
+    if (!slot)
+        return 0;
+    resource = slot->ttmResource;
+    if (!resource || !resource->resName)
+        return 0;
+    return adsStringEquals(resource->resName, "MJSAND.TTM");
+}
+
+int adsPs1DrawBackground(struct TTtmThread *thread)
+{
+    uint8 restored = 0;
+    int haveBounds = 0;
+    int minX = 0;
+    int maxX = 0;
+    int minY = 0;
+    int maxY = 0;
+    int traceThisCall = 0;
+    int traceSlotCount = 0;
+    int traceSelectedCount = 0;
+    int traceSlot0Count = 0;
+    int traceSelectedMinX = 0;
+    int traceSelectedMaxX = 0;
+    int traceSelectedMinY = 0;
+    int traceSelectedMaxY = 0;
+    int traceSlot0MinX = 0;
+    int traceSlot0MaxX = 0;
+    int traceSlot0MinY = 0;
+    int traceSlot0MaxY = 0;
+    int traceSelectedHaveBounds = 0;
+    int traceSlot0HaveBounds = 0;
+
+    if (!thread)
+        return 0;
+
+    traceThisCall = adsShouldTraceBuildingMjsandTag2DrawBg(thread);
+
+    for (uint8 i = 0; i < gPrevReplayScratchCount; i++) {
+        const struct TDrawnSprite *ds = &gPrevReplayScratch[i];
+        int x0;
+        int y0;
+        int x1;
+        int y1;
+        if (ds->width == 0 || ds->height == 0)
+            continue;
+        if (traceThisCall) {
+            traceSlotCount++;
+            if (ds->imageNo == 0) {
+                traceSlot0Count++;
+                if (!traceSlot0HaveBounds) {
+                    traceSlot0MinX = ds->x;
+                    traceSlot0MinY = ds->y;
+                    traceSlot0MaxX = ds->x + (int)ds->width;
+                    traceSlot0MaxY = ds->y + (int)ds->height;
+                    traceSlot0HaveBounds = 1;
+                } else {
+                    if (ds->x < traceSlot0MinX) traceSlot0MinX = ds->x;
+                    if (ds->y < traceSlot0MinY) traceSlot0MinY = ds->y;
+                    if (ds->x + (int)ds->width > traceSlot0MaxX) traceSlot0MaxX = ds->x + (int)ds->width;
+                    if (ds->y + (int)ds->height > traceSlot0MaxY) traceSlot0MaxY = ds->y + (int)ds->height;
+                }
+            }
+            if (ds->imageNo == thread->selectedBmpSlot) {
+                traceSelectedCount++;
+                if (!traceSelectedHaveBounds) {
+                    traceSelectedMinX = ds->x;
+                    traceSelectedMinY = ds->y;
+                    traceSelectedMaxX = ds->x + (int)ds->width;
+                    traceSelectedMaxY = ds->y + (int)ds->height;
+                    traceSelectedHaveBounds = 1;
+                } else {
+                    if (ds->x < traceSelectedMinX) traceSelectedMinX = ds->x;
+                    if (ds->y < traceSelectedMinY) traceSelectedMinY = ds->y;
+                    if (ds->x + (int)ds->width > traceSelectedMaxX) traceSelectedMaxX = ds->x + (int)ds->width;
+                    if (ds->y + (int)ds->height > traceSelectedMaxY) traceSelectedMaxY = ds->y + (int)ds->height;
+                }
+            }
+        }
+        if (ds->imageNo != thread->selectedBmpSlot)
+            continue;
+
+        x0 = ds->x;
+        y0 = ds->y;
+        x1 = x0 + (int)ds->width;
+        y1 = y0 + (int)ds->height;
+        if (!haveBounds) {
+            minX = x0;
+            minY = y0;
+            maxX = x1;
+            maxY = y1;
+            haveBounds = 1;
+        } else {
+            if (x0 < minX) minX = x0;
+            if (y0 < minY) minY = y0;
+            if (x1 > maxX) maxX = x1;
+            if (y1 > maxY) maxY = y1;
+        }
+        grRestoreReplayRect(ds->x, ds->y, ds->width, ds->height);
+        restored++;
+    }
+
+    ps1AdsDbgDrawBgRestoreCount = restored;
+    ps1AdsDbgDrawBgRestoreSlot = thread->selectedBmpSlot;
+    if (haveBounds) {
+        ps1AdsDbgDrawBgMinXq = (uint16)(((minX + 64) / 8 < 0) ? 0 : (((minX + 64) / 8 > 63) ? 63 : ((minX + 64) / 8)));
+        ps1AdsDbgDrawBgMaxXq = (uint16)(((maxX + 64) / 8 < 0) ? 0 : (((maxX + 64) / 8 > 63) ? 63 : ((maxX + 64) / 8)));
+        ps1AdsDbgDrawBgMinYq = (uint16)(((minY + 64) / 8 < 0) ? 0 : (((minY + 64) / 8 > 63) ? 63 : ((minY + 64) / 8)));
+        ps1AdsDbgDrawBgMaxYq = (uint16)(((maxY + 64) / 8 < 0) ? 0 : (((maxY + 64) / 8 > 63) ? 63 : ((maxY + 64) / 8)));
+    } else {
+        ps1AdsDbgDrawBgMinXq = 0;
+        ps1AdsDbgDrawBgMaxXq = 0;
+        ps1AdsDbgDrawBgMinYq = 0;
+        ps1AdsDbgDrawBgMaxYq = 0;
+    }
+
+    if (traceThisCall) {
+        ps1AdsDbgReplayCount = gPrevReplayScratchCount;
+        ps1AdsDbgReplayTryFrame = (uint16)traceSlotCount;
+        ps1AdsDbgReplayDrawFrame = (uint16)traceSelectedCount;
+        ps1AdsDbgMergeCarryFrame = (uint16)restored;
+        ps1AdsDbgNoDrawThreadsFrame = (uint16)traceSlot0Count;
+    }
+
+    return restored;
+}
+
+#endif
+
+static void adsRefreshCurrentActorReplay(struct TTtmThread *thread)
+{
+    int bestArea = -1;
+    int haveNear = 0;
+
+    if (!thread) return;
+
+    for (uint8 i = 0; i < thread->numDrawnSprites; i++) {
+        const struct TDrawnSprite *ds = &thread->drawnSprites[i];
+        int area;
+        if (!adsIsActorCandidate(ds)) continue;
+        if (thread->lastActorReplayValid &&
+            !adsActorNearMatch(ds, &thread->lastActorReplay)) {
+            continue;
+        }
+        area = (int)ds->width * (int)ds->height;
+        if (area > bestArea) {
+            bestArea = area;
+            thread->lastActorReplay = *ds;
+            haveNear = 1;
+        }
+    }
+
+    if (!haveNear && !thread->lastActorReplayValid) {
+        for (uint8 i = 0; i < thread->numDrawnSprites; i++) {
+            const struct TDrawnSprite *ds = &thread->drawnSprites[i];
+            int area;
+            if (!adsIsActorCandidate(ds)) continue;
+            area = (int)ds->width * (int)ds->height;
+            if (area > bestArea) {
+                bestArea = area;
+                thread->lastActorReplay = *ds;
+                haveNear = 1;
+            }
+        }
+    }
+
+    if (haveNear)
+        thread->lastActorReplayValid = 1;
 }
 
 /* Preserve prior records that did not receive a nearby replacement this tick.
@@ -398,6 +825,7 @@ static uint8 adsMergeReplayByProximity(struct TTtmThread *thread,
     for (uint8 p = 0; p < prevCount; p++) {
         const struct TDrawnSprite *prev = &prevRecords[p];
         int matched = 0;
+
         /* If this prev record IS the tracked main actor, require that any
          * "replacement" also looks actor-sized.  Scenes often pack Johnny
          * AND props (fire, tools) into the same BMP so they share imageNo.
@@ -711,13 +1139,8 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
         adsDbgAddU16(&ps1AdsDbgAddSceneCalls, 1);
         ps1AdsDbgSceneSlot = ttmSlotNo;
         ps1AdsDbgSceneTag = ttmTag;
+        ps1AdsDbgLastLaunchedTag = ttmTag;
     }
-    {
-        uint16 probeOrdinal = ps1AdsDbgAddSceneCalls;
-        int probeX = 400 + ((probeOrdinal > 0 ? (probeOrdinal - 1) : 0) & 0x3) * 40;
-        grDebugOverlayBox(probeX, 20, 24, 24, 0x7FFF);
-    }
-    grDebugOverlayBox(580, 388, 32, 32, 0x7C1F);
 #endif
 
     for (int i=0; i < MAX_TTM_THREADS; i++) {
@@ -727,6 +1150,12 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
         if (ttmThread->isRunning == 1) {
 
             if (ttmThread->sceneSlot == ttmSlotNo && ttmThread->sceneTag == ttmTag) {
+#ifdef PS1_BUILD
+                if (adsStringEquals(ps1AdsCurrentName, "BUILDING.ADS") &&
+                    ps1AdsCurrentTag == 1 &&
+                    ttmSlotNo == 1 && ttmTag == 17)
+                    fatalError("building tag17 duplicate running");
+#endif
                 debugMsg("(%d,%d) thread is already running - didn't add extra one\n", ttmSlotNo, ttmTag);
                 return;
             }
@@ -748,7 +1177,6 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
     }
 
     struct TTtmThread *ttmThread = &ttmThreads[i];
-    uint32 startIp;
 
     ttmThread->ttmSlot         = &ttmSlots[ttmSlotNo];
     ttmThread->isRunning       = 1;
@@ -769,18 +1197,13 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
     ttmThread->replayWriteCursor = 0;
     ttmThread->lastActorReplayValid = 0;
     adsSeedFromHandoffReplay(ttmThread);
+    adsSeedBuildingMjsandTag2Replay(ttmThread);
 #endif
 
-    if (ttmSlotNo) {
-        struct TTtmSlot *slot = &ttmSlots[ttmSlotNo];
-        if (slot->numTags > 0 && slot->tags != NULL && slot->tags[0].id == ttmTag)
-            ttmThread->ip = 0;
-        else
-            ttmThread->ip = ttmFindTag(slot, ttmTag);
-    } else
+    if (ttmSlotNo)
+        ttmThread->ip = ttmFindTag(&ttmSlots[ttmSlotNo], ttmTag);
+    else
         ttmThread->ip = 0;
-    startIp = ttmThread->ip;
-
     if (((short)arg3) < 0) {
         ttmThread->sceneTimer = -((short)arg3);
     }
@@ -790,25 +1213,9 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 
     ttmThread->ttmLayer = grNewLayer();
 
-#ifdef PS1_BUILD
-    if (ttmThread->ttmSlot != NULL && ttmThread->ttmSlot->data != NULL)
-        grDebugOverlayBox(520, 388, 12, 12, 0x03E0);
-    else
-        grDebugOverlayBox(520, 388, 12, 12, 0x001F);
-
-    if (ttmThread->ttmSlot != NULL && ttmThread->ttmSlot->tags != NULL)
-        grDebugOverlayBox(536, 388, 12, 12, 0x03E0);
-    else
-        grDebugOverlayBox(536, 388, 12, 12, 0x001F);
-
-    if (ttmSlotNo == 0 || startIp != 0)
-        grDebugOverlayBox(552, 388, 12, 12, 0x7FE0);
-    else
-        grDebugOverlayBox(552, 388, 12, 12, 0x7C00);
-#endif
-
     if (numThreads < MAX_TTM_THREADS)
         numThreads++;
+
 }
 
 
@@ -956,41 +1363,6 @@ static void adsRandomEnd()
     }
 }
 
-#ifdef PS1_BUILD
-static void adsDrawBuildingThreadProbes(void)
-{
-    int sawTag1 = 0;
-    int sawTag16 = 0;
-    int tag16HasSprites = 0;
-
-    if (strcmp(ps1AdsCurrentName, "BUILDING.ADS") != 0)
-        return;
-
-    for (int i = 0; i < MAX_TTM_THREADS; i++) {
-        if (ttmThreads[i].isRunning != ADS_THREAD_RUNNING)
-            continue;
-        if (ttmThreads[i].sceneSlot != 1)
-            continue;
-
-        if (ttmThreads[i].sceneTag == 1)
-            sawTag1 = 1;
-        if (ttmThreads[i].sceneTag == 16) {
-            sawTag16 = 1;
-            if (ttmThreads[i].numDrawnSprites > 0)
-                tag16HasSprites = 1;
-        }
-    }
-
-    if (sawTag1)
-        grDebugOverlayBox(320, 360, 40, 40, 0x7FFF);
-    if (sawTag16)
-        grDebugOverlayBox(376, 360, 40, 40, 0x03E0);
-    if (tag16HasSprites)
-        grDebugOverlayBox(432, 360, 40, 40, 0x03FF);
-}
-#endif
-
-
 /* Initialize TTM slots and runtime thread state for ADS playback. */
 void adsInit()
 {
@@ -1044,8 +1416,15 @@ void adsInit()
     ps1AdsDbgAddSceneCalls = 0;
     ps1AdsDbgTagLookupHits = 0;
     ps1AdsDbgTagLookupMisses = 0;
+    ps1AdsDbgMjsandTagBitsFrame = 0;
+    ps1AdsDbgLastEndedTag = 0;
+    ps1AdsDbgLastLaunchedTag = 0;
+    ps1AdsDbgLastTriggeredTag = 0;
+    ps1AdsDbgBuildingTag2Timer = 0;
+    ps1AdsDbgBuildingTag2Delay = 0;
     gHandoffReplayCount = 0;
     gHandoffReplayValid = 0;
+    adsClearBuildingMjsandTag16Replay();
 #endif
 
     grUpdateDelay = 0;
@@ -1192,6 +1571,16 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 debugMsg("ADD_SCENE %d %d %d %d", args[0], args[1], args[2], args[3]);
 
                 if (!inSkipBlock) {
+#ifdef PS1_BUILD
+                    if (adsStringEquals(ps1AdsCurrentName, "BUILDING.ADS") &&
+                        ps1AdsCurrentTag == 1 &&
+                        ps1AdsCurrentTriggerSlot == 1 &&
+                        ps1AdsCurrentTriggerTag == 10 &&
+                        args[0] == 1 &&
+                        args[1] == 17) {
+                        break;
+                    }
+#endif
                     if (inRandBlock)
                         adsRandomAddScene(args[0],args[1],args[2], args[3]);
                     else
@@ -1275,20 +1664,41 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
 static void adsPlayTriggeredChunks(uint8 *data, uint32 dataSize, uint16 ttmSlotNo, uint16 ttmTag)
 {
     int handledLocal = 0;
+    uint16 savedTriggerSlot = ps1AdsCurrentTriggerSlot;
+    uint16 savedTriggerTag = ps1AdsCurrentTriggerTag;
+#ifdef PS1_BUILD
+    if (grPs1TelemetryEnabled)
+        ps1AdsDbgLastTriggeredTag = ttmTag;
+#endif
+
+    ps1AdsCurrentTriggerSlot = ttmSlotNo;
+    ps1AdsCurrentTriggerTag = ttmTag;
 
     /* First handle any queued local trigger chunks. */
 
     if (numAdsChunksLocal) {
-        for (int i=0; i < numAdsChunksLocal; i++)
+        struct TAdsChunk matchedLocal[MAX_ADS_CHUNKS_LOCAL];
+        int matchedCount = 0;
+        int writeIndex = 0;
+        int originalCount = numAdsChunksLocal;
+
+        for (int i=0; i < originalCount; i++) {
             if (adsChunksLocal[i].scene.slot == ttmSlotNo && adsChunksLocal[i].scene.tag == ttmTag) {
-                adsPlayChunk(data, dataSize, adsChunksLocal[i].offset);
+                if (matchedCount < MAX_ADS_CHUNKS_LOCAL)
+                    matchedLocal[matchedCount++] = adsChunksLocal[i];
                 handledLocal = 1;
             }
+            else {
+                adsChunksLocal[writeIndex++] = adsChunksLocal[i];
+            }
+        }
+
+        numAdsChunksLocal = writeIndex;
+
+        for (int i=0; i < matchedCount; i++)
+            adsPlayChunk(data, dataSize, matchedLocal[i].offset);
     }
 
-    /* Then process the general trigger list. A non-empty local queue should
-     * not suppress unrelated IF_LASTPLAYED chains; only a matching local
-     * trigger takes precedence for this ended scene. */
     if (!handledLocal) {
         // Note : in a few rare cases (eg BUILDING.ADS tag #2), the ADS script
         // contains several 'IF_LASTPLAYED' commands for one given scene.
@@ -1297,6 +1707,10 @@ static void adsPlayTriggeredChunks(uint8 *data, uint32 dataSize, uint16 ttmSlotN
             if (adsChunks[i].scene.slot == ttmSlotNo && adsChunks[i].scene.tag == ttmTag)
                 adsPlayChunk(data, dataSize, adsChunks[i].offset);
     }
+
+    ps1AdsCurrentTriggerSlot = savedTriggerSlot;
+    ps1AdsCurrentTriggerTag = savedTriggerTag;
+
 }
 
 
@@ -1305,17 +1719,21 @@ void adsPlay(char *adsName, uint16 adsTag)
     uint32 offset;
     uint8  *data;
     uint32 dataSize;
-
+    int i;
     struct TAdsResource *adsResource = findAdsResource(adsName);
+#ifndef PS1_BUILD
+    struct TAdsLoopStateSig *loopSeen = NULL;
+    uint32 loopSeenCapacity = 0;
+#endif
 
 #ifdef PS1_BUILD
     adsSetCurrentScene(adsName, adsTag);
-    printf("[ADS] request ads=%s tag=%u\n", adsName ? adsName : "(null)", adsTag);
 #endif
 
 #ifdef PS1_BUILD
     if (adsResource == NULL) {
-        printf("[ADS] missing resource ads=%s tag=%u\n", adsName ? adsName : "(null)", adsTag);
+        if (adsName != NULL)
+            printf("[ADSPLAY] missing resource %s:%u\n", adsName, adsTag);
         return;  /* Resource not found - skip scene silently */
     }
 #endif
@@ -1328,7 +1746,6 @@ void adsPlay(char *adsName, uint16 adsTag)
         /* PS1: Load from pre-extracted ADS file on CD */
         ps1_loadAdsData(adsResource);
         if (adsResource->uncompressedData == NULL) {
-            printf("[ADS] load failed ads=%s tag=%u\n", adsResource->resName, adsTag);
             return;  /* ADS data load failed - skip scene */
         }
 #else
@@ -1358,7 +1775,8 @@ void adsPlay(char *adsName, uint16 adsTag)
     /* Keep pilot resource priming tied to every scene launch, not only the
      * first ADS bytecode load. Some routes revisit a resident ADS and still
      * need the scene-scoped contract re-established deterministically. */
-    adsPrimeRestorePilotResources(adsFindActiveRestorePilot());
+    if (!(adsStringEquals(ps1AdsCurrentName, "BUILDING.ADS") && ps1AdsCurrentTag == 1))
+        adsPrimeRestorePilotResources(adsFindActiveRestorePilot());
 #endif
 
     /* Pin ADS resource to prevent eviction while in use */
@@ -1370,22 +1788,28 @@ void adsPlay(char *adsName, uint16 adsTag)
     data = adsResource->uncompressedData;
     dataSize = adsResource->uncompressedSize;
 
-    for (int i=0; i < adsResource->numRes; i++)
+    for (i=0; i < adsResource->numRes; i++)
         ttmLoadTtm(&ttmSlots[adsResource->res[i].id], adsResource->res[i].name);
 
 #ifdef PS1_BUILD
     /* If any TTM failed to load, skip this scene gracefully */
     {
         int loadOk = 1;
-        for (int i=0; i < adsResource->numRes; i++) {
+        for (i=0; i < adsResource->numRes; i++) {
             if (ttmSlots[adsResource->res[i].id].data == NULL) {
+                printf("[ADSPLAY] TTM load failed ads=%s tag=%u res=%s slot=%d\n",
+                       adsResource->resName,
+                       adsTag,
+                       adsResource->res[i].name,
+                       adsResource->res[i].id);
                 loadOk = 0;
                 break;
             }
         }
         if (!loadOk) {
-            printf("[ADS] ttm load failed ads=%s tag=%u\n", adsResource->resName, adsTag);
-            for (int i=0; i < adsResource->numRes; i++)
+            if (adsStringEquals(adsResource->resName, "BUILDING.ADS") && adsTag == 1)
+                fatalError("BUILDING1 TTM load failed");
+            for (i=0; i < adsResource->numRes; i++)
                 ttmResetSlot(&ttmSlots[adsResource->res[i].id]);
             unpinResource(adsResource, "ADS");
             return;
@@ -1394,18 +1818,26 @@ void adsPlay(char *adsName, uint16 adsTag)
 #endif
 
     adsLoad(data, dataSize, adsResource->numTags, adsTag, &offset);
-
     adsStopRequested = 0;
     ps1AdsLastPlayLaunched = 0;
     grUpdateDelay = 0;
 
+#ifndef PS1_BUILD
+    if (adsShouldDetectCaptureLoop()) {
+        loopSeenCapacity = 8192;
+        loopSeen = calloc(loopSeenCapacity, sizeof(*loopSeen));
+        if (loopSeen == NULL)
+            fatalError("Could not allocate ADS loop detector table");
+    }
+#endif
+
     // Play the first ADS chunk of the sequence
     adsPlayChunk(data, dataSize, offset);
-
 #ifdef PS1_BUILD
-    /* Recovery: some ADS control paths can parse without launching a scene
-     * (no ADD_SCENE emitted), which leaves PS1 on a static background.
-     * If that happens, retry one bookmarked chunk instead of idling. */
+    /* Recovery: some ADS control paths parse without launching a scene on the
+     * first chunk. Retry a bookmarked chunk instead of dropping straight into
+     * the idle/ocean path. This existed in the older BUILDING bring-up binary
+     * and is the smallest known launch recovery surface. */
     if (numThreads == 0 && !adsStopRequested && numAdsChunks > 0) {
         int pick = rand() % numAdsChunks;
         printf("[ADS] initial launch empty; retry chunk=%d/%d ads=%s tag=%u\n",
@@ -1415,9 +1847,13 @@ void adsPlay(char *adsName, uint16 adsTag)
 #endif
     if (numThreads > 0) {
         ps1AdsLastPlayLaunched = 1;
-    } else {
-        printf("[ADS] no threads ads=%s tag=%u numAdsChunks=%d stop=%d\n",
-               adsResource->resName, adsTag, numAdsChunks, adsStopRequested);
+    }
+    if (adsStringEquals(ps1AdsCurrentName, "BUILDING.ADS") && ps1AdsCurrentTag == 1) {
+        printf("[ADSPLAY] after chunk ads=%s tag=%u numThreads=%d launched=%d\n",
+               adsResource->resName,
+               adsTag,
+               numThreads,
+               ps1AdsLastPlayLaunched);
     }
 
     // Main ADS loop
@@ -1465,9 +1901,43 @@ void adsPlay(char *adsName, uint16 adsTag)
                 ps1AdsDbgNoDrawThreadsFrame = 0;
                 ps1AdsDbgPlayedThreadsFrame = 0;
                 ps1AdsDbgRecordedSpritesFrame = 0;
+                ps1AdsDbgMjsandTagBitsFrame = 0;
+                ps1AdsDbgDrawBgRestoreCount = 0;
+                ps1AdsDbgDrawBgRestoreSlot = 0;
+                ps1AdsDbgBuildingTag2Timer = 0;
+                ps1AdsDbgBuildingTag2Delay = 0;
+                ps1AdsDbgDrawBgMinXq = 0;
+                ps1AdsDbgDrawBgMaxXq = 0;
+                ps1AdsDbgDrawBgMinYq = 0;
+                ps1AdsDbgDrawBgMaxYq = 0;
+                ps1AdsDbgReplayScratchSlotBits = 0;
+                ps1AdsDbgReplayScratchCount = 0;
             }
 #endif
         }
+
+#ifndef PS1_BUILD
+        if (loopSeen != NULL) {
+            struct TAdsLoopStateSig sig = adsBuildLoopStateSig(adsName, adsTag);
+            uint32 idx = (uint32)((sig.a ^ sig.b) % loopSeenCapacity);
+
+            while (loopSeen[idx].a != 0 || loopSeen[idx].b != 0) {
+                if (adsLoopSigEquals(loopSeen[idx], sig)) {
+                    printf("[ADSLOOP] repeated scheduler state ads=%s tag=%u; stopping looped capture\n",
+                           adsName != NULL ? adsName : "(null)",
+                           adsTag);
+                    numThreads = 0;
+                    break;
+                }
+                idx = (idx + 1) % loopSeenCapacity;
+            }
+
+            if (numThreads == 0)
+                break;
+
+            loopSeen[idx] = sig;
+        }
+#endif
 
 #ifdef PS1_BUILD
         grBeginFrame();
@@ -1505,9 +1975,11 @@ void adsPlay(char *adsName, uint16 adsTag)
                 ttmPlay(&ttmThreads[i]);
 #ifdef PS1_BUILD
                 grCurrentThread = NULL;
+                adsRefreshCurrentActorReplay(&ttmThreads[i]);
                 if (ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
                     ttmThreads[i].timer = 0;
-                } else if (!adsUseRestorePilotReplayPolicy()) {
+                } else if (!adsUseRestorePilotReplayPolicy() &&
+                           !adsShouldBypassBuildingMjsandReplayMerge(&ttmThreads[i])) {
                     uint8 carried = adsMergeReplayByProximity(&ttmThreads[i],
                                                               gPrevReplayScratch,
                                                               prevCount);
@@ -1525,22 +1997,45 @@ void adsPlay(char *adsName, uint16 adsTag)
 #ifdef PS1_BUILD
             else if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING ||
                      ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
-                /* Replay via GPU path */
-                for (int j = 0; j < ttmThreads[i].numDrawnSprites; j++) {
+	                /* Replay via GPU path */
+	                if (adsUseRestorePilotReplayPolicy() &&
+	                    ttmThreads[i].lastActorReplayValid) {
                     if (grPs1TelemetryEnabled) {
                         adsDbgAddU16(&ps1AdsDbgReplayTryFrame, 1);
                         adsDbgAddU16(&ps1AdsDbgReplayDrawFrame, 1);
                     }
-                    grReplaySprite(&ttmThreads[i].drawnSprites[j]);
+                    grReplaySprite(&ttmThreads[i].lastActorReplay);
+                } else {
+                    for (int j = 0; j < ttmThreads[i].numDrawnSprites; j++) {
+                        if (grPs1TelemetryEnabled) {
+                            adsDbgAddU16(&ps1AdsDbgReplayTryFrame, 1);
+                            adsDbgAddU16(&ps1AdsDbgReplayDrawFrame, 1);
+                        }
+                        grReplaySprite(&ttmThreads[i].drawnSprites[j]);
+                    }
                 }
             }
 #endif
         }
 
-#ifdef PS1_BUILD
-        adsDrawBuildingThreadProbes();
-#endif
-
+        if (grPs1TelemetryEnabled) {
+            ps1AdsDbgMjsandTagBitsFrame = adsDbgCollectBuildingMjsandBits();
+            if (adsStringEquals(ps1AdsCurrentName, "BUILDING.ADS") &&
+                ps1AdsCurrentTag == 1) {
+                for (int i = 0; i < MAX_TTM_THREADS; i++) {
+                    if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING &&
+                        ttmThreads[i].ttmSlot != NULL &&
+                        ttmThreads[i].ttmSlot->ttmResource != NULL &&
+                        ttmThreads[i].ttmSlot->ttmResource->resName != NULL &&
+                        adsStringEquals(ttmThreads[i].ttmSlot->ttmResource->resName, "MJSAND.TTM") &&
+                        ttmThreads[i].sceneTag == 2) {
+                        ps1AdsDbgBuildingTag2Timer = (uint16)(ttmThreads[i].timer & 0x3F);
+                        ps1AdsDbgBuildingTag2Delay = (uint16)(ttmThreads[i].delay & 0x3F);
+                        break;
+                    }
+                }
+            }
+        }
 #ifndef PS1_BUILD
         if (debugMode) {
 
@@ -1594,7 +2089,8 @@ void adsPlay(char *adsName, uint16 adsTag)
                     if (ttmThreads[i].timer < mini)
                         mini = ttmThreads[i].timer;
                 }
-            }
+
+    }
 
             /* Prevent zero-tick loops from starving progression and display updates. */
             if (mini == 0) mini = 1;
@@ -1625,7 +2121,6 @@ void adsPlay(char *adsName, uint16 adsTag)
         for (int i=0; i < MAX_TTM_THREADS; i++) {
 
             if (ttmThreads[i].isRunning == ADS_THREAD_RUNNING && ttmThreads[i].timer == 0) {
-
                 // Process jumps
                 if (ttmThreads[i].nextGotoOffset) {
                     ttmThreads[i].ip = ttmThreads[i].nextGotoOffset;
@@ -1642,7 +2137,6 @@ void adsPlay(char *adsName, uint16 adsTag)
 
             /* Free terminated threads immediately to avoid stale replay/timer side effects. */
             if (ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
-
                 // Managing the numPlays which was indicated in ADD_SCENE arg3 (postive value)
                 if (ttmThreads[i].sceneIterations) {
                     ttmThreads[i].sceneIterations--;
@@ -1659,11 +2153,14 @@ void adsPlay(char *adsName, uint16 adsTag)
                     uint16 endedSlot = ttmThreads[i].sceneSlot;
                     uint16 endedTag = ttmThreads[i].sceneTag;
 #ifdef PS1_BUILD
+                    if (grPs1TelemetryEnabled)
+                        ps1AdsDbgLastEndedTag = endedTag;
                     adsCaptureHandoffReplay(&ttmThreads[i]);
 #endif
                     adsStopScene(i);
-                    if (!adsStopRequested)
+                    if (!adsStopRequested) {
                         adsPlayTriggeredChunks(data, dataSize, endedSlot, endedTag);
+                    }
 #ifdef PS1_BUILD
                     /* If handoff wasn't consumed (no new thread started),
                      * inject actor into a surviving thread to prevent vanish. */
@@ -1698,6 +2195,10 @@ void adsPlay(char *adsName, uint16 adsTag)
 
     /* Unpin ADS resource to allow LRU eviction */
     unpinResource(adsResource, "ADS");
+
+#ifndef PS1_BUILD
+    free(loopSeen);
+#endif
 }
 
 
@@ -1806,6 +2307,7 @@ void adsReleaseIsland()
 
 void adsNoIsland()
 {
+    ttmDx = ttmDy = 0;
     grDx = grDy = 0;
     grInitEmptyBackground();
 #ifdef PS1_BUILD

@@ -1,0 +1,45 @@
+{
+  "scene": {
+    "ads_name": "SUZY",
+    "tag": 2,
+    "scene_index": 53,
+    "status": "verified",
+    "boot_string": "window nosound story single 53 seed 1",
+    "mode": "scene-default"
+  },
+  "config": {
+    "frames": 600,
+    "interval": 1,
+    "until_exit": true,
+    "timeout": null,
+    "cpu_mode": "host",
+    "forced_seed": 1,
+    "forced_island_position": null,
+    "forced_low_tide": null
+  },
+  "outcome": {
+    "exit_code": 0,
+    "timed_out": false,
+    "frames_captured": 140,
+    "state_hash": "a91e47dc1120cbf00edb4ac4d6f190c901d1b0d8e629c822672d306c5de5b82b",
+    "has_fatal_error": false,
+    "likely_scene_not_started": false,
+    "likely_scene_broken": false,
+    "likely_visual_broken": false,
+    "scene_markers_last": {
+      "launched": false,
+      "bmp_ok": false,
+      "bmp_fail": false,
+      "sprite_count_estimate": 0
+    },
+    "visual_last": {},
+    "visual_timeline": []
+  },
+  "paths": {
+    "output_dir": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-2",
+    "frames_dir": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-2/frames",
+    "visual": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-2/visual.json",
+    "visual_batch": "/home/hunter/workspace/jc_reborn/regtest-references/SUZY-2/visual-batch.json"
+  },
+  "capture_date": "2026-03-28T15:44:24Z"
+}

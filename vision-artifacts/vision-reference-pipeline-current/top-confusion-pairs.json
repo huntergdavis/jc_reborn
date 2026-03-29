@@ -1,0 +1,404 @@
+{
+  "pairs": [
+    {
+      "source_scene": "FISHING-1",
+      "target_scene": "FISHING-2",
+      "ratio": 0.4024390243902439,
+      "family_source": "FISHING",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-1/review.html"
+    },
+    {
+      "source_scene": "FISHING-2",
+      "target_scene": "FISHING-1",
+      "ratio": 0.373134328358209,
+      "family_source": "FISHING",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-2/review.html"
+    },
+    {
+      "source_scene": "BUILDING-5",
+      "target_scene": "BUILDING-7",
+      "ratio": 0.35104669887278583,
+      "family_source": "BUILDING",
+      "family_target": "BUILDING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-5/review.html"
+    },
+    {
+      "source_scene": "STAND-2",
+      "target_scene": "STAND-10",
+      "ratio": 0.3333333333333333,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-2/review.html"
+    },
+    {
+      "source_scene": "FISHING-7",
+      "target_scene": "FISHING-8",
+      "ratio": 0.3125,
+      "family_source": "FISHING",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-7/review.html"
+    },
+    {
+      "source_scene": "STAND-8",
+      "target_scene": "ACTIVITY-10",
+      "ratio": 0.30434782608695654,
+      "family_source": "STAND",
+      "family_target": "ACTIVITY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-8/review.html"
+    },
+    {
+      "source_scene": "VISITOR-7",
+      "target_scene": "VISITOR-6",
+      "ratio": 0.29955947136563876,
+      "family_source": "VISITOR",
+      "family_target": "VISITOR",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-7/review.html"
+    },
+    {
+      "source_scene": "STAND-10",
+      "target_scene": "STAND-2",
+      "ratio": 0.28,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-10/review.html"
+    },
+    {
+      "source_scene": "STAND-11",
+      "target_scene": "ACTIVITY-10",
+      "ratio": 0.28,
+      "family_source": "STAND",
+      "family_target": "ACTIVITY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-11/review.html"
+    },
+    {
+      "source_scene": "STAND-7",
+      "target_scene": "FISHING-7",
+      "ratio": 0.28,
+      "family_source": "STAND",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-7/review.html"
+    },
+    {
+      "source_scene": "STAND-9",
+      "target_scene": "STAND-2",
+      "ratio": 0.28,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-9/review.html"
+    },
+    {
+      "source_scene": "BUILDING-7",
+      "target_scene": "BUILDING-5",
+      "ratio": 0.26294820717131473,
+      "family_source": "BUILDING",
+      "family_target": "BUILDING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-7/review.html"
+    },
+    {
+      "source_scene": "STAND-3",
+      "target_scene": "STAND-8",
+      "ratio": 0.2413793103448276,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-3/review.html"
+    },
+    {
+      "source_scene": "STAND-4",
+      "target_scene": "STAND-7",
+      "ratio": 0.20588235294117646,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-4/review.html"
+    },
+    {
+      "source_scene": "VISITOR-6",
+      "target_scene": "VISITOR-7",
+      "ratio": 0.20279720279720279,
+      "family_source": "VISITOR",
+      "family_target": "VISITOR",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-6/review.html"
+    },
+    {
+      "source_scene": "STAND-6",
+      "target_scene": "STAND-7",
+      "ratio": 0.1794871794871795,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-6/review.html"
+    },
+    {
+      "source_scene": "STAND-12",
+      "target_scene": "MARY-1",
+      "ratio": 0.16666666666666666,
+      "family_source": "STAND",
+      "family_target": "MARY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-12/review.html"
+    },
+    {
+      "source_scene": "STAND-5",
+      "target_scene": "STAND-8",
+      "ratio": 0.16666666666666666,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-5/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-5",
+      "target_scene": "JOHNNY-2",
+      "ratio": 0.14619883040935672,
+      "family_source": "JOHNNY",
+      "family_target": "JOHNNY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-5/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-4",
+      "target_scene": "JOHNNY-2",
+      "ratio": 0.1457286432160804,
+      "family_source": "JOHNNY",
+      "family_target": "JOHNNY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-4/review.html"
+    },
+    {
+      "source_scene": "FISHING-8",
+      "target_scene": "FISHING-7",
+      "ratio": 0.12258064516129032,
+      "family_source": "FISHING",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-8/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-2",
+      "target_scene": "JOHNNY-4",
+      "ratio": 0.10963455149501661,
+      "family_source": "JOHNNY",
+      "family_target": "JOHNNY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-2/review.html"
+    },
+    {
+      "source_scene": "FISHING-7",
+      "target_scene": "MARY-1",
+      "ratio": 0.109375,
+      "family_source": "FISHING",
+      "family_target": "MARY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-7/review.html"
+    },
+    {
+      "source_scene": "FISHING-2",
+      "target_scene": "STAND-7",
+      "ratio": 0.1044776119402985,
+      "family_source": "FISHING",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-2/review.html"
+    },
+    {
+      "source_scene": "VISITOR-4",
+      "target_scene": "STAND-10",
+      "ratio": 0.09722222222222222,
+      "family_source": "VISITOR",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-4/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-2",
+      "target_scene": "JOHNNY-5",
+      "ratio": 0.08970099667774087,
+      "family_source": "JOHNNY",
+      "family_target": "JOHNNY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-2/review.html"
+    },
+    {
+      "source_scene": "WALKSTUF-2",
+      "target_scene": "FISHING-5",
+      "ratio": 0.08641975308641975,
+      "family_source": "WALKSTUF",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-2/review.html"
+    },
+    {
+      "source_scene": "FISHING-1",
+      "target_scene": "STAND-7",
+      "ratio": 0.08536585365853659,
+      "family_source": "FISHING",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-1/review.html"
+    },
+    {
+      "source_scene": "STAND-16",
+      "target_scene": "STAND-7",
+      "ratio": 0.07777777777777778,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-16/review.html"
+    },
+    {
+      "source_scene": "STAND-15",
+      "target_scene": "STAND-8",
+      "ratio": 0.07446808510638298,
+      "family_source": "STAND",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-15/review.html"
+    },
+    {
+      "source_scene": "ACTIVITY-6",
+      "target_scene": "FISHING-5",
+      "ratio": 0.06796116504854369,
+      "family_source": "ACTIVITY",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-6/review.html"
+    },
+    {
+      "source_scene": "MISCGAG-1",
+      "target_scene": "MARY-1",
+      "ratio": 0.06422018348623854,
+      "family_source": "MISCGAG",
+      "family_target": "MARY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MISCGAG-1/review.html"
+    },
+    {
+      "source_scene": "FISHING-5",
+      "target_scene": "ACTIVITY-6",
+      "ratio": 0.06306306306306306,
+      "family_source": "FISHING",
+      "family_target": "ACTIVITY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-5/review.html"
+    },
+    {
+      "source_scene": "ACTIVITY-7",
+      "target_scene": "ACTIVITY-12",
+      "ratio": 0.06086956521739131,
+      "family_source": "ACTIVITY",
+      "family_target": "ACTIVITY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-7/review.html"
+    },
+    {
+      "source_scene": "ACTIVITY-7",
+      "target_scene": "STAND-8",
+      "ratio": 0.06086956521739131,
+      "family_source": "ACTIVITY",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-7/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-5",
+      "target_scene": "JOHNNY-4",
+      "ratio": 0.05847953216374269,
+      "family_source": "JOHNNY",
+      "family_target": "JOHNNY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-5/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-4",
+      "target_scene": "JOHNNY-5",
+      "ratio": 0.05527638190954774,
+      "family_source": "JOHNNY",
+      "family_target": "JOHNNY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-4/review.html"
+    },
+    {
+      "source_scene": "VISITOR-1",
+      "target_scene": "BUILDING-1",
+      "ratio": 0.05426356589147287,
+      "family_source": "VISITOR",
+      "family_target": "BUILDING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-1/review.html"
+    },
+    {
+      "source_scene": "FISHING-4",
+      "target_scene": "MARY-3",
+      "ratio": 0.04964539007092199,
+      "family_source": "FISHING",
+      "family_target": "MARY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-4/review.html"
+    },
+    {
+      "source_scene": "ACTIVITY-8",
+      "target_scene": "FISHING-5",
+      "ratio": 0.047619047619047616,
+      "family_source": "ACTIVITY",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-8/review.html"
+    },
+    {
+      "source_scene": "FISHING-8",
+      "target_scene": "STAND-8",
+      "ratio": 0.04516129032258064,
+      "family_source": "FISHING",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-8/review.html"
+    },
+    {
+      "source_scene": "BUILDING-1",
+      "target_scene": "VISITOR-1",
+      "ratio": 0.044585987261146494,
+      "family_source": "BUILDING",
+      "family_target": "VISITOR",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-1/review.html"
+    },
+    {
+      "source_scene": "ACTIVITY-7",
+      "target_scene": "ACTIVITY-10",
+      "ratio": 0.043478260869565216,
+      "family_source": "ACTIVITY",
+      "family_target": "ACTIVITY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-7/review.html"
+    },
+    {
+      "source_scene": "VISITOR-4",
+      "target_scene": "VISITOR-6",
+      "ratio": 0.041666666666666664,
+      "family_source": "VISITOR",
+      "family_target": "VISITOR",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-4/review.html"
+    },
+    {
+      "source_scene": "VISITOR-4",
+      "target_scene": "VISITOR-7",
+      "ratio": 0.041666666666666664,
+      "family_source": "VISITOR",
+      "family_target": "VISITOR",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-4/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-5",
+      "target_scene": "FISHING-5",
+      "ratio": 0.04093567251461988,
+      "family_source": "JOHNNY",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-5/review.html"
+    },
+    {
+      "source_scene": "ACTIVITY-4",
+      "target_scene": "STAND-7",
+      "ratio": 0.03664921465968586,
+      "family_source": "ACTIVITY",
+      "family_target": "STAND",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-4/review.html"
+    },
+    {
+      "source_scene": "FISHING-1",
+      "target_scene": "FISHING-3",
+      "ratio": 0.036585365853658534,
+      "family_source": "FISHING",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-1/review.html"
+    },
+    {
+      "source_scene": "JOHNNY-4",
+      "target_scene": "ACTIVITY-6",
+      "ratio": 0.035175879396984924,
+      "family_source": "JOHNNY",
+      "family_target": "ACTIVITY",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-4/review.html"
+    },
+    {
+      "source_scene": "VISITOR-3",
+      "target_scene": "FISHING-6",
+      "ratio": 0.03431372549019608,
+      "family_source": "VISITOR",
+      "family_target": "FISHING",
+      "source_review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-3/review.html"
+    }
+  ]
+}

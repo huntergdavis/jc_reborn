@@ -1,0 +1,67 @@
+{
+  "overall_ok": true,
+  "checks_passed": 12,
+  "checks_total": 12,
+  "checks": [
+    {
+      "name": "bank_scene_count",
+      "ok": true,
+      "detail": "63 scenes"
+    },
+    {
+      "name": "selfcheck_scene_count",
+      "ok": true,
+      "detail": "63 scenes"
+    },
+    {
+      "name": "inventory_scene_count",
+      "ok": true,
+      "detail": "63 scenes"
+    },
+    {
+      "name": "bank_features_exists",
+      "ok": true,
+      "detail": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/features.npy"
+    },
+    {
+      "name": "bank_metadata_exists",
+      "ok": true,
+      "detail": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/metadata.json"
+    },
+    {
+      "name": "quality_report_exists",
+      "ok": true,
+      "detail": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/quality-report.html"
+    },
+    {
+      "name": "confusion_report_exists",
+      "ok": true,
+      "detail": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/confusion-report.html"
+    },
+    {
+      "name": "family_report_exists",
+      "ok": true,
+      "detail": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/family-report.html"
+    },
+    {
+      "name": "scene_inventory_html_exists",
+      "ok": true,
+      "detail": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.html"
+    },
+    {
+      "name": "scene_inventory_csv_exists",
+      "ok": true,
+      "detail": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.csv"
+    },
+    {
+      "name": "per_scene_reviews_exist",
+      "ok": true,
+      "detail": "all present"
+    },
+    {
+      "name": "per_scene_analysis_exist",
+      "ok": true,
+      "detail": "all present"
+    }
+  ]
+}

@@ -1,0 +1,379 @@
+{
+  "scenes": [
+    {
+      "scene_id": "FISHING-6",
+      "family": "FISHING",
+      "frame_count": 119,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-6/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 1.0,
+      "sprite_visible_ratio": 0.5798319327731093,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "FISHING-6",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": []
+    },
+    {
+      "scene_id": "JOHNNY-1",
+      "family": "JOHNNY",
+      "frame_count": 119,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-1/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 1.0,
+      "sprite_visible_ratio": 1.0,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "JOHNNY-1",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": []
+    },
+    {
+      "scene_id": "JOHNNY-6",
+      "family": "JOHNNY",
+      "frame_count": 89,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-6/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 1.0,
+      "sprite_visible_ratio": 0.4606741573033708,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "JOHNNY-6",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": []
+    },
+    {
+      "scene_id": "STAND-1",
+      "family": "STAND",
+      "frame_count": 8,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-1/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 1.0,
+      "sprite_visible_ratio": 0.125,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-1",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": []
+    },
+    {
+      "scene_id": "SUZY-1",
+      "family": "SUZY",
+      "frame_count": 184,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-1/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 1.0,
+      "sprite_visible_ratio": 0.967391304347826,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "SUZY-1",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": []
+    },
+    {
+      "scene_id": "SUZY-2",
+      "family": "SUZY",
+      "frame_count": 140,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-2/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9928571428571429,
+      "sprite_visible_ratio": 1.0,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "SUZY-2",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "SUZY-1",
+          "ratio": 0.007142857142857143,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "scene_id": "BUILDING-6",
+      "family": "BUILDING",
+      "frame_count": 514,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-6/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9922178988326849,
+      "sprite_visible_ratio": 0.4785992217898833,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "BUILDING-6",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "BUILDING-4",
+          "ratio": 0.007782101167315175,
+          "count": 4
+        }
+      ]
+    },
+    {
+      "scene_id": "BUILDING-4",
+      "family": "BUILDING",
+      "frame_count": 629,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-4/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.985691573926868,
+      "sprite_visible_ratio": 0.6359300476947536,
+      "ocean_ratio": 0.25119236883942764,
+      "dominant_global_match_scene": "BUILDING-4",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "BUILDING-6",
+          "ratio": 0.014308426073131956,
+          "count": 9
+        }
+      ]
+    },
+    {
+      "scene_id": "MARY-2",
+      "family": "MARY",
+      "frame_count": 436,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-2/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9839449541284404,
+      "sprite_visible_ratio": 0.21100917431192662,
+      "ocean_ratio": 0.286697247706422,
+      "dominant_global_match_scene": "MARY-2",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "FISHING-5",
+          "ratio": 0.016055045871559634,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "BUILDING-2",
+      "family": "BUILDING",
+      "frame_count": 415,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-2/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.983132530120482,
+      "sprite_visible_ratio": 0.6240963855421687,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "BUILDING-2",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "BUILDING-4",
+          "ratio": 0.016867469879518072,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "MARY-5",
+      "family": "MARY",
+      "frame_count": 409,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-5/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9828850855745721,
+      "sprite_visible_ratio": 0.7946210268948656,
+      "ocean_ratio": 0.11491442542787286,
+      "dominant_global_match_scene": "MARY-5",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "FISHING-5",
+          "ratio": 0.017114914425427872,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "MARY-3",
+      "family": "MARY",
+      "frame_count": 448,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-3/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9821428571428571,
+      "sprite_visible_ratio": 0.9642857142857143,
+      "ocean_ratio": 0.006696428571428571,
+      "dominant_global_match_scene": "MARY-3",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "FISHING-4",
+          "ratio": 0.015625,
+          "count": 7
+        },
+        {
+          "scene_id": "ACTIVITY-1",
+          "ratio": 0.002232142857142857,
+          "count": 1
+        }
+      ]
+    },
+    {
+      "scene_id": "ACTIVITY-11",
+      "family": "ACTIVITY",
+      "frame_count": 384,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-11/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-11/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9817708333333334,
+      "sprite_visible_ratio": 0.018229166666666668,
+      "ocean_ratio": 0.9817708333333334,
+      "dominant_global_match_scene": "ACTIVITY-11",
+      "dominant_failure_mode": "background_only_missing_sprites",
+      "top_alternates": [
+        {
+          "scene_id": "FISHING-5",
+          "ratio": 0.018229166666666668,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "WALKSTUF-1",
+      "family": "WALKSTUF",
+      "frame_count": 366,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-1/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9808743169398907,
+      "sprite_visible_ratio": 1.0,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "WALKSTUF-1",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "STAND-7",
+          "ratio": 0.01912568306010929,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "ACTIVITY-1",
+      "family": "ACTIVITY",
+      "frame_count": 356,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-1/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9803370786516854,
+      "sprite_visible_ratio": 0.09831460674157304,
+      "ocean_ratio": 0.43258426966292135,
+      "dominant_global_match_scene": "ACTIVITY-1",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "FISHING-5",
+          "ratio": 0.019662921348314606,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "MARY-4",
+      "family": "MARY",
+      "frame_count": 326,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-4/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9785276073619632,
+      "sprite_visible_ratio": 0.22699386503067484,
+      "ocean_ratio": 0.03680981595092025,
+      "dominant_global_match_scene": "MARY-4",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "FISHING-5",
+          "ratio": 0.02147239263803681,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "ACTIVITY-9",
+      "family": "ACTIVITY",
+      "frame_count": 296,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-9/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-9/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9763513513513513,
+      "sprite_visible_ratio": 0.9695945945945946,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "ACTIVITY-9",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "VISITOR-1",
+          "ratio": 0.02364864864864865,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "VISITOR-5",
+      "family": "VISITOR",
+      "frame_count": 291,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-5/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9759450171821306,
+      "sprite_visible_ratio": 0.6426116838487973,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "VISITOR-5",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "STAND-10",
+          "ratio": 0.024054982817869417,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "BUILDING-3",
+      "family": "BUILDING",
+      "frame_count": 229,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-3/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9694323144104804,
+      "sprite_visible_ratio": 0.8471615720524017,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "BUILDING-3",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "STAND-7",
+          "ratio": 0.03056768558951965,
+          "count": 7
+        }
+      ]
+    },
+    {
+      "scene_id": "JOHNNY-3",
+      "family": "JOHNNY",
+      "frame_count": 222,
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-3/vision-analysis.json",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.9684684684684685,
+      "sprite_visible_ratio": 0.6126126126126126,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "JOHNNY-3",
+      "dominant_failure_mode": "unknown",
+      "top_alternates": [
+        {
+          "scene_id": "STAND-7",
+          "ratio": 0.03153153153153153,
+          "count": 7
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "reference_bank": {
+    "index_html": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/index.html",
+    "index_json": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/index.json",
+    "metadata_json": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/metadata.json",
+    "features_npy": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/features.npy",
+    "scene_count": 63,
+    "frame_count": 13128
+  },
+  "reference_selfcheck": {
+    "index_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/index.html",
+    "index_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/index.json",
+    "quality_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/quality-report.html",
+    "quality_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/quality-report.json",
+    "confusion_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/confusion-report.html",
+    "confusion_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/confusion-report.json",
+    "family_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/family-report.html",
+    "family_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/family-report.json",
+    "scene_count": 63
+  },
+  "inventory_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.json",
+  "inventory_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.html",
+  "artifact_catalog_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/artifact-catalog.json"
+}

@@ -1,0 +1,2245 @@
+{
+  "summary": {
+    "scene": "STAND-3",
+    "frames_analyzed": 29,
+    "sprite_visible_ratio": 0.2413793103448276,
+    "ocean_ratio": 0.7586206896551724,
+    "dominant_global_match_scene": "STAND-3",
+    "dominant_failure_mode": "unknown"
+  },
+  "frames": [
+    {
+      "frame": "frame_00000.bmp",
+      "frame_number": 0,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00000.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.9923321759259259,
+        "person_like_ratio": 0.005208333333333333,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9934895833333334,
+          "center": 0.9895833333333334,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-8",
+        "frame": "frame_00000.bmp",
+        "score": 1.0000003576278687
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00005.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00001.bmp",
+      "frame_number": 1,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00001.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.9923321759259259,
+        "person_like_ratio": 0.005208333333333333,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9934895833333334,
+          "center": 0.9895833333333334,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-8",
+        "frame": "frame_00000.bmp",
+        "score": 1.0000003576278687
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00005.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00002.bmp",
+      "frame_number": 2,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00002.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.9923321759259259,
+        "person_like_ratio": 0.005208333333333333,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9934895833333334,
+          "center": 0.9895833333333334,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-8",
+        "frame": "frame_00000.bmp",
+        "score": 1.0000003576278687
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00005.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00003.bmp",
+      "frame_number": 3,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00003.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.9923321759259259,
+        "person_like_ratio": 0.005208333333333333,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9934895833333334,
+          "center": 0.9895833333333334,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-8",
+        "frame": "frame_00000.bmp",
+        "score": 1.0000003576278687
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00005.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00004.bmp",
+      "frame_number": 4,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00004.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.9923321759259259,
+        "person_like_ratio": 0.005208333333333333,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9934895833333334,
+          "center": 0.9895833333333334,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-8",
+        "frame": "frame_00000.bmp",
+        "score": 1.0000003576278687
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00005.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00005.bmp",
+      "frame_number": 5,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00005.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.9923321759259259,
+        "person_like_ratio": 0.005208333333333333,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9934895833333334,
+          "center": 0.9895833333333334,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-8",
+        "frame": "frame_00000.bmp",
+        "score": 1.0000003576278687
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00005.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00006.bmp",
+      "frame_number": 6,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00006.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.9923321759259259,
+        "person_like_ratio": 0.005208333333333333,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9934895833333334,
+          "center": 0.9895833333333334,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-8",
+        "frame": "frame_00000.bmp",
+        "score": 1.0000003576278687
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00005.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00007.bmp",
+      "frame_number": 7,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00007.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.1556951254606247,
+          0.15909530222415924,
+          0.5012612342834473
+        ],
+        "std_rgb": [
+          0.29284918308258057,
+          0.29639360308647156,
+          0.21040676534175873
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8271122685185185,
+        "sand_ratio": 0.06785300925925926,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.03893788903951645,
+        "foreground_ratio": 0.0014467592592592592,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10505174100399017,
+            0.09825196862220764,
+            0.4164300560951233
+          ],
+          "bot": [
+            0.20623467862606049,
+            0.20706018805503845,
+            0.39779752492904663
+          ]
+        },
+        "motion_bbox": {
+          "x0": 39,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.003472222222222222,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00007.bmp",
+        "score": 1.0000020265579224
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00007.bmp",
+        "score": 1.0000020265579224
+      }
+    },
+    {
+      "frame": "frame_00008.bmp",
+      "frame_number": 8,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00008.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15576717257499695,
+          0.1590845137834549,
+          0.5011386871337891
+        ],
+        "std_rgb": [
+          0.2928340435028076,
+          0.29638946056365967,
+          0.21048329770565033
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8269675925925926,
+        "sand_ratio": 0.06785300925925926,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.038904573768377304,
+        "foreground_ratio": 0.0011574074074074073,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10505174100399017,
+            0.09825196862220764,
+            0.4164300560951233
+          ],
+          "bot": [
+            0.20645084977149963,
+            0.2070278376340866,
+            0.397429883480072
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0026041666666666665,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00008.bmp",
+        "score": 1.0000016689300537
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00008.bmp",
+        "score": 1.0000016689300537
+      }
+    },
+    {
+      "frame": "frame_00009.bmp",
+      "frame_number": 9,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00009.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.1559583842754364,
+          0.15918664634227753,
+          0.5011301636695862
+        ],
+        "std_rgb": [
+          0.2929193675518036,
+          0.2963927686214447,
+          0.21048696339130402
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8266782407407407,
+        "sand_ratio": 0.06799768518518519,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.03895232826471329,
+        "foreground_ratio": 0.0014467592592592592,
+        "person_like_ratio": 0.00028935185185185184,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10562533885240555,
+            0.09855834394693375,
+            0.4164045453071594
+          ],
+          "bot": [
+            0.20645084977149963,
+            0.2070278376340866,
+            0.397429883480072
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.003472222222222222,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00009.bmp",
+        "score": 0.999999463558197
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00009.bmp",
+        "score": 0.999999463558197
+      }
+    },
+    {
+      "frame": "frame_00010.bmp",
+      "frame_number": 10,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00010.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15629199147224426,
+          0.15931087732315063,
+          0.5007035136222839
+        ],
+        "std_rgb": [
+          0.293317049741745,
+          0.2967166006565094,
+          0.21065226197242737
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8260995370370371,
+        "sand_ratio": 0.06929976851851852,
+        "green_ratio": 0.016059027777777776,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.03881207853555679,
+        "foreground_ratio": 0.0030381944444444445,
+        "person_like_ratio": 0.00028935185185185184,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10562533885240555,
+            0.09855834394693375,
+            0.4164045453071594
+          ],
+          "bot": [
+            0.20745165646076202,
+            0.2074006050825119,
+            0.3961499035358429
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 39,
+          "x1": 78,
+          "y1": 57
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.004774305555555556,
+          "right": 0.004340277777777778
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00010.bmp",
+        "score": 1.000003695487976
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00010.bmp",
+        "score": 1.000003695487976
+      }
+    },
+    {
+      "frame": "frame_00011.bmp",
+      "frame_number": 11,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00011.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.1564621925354004,
+          0.159387469291687,
+          0.5006904602050781
+        ],
+        "std_rgb": [
+          0.2933488190174103,
+          0.296693354845047,
+          0.21065974235534668
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8258101851851852,
+        "sand_ratio": 0.06915509259259259,
+        "green_ratio": 0.016059027777777776,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.03891940042376518,
+        "foreground_ratio": 0.0028935185185185184,
+        "person_like_ratio": 0.00014467592592592592,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10613596439361572,
+            0.09878811985254288,
+            0.4163654148578644
+          ],
+          "bot": [
+            0.20745165646076202,
+            0.2074006050825119,
+            0.3961499035358429
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 39,
+          "x1": 78,
+          "y1": 57
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.004340277777777778,
+          "right": 0.004340277777777778
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00011.bmp",
+        "score": 0.9999998807907104
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00011.bmp",
+        "score": 0.9999998807907104
+      }
+    },
+    {
+      "frame": "frame_00012.bmp",
+      "frame_number": 12,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00012.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15653595328330994,
+          0.1594555526971817,
+          0.5006677508354187
+        ],
+        "std_rgb": [
+          0.29359275102615356,
+          0.2969111502170563,
+          0.21068191528320312
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8252314814814815,
+        "sand_ratio": 0.06944444444444445,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.038882430642843246,
+        "foreground_ratio": 0.00318287037037037,
+        "person_like_ratio": 0.00014467592592592592,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10613596439361572,
+            0.09878811985254288,
+            0.4163654148578644
+          ],
+          "bot": [
+            0.20767292380332947,
+            0.20760484039783478,
+            0.3960818350315094
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 39,
+          "x1": 95,
+          "y1": 57
+        },
+        "motion_position": "lower-right",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.004340277777777778,
+          "right": 0.005208333333333333
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-right",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00012.bmp",
+        "score": 0.9999963045120239
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00012.bmp",
+        "score": 0.9999963045120239
+      }
+    },
+    {
+      "frame": "frame_00013.bmp",
+      "frame_number": 13,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00013.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15643325448036194,
+          0.1593676209449768,
+          0.5006309151649475
+        ],
+        "std_rgb": [
+          0.29352760314941406,
+          0.2969076633453369,
+          0.21070979535579681
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8253761574074074,
+        "sand_ratio": 0.06944444444444445,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.038811735808849335,
+        "foreground_ratio": 0.0028935185185185184,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10582788288593292,
+            0.0985243022441864,
+            0.41625475883483887
+          ],
+          "bot": [
+            0.20767292380332947,
+            0.20760484039783478,
+            0.3960818350315094
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 38,
+          "x1": 95,
+          "y1": 57
+        },
+        "motion_position": "lower-right",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.003472222222222222,
+          "right": 0.005208333333333333
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-right",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00013.bmp",
+        "score": 0.9999973773956299
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00013.bmp",
+        "score": 0.9999973773956299
+      }
+    },
+    {
+      "frame": "frame_00014.bmp",
+      "frame_number": 14,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00014.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15632659196853638,
+          0.15926095843315125,
+          0.5006546974182129
+        ],
+        "std_rgb": [
+          0.29349246621131897,
+          0.2968708872795105,
+          0.2107200175523758
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8252314814814815,
+        "sand_ratio": 0.06944444444444445,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03882893919944763,
+        "foreground_ratio": 0.0028935185185185184,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10582788288593292,
+            0.0985243022441864,
+            0.41625475883483887
+          ],
+          "bot": [
+            0.20735293626785278,
+            0.2072848528623581,
+            0.3961533308029175
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 38,
+          "x1": 95,
+          "y1": 57
+        },
+        "motion_position": "lower-right",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.003472222222222222,
+          "right": 0.005208333333333333
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-right",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00014.bmp",
+        "score": 1.0000015497207642
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00014.bmp",
+        "score": 1.0000015497207642
+      }
+    },
+    {
+      "frame": "frame_00015.bmp",
+      "frame_number": 15,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00015.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15637482702732086,
+          0.15936818718910217,
+          0.5004498958587646
+        ],
+        "std_rgb": [
+          0.29356616735458374,
+          0.2969963550567627,
+          0.21085761487483978
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8249421296296297,
+        "sand_ratio": 0.06958912037037036,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.0388156920671463,
+        "foreground_ratio": 0.004774305555555556,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10568150877952576,
+            0.0985838770866394,
+            0.41619861125946045
+          ],
+          "bot": [
+            0.2076440006494522,
+            0.20754697918891907,
+            0.3955950438976288
+          ]
+        },
+        "motion_bbox": {
+          "x0": 37,
+          "y0": 36,
+          "x1": 95,
+          "y1": 57
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.009114583333333334,
+          "right": 0.005208333333333333
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00015.bmp",
+        "score": 0.9999980330467224
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00015.bmp",
+        "score": 0.9999980330467224
+      }
+    },
+    {
+      "frame": "frame_00016.bmp",
+      "frame_number": 16,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00016.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.1567322462797165,
+          0.15973356366157532,
+          0.5001866817474365
+        ],
+        "std_rgb": [
+          0.2936091423034668,
+          0.2970922291278839,
+          0.210862934589386
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8249421296296297,
+        "sand_ratio": 0.06958912037037036,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03885699063539505,
+        "foreground_ratio": 0.00535300925925926,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10568150877952576,
+            0.0985838770866394,
+            0.41619861125946045
+          ],
+          "bot": [
+            0.20871630311012268,
+            0.2086431235074997,
+            0.39480528235435486
+          ]
+        },
+        "motion_bbox": {
+          "x0": 37,
+          "y0": 36,
+          "x1": 95,
+          "y1": 57
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.009114583333333334,
+          "right": 0.006944444444444444
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00016.bmp",
+        "score": 1.0000005960464478
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00016.bmp",
+        "score": 1.0000005960464478
+      }
+    },
+    {
+      "frame": "frame_00017.bmp",
+      "frame_number": 17,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00017.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15678104758262634,
+          0.1597137153148651,
+          0.500205397605896
+        ],
+        "std_rgb": [
+          0.2936354875564575,
+          0.2970602810382843,
+          0.21079657971858978
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8250868055555556,
+        "sand_ratio": 0.06958912037037036,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03884437680244446,
+        "foreground_ratio": 0.004340277777777778,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10582788288593292,
+            0.0985243022441864,
+            0.41625475883483887
+          ],
+          "bot": [
+            0.20871630311012268,
+            0.2086431235074997,
+            0.39480528235435486
+          ]
+        },
+        "motion_bbox": {
+          "x0": 37,
+          "y0": 38,
+          "x1": 95,
+          "y1": 57
+        },
+        "motion_position": "lower-right",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.006076388888888889,
+          "right": 0.006944444444444444
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-right",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00017.bmp",
+        "score": 1.000001311302185
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00017.bmp",
+        "score": 1.000001311302185
+      }
+    },
+    {
+      "frame": "frame_00018.bmp",
+      "frame_number": 18,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00018.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15689848363399506,
+          0.15973299741744995,
+          0.5001429915428162
+        ],
+        "std_rgb": [
+          0.29359009861946106,
+          0.29702162742614746,
+          0.21075138449668884
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8250868055555556,
+        "sand_ratio": 0.06958912037037036,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.038837142288684845,
+        "foreground_ratio": 0.004629629629629629,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10582788288593292,
+            0.0985243022441864,
+            0.41625475883483887
+          ],
+          "bot": [
+            0.20906862616539001,
+            0.2087009847164154,
+            0.39461803436279297
+          ]
+        },
+        "motion_bbox": {
+          "x0": 37,
+          "y0": 38,
+          "x1": 93,
+          "y1": 57
+        },
+        "motion_position": "lower-right",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.006076388888888889,
+          "right": 0.0078125
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-right",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00018.bmp",
+        "score": 1.0000007152557373
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00018.bmp",
+        "score": 1.0000007152557373
+      }
+    },
+    {
+      "frame": "frame_00019.bmp",
+      "frame_number": 19,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00019.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.1568496972322464,
+          0.15975286066532135,
+          0.5001242756843567
+        ],
+        "std_rgb": [
+          0.2935793995857239,
+          0.29704317450523376,
+          0.2108239233493805
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8249421296296297,
+        "sand_ratio": 0.06958912037037036,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03884975612163544,
+        "foreground_ratio": 0.005642361111111111,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10568150877952576,
+            0.0985838770866394,
+            0.41619861125946045
+          ],
+          "bot": [
+            0.20906862616539001,
+            0.2087009847164154,
+            0.39461803436279297
+          ]
+        },
+        "motion_bbox": {
+          "x0": 37,
+          "y0": 36,
+          "x1": 93,
+          "y1": 57
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.009114583333333334,
+          "right": 0.0078125
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00019.bmp",
+        "score": 1.0000004768371582
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00019.bmp",
+        "score": 1.0000004768371582
+      }
+    },
+    {
+      "frame": "frame_00020.bmp",
+      "frame_number": 20,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00020.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15687806904315948,
+          0.15978123247623444,
+          0.5001140236854553
+        ],
+        "std_rgb": [
+          0.2935505509376526,
+          0.2970131039619446,
+          0.21080505847930908
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8250868055555556,
+        "sand_ratio": 0.06958912037037036,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03882329910993576,
+        "foreground_ratio": 0.005642361111111111,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10568150877952576,
+            0.0985838770866394,
+            0.41619861125946045
+          ],
+          "bot": [
+            0.20915372669696808,
+            0.20878608524799347,
+            0.3945873975753784
+          ]
+        },
+        "motion_bbox": {
+          "x0": 37,
+          "y0": 36,
+          "x1": 93,
+          "y1": 57
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.009114583333333334,
+          "right": 0.0078125
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00020.bmp",
+        "score": 1.0000022649765015
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00020.bmp",
+        "score": 1.0000022649765015
+      }
+    },
+    {
+      "frame": "frame_00021.bmp",
+      "frame_number": 21,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00021.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15692685544490814,
+          0.15976136922836304,
+          0.5001327395439148
+        ],
+        "std_rgb": [
+          0.2935717701911926,
+          0.2969948947429657,
+          0.21074311435222626
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8252314814814815,
+        "sand_ratio": 0.06958912037037036,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03881068527698517,
+        "foreground_ratio": 0.004629629629629629,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10582788288593292,
+            0.0985243022441864,
+            0.41625475883483887
+          ],
+          "bot": [
+            0.20915372669696808,
+            0.20878608524799347,
+            0.3945873975753784
+          ]
+        },
+        "motion_bbox": {
+          "x0": 37,
+          "y0": 38,
+          "x1": 93,
+          "y1": 57
+        },
+        "motion_position": "lower-right",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.006076388888888889,
+          "right": 0.0078125
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-right",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00021.bmp",
+        "score": 1.000002384185791
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00021.bmp",
+        "score": 1.000002384185791
+      }
+    },
+    {
+      "frame": "frame_00022.bmp",
+      "frame_number": 22,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00022.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15675778687000275,
+          0.15968477725982666,
+          0.5004652142524719
+        ],
+        "std_rgb": [
+          0.29349836707115173,
+          0.2969128489494324,
+          0.21060357987880707
+        ],
+        "dark_ratio": 0.0008680555555555555,
+        "blue_ratio": 0.8255208333333334,
+        "sand_ratio": 0.06944444444444445,
+        "green_ratio": 0.015914351851851853,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.0388641282916069,
+        "foreground_ratio": 0.004050925925925926,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10582788288593292,
+            0.0985243022441864,
+            0.41625475883483887
+          ],
+          "bot": [
+            0.2086465060710907,
+            0.20855630934238434,
+            0.3955848217010498
+          ]
+        },
+        "motion_bbox": {
+          "x0": 39,
+          "y0": 38,
+          "x1": 93,
+          "y1": 57
+        },
+        "motion_position": "lower-right",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.004340277777777778,
+          "right": 0.0078125
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-right",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00022.bmp",
+        "score": 1.0000020265579224
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00022.bmp",
+        "score": 1.0000020265579224
+      }
+    },
+    {
+      "frame": "frame_00023.bmp",
+      "frame_number": 23,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00023.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15616944432258606,
+          0.1592830866575241,
+          0.501192033290863
+        ],
+        "std_rgb": [
+          0.29311656951904297,
+          0.2964966893196106,
+          0.21039220690727234
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8259548611111112,
+        "sand_ratio": 0.0681423611111111,
+        "green_ratio": 0.016637731481481483,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03903377801179886,
+        "foreground_ratio": 0.002170138888888889,
+        "person_like_ratio": 0.00014467592592592592,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10613596439361572,
+            0.09878811985254288,
+            0.4163654148578644
+          ],
+          "bot": [
+            0.20657339692115784,
+            0.2070874273777008,
+            0.39765453338623047
+          ]
+        },
+        "motion_bbox": {
+          "x0": 39,
+          "y0": 39,
+          "x1": 93,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.00390625,
+          "right": 0.0026041666666666665
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00023.bmp",
+        "score": 0.9999990463256836
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00023.bmp",
+        "score": 0.9999990463256836
+      }
+    },
+    {
+      "frame": "frame_00024.bmp",
+      "frame_number": 24,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00024.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.1559782326221466,
+          0.1591957062482834,
+          0.5012810826301575
+        ],
+        "std_rgb": [
+          0.2929171323776245,
+          0.2963271737098694,
+          0.21042045950889587
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8265335648148148,
+        "sand_ratio": 0.06785300925925926,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03907798230648041,
+        "foreground_ratio": 0.001591435185185185,
+        "person_like_ratio": 0.00014467592592592592,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10613596439361572,
+            0.09878811985254288,
+            0.4163654148578644
+          ],
+          "bot": [
+            0.20599980652332306,
+            0.20682530105113983,
+            0.39792177081108093
+          ]
+        },
+        "motion_bbox": {
+          "x0": 39,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.00390625,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00024.bmp",
+        "score": 0.9999980330467224
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00024.bmp",
+        "score": 0.9999980330467224
+      }
+    },
+    {
+      "frame": "frame_00025.bmp",
+      "frame_number": 25,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00025.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15580803155899048,
+          0.159119114279747,
+          0.5012941360473633
+        ],
+        "std_rgb": [
+          0.2928900718688965,
+          0.2963502109050751,
+          0.2104211002588272
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8268229166666666,
+        "sand_ratio": 0.06799768518518519,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07523148148148148,
+        "edge_density": 0.03897066041827202,
+        "foreground_ratio": 0.001736111111111111,
+        "person_like_ratio": 0.00028935185185185184,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10562533885240555,
+            0.09855834394693375,
+            0.4164045453071594
+          ],
+          "bot": [
+            0.20599980652332306,
+            0.20682530105113983,
+            0.39792177081108093
+          ]
+        },
+        "motion_bbox": {
+          "x0": 39,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.004340277777777778,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00025.bmp",
+        "score": 1.0000009536743164
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00025.bmp",
+        "score": 1.0000009536743164
+      }
+    },
+    {
+      "frame": "frame_00026.bmp",
+      "frame_number": 26,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00026.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15586930513381958,
+          0.1591803878545761,
+          0.5012799501419067
+        ],
+        "std_rgb": [
+          0.2929278612136841,
+          0.29639145731925964,
+          0.21041949093341827
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8268229166666666,
+        "sand_ratio": 0.06799768518518519,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.038981612771749496,
+        "foreground_ratio": 0.001736111111111111,
+        "person_like_ratio": 0.00028935185185185184,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10562533885240555,
+            0.09855834394693375,
+            0.4164045453071594
+          ],
+          "bot": [
+            0.20618362724781036,
+            0.20700912177562714,
+            0.3978792130947113
+          ]
+        },
+        "motion_bbox": {
+          "x0": 39,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.004340277777777778,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00026.bmp",
+        "score": 0.9999990463256836
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00026.bmp",
+        "score": 0.9999990463256836
+      }
+    },
+    {
+      "frame": "frame_00027.bmp",
+      "frame_number": 27,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00027.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15567810833454132,
+          0.15907827019691467,
+          0.5012884736061096
+        ],
+        "std_rgb": [
+          0.2928433120250702,
+          0.2963879108428955,
+          0.21040664613246918
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8271122685185185,
+        "sand_ratio": 0.06785300925925926,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.03893385827541351,
+        "foreground_ratio": 0.0014467592592592592,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10505174100399017,
+            0.09825196862220764,
+            0.4164300560951233
+          ],
+          "bot": [
+            0.20618362724781036,
+            0.20700912177562714,
+            0.3978792130947113
+          ]
+        },
+        "motion_bbox": {
+          "x0": 39,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.003472222222222222,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00027.bmp",
+        "score": 1.0000014305114746
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00027.bmp",
+        "score": 1.0000014305114746
+      }
+    },
+    {
+      "frame": "frame_00028.bmp",
+      "frame_number": 28,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-3/frames/frame_00028.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.15575015544891357,
+          0.15906749665737152,
+          0.5011426210403442
+        ],
+        "std_rgb": [
+          0.29282307624816895,
+          0.2963806092739105,
+          0.21048100292682648
+        ],
+        "dark_ratio": 0.0007233796296296296,
+        "blue_ratio": 0.8269675925925926,
+        "sand_ratio": 0.06785300925925926,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07537615740740741,
+        "edge_density": 0.03889996558427811,
+        "foreground_ratio": 0.0011574074074074073,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10505174100399017,
+            0.09825196862220764,
+            0.4164300560951233
+          ],
+          "bot": [
+            0.20639976859092712,
+            0.2069767862558365,
+            0.3974417746067047
+          ]
+        },
+        "motion_bbox": {
+          "x0": 48,
+          "y0": 39,
+          "x1": 75,
+          "y1": 56
+        },
+        "motion_position": "lower-center",
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0026041666666666665,
+          "right": 0.0008680555555555555
+        }
+      },
+      "labels": {
+        "screen_type": "ocean",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": "lower-center",
+        "human_like_visible": false,
+        "action_summary": "Ocean or background is visible without active sprites."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00028.bmp",
+        "score": 1.0000009536743164
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-3",
+        "frame": "frame_00028.bmp",
+        "score": 1.0000009536743164
+      }
+    }
+  ]
+}

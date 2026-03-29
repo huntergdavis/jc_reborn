@@ -1,0 +1,410 @@
+{
+  "top_level": {
+    "pipeline_index_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/index.html",
+    "pipeline_manifest_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/pipeline-manifest.json",
+    "scene_inventory_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.html",
+    "scene_inventory_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.json",
+    "scene_inventory_csv": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.csv",
+    "strongest_scenes_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/strongest-scenes.json",
+    "weakest_scenes_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/weakest-scenes.json",
+    "top_confusion_pairs_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/top-confusion-pairs.json",
+    "validation_report_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/validation-report.html",
+    "validation_report_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/validation-report.json"
+  },
+  "reference_bank": {
+    "index_html": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/index.html",
+    "index_json": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/index.json",
+    "metadata_json": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/metadata.json",
+    "features_npy": "/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329/features.npy"
+  },
+  "reference_selfcheck": {
+    "index_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/index.html",
+    "index_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/index.json",
+    "quality_report_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/quality-report.html",
+    "quality_report_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/quality-report.json",
+    "confusion_report_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/confusion-report.html",
+    "confusion_report_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/confusion-report.json",
+    "family_report_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/family-report.html",
+    "family_report_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/family-report.json"
+  },
+  "scenes": [
+    {
+      "scene_id": "ACTIVITY-1",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-10",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-10/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-10/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-11",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-11/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-11/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-12",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-12/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-12/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-4",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-4/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-5",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-5/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-6",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-6/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-7",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-7/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-7/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-8",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-8/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-8/vision-analysis.json"
+    },
+    {
+      "scene_id": "ACTIVITY-9",
+      "family": "ACTIVITY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-9/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/ACTIVITY-9/vision-analysis.json"
+    },
+    {
+      "scene_id": "BUILDING-1",
+      "family": "BUILDING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "BUILDING-2",
+      "family": "BUILDING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "BUILDING-3",
+      "family": "BUILDING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-3/vision-analysis.json"
+    },
+    {
+      "scene_id": "BUILDING-4",
+      "family": "BUILDING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-4/vision-analysis.json"
+    },
+    {
+      "scene_id": "BUILDING-5",
+      "family": "BUILDING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-5/vision-analysis.json"
+    },
+    {
+      "scene_id": "BUILDING-6",
+      "family": "BUILDING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-6/vision-analysis.json"
+    },
+    {
+      "scene_id": "BUILDING-7",
+      "family": "BUILDING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-7/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/BUILDING-7/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-1",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-2",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-3",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-3/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-4",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-4/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-5",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-5/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-6",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-6/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-7",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-7/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-7/vision-analysis.json"
+    },
+    {
+      "scene_id": "FISHING-8",
+      "family": "FISHING",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-8/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/FISHING-8/vision-analysis.json"
+    },
+    {
+      "scene_id": "JOHNNY-1",
+      "family": "JOHNNY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "JOHNNY-2",
+      "family": "JOHNNY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "JOHNNY-3",
+      "family": "JOHNNY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-3/vision-analysis.json"
+    },
+    {
+      "scene_id": "JOHNNY-4",
+      "family": "JOHNNY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-4/vision-analysis.json"
+    },
+    {
+      "scene_id": "JOHNNY-5",
+      "family": "JOHNNY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-5/vision-analysis.json"
+    },
+    {
+      "scene_id": "JOHNNY-6",
+      "family": "JOHNNY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/JOHNNY-6/vision-analysis.json"
+    },
+    {
+      "scene_id": "MARY-1",
+      "family": "MARY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "MARY-2",
+      "family": "MARY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "MARY-3",
+      "family": "MARY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-3/vision-analysis.json"
+    },
+    {
+      "scene_id": "MARY-4",
+      "family": "MARY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-4/vision-analysis.json"
+    },
+    {
+      "scene_id": "MARY-5",
+      "family": "MARY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MARY-5/vision-analysis.json"
+    },
+    {
+      "scene_id": "MISCGAG-1",
+      "family": "MISCGAG",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MISCGAG-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MISCGAG-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "MISCGAG-2",
+      "family": "MISCGAG",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MISCGAG-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/MISCGAG-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-1",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-10",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-10/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-10/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-11",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-11/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-11/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-12",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-12/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-12/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-15",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-15/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-15/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-16",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-16/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-16/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-2",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-3",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-3/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-4",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-4/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-5",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-5/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-6",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-6/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-7",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-7/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-7/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-8",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-8/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-8/vision-analysis.json"
+    },
+    {
+      "scene_id": "STAND-9",
+      "family": "STAND",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-9/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/STAND-9/vision-analysis.json"
+    },
+    {
+      "scene_id": "SUZY-1",
+      "family": "SUZY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "SUZY-2",
+      "family": "SUZY",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/SUZY-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "VISITOR-1",
+      "family": "VISITOR",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "VISITOR-3",
+      "family": "VISITOR",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-3/vision-analysis.json"
+    },
+    {
+      "scene_id": "VISITOR-4",
+      "family": "VISITOR",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-4/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-4/vision-analysis.json"
+    },
+    {
+      "scene_id": "VISITOR-5",
+      "family": "VISITOR",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-5/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-5/vision-analysis.json"
+    },
+    {
+      "scene_id": "VISITOR-6",
+      "family": "VISITOR",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-6/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-6/vision-analysis.json"
+    },
+    {
+      "scene_id": "VISITOR-7",
+      "family": "VISITOR",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-7/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/VISITOR-7/vision-analysis.json"
+    },
+    {
+      "scene_id": "WALKSTUF-1",
+      "family": "WALKSTUF",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-1/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-1/vision-analysis.json"
+    },
+    {
+      "scene_id": "WALKSTUF-2",
+      "family": "WALKSTUF",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-2/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-2/vision-analysis.json"
+    },
+    {
+      "scene_id": "WALKSTUF-3",
+      "family": "WALKSTUF",
+      "review_html": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-3/review.html",
+      "vision_analysis_json": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4/scenes/WALKSTUF-3/vision-analysis.json"
+    }
+  ]
+}

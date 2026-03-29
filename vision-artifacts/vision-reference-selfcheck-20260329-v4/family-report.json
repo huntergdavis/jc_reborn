@@ -1,0 +1,287 @@
+{
+  "families": [
+    {
+      "family": "ACTIVITY",
+      "scene_count": 10,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.9391267388105625,
+      "avg_sprite_visible": 0.3268438999022658,
+      "avg_ocean_ratio": 0.24459250125134596
+    },
+    {
+      "family": "BUILDING",
+      "scene_count": 7,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.8920172082683829,
+      "avg_sprite_visible": 0.6441311619880551,
+      "avg_ocean_ratio": 0.03588462411991823
+    },
+    {
+      "family": "FISHING",
+      "scene_count": 8,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.7732205438569013,
+      "avg_sprite_visible": 0.46804827134333515,
+      "avg_ocean_ratio": 0.05630630630630631
+    },
+    {
+      "family": "JOHNNY",
+      "scene_count": 6,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.8773470277886485,
+      "avg_sprite_visible": 0.5028559856709862,
+      "avg_ocean_ratio": 0.2782773679423391
+    },
+    {
+      "family": "MARY",
+      "scene_count": 5,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.9767351606025227,
+      "avg_sprite_visible": 0.5796209999293375,
+      "avg_ocean_ratio": 0.08902358353132875
+    },
+    {
+      "family": "MISCGAG",
+      "scene_count": 2,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.933337580699966,
+      "avg_sprite_visible": 0.466785592932382,
+      "avg_ocean_ratio": 0.006944444444444444
+    },
+    {
+      "family": "STAND",
+      "scene_count": 14,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.7932986626985363,
+      "avg_sprite_visible": 0.24185898191959462,
+      "avg_ocean_ratio": 0.0
+    },
+    {
+      "family": "SUZY",
+      "scene_count": 2,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.9964285714285714,
+      "avg_sprite_visible": 0.9836956521739131,
+      "avg_ocean_ratio": 0.0
+    },
+    {
+      "family": "VISITOR",
+      "scene_count": 6,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.8555565645868369,
+      "avg_sprite_visible": 0.44660883009989183,
+      "avg_ocean_ratio": 0.05310457516339869
+    },
+    {
+      "family": "WALKSTUF",
+      "scene_count": 3,
+      "avg_expected_top1": 1.0,
+      "avg_global_top1": 0.9484125205387781,
+      "avg_sprite_visible": 0.517993758113072,
+      "avg_ocean_ratio": 0.2839506172839506
+    }
+  ],
+  "weakest_scenes": [
+    {
+      "scene_id": "FISHING-1",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.47560975609756095,
+      "sprite_visible_ratio": 0.5487804878048781,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "FISHING-1",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/FISHING-1/review.html"
+    },
+    {
+      "scene_id": "FISHING-2",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.4925373134328358,
+      "sprite_visible_ratio": 0.44776119402985076,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "FISHING-2",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/FISHING-2/review.html"
+    },
+    {
+      "scene_id": "FISHING-7",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.578125,
+      "sprite_visible_ratio": 0.5,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "FISHING-7",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/FISHING-7/review.html"
+    },
+    {
+      "scene_id": "BUILDING-5",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.6344605475040258,
+      "sprite_visible_ratio": 0.4219001610305958,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "BUILDING-5",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/BUILDING-5/review.html"
+    },
+    {
+      "scene_id": "VISITOR-7",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.6607929515418502,
+      "sprite_visible_ratio": 0.3964757709251101,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "VISITOR-7",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/VISITOR-7/review.html"
+    },
+    {
+      "scene_id": "STAND-2",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.6666666666666666,
+      "sprite_visible_ratio": 0.3333333333333333,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-2",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-2/review.html"
+    },
+    {
+      "scene_id": "STAND-8",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.6956521739130435,
+      "sprite_visible_ratio": 0.30434782608695654,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-8",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-8/review.html"
+    },
+    {
+      "scene_id": "STAND-10",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.72,
+      "sprite_visible_ratio": 0.28,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-10",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-10/review.html"
+    },
+    {
+      "scene_id": "STAND-11",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.72,
+      "sprite_visible_ratio": 0.28,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-11",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-11/review.html"
+    },
+    {
+      "scene_id": "STAND-7",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.72,
+      "sprite_visible_ratio": 0.28,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-7",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-7/review.html"
+    },
+    {
+      "scene_id": "STAND-9",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.72,
+      "sprite_visible_ratio": 0.28,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-9",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-9/review.html"
+    },
+    {
+      "scene_id": "BUILDING-7",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.7237715803452855,
+      "sprite_visible_ratio": 0.545816733067729,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "BUILDING-7",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/BUILDING-7/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-5",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.7543859649122807,
+      "sprite_visible_ratio": 0.3391812865497076,
+      "ocean_ratio": 0.5146198830409356,
+      "dominant_global_match_scene": "JOHNNY-5",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/JOHNNY-5/review.html"
+    },
+    {
+      "scene_id": "STAND-3",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.7586206896551724,
+      "sprite_visible_ratio": 0.2413793103448276,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-3",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-3/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-4",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.7638190954773869,
+      "sprite_visible_ratio": 0.4020100502512563,
+      "ocean_ratio": 0.46733668341708545,
+      "dominant_global_match_scene": "JOHNNY-4",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/JOHNNY-4/review.html"
+    },
+    {
+      "scene_id": "VISITOR-6",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.7657342657342657,
+      "sprite_visible_ratio": 0.40559440559440557,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "VISITOR-6",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/VISITOR-6/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-2",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.7774086378737541,
+      "sprite_visible_ratio": 0.2026578073089701,
+      "ocean_ratio": 0.6877076411960132,
+      "dominant_global_match_scene": "JOHNNY-2",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/JOHNNY-2/review.html"
+    },
+    {
+      "scene_id": "STAND-4",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.7941176470588235,
+      "sprite_visible_ratio": 0.20588235294117646,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-4",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-4/review.html"
+    },
+    {
+      "scene_id": "STAND-5",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.8095238095238095,
+      "sprite_visible_ratio": 0.16666666666666666,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "STAND-5",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/STAND-5/review.html"
+    },
+    {
+      "scene_id": "VISITOR-4",
+      "expected_top1_ratio": 1.0,
+      "global_top1_ratio": 0.8194444444444444,
+      "sprite_visible_ratio": 0.1527777777777778,
+      "ocean_ratio": 0.0,
+      "dominant_global_match_scene": "VISITOR-4",
+      "dominant_failure_mode": "unknown",
+      "review_html": "scenes/VISITOR-4/review.html"
+    }
+  ],
+  "family_count": 10
+}

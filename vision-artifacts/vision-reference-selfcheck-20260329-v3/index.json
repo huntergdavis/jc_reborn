@@ -1,0 +1,509 @@
+{
+  "scenes": [
+    {
+      "scene_id": "ACTIVITY-1",
+      "family": "ACTIVITY",
+      "frame_count": 356,
+      "sprites_visible_ratio": 0.09831460674157304,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/ACTIVITY-1/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-10",
+      "family": "ACTIVITY",
+      "frame_count": 267,
+      "sprites_visible_ratio": 0.3895131086142322,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/ACTIVITY-10/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-11",
+      "family": "ACTIVITY",
+      "frame_count": 384,
+      "sprites_visible_ratio": 0.018229166666666668,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/ACTIVITY-11/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-12",
+      "family": "ACTIVITY",
+      "frame_count": 260,
+      "sprites_visible_ratio": 0.1346153846153846,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/ACTIVITY-12/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-4",
+      "family": "ACTIVITY",
+      "frame_count": 191,
+      "sprites_visible_ratio": 0.2198952879581152,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/ACTIVITY-4/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-5",
+      "family": "ACTIVITY",
+      "frame_count": 311,
+      "sprites_visible_ratio": 0.7266881028938906,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/ACTIVITY-5/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-6",
+      "family": "ACTIVITY",
+      "frame_count": 103,
+      "sprites_visible_ratio": 0.2621359223300971,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/ACTIVITY-6/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-7",
+      "family": "ACTIVITY",
+      "frame_count": 115,
+      "sprites_visible_ratio": 0.25217391304347825,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/ACTIVITY-7/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-8",
+      "family": "ACTIVITY",
+      "frame_count": 147,
+      "sprites_visible_ratio": 0.19727891156462585,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/ACTIVITY-8/review.html"
+    },
+    {
+      "scene_id": "ACTIVITY-9",
+      "family": "ACTIVITY",
+      "frame_count": 296,
+      "sprites_visible_ratio": 0.9695945945945946,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/ACTIVITY-9/review.html"
+    },
+    {
+      "scene_id": "BUILDING-1",
+      "family": "BUILDING",
+      "frame_count": 157,
+      "sprites_visible_ratio": 0.9554140127388535,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/BUILDING-1/review.html"
+    },
+    {
+      "scene_id": "BUILDING-2",
+      "family": "BUILDING",
+      "frame_count": 415,
+      "sprites_visible_ratio": 0.6240963855421687,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/BUILDING-2/review.html"
+    },
+    {
+      "scene_id": "BUILDING-3",
+      "family": "BUILDING",
+      "frame_count": 229,
+      "sprites_visible_ratio": 0.8471615720524017,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/BUILDING-3/review.html"
+    },
+    {
+      "scene_id": "BUILDING-4",
+      "family": "BUILDING",
+      "frame_count": 629,
+      "sprites_visible_ratio": 0.6359300476947536,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/BUILDING-4/review.html"
+    },
+    {
+      "scene_id": "BUILDING-5",
+      "family": "BUILDING",
+      "frame_count": 621,
+      "sprites_visible_ratio": 0.4219001610305958,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/BUILDING-5/review.html"
+    },
+    {
+      "scene_id": "BUILDING-6",
+      "family": "BUILDING",
+      "frame_count": 514,
+      "sprites_visible_ratio": 0.4785992217898833,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/BUILDING-6/review.html"
+    },
+    {
+      "scene_id": "BUILDING-7",
+      "family": "BUILDING",
+      "frame_count": 753,
+      "sprites_visible_ratio": 0.545816733067729,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/BUILDING-7/review.html"
+    },
+    {
+      "scene_id": "FISHING-1",
+      "family": "FISHING",
+      "frame_count": 82,
+      "sprites_visible_ratio": 0.5487804878048781,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/FISHING-1/review.html"
+    },
+    {
+      "scene_id": "FISHING-2",
+      "family": "FISHING",
+      "frame_count": 67,
+      "sprites_visible_ratio": 0.44776119402985076,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/FISHING-2/review.html"
+    },
+    {
+      "scene_id": "FISHING-3",
+      "family": "FISHING",
+      "frame_count": 396,
+      "sprites_visible_ratio": 0.7777777777777778,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/FISHING-3/review.html"
+    },
+    {
+      "scene_id": "FISHING-4",
+      "family": "FISHING",
+      "frame_count": 141,
+      "sprites_visible_ratio": 0.16312056737588654,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/FISHING-4/review.html"
+    },
+    {
+      "scene_id": "FISHING-5",
+      "family": "FISHING",
+      "frame_count": 111,
+      "sprites_visible_ratio": 0.24324324324324326,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/FISHING-5/review.html"
+    },
+    {
+      "scene_id": "FISHING-6",
+      "family": "FISHING",
+      "frame_count": 119,
+      "sprites_visible_ratio": 0.5798319327731093,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/FISHING-6/review.html"
+    },
+    {
+      "scene_id": "FISHING-7",
+      "family": "FISHING",
+      "frame_count": 64,
+      "sprites_visible_ratio": 0.5,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/FISHING-7/review.html"
+    },
+    {
+      "scene_id": "FISHING-8",
+      "family": "FISHING",
+      "frame_count": 155,
+      "sprites_visible_ratio": 0.4838709677419355,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/FISHING-8/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-1",
+      "family": "JOHNNY",
+      "frame_count": 119,
+      "sprites_visible_ratio": 1.0,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/JOHNNY-1/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-2",
+      "family": "JOHNNY",
+      "frame_count": 301,
+      "sprites_visible_ratio": 0.2026578073089701,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/JOHNNY-2/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-3",
+      "family": "JOHNNY",
+      "frame_count": 222,
+      "sprites_visible_ratio": 0.6126126126126126,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/JOHNNY-3/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-4",
+      "family": "JOHNNY",
+      "frame_count": 199,
+      "sprites_visible_ratio": 0.4020100502512563,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/JOHNNY-4/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-5",
+      "family": "JOHNNY",
+      "frame_count": 171,
+      "sprites_visible_ratio": 0.3391812865497076,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/JOHNNY-5/review.html"
+    },
+    {
+      "scene_id": "JOHNNY-6",
+      "family": "JOHNNY",
+      "frame_count": 89,
+      "sprites_visible_ratio": 0.4606741573033708,
+      "dominant_screen_type": "background",
+      "review_html": "scenes/JOHNNY-6/review.html"
+    },
+    {
+      "scene_id": "MARY-1",
+      "family": "MARY",
+      "frame_count": 251,
+      "sprites_visible_ratio": 0.701195219123506,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/MARY-1/review.html"
+    },
+    {
+      "scene_id": "MARY-2",
+      "family": "MARY",
+      "frame_count": 436,
+      "sprites_visible_ratio": 0.21100917431192662,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/MARY-2/review.html"
+    },
+    {
+      "scene_id": "MARY-3",
+      "family": "MARY",
+      "frame_count": 448,
+      "sprites_visible_ratio": 0.9642857142857143,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/MARY-3/review.html"
+    },
+    {
+      "scene_id": "MARY-4",
+      "family": "MARY",
+      "frame_count": 326,
+      "sprites_visible_ratio": 0.22699386503067484,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/MARY-4/review.html"
+    },
+    {
+      "scene_id": "MARY-5",
+      "family": "MARY",
+      "frame_count": 409,
+      "sprites_visible_ratio": 0.7946210268948656,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/MARY-5/review.html"
+    },
+    {
+      "scene_id": "MISCGAG-1",
+      "family": "MISCGAG",
+      "frame_count": 109,
+      "sprites_visible_ratio": 0.1743119266055046,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/MISCGAG-1/review.html"
+    },
+    {
+      "scene_id": "MISCGAG-2",
+      "family": "MISCGAG",
+      "frame_count": 216,
+      "sprites_visible_ratio": 0.7592592592592593,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/MISCGAG-2/review.html"
+    },
+    {
+      "scene_id": "STAND-1",
+      "family": "STAND",
+      "frame_count": 8,
+      "sprites_visible_ratio": 0.125,
+      "dominant_screen_type": "black",
+      "review_html": "scenes/STAND-1/review.html"
+    },
+    {
+      "scene_id": "STAND-10",
+      "family": "STAND",
+      "frame_count": 25,
+      "sprites_visible_ratio": 0.28,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-10/review.html"
+    },
+    {
+      "scene_id": "STAND-11",
+      "family": "STAND",
+      "frame_count": 25,
+      "sprites_visible_ratio": 0.28,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-11/review.html"
+    },
+    {
+      "scene_id": "STAND-12",
+      "family": "STAND",
+      "frame_count": 42,
+      "sprites_visible_ratio": 0.16666666666666666,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-12/review.html"
+    },
+    {
+      "scene_id": "STAND-15",
+      "family": "STAND",
+      "frame_count": 94,
+      "sprites_visible_ratio": 0.2765957446808511,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-15/review.html"
+    },
+    {
+      "scene_id": "STAND-16",
+      "family": "STAND",
+      "frame_count": 90,
+      "sprites_visible_ratio": 0.26666666666666666,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-16/review.html"
+    },
+    {
+      "scene_id": "STAND-2",
+      "family": "STAND",
+      "frame_count": 21,
+      "sprites_visible_ratio": 0.3333333333333333,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-2/review.html"
+    },
+    {
+      "scene_id": "STAND-3",
+      "family": "STAND",
+      "frame_count": 29,
+      "sprites_visible_ratio": 0.2413793103448276,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-3/review.html"
+    },
+    {
+      "scene_id": "STAND-4",
+      "family": "STAND",
+      "frame_count": 34,
+      "sprites_visible_ratio": 0.20588235294117646,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-4/review.html"
+    },
+    {
+      "scene_id": "STAND-5",
+      "family": "STAND",
+      "frame_count": 42,
+      "sprites_visible_ratio": 0.16666666666666666,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-5/review.html"
+    },
+    {
+      "scene_id": "STAND-6",
+      "family": "STAND",
+      "frame_count": 39,
+      "sprites_visible_ratio": 0.1794871794871795,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-6/review.html"
+    },
+    {
+      "scene_id": "STAND-7",
+      "family": "STAND",
+      "frame_count": 25,
+      "sprites_visible_ratio": 0.28,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-7/review.html"
+    },
+    {
+      "scene_id": "STAND-8",
+      "family": "STAND",
+      "frame_count": 23,
+      "sprites_visible_ratio": 0.30434782608695654,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-8/review.html"
+    },
+    {
+      "scene_id": "STAND-9",
+      "family": "STAND",
+      "frame_count": 25,
+      "sprites_visible_ratio": 0.28,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/STAND-9/review.html"
+    },
+    {
+      "scene_id": "SUZY-1",
+      "family": "SUZY",
+      "frame_count": 184,
+      "sprites_visible_ratio": 0.967391304347826,
+      "dominant_screen_type": "black",
+      "review_html": "scenes/SUZY-1/review.html"
+    },
+    {
+      "scene_id": "SUZY-2",
+      "family": "SUZY",
+      "frame_count": 140,
+      "sprites_visible_ratio": 1.0,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/SUZY-2/review.html"
+    },
+    {
+      "scene_id": "VISITOR-1",
+      "family": "VISITOR",
+      "frame_count": 129,
+      "sprites_visible_ratio": 0.5968992248062015,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/VISITOR-1/review.html"
+    },
+    {
+      "scene_id": "VISITOR-3",
+      "family": "VISITOR",
+      "frame_count": 204,
+      "sprites_visible_ratio": 0.4852941176470588,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/VISITOR-3/review.html"
+    },
+    {
+      "scene_id": "VISITOR-4",
+      "family": "VISITOR",
+      "frame_count": 72,
+      "sprites_visible_ratio": 0.1527777777777778,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/VISITOR-4/review.html"
+    },
+    {
+      "scene_id": "VISITOR-5",
+      "family": "VISITOR",
+      "frame_count": 291,
+      "sprites_visible_ratio": 0.6426116838487973,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/VISITOR-5/review.html"
+    },
+    {
+      "scene_id": "VISITOR-6",
+      "family": "VISITOR",
+      "frame_count": 286,
+      "sprites_visible_ratio": 0.40559440559440557,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/VISITOR-6/review.html"
+    },
+    {
+      "scene_id": "VISITOR-7",
+      "family": "VISITOR",
+      "frame_count": 227,
+      "sprites_visible_ratio": 0.3964757709251101,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/VISITOR-7/review.html"
+    },
+    {
+      "scene_id": "WALKSTUF-1",
+      "family": "WALKSTUF",
+      "frame_count": 366,
+      "sprites_visible_ratio": 1.0,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/WALKSTUF-1/review.html"
+    },
+    {
+      "scene_id": "WALKSTUF-2",
+      "family": "WALKSTUF",
+      "frame_count": 81,
+      "sprites_visible_ratio": 0.08641975308641975,
+      "dominant_screen_type": "ocean",
+      "review_html": "scenes/WALKSTUF-2/review.html"
+    },
+    {
+      "scene_id": "WALKSTUF-3",
+      "family": "WALKSTUF",
+      "frame_count": 447,
+      "sprites_visible_ratio": 0.46756152125279643,
+      "dominant_screen_type": "scene",
+      "review_html": "scenes/WALKSTUF-3/review.html"
+    }
+  ],
+  "scene_count": 63
+}

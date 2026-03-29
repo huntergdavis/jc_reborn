@@ -1,0 +1,70 @@
+{
+  "files": [
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/index.html",
+      "sha256": "0bc49463124f6dbab1ee1336e8a5bbb3f06675e5701886ac7351cba8f439da10",
+      "size": 16748
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/pipeline-manifest.json",
+      "sha256": "65d063a993fba1ef3d4e62b3ffdc84404e710ca0640a02d7770090506a171138",
+      "size": 1964
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/artifact-catalog.json",
+      "sha256": "249d14dcf3d20c6e312a881f00ea1d599aa629f35d49ea6a18414705fe6a8e82",
+      "size": 26268
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/artifact-catalog.html",
+      "sha256": "fa004beb3b7b135b06253995ce452a911a927d086979620c075d8670dba921a9",
+      "size": 4219
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.json",
+      "sha256": "58ca1193136cd3df7d77b404dfbf10b6fffc6b632ad10e6f9b950d69185804ee",
+      "size": 54664
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.html",
+      "sha256": "86c7b45e12a84be3b711eedf144cf69122d324fdb2e45d638c2015582e207727",
+      "size": 20355
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/scene-inventory.csv",
+      "sha256": "cff1a3a3a9c1f91923a7f4c8d3af304aadb35fdf8165e91410aae45335ea2d76",
+      "size": 22651
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/family-summary.csv",
+      "sha256": "70e6dcab20606804e27acebab2a140176bee6f574288582b098177d25c73fced",
+      "size": 782
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/strongest-scenes.json",
+      "sha256": "44b21807377eebef483f9d4d09a2d6492ecc56d0fdf96bcea0a139a78837fb68",
+      "size": 15405
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/weakest-scenes.json",
+      "sha256": "5c71f7f5cf151bdfd2080bc5568025686c5c2644423e10d8cb2b7237a978376f",
+      "size": 18282
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/top-confusion-pairs.json",
+      "sha256": "67d0ead898f4c10edc06137947bf8a06ea3d418b1e6dc23466f95c6ac6b12783",
+      "size": 16551
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/validation-report.json",
+      "sha256": "354b748011d9b2ecf8c20e506f194de214be264943b1e6397f686df1a32f98f6",
+      "size": 1904
+    },
+    {
+      "path": "/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current/validation-report.html",
+      "sha256": "a2e701db93127b120539c1cb9d2da2aa728fc3817b5b7e63db834118777b28d3",
+      "size": 2001
+    }
+  ],
+  "file_count": 13
+}

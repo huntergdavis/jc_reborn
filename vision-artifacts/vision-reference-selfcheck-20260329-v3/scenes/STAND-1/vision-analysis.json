@@ -1,0 +1,593 @@
+{
+  "summary": {
+    "scene": "STAND-1",
+    "frames_analyzed": 8,
+    "sprite_visible_ratio": 0.125,
+    "ocean_ratio": 0.0,
+    "dominant_global_match_scene": "STAND-1",
+    "dominant_failure_mode": "unknown"
+  },
+  "frames": [
+    {
+      "frame": "frame_00000.bmp",
+      "frame_number": 0,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00000.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.0,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": null,
+        "motion_position": null,
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0,
+          "right": 0.0
+        }
+      },
+      "labels": {
+        "screen_type": "black",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": null,
+        "human_like_visible": false,
+        "action_summary": "Frame is effectively black."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00006.bmp",
+        "score": 0.9999997019767761
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00005.bmp",
+        "score": 0.9999997019767761
+      }
+    },
+    {
+      "frame": "frame_00001.bmp",
+      "frame_number": 1,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00001.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.0,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": null,
+        "motion_position": null,
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0,
+          "right": 0.0
+        }
+      },
+      "labels": {
+        "screen_type": "black",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": null,
+        "human_like_visible": false,
+        "action_summary": "Frame is effectively black."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00006.bmp",
+        "score": 0.9999997019767761
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00005.bmp",
+        "score": 0.9999997019767761
+      }
+    },
+    {
+      "frame": "frame_00002.bmp",
+      "frame_number": 2,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00002.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.0,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": null,
+        "motion_position": null,
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0,
+          "right": 0.0
+        }
+      },
+      "labels": {
+        "screen_type": "black",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": null,
+        "human_like_visible": false,
+        "action_summary": "Frame is effectively black."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00006.bmp",
+        "score": 0.9999997019767761
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00005.bmp",
+        "score": 0.9999997019767761
+      }
+    },
+    {
+      "frame": "frame_00003.bmp",
+      "frame_number": 3,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00003.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.0,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": null,
+        "motion_position": null,
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0,
+          "right": 0.0
+        }
+      },
+      "labels": {
+        "screen_type": "black",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": null,
+        "human_like_visible": false,
+        "action_summary": "Frame is effectively black."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00006.bmp",
+        "score": 0.9999997019767761
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00005.bmp",
+        "score": 0.9999997019767761
+      }
+    },
+    {
+      "frame": "frame_00004.bmp",
+      "frame_number": 4,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00004.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.0,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": null,
+        "motion_position": null,
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0,
+          "right": 0.0
+        }
+      },
+      "labels": {
+        "screen_type": "black",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": null,
+        "human_like_visible": false,
+        "action_summary": "Frame is effectively black."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00006.bmp",
+        "score": 0.9999997019767761
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00005.bmp",
+        "score": 0.9999997019767761
+      }
+    },
+    {
+      "frame": "frame_00005.bmp",
+      "frame_number": 5,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00005.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.0,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": null,
+        "motion_position": null,
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0,
+          "right": 0.0
+        }
+      },
+      "labels": {
+        "screen_type": "black",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": null,
+        "human_like_visible": false,
+        "action_summary": "Frame is effectively black."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00006.bmp",
+        "score": 0.9999997019767761
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00005.bmp",
+        "score": 0.9999997019767761
+      }
+    },
+    {
+      "frame": "frame_00006.bmp",
+      "frame_number": 6,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00006.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.07164976000785828,
+          0.17828045785427094,
+          0.23729006946086884
+        ],
+        "std_rgb": [
+          0.17638710141181946,
+          0.3237004280090332,
+          0.37784913182258606
+        ],
+        "dark_ratio": 0.6540798611111112,
+        "blue_ratio": 0.1423611111111111,
+        "sand_ratio": 0.031684027777777776,
+        "green_ratio": 0.03197337962962963,
+        "bright_ratio": 0.019965277777777776,
+        "edge_density": 0.026256853714585304,
+        "foreground_ratio": 0.0,
+        "person_like_ratio": 0.0,
+        "band_means": {
+          "top": [
+            0.02874625474214554,
+            0.21382930874824524,
+            0.19640693068504333
+          ],
+          "mid": [
+            0.16088473796844482,
+            0.3020118474960327,
+            0.4065733850002289
+          ],
+          "bot": [
+            0.025318287312984467,
+            0.019000204280018806,
+            0.10888991504907608
+          ]
+        },
+        "motion_bbox": null,
+        "motion_position": null,
+        "motion_region_ratios": {
+          "left": 0.0,
+          "center": 0.0,
+          "right": 0.0
+        }
+      },
+      "labels": {
+        "screen_type": "black",
+        "scene_family_guess": "STAND",
+        "sprites_visible": false,
+        "sprite_density": "none",
+        "dominant_motion_position": null,
+        "human_like_visible": false,
+        "action_summary": "Frame is effectively black."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00006.bmp",
+        "score": 0.9999997019767761
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00005.bmp",
+        "score": 0.9999997019767761
+      }
+    },
+    {
+      "frame": "frame_00007.bmp",
+      "frame_number": 7,
+      "path": "/home/hunter/workspace/jc_reborn/regtest-references/STAND-1/frames/frame_00007.bmp",
+      "metrics": {
+        "frame_size": {
+          "width": 96,
+          "height": 72
+        },
+        "mean_rgb": [
+          0.1561870127916336,
+          0.15939997136592865,
+          0.501603901386261
+        ],
+        "std_rgb": [
+          0.2929587662220001,
+          0.29627877473831177,
+          0.2102878838777542
+        ],
+        "dark_ratio": 0.00043402777777777775,
+        "blue_ratio": 0.8259548611111112,
+        "sand_ratio": 0.06756365740740741,
+        "green_ratio": 0.01678240740740741,
+        "bright_ratio": 0.07552083333333333,
+        "edge_density": 0.038967832922935486,
+        "foreground_ratio": 0.9927662037037037,
+        "person_like_ratio": 0.008246527777777778,
+        "band_means": {
+          "top": [
+            0.15579895675182343,
+            0.17197372019290924,
+            0.6895561218261719
+          ],
+          "mid": [
+            0.10676402598619461,
+            0.09946895390748978,
+            0.417216420173645
+          ],
+          "bot": [
+            0.20599809288978577,
+            0.20675721764564514,
+            0.39803922176361084
+          ]
+        },
+        "motion_bbox": {
+          "x0": 0,
+          "y0": 0,
+          "x1": 95,
+          "y1": 71
+        },
+        "motion_position": "center",
+        "motion_region_ratios": {
+          "left": 0.9939236111111112,
+          "center": 0.9904513888888888,
+          "right": 0.9939236111111112
+        }
+      },
+      "labels": {
+        "screen_type": "scene",
+        "scene_family_guess": "STAND",
+        "sprites_visible": true,
+        "sprite_density": "high",
+        "dominant_motion_position": "center",
+        "human_like_visible": true,
+        "action_summary": "Live sprite content is visible near center."
+      },
+      "best_global_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00007.bmp",
+        "score": 0.9999982714653015
+      },
+      "best_expected_match": {
+        "scene_id": "STAND-1",
+        "frame": "frame_00007.bmp",
+        "score": 0.9999982714653015
+      }
+    }
+  ]
+}

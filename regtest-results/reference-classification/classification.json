@@ -1,0 +1,3474 @@
+{
+  "summary": {
+    "total": 63,
+    "with_island": 63,
+    "with_johnny": 63
+  },
+  "scenes": {
+    "ACTIVITY-1": {
+      "frame_count": 356,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 356,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-10": {
+      "frame_count": 267,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 267,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-11": {
+      "frame_count": 384,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 384,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-12": {
+      "frame_count": 260,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 260,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-4": {
+      "frame_count": 191,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 191,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-5": {
+      "frame_count": 311,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 311,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-6": {
+      "frame_count": 103,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 103,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-7": {
+      "frame_count": 115,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 115,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-8": {
+      "frame_count": 147,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 147,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "ACTIVITY-9": {
+      "frame_count": 296,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 296,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "BUILDING-1": {
+      "frame_count": 157,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 157,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "BUILDING-2": {
+      "frame_count": 415,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 415,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "BUILDING-3": {
+      "frame_count": 229,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 229,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "BUILDING-4": {
+      "frame_count": 629,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 629,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "BUILDING-5": {
+      "frame_count": 621,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 621,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "BUILDING-6": {
+      "frame_count": 514,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 514,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "BUILDING-7": {
+      "frame_count": 753,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 753,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-1": {
+      "frame_count": 82,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 82,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-2": {
+      "frame_count": 67,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 67,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-3": {
+      "frame_count": 396,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 396,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-4": {
+      "frame_count": 141,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 141,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-5": {
+      "frame_count": 111,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 111,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-6": {
+      "frame_count": 119,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 119,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-7": {
+      "frame_count": 64,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 64,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "FISHING-8": {
+      "frame_count": 155,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 155,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "JOHNNY-1": {
+      "frame_count": 119,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 70,
+        "unknown": 49
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "JOHNNY-2": {
+      "frame_count": 301,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 301,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "JOHNNY-3": {
+      "frame_count": 222,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 222,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "JOHNNY-4": {
+      "frame_count": 199,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 199,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "JOHNNY-5": {
+      "frame_count": 171,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 171,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "JOHNNY-6": {
+      "frame_count": 89,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 7,
+        "unknown": 82
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "MARY-1": {
+      "frame_count": 251,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 251,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "MARY-2": {
+      "frame_count": 436,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 436,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "MARY-3": {
+      "frame_count": 448,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 448,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "MARY-4": {
+      "frame_count": 326,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 326,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "MARY-5": {
+      "frame_count": 409,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 338,
+        "unknown": 71
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "MISCGAG-1": {
+      "frame_count": 109,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 109,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "MISCGAG-2": {
+      "frame_count": 216,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 216,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-1": {
+      "frame_count": 8,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 8,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-10": {
+      "frame_count": 25,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 25,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-11": {
+      "frame_count": 25,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 25,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-12": {
+      "frame_count": 42,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 42,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-15": {
+      "frame_count": 94,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 94,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-16": {
+      "frame_count": 90,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 90,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-2": {
+      "frame_count": 21,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 21,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-3": {
+      "frame_count": 29,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 29,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-4": {
+      "frame_count": 34,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 34,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-5": {
+      "frame_count": 42,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 42,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-6": {
+      "frame_count": 39,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 39,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-7": {
+      "frame_count": 25,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 25,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-8": {
+      "frame_count": 23,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 23,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "STAND-9": {
+      "frame_count": 25,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 25,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "SUZY-1": {
+      "frame_count": 184,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 120,
+        "ocean": 0,
+        "island": 15,
+        "unknown": 49
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "SUZY-2": {
+      "frame_count": 140,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 84,
+        "ocean": 0,
+        "island": 7,
+        "unknown": 49
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "VISITOR-1": {
+      "frame_count": 129,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 129,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "VISITOR-3": {
+      "frame_count": 204,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 183,
+        "unknown": 21
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "VISITOR-4": {
+      "frame_count": 72,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 72,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "VISITOR-5": {
+      "frame_count": 291,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 291,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "VISITOR-6": {
+      "frame_count": 286,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 286,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "VISITOR-7": {
+      "frame_count": 227,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 227,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "WALKSTUF-1": {
+      "frame_count": 366,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 366,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "WALKSTUF-2": {
+      "frame_count": 81,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 81,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    },
+    "WALKSTUF-3": {
+      "frame_count": 447,
+      "has_island": true,
+      "has_johnny": true,
+      "first_scene_frame": "frame_00000.png",
+      "frame_types": {
+        "black": 0,
+        "title": 0,
+        "ocean": 0,
+        "island": 447,
+        "unknown": 0
+      },
+      "frames": [
+        {
+          "frame": "frame_00000.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00001.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00002.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00003.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        },
+        {
+          "frame": "frame_00004.png",
+          "type": "island",
+          "black_pct": 70.2,
+          "yellow_pct": 1.6,
+          "cyan_pct": 10.9,
+          "red_pct": 0.4
+        }
+      ]
+    }
+  }
+}

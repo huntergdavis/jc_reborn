@@ -8,8 +8,11 @@ REGTEST_BIN="${REGTEST_BIN:-duckstation-regtest}"
 # Docker image used for PS1 builds
 REGTEST_BUILD_IMAGE="${REGTEST_BUILD_IMAGE:-jc-reborn-ps1-dev:amd64}"
 
-# Number of emulated frames to run (60 fps => 1800 = 30 seconds)
-REGTEST_FRAMES="${REGTEST_FRAMES:-1800}"
+# Number of emulated frames to run.
+# BIOS boot takes ~15 sec, title ~10 sec, ocean transition ~10 sec.
+# Scene content appears at ~frame 3300 (55 sec).
+# 9000 frames (150 sec) gives headroom for scene playback + animation.
+REGTEST_FRAMES="${REGTEST_FRAMES:-9000}"
 
 # Frame capture interval (capture one frame every N frames)
 REGTEST_INTERVAL="${REGTEST_INTERVAL:-60}"
@@ -18,7 +21,8 @@ REGTEST_INTERVAL="${REGTEST_INTERVAL:-60}"
 REGTEST_PARALLEL="${REGTEST_PARALLEL:-4}"
 
 # Per-scene timeout in seconds (wall-clock; kills runaway tests)
-REGTEST_TIMEOUT="${REGTEST_TIMEOUT:-120}"
+# 9000 frames at ~470 FPS headless = ~19 sec; allow 60 sec for safety.
+REGTEST_TIMEOUT="${REGTEST_TIMEOUT:-60}"
 
 # Default output root for results
 REGTEST_OUTPUT_DIR="${REGTEST_OUTPUT_DIR:-regtest-results}"

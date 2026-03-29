@@ -182,6 +182,10 @@ static void ps1ApplyBootOverride(char *buffer)
     }
 
     if (!strcmp(tokens[0], "story")) {
+        if (tokenCount >= 3 && !strcmp(tokens[1], "single")) {
+            storySetBootSingleSceneIndex(atoi(tokens[2]));
+            return;
+        }
         if (tokenCount >= 3 &&
             (!strcmp(tokens[1], "scene") || !strcmp(tokens[1], "index"))) {
             storySetBootSceneIndex(atoi(tokens[2]));

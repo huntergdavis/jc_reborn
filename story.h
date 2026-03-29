@@ -24,3 +24,6 @@
 void storyPlay();
 void storySetBootScene(const char *adsName, uint16 adsTag);
 void storySetBootSceneIndex(int sceneIndex);
+void storySetBootSingleSceneIndex(int sceneIndex);
+void storyPlayBootSceneDirect(int sceneIndex);
+int storyHasBootOverridePending(void);

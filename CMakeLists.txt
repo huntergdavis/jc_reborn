@@ -44,10 +44,6 @@ set(SOURCES
     events_ps1.c
     cdrom_ps1.c
     ps1_debug.c
-    pause_menu.c
-    ps1_features.c
-    ps1_captions.c
-    ps1_accessibility.c
     # LibC stubs for missing functions
     ps1_stubs.c
 )

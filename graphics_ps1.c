@@ -27,11 +27,8 @@
 
 #include "mytypes.h"
 
-/* Forward declare FILE for freestanding PS1 builds. */
-#ifndef _FILE_DEFINED
-#define _FILE_DEFINED
+/* Forward declare FILE to avoid utils.h compilation errors with -ffreestanding */
 typedef struct _FILE FILE;
-#endif
 
 #include "utils.h"
 #include "graphics_ps1.h"
@@ -103,13 +100,6 @@ static int prevDirtyMaxY[4] = {-1, -1, -1, -1};
  * palLutPsb:    low nibble = even (PSB pre-transcoded format). */
 static uint32 palLutSierra[256];
 static uint32 palLutPsb[256];
-static uint16 gDbgSpriteCalls = 0;
-static uint16 gDbgSpriteSlotMisses = 0;
-static uint16 gDbgSpriteNullMisses = 0;
-static uint16 gDbgCompositeCalls = 0;
-static uint16 gDbgCompositeClipMisses = 0;
-uint16 gDbgOpcodeDrawSprite = 0;
-uint16 gDbgOpcodeDrawSpriteFlip = 0;
 
 static inline void markTileDirty(int idx, int minY, int maxY)
 {
@@ -170,51 +160,6 @@ static void grRebuildPaletteLuts(void)
     }
 }
 
-static void grPlotBgPixelNoDirty(sint16 x, sint16 y, uint16 color)
-{
-    PS1Surface *tile;
-    int localX;
-    int localY;
-
-    if (x < 0 || x >= 640 || y < 0 || y >= 480)
-        return;
-
-    if (y < 240) {
-        tile = (x < 320) ? bgTile0 : bgTile1;
-        localY = y;
-    } else {
-        tile = (x < 320) ? bgTile3 : bgTile4;
-        localY = y - 240;
-    }
-
-    if (tile == NULL || tile->pixels == NULL)
-        return;
-
-    localX = (x < 320) ? x : (x - 320);
-    tile->pixels[localY * (int)tile->width + localX] = color;
-}
-
-static void grDrawHorizontalSpanNoDirty(sint16 x0, sint16 x1, sint16 y, uint16 color)
-{
-    if (y < 0 || y >= 480)
-        return;
-
-    if (x0 > x1) {
-        sint16 tmp = x0;
-        x0 = x1;
-        x1 = tmp;
-    }
-
-    if (x1 <= 0 || x0 >= 640)
-        return;
-
-    if (x0 < 0) x0 = 0;
-    if (x1 > 640) x1 = 640;
-
-    for (; x0 < x1; x0++)
-        grPlotBgPixelNoDirty(x0, y, color);
-}
-
 struct TPs1SavedZone {
     uint16 x;
     uint16 y;
@@ -235,7 +180,6 @@ int grUpdateDelay = 0;
 int grCaptureFrameNumber = -1;
 char *grCaptureFilename = NULL;
 static int grCurrentFrame = 0;
-int grGetCurrentFrame(void) { return grCurrentFrame; }
 
 /* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly) */
 int grGpuAlreadyInitialized = 0;
@@ -279,10 +223,6 @@ extern uint16 ps1AdsDbgMergeCarryFrame;
 extern uint16 ps1AdsDbgNoDrawThreadsFrame;
 extern uint16 ps1AdsDbgPlayedThreadsFrame;
 extern uint16 ps1AdsDbgRecordedSpritesFrame;
-extern uint16 ps1AdsDbgAddSceneCalls;
-extern uint16 ps1AdsDbgTagLookupHits;
-extern uint16 ps1AdsDbgTagLookupMisses;
-extern int ps1AdsLastPlayLaunched;
 extern uint16 ps1PilotDbgActivePack;
 extern uint16 ps1PilotDbgHits;
 extern uint16 ps1PilotDbgFallbacks;
@@ -311,106 +251,16 @@ void grPs1StatBmpShortLoad(uint16 requested, uint16 loaded)
 
 static void grDrawCounterBar(int x, int y, int w, int h, uint16 color)
 {
-    if (x < 0 || y < 0 || x >= 640 || y >= 480) return;
+    if (!bgTile0 || !bgTile0->pixels) return;
+    if (x < 0 || y < 0 || x >= (int)bgTile0->width || y >= (int)bgTile0->height) return;
     if (w <= 0 || h <= 0) return;
-    if (x + w > 640) w = 640 - x;
-    if (y + h > 480) h = 480 - y;
-    grMarkRectDirty(x, y, x + w, y + h);
+    if (x + w > (int)bgTile0->width) w = (int)bgTile0->width - x;
+    if (y + h > (int)bgTile0->height) h = (int)bgTile0->height - y;
 
     for (int yy = 0; yy < h; yy++) {
-        grDrawHorizontalSpanNoDirty(x, x + w, y + yy, color);
+        uint16 *row = bgTile0->pixels + (y + yy) * (int)bgTile0->width + x;
+        for (int xx = 0; xx < w; xx++) row[xx] = color;
     }
-}
-
-void grDebugOverlayBox(int x, int y, int w, int h, uint16 color)
-{
-    grDrawCounterBar(x, y, w, h, color);
-}
-
-static void grDrawBitCells(int x, int y, uint16 value, int bitCount)
-{
-    const int cellW = 8;
-    const int cellH = 8;
-    const int gap = 4;
-
-    for (int bit = 0; bit < bitCount; bit++) {
-        if ((value & (1U << bit)) != 0) {
-            grDrawCounterBar(x + bit * (cellW + gap), y, cellW, cellH, 0x7FFF);
-        }
-    }
-}
-
-static void grDebugMarkSpriteTarget(int x, int y, uint16 imageNo, int flip)
-{
-    uint16 color = 0x7FFF;
-
-    if (imageNo == 2)
-        color = 0x001F;
-    else if (imageNo == 3)
-        color = 0x03E0;
-    else if (imageNo == 0)
-        color = flip ? 0x7C1F : 0x7FFF;
-    else
-        color = 0x03FF;
-
-    grDrawCounterBar(x, y, 12, 12, color);
-}
-
-static void grDrawSceneStateMarkers(void)
-{
-    int x = 500;
-    int y = 124;
-    int bitRowH = 6;
-    int bitGap = 8;
-    int bitW = 20;
-    int barX = x + 2;
-    int bmpOk = (gStatLastBmpStatus == 3 || gStatLastBmpStatus == 7);
-    int bmpFail = (gStatLastBmpStatus == 2 || gStatLastBmpStatus == 4 ||
-                   gStatLastBmpStatus == 5 || gStatLastBmpStatus == 6 ||
-                   gStatLastBmpStatus == 8);
-
-    /* Dedicated marker strip for regtest decoding. This avoids relying on the
-     * larger left telemetry panels, which can be hard to decode robustly once
-     * screenshots are scaled/cropped by the emulator. */
-    grDrawCounterBar(x, y, 118, 86, 0x0000);
-    grDrawCounterBar(x + 68, y + 0, 38, 30, 0x0000);
-
-    if (ps1AdsLastPlayLaunched)
-        grDrawCounterBar(barX, y + 2 + 0 * bitGap, bitW, bitRowH, 0x7FFF);
-    if (ps1AdsDbgAddSceneCalls > 0)
-        grDrawCounterBar(barX, y + 2 + 1 * bitGap, bitW, bitRowH, 0x7FFF);
-    if (ps1AdsDbgTagLookupHits > 0)
-        grDrawCounterBar(barX, y + 2 + 2 * bitGap, bitW, bitRowH, 0x7FFF);
-    if (ps1AdsDbgTagLookupMisses > 0)
-        grDrawCounterBar(barX, y + 2 + 3 * bitGap, bitW, bitRowH, 0x7FFF);
-    if (bmpOk)
-        grDrawCounterBar(barX, y + 2 + 4 * bitGap, bitW, bitRowH, 0x7FFF);
-    if (bmpFail)
-        grDrawCounterBar(barX, y + 2 + 5 * bitGap, bitW, bitRowH, 0x7FFF);
-
-    if (ps1AdsDbgRecordedSpritesFrame > 0)
-        grDrawCounterBar(barX, y + 2 + 6 * bitGap, bitW, bitRowH, 0x7FFF);
-
-    grDrawBitCells(barX, y + 60, (uint16)(gStatLastBmpStatus & 0x3F), 6);
-    grDrawBitCells(barX, y + 72, (uint16)(ps1AdsDbgRecordedSpritesFrame & 0x3F), 6);
-
-    /* Runtime sprite/composite probes placed inside the already-visible strip.
-     * These are higher-value than the old decoded bits while BUILDING 1 is
-     * still failing visually. */
-    if (gDbgSpriteCalls)
-        grDrawCounterBar(x + 72, y + 2, 14, 6, 0x7FFF);
-    if (gDbgCompositeCalls)
-        grDrawCounterBar(x + 88, y + 2, 14, 6, 0x03E0);
-    if (gDbgSpriteSlotMisses)
-        grDrawCounterBar(x + 72, y + 12, 14, 6, 0x001F);
-    if (gDbgSpriteNullMisses)
-        grDrawCounterBar(x + 88, y + 12, 14, 6, 0x03FF);
-    if (gDbgCompositeClipMisses)
-        grDrawCounterBar(x + 72, y + 22, 14, 6, 0x7C1F);
-    if (gDbgOpcodeDrawSprite)
-        grDrawCounterBar(x + 104, y + 2, 12, 12, 0x001F);
-    if (gDbgOpcodeDrawSpriteFlip)
-        grDrawCounterBar(x + 104, y + 18, 12, 12, 0x7C1F);
 }
 
 static void grRefreshLoadedResourceCounters(void)
@@ -575,9 +425,9 @@ static void grDrawAdsFreezeDiagnostics(void)
      * row10 cyan  : threads played this frame
      * row11 yellow: total recorded sprites this frame
      * row12 red   : terminated thread count
-     * row13 white : ADD_SCENE calls seen for current launch
-     * row14 green : successful TTM tag lookups
-     * row15 magenta: failed TTM tag lookups */
+     * row13 white : last BMP slot loaded (+1)
+     * row14 green : last BMP frame count installed
+     * row15 magenta: last BMP load status code */
     int x = 2;
     int y = 90;
     int panelW = 96;
@@ -599,9 +449,9 @@ static void grDrawAdsFreezeDiagnostics(void)
     grDrawCounterBar(x + 2, y + 31, (ps1AdsDbgPlayedThreadsFrame & 0x3F), rowH, 0x03FF);
     grDrawCounterBar(x + 2, y + 34, (ps1AdsDbgRecordedSpritesFrame & 0x3F), rowH, 0x7FE0);
     grDrawCounterBar(x + 2, y + 37, (ps1AdsDbgTerminatedThreads & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 40, (ps1AdsDbgAddSceneCalls & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 43, (ps1AdsDbgTagLookupHits & 0x3F), rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 46, (ps1AdsDbgTagLookupMisses & 0x3F), rowH, 0x7C1F);
+    grDrawCounterBar(x + 2, y + 40, (gStatLastBmpSlot & 0x3F), rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 43, (gStatLastBmpFrames & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 46, (gStatLastBmpStatus & 0x3F), rowH, 0x7C1F);
 }
 
 /* VRAM allocation tracking
@@ -613,6 +463,55 @@ static void grDrawAdsFreezeDiagnostics(void)
  */
 static uint16 nextVRAMX = 640;  /* Start to the right of framebuffer */
 static uint16 nextVRAMY = 4;    /* Below CLUTs */
+
+/* VRAM scratch allocator for per-frame GPU sprite textures.
+ * Scratch area: (640,4) to (1023,511) — right of framebuffer, below CLUT.
+ * Reset each frame by grBeginFrame(). */
+static uint16 scratchX = 640;
+static uint16 scratchY = 4;
+static uint16 scratchRowH = 0;
+
+static void grResetScratch(void)
+{
+    scratchX = 640;
+    scratchY = 4;
+    scratchRowH = 0;
+}
+
+/* Allocate a VRAM rectangle for a 4-bit texture.
+ * vramW = width in VRAM pixels (= sprite pixel width / 4, rounded up).
+ * Returns 0 on success (outX/outY set), -1 if VRAM scratch is full. */
+static int grAllocScratch(uint16 vramW, uint16 h, uint16 *outX, uint16 *outY)
+{
+    /* Ensure sprite fits within current texture page (64 VRAM pixels wide) */
+    uint16 pageEnd = ((scratchX / 64) + 1) * 64;
+    if (scratchX + vramW > pageEnd)
+        scratchX = pageEnd;
+
+    /* Horizontal overflow → advance to next row */
+    if (scratchX + vramW > 1024) {
+        scratchY += scratchRowH;
+        scratchX = 640;
+        scratchRowH = 0;
+    }
+
+    /* Ensure V coordinate won't overflow uint8 within the 256-line bank */
+    if ((scratchY & 0xFF) + h > 255) {
+        scratchY = ((scratchY >> 8) + 1) << 8;
+        scratchX = 640;
+        scratchRowH = 0;
+    }
+
+    /* Vertical bounds check */
+    if (scratchY + h > 512)
+        return -1;
+
+    *outX = scratchX;
+    *outY = scratchY;
+    scratchX += vramW;
+    if (h > scratchRowH) scratchRowH = h;
+    return 0;
+}
 
 /*
  * Initialize PS1 graphics subsystem
@@ -860,8 +759,22 @@ void grToggleFullScreen()
     grWindowed = !grWindowed;  /* Keep variable for compatibility */
 }
 
+/* Batched swap buffer for nibble-swapped sprite data during GPU upload.
+ * Each sprite's swapped data is placed at a running offset so multiple
+ * LoadImage calls can be queued WITHOUT per-sprite DrawSync.
+ * 32KB supports ~10-15 sprites per frame.  Overflow falls back to software.
+ * Must be 4-byte aligned for DMA (LoadImage reads uint32 words). */
+#define GPU_SWAP_BUF_SIZE 32768
+static uint32 gpuSwapBuf32[GPU_SWAP_BUF_SIZE / 4];
+static uint32 gpuSwapOffset = 0;  /* Running byte offset into swap buffer */
+
+/* Set to 1 by grBeginFrame(); cleared after DrawOTag in grUpdateDisplay.
+ * Prevents DrawOTag on a stale/uninitialized OT when grBeginFrame was
+ * not called (e.g. intro screens). */
+static int gpuFrameReady = 0;
+
 /*
- * Per-frame initialisation: clear OT and reset the primitive buffer.
+ * Per-frame initialisation: clear OT, reset primitive buffer and VRAM scratch.
  * Must be called before any sprite draws in a frame.
  */
 void grBeginFrame(void)
@@ -872,13 +785,119 @@ void grBeginFrame(void)
     ClearOTagR(ot[0], OT_LENGTH);
     nextPrimitive[0] = primitiveBuffer[0];
     primitiveIndex[0] = 0;
-    gDbgSpriteCalls = 0;
-    gDbgSpriteSlotMisses = 0;
-    gDbgSpriteNullMisses = 0;
-    gDbgCompositeCalls = 0;
-    gDbgCompositeClipMisses = 0;
-    gDbgOpcodeDrawSprite = 0;
-    gDbgOpcodeDrawSpriteFlip = 0;
+}
+
+/*
+ * Upload an indexed sprite to VRAM scratch space and emit GPU primitives.
+ * - Nibble-swaps Sierra format (HIGH=even) → PS1 format (LOW=pixel0)
+ * - Allocates temporary VRAM rectangle via scratch allocator
+ * - Emits DR_TPAGE + SPRT (normal) or POLY_FT4 (flip) into ot[0]
+ * Returns 0 on success, -1 on failure (caller should fall back to software).
+ */
+static int grUploadAndDrawGpuSprite(const uint8 *indexedPixels, uint16 w, uint16 h,
+                                     sint16 screenX, sint16 screenY, int flip,
+                                     int psbNibbles)
+{
+    if (!gpuFrameReady) return -1;
+    if (w > 256 || w == 0 || h == 0) return -1;
+
+    uint32 indexedSize = ((uint32)w * (uint32)h + 1) / 2;
+    /* Round up to 4-byte alignment for DMA */
+    uint32 alignedSize = (indexedSize + 3) & ~3u;
+
+    /* Check swap buffer has room for this sprite */
+    if (gpuSwapOffset + alignedSize > GPU_SWAP_BUF_SIZE) return -1;
+
+    /* VRAM width for 4-bit texture (1 VRAM pixel = 4 texture pixels) */
+    uint16 vramW = (w + 3) / 4;
+
+    uint16 vramX, vramY;
+    if (grAllocScratch(vramW, h, &vramX, &vramY) < 0) return -1;
+
+    uint8 *dst = (uint8 *)gpuSwapBuf32 + gpuSwapOffset;
+    if (psbNibbles) {
+        /* PSB format: already in PS1 nibble order — direct copy, no swap */
+        memcpy(dst, indexedPixels, indexedSize);
+    } else {
+        /* Sierra format: nibble-swap into swap buffer.
+         * Sierra: HIGH nibble = even pixel.  PS1: LOW nibble = pixel 0.
+         * Process 4 bytes at a time via uint32 bitwise operations. */
+        uint32 i = 0;
+        const uint32 *src32 = (const uint32 *)indexedPixels;
+        uint32 *dst32 = (uint32 *)dst;
+        uint32 count32 = indexedSize >> 2;
+        for (uint32 j = 0; j < count32; j++) {
+            uint32 w = src32[j];
+            dst32[j] = ((w & 0x0F0F0F0Fu) << 4) | ((w >> 4) & 0x0F0F0F0Fu);
+        }
+        i = count32 << 2;
+        /* Handle remaining bytes */
+        for (; i < indexedSize; i++) {
+            uint8 b = indexedPixels[i];
+            dst[i] = ((b & 0x0F) << 4) | ((b >> 4) & 0x0F);
+        }
+    }
+
+    /* Upload to VRAM scratch — NO DrawSync here, all uploads batched */
+    RECT r;
+    setRECT(&r, vramX, vramY, vramW, h);
+    LoadImage(&r, (uint32 *)dst);
+
+    /* Advance offset for next sprite */
+    gpuSwapOffset += alignedSize;
+
+    /* Texture page and UV coordinates */
+    uint16 tpX = (vramX / 64) * 64;
+    uint16 tpY = (vramY / 256) * 256;
+    uint8 u0 = ((vramX % 64) * 4) & 0xFF;
+    uint8 v0 = (vramY % 256) & 0xFF;
+
+    if (!flip) {
+        /* Non-flip: SPRT + DR_TPAGE */
+        uint32 needed = sizeof(DR_TPAGE) + sizeof(SPRT);
+        if (primitiveIndex[0] + needed > PRIMITIVE_BUFFER_SIZE) return -1;
+
+        SPRT *sp = (SPRT *)nextPrimitive[0];
+        nextPrimitive[0] += sizeof(SPRT);
+        primitiveIndex[0] += sizeof(SPRT);
+        setSprt(sp);
+        setXY0(sp, screenX, screenY);
+        setWH(sp, w, h);
+        setUV0(sp, u0, v0);
+        setClut(sp, 640, 0);
+        setRGB0(sp, 128, 128, 128);
+        addPrim(&ot[0][0], sp);
+
+        DR_TPAGE *tp = (DR_TPAGE *)nextPrimitive[0];
+        nextPrimitive[0] += sizeof(DR_TPAGE);
+        primitiveIndex[0] += sizeof(DR_TPAGE);
+        setDrawTPage(tp, 0, 0, getTPage(0, 0, tpX, tpY));
+        addPrim(&ot[0][0], tp);
+    } else {
+        /* Flip: POLY_FT4 (has built-in tpage field) */
+        uint32 needed = sizeof(POLY_FT4);
+        if (primitiveIndex[0] + needed > PRIMITIVE_BUFFER_SIZE) return -1;
+
+        POLY_FT4 *poly = (POLY_FT4 *)nextPrimitive[0];
+        nextPrimitive[0] += sizeof(POLY_FT4);
+        primitiveIndex[0] += sizeof(POLY_FT4);
+        setPolyFT4(poly);
+        setXY4(poly,
+               screenX, screenY,
+               screenX + w, screenY,
+               screenX, screenY + h,
+               screenX + w, screenY + h);
+        poly->tpage = getTPage(0, 0, tpX, tpY);
+        /* Reversed U for horizontal flip */
+        uint8 u1 = u0 + (uint8)w;
+        uint8 v1 = v0 + (uint8)h;
+        setUV4(poly, u1, v0, u0, v0, u1, v1, u0, v1);
+        setClut(poly, 640, 0);
+        setRGB0(poly, 128, 128, 128);
+        addPrim(&ot[0][0], poly);
+    }
+
+    return 0;
 }
 
 /*
@@ -917,14 +936,11 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     /* Draw persistent diagnostics directly into composited background. */
     if (grPs1TelemetryEnabled) {
         grRefreshLoadedResourceCounters();
-        grDrawCounterBar(20, 124, 24, 12, 0x7FFF);
-        grDrawCounterBar(500, 124, 24, 12, 0x7FFF);
         grDrawDropDiagnostics();
         grDrawMemoryDiagnostics();
         grDrawStoryDiagnostics();
         grDrawPilotPackDiagnostics();
         grDrawAdsFreezeDiagnostics();
-        grDrawSceneStateMarkers();
     }
 
     /* Wait for VSync BEFORE uploading to framebuffer.
@@ -1066,7 +1082,13 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
     uint8 *srcPtr = bmpResource->uncompressedData;
 
+    /* DEBUG: Track multi-tile loading progress */
+    static int debugMultiTileFrame = -1;
+
     for (int frameIdx = 0; frameIdx < numToLoad; frameIdx++) {
+        if (needsMultiTile) {
+            debugMultiTileFrame = frameIdx;
+        }
         uint16 width = bmpResource->widths[frameIdx];
         uint16 height = bmpResource->heights[frameIdx];
         uint16 safeW = (width > MAX_SPRITE_DIM) ? MAX_SPRITE_DIM : width;
@@ -1276,6 +1298,11 @@ static int grTryLoadPsb(struct TTtmSlot *ttmSlot, uint16 slotNo,
     int framesLoaded;
     uint32 frameTableEnd;
 
+    /* Diagnostic guard: keep JOHNWALK on the legacy BMP path until the
+     * new PSB-backed sprite route is proven correct across ACTIVITY/MISCGAG. */
+    if (strcmp(strArg, "JOHNWALK.BMP") == 0)
+        return 0;
+
     /* Fast registry lookup — avoids any CD access for unknown BMPs. */
     psbSize = psbRegistryLookup(strArg);
     if (psbSize == 0) return 0;
@@ -1402,10 +1429,11 @@ static int grTryLoadPsb(struct TTtmSlot *ttmSlot, uint16 slotNo,
     }
 
     /* NOTE: The PSB header + frame table (~16 + 12*N bytes) remain in the
-     * buffer. Trimming them via memmove + realloc + pointer fixup would save
-     * very little (e.g. about 1.5KB for 120 frames) while adding copy cost on
-     * the R3000 and more fragile post-realloc pointer adjustment. Keeping the
-     * header in-place is simpler and safer. */
+     * buffer.  Trimming them via memmove + realloc + pointer fixup was
+     * considered (TODO 3), but the savings are tiny (e.g. 1.5KB for 120
+     * frames) vs. the memmove cost on a 33MHz R3000 and the fragility of
+     * post-realloc pointer adjustment.  Keeping the header in-place is
+     * simpler and safer. */
 
     /* Lifecycle: store PSB buffer in slot so grReleaseBmp can free it. */
     ttmSlot->psbData[slotNo] = psbBuf;
@@ -1840,24 +1868,17 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
     int endSy = sprH;
     if (screenY < 0) startSy = -screenY;
     if (screenY + endSy > 480) endSy = 480 - screenY;
-    if (startSy >= endSy) {
-        gDbgCompositeClipMisses++;
-        return;
-    }
+    if (startSy >= endSy) return;
 
     int startSx = 0;
     int endSx = sprW;
     if (screenX < 0) startSx = -screenX;
     if (screenX + endSx > 640) endSx = 640 - screenX;
-    if (startSx >= endSx) {
-        gDbgCompositeClipMisses++;
-        return;
-    }
+    if (startSx >= endSx) return;
 
     /* Mark dirty region for this sprite */
     grMarkRectDirty(screenX + startSx, screenY + startSy,
                     screenX + endSx, screenY + endSy);
-    gDbgCompositeCalls++;
 
     const uint16 *pal = ttmPalette;
 
@@ -1976,11 +1997,8 @@ void grSetClipZone(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2)
  */
 void grDrawPixel(PS1Surface *sfc, sint16 x, sint16 y, uint8 color)
 {
-    (void)sfc;
-    x += grDx;
-    y += grDy;
-    grMarkRectDirty(x, y, x + 1, y + 1);
-    grPlotBgPixelNoDirty(x, y, ttmPalette[color & 0xF]);
+    /* TODO: Implement pixel drawing using GPU primitive */
+    /* For now, stub */
 }
 
 /*
@@ -1989,45 +2007,10 @@ void grDrawPixel(PS1Surface *sfc, sint16 x, sint16 y, uint8 color)
  */
 void grDrawLine(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2, uint8 color)
 {
-    int dx;
-    int dy;
-    int sx;
-    int sy;
-    int err;
-    uint16 bgColor;
-
-    (void)sfc;
-    x1 += grDx;
-    y1 += grDy;
-    x2 += grDx;
-    y2 += grDy;
-
-    bgColor = ttmPalette[color & 0x0F];
-    grMarkRectDirty((x1 < x2) ? x1 : x2,
-                    (y1 < y2) ? y1 : y2,
-                    ((x1 > x2) ? x1 : x2) + 1,
-                    ((y1 > y2) ? y1 : y2) + 1);
-
-    dx = abs((int)x2 - (int)x1);
-    sx = (x1 < x2) ? 1 : -1;
-    dy = -abs((int)y2 - (int)y1);
-    sy = (y1 < y2) ? 1 : -1;
-    err = dx + dy;
-
-    for (;;) {
-        grPlotBgPixelNoDirty(x1, y1, bgColor);
-        if (x1 == x2 && y1 == y2)
-            break;
-
-        if ((err << 1) >= dy) {
-            err += dy;
-            x1 += sx;
-        }
-        if ((err << 1) <= dx) {
-            err += dx;
-            y1 += sy;
-        }
-    }
+    /* Stub — TTM line draws are rare and cosmetic (e.g. fishing line).
+     * Previously these GPU primitives were silently accumulated but never
+     * rendered (no DrawOTag).  TODO: implement software line rasterizer. */
+    (void)sfc; (void)x1; (void)y1; (void)x2; (void)y2; (void)color;
 }
 
 /*
@@ -2039,8 +2022,6 @@ void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height
     /* Software fill directly into bgTile buffers (matching composite approach).
      * This replaces the GPU POLY_F3 path that was never rendered before. */
     uint16 bgColor = ttmPalette[color & 0xF];
-    x += grDx;
-    y += grDy;
     sint16 x2 = x + (sint16)width;
     sint16 y2 = y + (sint16)height;
     if (x < 0) x = 0;
@@ -2109,81 +2090,8 @@ void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height
 void grDrawCircle(PS1Surface *sfc, sint16 x1, sint16 y1, uint16 width, uint16 height,
                   uint8 fgColor, uint8 bgColor)
 {
-    uint16 r;
-    sint16 xc;
-    sint16 yc;
-    sint16 x;
-    sint16 y;
-    int d;
-
-    (void)sfc;
-    x1 += grDx;
-    y1 += grDy;
-
-    /* Match the desktop path: authored data only uses regular even-diameter
-     * circles here, not general ellipses. */
-    if (width != height || (width & 1) != 0 || width == 0)
-        return;
-
-    grMarkRectDirty(x1, y1, x1 + (sint16)width, y1 + (sint16)height);
-
-    r = (width >> 1) - 1;
-    xc = x1 + (sint16)r;
-    yc = y1 + (sint16)r;
-    x = 0;
-    y = (sint16)r;
-    d = 1 - (int)r;
-
-    while (1) {
-        grDrawHorizontalSpanNoDirty(xc - x, xc + x + 1, yc + y + 1, ttmPalette[bgColor & 0x0F]);
-        grDrawHorizontalSpanNoDirty(xc - x, xc + x + 1, yc - y,     ttmPalette[bgColor & 0x0F]);
-        grDrawHorizontalSpanNoDirty(xc - y, xc + y + 1, yc + x + 1, ttmPalette[bgColor & 0x0F]);
-        grDrawHorizontalSpanNoDirty(xc - y, xc + y + 1, yc - x,     ttmPalette[bgColor & 0x0F]);
-
-        if (y - x <= 1)
-            break;
-
-        if (d < 0) {
-            d += ((int)x << 1) + 3;
-        } else {
-            d += (((int)x - (int)y) << 1) + 5;
-            y--;
-        }
-
-        x++;
-    }
-
-    if (fgColor == bgColor)
-        return;
-
-    x = 0;
-    y = (sint16)r;
-    d = 1 - (int)r;
-
-    while (1) {
-        uint16 fg = ttmPalette[fgColor & 0x0F];
-
-        grPlotBgPixelNoDirty(xc - x,     yc + y + 1, fg);
-        grPlotBgPixelNoDirty(xc + x + 1, yc + y + 1, fg);
-        grPlotBgPixelNoDirty(xc - x,     yc - y,     fg);
-        grPlotBgPixelNoDirty(xc + x + 1, yc - y,     fg);
-        grPlotBgPixelNoDirty(xc - y,     yc + x + 1, fg);
-        grPlotBgPixelNoDirty(xc + y + 1, yc + x + 1, fg);
-        grPlotBgPixelNoDirty(xc - y,     yc - x,     fg);
-        grPlotBgPixelNoDirty(xc + y + 1, yc - x,     fg);
-
-        if (y - x <= 1)
-            break;
-
-        if (d < 0) {
-            d += ((int)x << 1) + 3;
-        } else {
-            d += (((int)x - (int)y) << 1) + 5;
-            y--;
-        }
-
-        x++;
-    }
+    /* TODO: Implement circle/ellipse drawing using line primitives */
+    /* This requires Bresenham's ellipse algorithm */
 }
 
 /*
@@ -2248,11 +2156,9 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
 {
     x += grDx;
     y += grDy;
-    gDbgSpriteCalls++;
 
     /* Validate imageNo bounds */
     if (imageNo >= MAX_BMP_SLOTS || ttmSlot->numSprites[imageNo] == 0) {
-        gDbgSpriteSlotMisses++;
         return;
     }
 
@@ -2261,13 +2167,11 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
 
     PS1Surface *sprite = ttmSlot->sprites[imageNo][actualSpriteNo];
     if (sprite == NULL) {
-        gDbgSpriteNullMisses++;
         return;
     }
 
     /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
-        grDebugMarkSpriteTarget(x, y, imageNo, 0);
         grCompositeToBackground(sprite, x, y);
         grRecordReplaySprite(grCurrentThread, sprite, x, y, spriteNo, imageNo, 0);
         return;
@@ -2351,22 +2255,15 @@ void grCompositeToBackgroundFlip(PS1Surface *sprite, sint16 screenX, sint16 scre
     int endSy = sprH;
     if (screenY < 0) startSy = -screenY;
     if (screenY + endSy > 480) endSy = 480 - screenY;
-    if (startSy >= endSy) {
-        gDbgCompositeClipMisses++;
-        return;
-    }
+    if (startSy >= endSy) return;
 
     int startDestX = screenX < 0 ? 0 : screenX;
     int endDestX = screenX + sprW;
     if (endDestX > 640) endDestX = 640;
-    if (startDestX >= endDestX) {
-        gDbgCompositeClipMisses++;
-        return;
-    }
+    if (startDestX >= endDestX) return;
 
     /* Mark dirty region for this flipped sprite */
     grMarkRectDirty(startDestX, screenY + startSy, endDestX, screenY + endSy);
-    gDbgCompositeCalls++;
 
     const uint16 *pal = ttmPalette;
 
@@ -2474,11 +2371,9 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
 {
     x += grDx;
     y += grDy;
-    gDbgSpriteCalls++;
 
     /* Validate imageNo bounds */
     if (imageNo >= MAX_BMP_SLOTS || ttmSlot->numSprites[imageNo] == 0) {
-        gDbgSpriteSlotMisses++;
         return;
     }
 
@@ -2487,13 +2382,11 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
 
     PS1Surface *sprite = ttmSlot->sprites[imageNo][actualSpriteNo];
     if (sprite == NULL) {
-        gDbgSpriteNullMisses++;
         return;
     }
 
     /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
-        grDebugMarkSpriteTarget(x, y, imageNo, 1);
         grCompositeToBackgroundFlip(sprite, x, y);
         grRecordReplaySprite(grCurrentThread, sprite, x, y, spriteNo, imageNo, 1);
         return;
@@ -3027,6 +2920,69 @@ void grFadeOut()
     }
 }
 
+/*
+ * Helper: Create a single background tile
+ * src = source image data (4-bit packed)
+ * srcWidth = total width of source image
+ * srcStartX = x offset in source to start copying from
+ * tileWidth = width of this tile (256 or 128)
+ * vramX, vramY = where to place in VRAM
+ */
+static PS1Surface *createBgTile(uint8 *src, uint16 srcWidth,
+                                 uint16 srcStartX, uint16 tileWidth,
+                                 uint16 vramX, uint16 vramY)
+{
+    PS1Surface *tile = (PS1Surface*)safe_malloc(sizeof(PS1Surface));
+    tile->width = tileWidth;
+    tile->height = BG_TILE_HEIGHT;
+    tile->x = vramX;
+    tile->y = vramY;
+    tile->indexedPixels = NULL;
+    tile->indexedOwned = 0;
+    tile->psbNibbles = 0;
+    tile->nextTile = NULL;
+
+    /* Allocate pixel buffer for 15-bit direct color */
+    uint32 pixelDataSize = tileWidth * BG_TILE_HEIGHT * 2;
+    tile->pixels = (uint16*)safe_malloc(pixelDataSize);
+
+    uint16 *dst = tile->pixels;
+
+    /* Process 2 pixels per byte using palette LUT.
+     * Row base increment avoids per-pixel multiply. */
+    uint32 srcRowBase = (uint32)srcStartX;
+    for (uint16 y = 0; y < BG_TILE_HEIGHT; y++) {
+        uint32 srcOff = (uint32)y * (uint32)srcWidth + srcRowBase;
+        uint16 *dstRow = dst + (uint32)y * tileWidth;
+        uint16 x = 0;
+        /* Handle odd start pixel */
+        if (srcStartX & 1) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[0] = ttmPalette[packed & 0x0F];
+            x = 1;
+            srcOff++;
+        }
+        /* Process 2 pixels per byte */
+        for (; x + 1 < tileWidth; x += 2, srcOff += 2) {
+            uint32 pair = palLutSierra[src[srcOff >> 1]];
+            dstRow[x]     = (uint16)pair;
+            dstRow[x + 1] = (uint16)(pair >> 16);
+        }
+        /* Handle trailing pixel */
+        if (x < tileWidth) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[x] = ttmPalette[(packed >> 4) & 0x0F];
+        }
+    }
+
+    /* Upload tile to VRAM */
+    RECT rect;
+    setRECT(&rect, tile->x, tile->y, tileWidth, BG_TILE_HEIGHT);
+    LoadImage(&rect, (uint32*)tile->pixels);
+
+    return tile;
+}
+
 /* Helper to free a tile */
 static void freeBgTile(PS1Surface **tile)
 {
@@ -3120,53 +3076,12 @@ static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
                                    srcStartX, srcStartY, tileWidth);
 }
 
-static void grCompositeScrRowsOntoBgTile(PS1Surface *tile, uint8 *src,
-                                         uint16 srcWidth, uint16 srcYStart,
-                                         uint16 rowCount, uint16 srcStartX)
-{
-    if (!tile || !tile->pixels || !src || rowCount == 0)
-        return;
-
-    for (uint16 y = 0; y < rowCount && y < 240; y++) {
-        uint16 srcY = srcYStart + y;
-        uint16 *dstRow = tile->pixels + (uint32)y * (uint32)tile->width;
-        uint32 srcOff = (uint32)srcY * (uint32)srcWidth + srcStartX;
-        uint16 x = 0;
-
-        /* Match createBgTileRAMPartial(): Sierra SCR data uses high nibble for
-         * the even pixel and low nibble for the odd pixel. The preserve/
-         * composite path must decode rows identically to the fresh-tile path
-         * or island ADS boots will keep the old ocean baseline instead of the
-         * intended partial-height screen contents. */
-        if ((srcStartX & 1) && x < tile->width) {
-            uint8 packed = src[srcOff >> 1];
-            dstRow[0] = ttmPalette[packed & 0x0F];
-            x = 1;
-            srcOff++;
-        }
-
-        for (; x + 1 < tile->width; x += 2, srcOff += 2) {
-            uint32 pair = palLutSierra[src[srcOff >> 1]];
-            dstRow[x] = (uint16)pair;
-            dstRow[x + 1] = (uint16)(pair >> 16);
-        }
-
-        if (x < tile->width) {
-            uint8 packed = src[srcOff >> 1];
-            dstRow[x] = ttmPalette[(packed >> 4) & 0x0F];
-        }
-    }
-}
-
 /*
  * Load background screen
  */
 void grLoadScreen(char *strArg)
 {
     struct TScrResource *scrResource = findScrResource(strArg);
-    int preserveTopTiles;
-    int preserveBottomTiles;
-    int forceTopReload;
     if (scrResource == NULL) return;
 
     /* Determine partial height from metadata (available without loading data) */
@@ -3178,27 +3093,15 @@ void grLoadScreen(char *strArg)
      * and the SCR load needs ~300KB temporarily. */
     grFreeCleanBgTiles();
 
-    /* ISLETEMP owns the visible scene top-half. Reusing the already-drawn
-     * island bootstrap tiles here can leave the user-facing island ADS path
-     * stuck on the ocean baseline instead of transitioning into the scene.
-     * Keep preserving the bottom ocean rows for partial-height screens, but
-     * reload the top tiles outright for ISLETEMP. */
-    forceTopReload = (strArg != NULL && strcmp(strArg, "ISLETEMP.SCR") == 0);
-    preserveTopTiles = (!forceTopReload &&
-                        isPartialHeight &&
-                        bgTile0 != NULL && bgTile1 != NULL);
-    preserveBottomTiles = (isPartialHeight && bgTile3 != NULL && bgTile4 != NULL);
-
-    if (!preserveTopTiles) {
-        freeBgTile(&bgTile0);
-        freeBgTile(&bgTile1);
-        freeBgTile(&bgTile2a);
-        freeBgTile(&bgTile2b);
-    }
+    /* Free top tiles always */
+    freeBgTile(&bgTile0);
+    freeBgTile(&bgTile1);
+    freeBgTile(&bgTile2a);
+    freeBgTile(&bgTile2b);
 
     /* Only free bottom tiles if new image is full height
      * This preserves ocean background for scenes like ISLETEMP (640x350) */
-    if (!preserveBottomTiles) {
+    if (!isPartialHeight) {
         freeBgTile(&bgTile3);
         freeBgTile(&bgTile4);
         freeBgTile(&bgTile5a);
@@ -3224,17 +3127,6 @@ void grLoadScreen(char *strArg)
             bgTile3 = createEmptyBgTileRAM(320, 240);
             bgTile4 = createEmptyBgTileRAM(320, 240);
         }
-#ifdef PS1_BUILD
-        if (strArg != NULL && strcmp(strArg, "ISLETEMP.SCR") == 0) {
-            uint32 i;
-            if (bgTile0 && bgTile0->pixels)
-                for (i = 0; i < (uint32)bgTile0->width * (uint32)bgTile0->height; i++)
-                    bgTile0->pixels[i] = 0x7C1F;
-            if (bgTile1 && bgTile1->pixels)
-                for (i = 0; i < (uint32)bgTile1->width * (uint32)bgTile1->height; i++)
-                    bgTile1->pixels[i] = 0x7C1F;
-        }
-#endif
         grBackgroundSfc = bgTile0;
         return;
     }
@@ -3252,20 +3144,18 @@ void grLoadScreen(char *strArg)
     uint16 srcWidth  = scrResource->width;
     uint8 *src = scrResource->uncompressedData;
 
-    if (preserveTopTiles) {
-        uint16 topRowLines = (srcHeight < 240) ? srcHeight : 240;
-        grCompositeScrRowsOntoBgTile(bgTile0, src, srcWidth, 0, topRowLines, 0);
-        grCompositeScrRowsOntoBgTile(bgTile1, src, srcWidth, 0, topRowLines, 320);
-        bgTile2a = NULL;
-        bgTile2b = NULL;
-    } else {
-        /* Top row: LoadImage directly to framebuffer at init
-         * Use 2 tiles of 320px each to cover 640px total */
-        bgTile0  = createBgTileRAM(src, srcWidth, 0,   0, 320);   /* top row, x=0-319 */
-        bgTile1  = createBgTileRAM(src, srcWidth, 320, 0, 320);   /* top row, x=320-639 */
-        bgTile2a = NULL;
-        bgTile2b = NULL;
-    }
+    /* Create tiles for top row (y=0-239)
+     * VRAM layout:
+     * - Tile 0  (256x240) at VRAM(640, 4)   - srcX=0,   y=4-243
+     * - Tile 1  (256x240) at VRAM(640, 244) - srcX=256, y=244-483
+     * DEBUG: Test single 64px tile at x=896 to isolate VRAM issue
+     */
+    /* Top row: LoadImage directly to framebuffer at init
+     * Use 2 tiles of 320px each to cover 640px total */
+    bgTile0  = createBgTileRAM(src, srcWidth, 0,   0, 320);   /* top row, x=0-319 */
+    bgTile1  = createBgTileRAM(src, srcWidth, 320, 0, 320);   /* top row, x=320-639 */
+    bgTile2a = NULL;
+    bgTile2b = NULL;
 
     /* LoadImage top row directly to framebuffer
      * Use separate RECTs - LoadImage is async and may read RECT after return */
@@ -3292,11 +3182,36 @@ void grLoadScreen(char *strArg)
         bgTile4  = createBgTileRAMPartial(src, srcWidth, srcHeight, 320, 240, 320);
         bgTile5a = NULL;
         bgTile5b = NULL;
-    } else if (preserveBottomTiles && bottomRowLines > 0) {
+    } else if (isPartialHeight && bgTile3 != NULL && bgTile4 != NULL && bottomRowLines > 0) {
         /* Partial height image with existing bottom tiles (ocean) - composite on top!
          * Copy the available rows (240 to srcHeight-1) onto existing tiles */
-        grCompositeScrRowsOntoBgTile(bgTile3, src, srcWidth, 240, bottomRowLines, 0);
-        grCompositeScrRowsOntoBgTile(bgTile4, src, srcWidth, 240, bottomRowLines, 320);
+        uint16 *dst3 = bgTile3->pixels;
+        uint16 *dst4 = bgTile4->pixels;
+
+        for (uint16 y = 0; y < bottomRowLines && y < 240; y++) {
+            uint16 srcY = 240 + y;
+            for (uint16 x = 0; x < 320; x++) {
+                /* Left tile (bgTile3) */
+                uint32 srcOffset = (srcY * srcWidth + x) / 2;
+                uint8 palIndex;
+                if (x & 1) {
+                    palIndex = src[srcOffset] & 0x0F;
+                } else {
+                    palIndex = (src[srcOffset] >> 4) & 0x0F;
+                }
+                dst3[y * 320 + x] = ttmPalette[palIndex & 0x0F];
+
+                /* Right tile (bgTile4) */
+                uint16 srcX = 320 + x;
+                srcOffset = (srcY * srcWidth + srcX) / 2;
+                if (srcX & 1) {
+                    palIndex = src[srcOffset] & 0x0F;
+                } else {
+                    palIndex = (src[srcOffset] >> 4) & 0x0F;
+                }
+                dst4[y * 320 + x] = ttmPalette[palIndex & 0x0F];
+            }
+        }
     } else if (bottomRowLines > 0) {
         /* Partial bottom row with no existing tiles - create with partial data */
         bgTile3  = createBgTileRAMPartial(src, srcWidth, srcHeight, 0,   240, 320);

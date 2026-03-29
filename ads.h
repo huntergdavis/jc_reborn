@@ -21,8 +21,6 @@
  *
  */
 
-struct TTtmThread;
-
 void adsInit();
 void adsInitIsland();
 void adsReleaseIsland();
@@ -32,14 +30,8 @@ void adsPlayIntro();
 void adsPlayWalk();
 void adsPlaySingleTtm(char *ttmName);
 void adsPlayBench();  // TODO
-void adsRequestStop(void);
 
 /* Set by adsPlay()/adsPlayWalk(): 1 if at least one scene thread launched. */
 extern int ps1AdsLastPlayLaunched;
 extern char ps1AdsCurrentName[16];
 extern uint16 ps1AdsCurrentTag;
-
-#ifdef PS1_BUILD
-int adsShouldForceBuildingMjsandFullRestore(void);
-int adsPs1DrawBackground(struct TTtmThread *thread);
-#endif

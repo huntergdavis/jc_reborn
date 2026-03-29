@@ -107,6 +107,8 @@ static int  numArgs  = 0;
 #ifdef PS1_BUILD
 #define PS1_BOOT_OVERRIDE_FILE "BOOTMODE.TXT"
 
+static int ps1BootForcedSeed = -1;  /* -1 = use hardware RNG */
+static int ps1BootDirectSceneIndex = -1;  /* -1 = not set; >=0 = play scene directly and exit */
 static char ps1BootArgStorage[3][32];
 
 static int ps1IsSpace(char c)
@@ -144,12 +146,12 @@ static int ps1CopyBootArg(int index, const char *src)
 
 static void ps1ApplyBootOverride(char *buffer)
 {
-    char *tokens[4];
+    char *tokens[8];
     int tokenCount = 0;
     char *cursor = buffer;
     int tokenBase = 0;
 
-    while (*cursor && tokenCount < 4) {
+    while (*cursor && tokenCount < 8) {
         while (*cursor && ps1IsSpace(*cursor)) {
             cursor++;
         }
@@ -181,9 +183,17 @@ static void ps1ApplyBootOverride(char *buffer)
         return;
     }
 
+    /* Scan for trailing "seed N" parameter anywhere in the token list */
+    for (int i = 0; i + 1 < tokenCount; i++) {
+        if (!strcmp(tokens[i], "seed")) {
+            ps1BootForcedSeed = atoi(tokens[i + 1]);
+            break;
+        }
+    }
+
     if (!strcmp(tokens[0], "story")) {
         if (tokenCount >= 3 && !strcmp(tokens[1], "single")) {
-            storySetBootSingleSceneIndex(atoi(tokens[2]));
+            ps1BootDirectSceneIndex = atoi(tokens[2]);
             return;
         }
         if (tokenCount >= 3 &&
@@ -474,11 +484,15 @@ int main(int argc, char **argv)
     /* Parse resource files from CD - needed for background and sprites */
     parseResourceFiles("RESOURCE.MAP");
 
-    /* Seed RNG after CD/resource setup to avoid deterministic startup scenes. */
-    ps1SeedRandom();
-
-    /* Optional on-disc boot override for targeted validation runs. */
+    /* Load boot override BEFORE seeding RNG so "seed N" can override. */
     ps1LoadBootOverride();
+
+    /* Seed RNG — use forced seed if specified in BOOTMODE, else hardware RNG. */
+    if (ps1BootForcedSeed >= 0) {
+        srand((unsigned int)ps1BootForcedSeed);
+    } else {
+        ps1SeedRandom();
+    }
 #else
     /* Non-PS1: normal flow */
     parseArgs(argc, argv);
@@ -507,7 +521,10 @@ int main(int argc, char **argv)
         grLoadPalette(palResources[0]);
     }
 
-    if (argPlayAll) {
+    if (ps1BootDirectSceneIndex >= 0) {
+        storyPlayBootSceneDirect(ps1BootDirectSceneIndex);
+    }
+    else if (argPlayAll) {
         storyPlay();
     }
     else if (argBench) {

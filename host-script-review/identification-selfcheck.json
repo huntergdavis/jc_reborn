@@ -1,0 +1,108 @@
+{
+  "rows": [
+    {
+      "query_scene_label": "FISHING 1",
+      "query_scene_family": "fishing",
+      "query_scene_signature": "d14b40d3fb855f5c122d",
+      "best_match": {
+        "scene_label": "FISHING 1",
+        "scene_family": "fishing",
+        "score": 220.0,
+        "exact_scene_signature": true,
+        "family_match": true,
+        "shared_frame_count": 5,
+        "exact_frame_signature_matches": 5,
+        "exact_state_matches": 5,
+        "exact_primary_subject_matches": 5,
+        "token_similarity": 1.0,
+        "activity_similarity": 1.0,
+        "trait_similarity": 1.0,
+        "candidate_scene_signature": "d14b40d3fb855f5c122d"
+      },
+      "matches": [
+        {
+          "scene_label": "FISHING 1",
+          "scene_family": "fishing",
+          "score": 220.0,
+          "exact_scene_signature": true,
+          "family_match": true,
+          "shared_frame_count": 5,
+          "exact_frame_signature_matches": 5,
+          "exact_state_matches": 5,
+          "exact_primary_subject_matches": 5,
+          "token_similarity": 1.0,
+          "activity_similarity": 1.0,
+          "trait_similarity": 1.0,
+          "candidate_scene_signature": "d14b40d3fb855f5c122d"
+        },
+        {
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "score": 45.47619,
+          "exact_scene_signature": false,
+          "family_match": false,
+          "shared_frame_count": 1,
+          "exact_frame_signature_matches": 1,
+          "exact_state_matches": 1,
+          "exact_primary_subject_matches": 1,
+          "token_similarity": 0.666667,
+          "activity_similarity": 1.0,
+          "trait_similarity": 0.714286,
+          "candidate_scene_signature": "b76ca5d687eab03cb470"
+        }
+      ]
+    },
+    {
+      "query_scene_label": "MARY 1",
+      "query_scene_family": "mary",
+      "query_scene_signature": "b76ca5d687eab03cb470",
+      "best_match": {
+        "scene_label": "MARY 1",
+        "scene_family": "mary",
+        "score": 235.0,
+        "exact_scene_signature": true,
+        "family_match": true,
+        "shared_frame_count": 6,
+        "exact_frame_signature_matches": 6,
+        "exact_state_matches": 6,
+        "exact_primary_subject_matches": 6,
+        "token_similarity": 1.0,
+        "activity_similarity": 1.0,
+        "trait_similarity": 1.0,
+        "candidate_scene_signature": "b76ca5d687eab03cb470"
+      },
+      "matches": [
+        {
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "score": 235.0,
+          "exact_scene_signature": true,
+          "family_match": true,
+          "shared_frame_count": 6,
+          "exact_frame_signature_matches": 6,
+          "exact_state_matches": 6,
+          "exact_primary_subject_matches": 6,
+          "token_similarity": 1.0,
+          "activity_similarity": 1.0,
+          "trait_similarity": 1.0,
+          "candidate_scene_signature": "b76ca5d687eab03cb470"
+        },
+        {
+          "scene_label": "FISHING 1",
+          "scene_family": "fishing",
+          "score": 45.47619,
+          "exact_scene_signature": false,
+          "family_match": false,
+          "shared_frame_count": 1,
+          "exact_frame_signature_matches": 1,
+          "exact_state_matches": 1,
+          "exact_primary_subject_matches": 1,
+          "token_similarity": 0.666667,
+          "activity_similarity": 1.0,
+          "trait_similarity": 0.714286,
+          "candidate_scene_signature": "d14b40d3fb855f5c122d"
+        }
+      ]
+    }
+  ]
+}

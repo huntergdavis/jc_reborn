@@ -1,0 +1,21 @@
+{
+  "generated_at": "2026-03-31T21:08:18Z",
+  "git_head": "5569018e8e87eed5a764ab2f6546dae1aa164d5a",
+  "git_head_short": "5569018e",
+  "verify_repro": true,
+  "checks": {
+    "expectation-report": {
+      "present": true,
+      "mismatch_count": 0
+    },
+    "host-truth-compare": {
+      "present": true,
+      "mismatch_count": 0
+    },
+    "repro-compare": {
+      "present": true,
+      "mismatch_count": 0
+    }
+  },
+  "all_passed": true
+}

@@ -154,6 +154,62 @@ if count != 0:
 PY
 }
 
+write_verification_summary() {
+    local root="$1"
+    local git_head git_head_short
+    git_head="$(git -C "$PROJECT_ROOT" rev-parse HEAD)"
+    git_head_short="$(git -C "$PROJECT_ROOT" rev-parse --short HEAD)"
+    python3 - "$root" "$git_head" "$git_head_short" "$VERIFY_REPRO" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+from pathlib import Path
+
+root = Path(sys.argv[1])
+git_head = sys.argv[2]
+git_head_short = sys.argv[3]
+verify_repro = sys.argv[4] == "1"
+
+checks = {}
+for name in ("expectation-report", "host-truth-compare", "repro-compare"):
+    path = root / f"{name}.json"
+    if not path.is_file():
+        checks[name] = {"present": False, "mismatch_count": None}
+        continue
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    checks[name] = {
+        "present": True,
+        "mismatch_count": int(payload.get("mismatch_count", 0)),
+    }
+
+summary = {
+    "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+    "git_head": git_head,
+    "git_head_short": git_head_short,
+    "verify_repro": verify_repro,
+    "checks": checks,
+    "all_passed": (
+        checks["expectation-report"]["present"]
+        and checks["expectation-report"]["mismatch_count"] == 0
+        and checks["host-truth-compare"]["present"]
+        and checks["host-truth-compare"]["mismatch_count"] == 0
+        and (
+            (not verify_repro)
+            or (
+                checks["repro-compare"]["present"]
+                and checks["repro-compare"]["mismatch_count"] == 0
+            )
+        )
+    ),
+}
+
+(root / "verification-summary.json").write_text(
+    json.dumps(summary, indent=2) + "\n",
+    encoding="utf-8",
+)
+PY
+}
+
 "$SCRIPT_DIR/build-host.sh"
 
 trap cleanup_capture_processes EXIT
@@ -181,6 +237,8 @@ if [ "$VERIFY_REPRO" -eq 1 ]; then
 
     assert_zero_mismatches "$OUT_DIR/repro-compare.json" "repro-compare"
 fi
+
+write_verification_summary "$OUT_DIR"
 
 rm -rf "$TMP_DIR"
 

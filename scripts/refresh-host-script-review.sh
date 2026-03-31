@@ -25,6 +25,7 @@ assert_clean_tracked_inputs() {
         host-script-review/repro-compare.json \
         host-script-review/verification-summary.json \
         scripts/capture-host-scene.sh \
+        scripts/compile-host-semantic-truth.py \
         scripts/compare-host-script-vs-expectations.py \
         scripts/render-host-expectation-report.py \
         scripts/render-host-repro-compare.py \
@@ -132,6 +133,10 @@ capture_review_set() {
         --out-html "$root/index.html" \
         --title "Host Script Review Index"
 
+    python3 "$SCRIPT_DIR/compile-host-semantic-truth.py" \
+        --root "$root" \
+        --out-json "$root/semantic-truth.json"
+
     python3 "$SCRIPT_DIR/generate-host-truth-baseline.py" \
         --manifest-json "$root/manifest.json" \
         --out-json "$root/host-truth-baseline.json"
@@ -209,6 +214,7 @@ for name in ("expectation-report", "host-truth-compare", "repro-compare"):
 digest_inputs = {}
 for name in (
     "manifest.json",
+    "semantic-truth.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",

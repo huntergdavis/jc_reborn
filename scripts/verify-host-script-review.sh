@@ -42,6 +42,7 @@ require_head_match = sys.argv[3] == "1"
 
 required = [
     "manifest.json",
+    "semantic-truth.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",

@@ -98,9 +98,13 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     }
 
 
-def identify_status(best: dict | None, second: dict | None) -> tuple[str, str]:
+def identify_status(query_scene: dict, best: dict | None, second: dict | None) -> tuple[str, str]:
     if not best:
         return "unknown", "no candidates"
+    query_rows = query_scene.get("rows", [])
+    active_row_count = sum(1 for row in query_rows if row.get("frame_state") != "background_only")
+    if active_row_count == 0 and not best.get("exact_scene_signature"):
+        return "unknown", "background-only query lacks actor evidence"
     score = float(best.get("score", 0.0))
     second_score = float((second or {}).get("score", 0.0))
     margin = score - second_score
@@ -124,7 +128,7 @@ def identify(database: dict, query: dict) -> dict:
         matches.sort(key=lambda item: (-item["score"], item["scene_label"] or ""))
         best = matches[0] if matches else None
         second = matches[1] if len(matches) > 1 else None
-        status, reason = identify_status(best, second)
+        status, reason = identify_status(query_scene, best, second)
         rows.append(
             {
                 "query_scene_label": query_scene.get("scene_label"),

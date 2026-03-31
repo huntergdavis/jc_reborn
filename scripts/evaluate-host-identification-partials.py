@@ -77,7 +77,13 @@ def build_variants(scene: dict) -> list[dict]:
         if not variant_rows or key in seen:
             continue
         seen.add(key)
-        results.append(strip_query_scene(scene, variant_rows, name))
+        variant = strip_query_scene(scene, variant_rows, name)
+        variant["_expected_status"] = (
+            "identified"
+            if any(row.get("frame_state") != "background_only" for row in variant_rows)
+            else "unknown"
+        )
+        results.append(variant)
     return results
 
 
@@ -103,10 +109,12 @@ def evaluate(database: dict) -> dict:
         query_label = row.get("query_scene_label")
         variant_name = "unknown"
         expected_scene_label = None
+        expected_status = "identified"
         for scene in query.get("scenes", []):
             if scene.get("scene_label") == query_label:
                 variant_name = scene.get("_query_variant", variant_name)
                 expected_scene_label = scene.get("_expected_scene_label")
+                expected_status = scene.get("_expected_status", expected_status)
                 break
 
         if min_margin is None or margin < min_margin:
@@ -114,21 +122,22 @@ def evaluate(database: dict) -> dict:
         if ratio is not None and (min_ratio is None or ratio < min_ratio):
             min_ratio = ratio
 
-        if row.get("identification_status") != "identified":
-            failures.append(f"{query_label}: status={row.get('identification_status')}")
-        if best.get("scene_label") != expected_scene_label:
+        if row.get("identification_status") != expected_status:
+            failures.append(f"{query_label}: expected status={expected_status}, got {row.get('identification_status')}")
+        if expected_status == "identified" and best.get("scene_label") != expected_scene_label:
             failures.append(f"{query_label}: best_match={best.get('scene_label')}")
-        if best.get("exact_scene_signature"):
+        if expected_status == "identified" and best.get("exact_scene_signature"):
             failures.append(f"{query_label}: partial query unexpectedly kept exact scene signature")
-        if margin < 30.0:
+        if expected_status == "identified" and margin < 30.0:
             failures.append(f"{query_label}: margin too small ({margin:.6f})")
-        if ratio is not None and ratio < 2.0:
+        if expected_status == "identified" and ratio is not None and ratio < 2.0:
             failures.append(f"{query_label}: ratio too small ({ratio:.6f})")
 
         rows.append(
             {
                 "query_scene_label": query_label,
                 "expected_scene_label": expected_scene_label,
+                "expected_status": expected_status,
                 "variant": variant_name,
                 "status": row.get("identification_status"),
                 "best_scene_label": best.get("scene_label"),

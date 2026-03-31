@@ -1,0 +1,175 @@
+{
+  "root": "/home/hunter/workspace/jc_reborn/host-script-review",
+  "scenes": [
+    {
+      "scene_dir": "fishing1",
+      "scene_label": "FISHING 1",
+      "scene_family": "fishing",
+      "rows": [
+        {
+          "frame_number": 0,
+          "scene_label": "FISHING 1",
+          "scene_family": "fishing",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 20,
+          "scene_label": "FISHING 1",
+          "scene_family": "fishing",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 40,
+          "scene_label": "FISHING 1",
+          "scene_family": "fishing",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 60,
+          "scene_label": "FISHING 1",
+          "scene_family": "fishing",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 80,
+          "scene_label": "FISHING 1",
+          "scene_family": "fishing",
+          "entities": [
+            "johnny"
+          ],
+          "actor_count": 1,
+          "bmp_names": [
+            "JOHNWALK.BMP"
+          ],
+          "pose_labels": [
+            "actor_visible",
+            "johnny_visible",
+            "johnny_walking_pose",
+            "fishing_scene_actor_present"
+          ],
+          "actor_region": {
+            "x": 340,
+            "y": 254,
+            "width": 40,
+            "height": 76
+          }
+        }
+      ]
+    },
+    {
+      "scene_dir": "mary1",
+      "scene_label": "MARY 1",
+      "scene_family": "mary",
+      "rows": [
+        {
+          "frame_number": 0,
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 50,
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 100,
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "entities": [
+            "johnny"
+          ],
+          "actor_count": 1,
+          "bmp_names": [
+            "JOHNWALK.BMP"
+          ],
+          "pose_labels": [
+            "actor_visible",
+            "johnny_visible",
+            "johnny_walking_pose",
+            "mary_scene_johnny_only"
+          ],
+          "actor_region": {
+            "x": 286,
+            "y": 251,
+            "width": 48,
+            "height": 73
+          }
+        },
+        {
+          "frame_number": 150,
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 200,
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        },
+        {
+          "frame_number": 250,
+          "scene_label": "MARY 1",
+          "scene_family": "mary",
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
+          "pose_labels": [
+            "no_actor_visible"
+          ],
+          "actor_region": null
+        }
+      ]
+    }
+  ]
+}

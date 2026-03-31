@@ -62,6 +62,8 @@ identify = json.loads((root / "identification-selfcheck.json").read_text(encodin
 for row in identify.get("rows", []):
     best = row.get("best_match") or {}
     query = row.get("query_scene_label")
+    if row.get("identification_status") != "identified":
+        raise SystemExit(f"identification selfcheck status mismatch for {query}: {row.get('identification_status')}")
     if best.get("scene_label") != query:
         raise SystemExit(f"identification selfcheck best-match mismatch for {query}")
     if not best.get("exact_scene_signature"):

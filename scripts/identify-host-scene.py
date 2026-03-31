@@ -94,6 +94,20 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     }
 
 
+def identify_status(best: dict | None, second: dict | None) -> tuple[str, str]:
+    if not best:
+        return "unknown", "no candidates"
+    score = float(best.get("score", 0.0))
+    margin = score - float((second or {}).get("score", 0.0))
+    if best.get("exact_scene_signature"):
+        return "identified", "exact scene signature match"
+    if score >= 80.0 and margin >= 25.0:
+        return "identified", f"strong score {score:.3f} with margin {margin:.3f}"
+    if score >= 50.0 and margin >= 10.0:
+        return "ambiguous", f"partial match score {score:.3f} margin {margin:.3f}"
+    return "unknown", f"weak score {score:.3f} margin {margin:.3f}"
+
+
 def identify(database: dict, query: dict) -> dict:
     database_scenes = database.get("scenes", [])
     rows = []
@@ -101,12 +115,18 @@ def identify(database: dict, query: dict) -> dict:
         matches = [compare_scenes(query_scene, candidate) for candidate in database_scenes]
         matches.sort(key=lambda item: (-item["score"], item["scene_label"] or ""))
         best = matches[0] if matches else None
+        second = matches[1] if len(matches) > 1 else None
+        status, reason = identify_status(best, second)
         rows.append(
             {
                 "query_scene_label": query_scene.get("scene_label"),
                 "query_scene_family": query_scene.get("scene_family"),
                 "query_scene_signature": (query_scene.get("scene_summary") or {}).get("scene_signature"),
+                "identification_status": status,
+                "identification_reason": reason,
+                "score_margin": round(float(best.get("score", 0.0)) - float((second or {}).get("score", 0.0)), 6) if best else None,
                 "best_match": best,
+                "second_match": second,
                 "matches": matches,
             }
         )

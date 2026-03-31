@@ -203,6 +203,8 @@ if not rows:
 for row in rows:
     best = row.get("best_match") or {}
     query = row.get("query_scene_label")
+    if row.get("identification_status") != "identified":
+        raise SystemExit(f"identification status not identified for {query}: {row.get('identification_status')}")
     if best.get("scene_label") != query:
         raise SystemExit(f"best match mismatch for {query}: got {best.get('scene_label')}")
     if not best.get("exact_scene_signature"):

@@ -257,6 +257,19 @@ summary = {
     json.dumps(summary, indent=2) + "\n",
     encoding="utf-8",
 )
+
+(root / "verification-summary.txt").write_text(
+    "status={status} git={git_head_short} digest={digest} "
+    "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
+        status="PASS" if summary["all_passed"] else "FAIL",
+        git_head_short=git_head_short,
+        digest=summary["artifact_sha256"],
+        expectation=checks["expectation-report"]["mismatch_count"],
+        host_truth=checks["host-truth-compare"]["mismatch_count"],
+        repro=checks["repro-compare"]["mismatch_count"],
+    ),
+    encoding="utf-8",
+)
 PY
 }
 

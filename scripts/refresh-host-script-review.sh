@@ -27,6 +27,7 @@ assert_clean_tracked_inputs() {
         scripts/capture-host-scene.sh \
         scripts/compile-host-semantic-truth.py \
         scripts/compare-host-script-vs-expectations.py \
+        scripts/identify-host-scene.py \
         scripts/render-host-expectation-report.py \
         scripts/render-host-repro-compare.py \
         scripts/render-host-script-index.py \
@@ -137,6 +138,11 @@ capture_review_set() {
         --root "$root" \
         --out-json "$root/semantic-truth.json"
 
+    python3 "$SCRIPT_DIR/identify-host-scene.py" \
+        --database-json "$root/semantic-truth.json" \
+        --query-json "$root/semantic-truth.json" \
+        --out-json "$root/identification-selfcheck.json"
+
     python3 "$SCRIPT_DIR/generate-host-truth-baseline.py" \
         --manifest-json "$root/manifest.json" \
         --out-json "$root/host-truth-baseline.json"
@@ -182,6 +188,29 @@ if count != 0:
 PY
 }
 
+assert_identification_selfcheck() {
+    local path="$1"
+    python3 - "$path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+rows = data.get("rows", [])
+if not rows:
+    raise SystemExit("identification selfcheck has no rows")
+for row in rows:
+    best = row.get("best_match") or {}
+    query = row.get("query_scene_label")
+    if best.get("scene_label") != query:
+        raise SystemExit(f"best match mismatch for {query}: got {best.get('scene_label')}")
+    if not best.get("exact_scene_signature"):
+        raise SystemExit(f"scene signature mismatch for {query}")
+print("identification-selfcheck: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -215,6 +244,7 @@ digest_inputs = {}
 for name in (
     "manifest.json",
     "semantic-truth.json",
+    "identification-selfcheck.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -288,6 +318,7 @@ assert_clean_tracked_inputs
 capture_review_set "$OUT_DIR"
 assert_zero_mismatches "$OUT_DIR/expectation-report.json" "expectation-report"
 assert_zero_mismatches "$OUT_DIR/host-truth-compare.json" "host-truth-compare"
+assert_identification_selfcheck "$OUT_DIR/identification-selfcheck.json"
 
 if [ "$VERIFY_REPRO" -eq 1 ]; then
     rm -rf "$TMP_DIR"

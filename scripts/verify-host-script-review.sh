@@ -43,6 +43,7 @@ require_head_match = sys.argv[3] == "1"
 required = [
     "manifest.json",
     "semantic-truth.json",
+    "identification-selfcheck.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -56,6 +57,16 @@ if missing:
     raise SystemExit(f"missing required files: {', '.join(missing)}")
 
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+
+identify = json.loads((root / "identification-selfcheck.json").read_text(encoding="utf-8"))
+for row in identify.get("rows", []):
+    best = row.get("best_match") or {}
+    query = row.get("query_scene_label")
+    if best.get("scene_label") != query:
+        raise SystemExit(f"identification selfcheck best-match mismatch for {query}")
+    if not best.get("exact_scene_signature"):
+        raise SystemExit(f"identification selfcheck signature mismatch for {query}")
+print("identification-selfcheck: ok")
 
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"

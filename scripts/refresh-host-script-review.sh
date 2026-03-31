@@ -161,6 +161,7 @@ write_verification_summary() {
     git_head_short="$(git -C "$PROJECT_ROOT" rev-parse --short HEAD)"
     python3 - "$root" "$git_head" "$git_head_short" "$VERIFY_REPRO" <<'PY'
 import json
+import hashlib
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -182,12 +183,38 @@ for name in ("expectation-report", "host-truth-compare", "repro-compare"):
         "mismatch_count": int(payload.get("mismatch_count", 0)),
     }
 
+digest_inputs = {}
+for name in (
+    "manifest.json",
+    "expectations.json",
+    "host-truth-baseline.json",
+    "expectation-report.json",
+    "host-truth-compare.json",
+    "repro-compare.json",
+):
+    path = root / name
+    if path.is_file():
+        digest_inputs[name] = hashlib.sha256(path.read_bytes()).hexdigest()
+
+digest_payload = json.dumps(
+    {
+        "git_head": git_head,
+        "verify_repro": verify_repro,
+        "checks": checks,
+        "artifacts": digest_inputs,
+    },
+    sort_keys=True,
+    separators=(",", ":"),
+).encode("utf-8")
+
 summary = {
     "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     "git_head": git_head,
     "git_head_short": git_head_short,
     "verify_repro": verify_repro,
     "checks": checks,
+    "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
+    "artifact_inputs": digest_inputs,
     "all_passed": (
         checks["expectation-report"]["present"]
         and checks["expectation-report"]["mismatch_count"] == 0

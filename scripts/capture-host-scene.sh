@@ -30,6 +30,7 @@ SKIP_VISUAL_DETECT=1
 STAMP_PREFIX=1
 UNTIL_EXIT=0
 CAPTURE_OVERLAY=0
+TIMEOUT_SECONDS=""
 
 usage() {
     cat <<'USAGE'
@@ -48,6 +49,7 @@ Options:
   --lowtide 0|1        Force low tide state
   --mode NAME          Boot mode: scene-default, story-direct, story-hold, story-single, ads (default: scene-default)
   --output DIR         Output directory (default: host-results/scene)
+  --timeout N          Kill host run after N seconds; 0 disables timeout (default: auto)
   --visual-detect      Run expensive visual_detect.py postprocess
   --skip-visual-detect Skip expensive visual_detect.py postprocess (default)
   --no-stamp           Do not prefix the output leaf with UTC timestamp
@@ -71,6 +73,7 @@ while [ $# -gt 0 ]; do
         --lowtide) LOWTIDE="$2"; shift 2 ;;
         --mode) MODE="$2"; shift 2 ;;
         --output) OUTPUT_DIR="$2"; shift 2 ;;
+        --timeout) TIMEOUT_SECONDS="$2"; shift 2 ;;
         --visual-detect) SKIP_VISUAL_DETECT=0; shift ;;
         --skip-visual-detect) SKIP_VISUAL_DETECT=1; shift ;;
         --no-stamp) STAMP_PREFIX=0; shift ;;
@@ -216,6 +219,18 @@ PY
 )"
 fi
 
+if [ -z "$TIMEOUT_SECONDS" ]; then
+    if [ "$UNTIL_EXIT" -eq 1 ]; then
+        TIMEOUT_SECONDS=0
+    elif [ "$FRAMES" -le 120 ]; then
+        TIMEOUT_SECONDS=60
+    elif [ "$FRAMES" -le 300 ]; then
+        TIMEOUT_SECONDS=90
+    else
+        TIMEOUT_SECONDS=180
+    fi
+fi
+
 capture_ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 pushd "$RES_DIR" >/dev/null
@@ -231,19 +246,26 @@ fi
 if [ "$UNTIL_EXIT" -eq 1 ]; then
     capture_args+=(capture-range 0 -1)
 else
-    capture_args+=(capture-range "$INTERVAL" "$FRAMES")
+    capture_args+=(capture-range 0 "$FRAMES")
 fi
 
 set +e
-xvfb-run -a env SDL_AUDIODRIVER=dummy "$HOST_BIN" \
-    $BOOT \
-    "${capture_args[@]}"
-host_exit_code=$?
+if [ "$TIMEOUT_SECONDS" -gt 0 ]; then
+    timeout "$TIMEOUT_SECONDS" xvfb-run -a env SDL_AUDIODRIVER=dummy "$HOST_BIN" \
+        $BOOT \
+        "${capture_args[@]}"
+    host_exit_code=$?
+else
+    xvfb-run -a env SDL_AUDIODRIVER=dummy "$HOST_BIN" \
+        $BOOT \
+        "${capture_args[@]}"
+    host_exit_code=$?
+fi
 set -e
 popd >/dev/null
 
 python3 - "$PROJECT_ROOT" "$OUTPUT_DIR" "$SCENE_LIST_FILE" "$ADS_NAME" "$TAG" \
-           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" <<'PY'
+           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" "$TIMEOUT_SECONDS" <<'PY'
 import hashlib
 import json
 import os
@@ -271,6 +293,7 @@ skip_visual_detect = int(sys.argv[15]) != 0
 until_exit = int(sys.argv[16]) != 0
 host_exit_code = int(sys.argv[17])
 capture_overlay = int(sys.argv[18]) != 0
+timeout_seconds = int(sys.argv[19]) if sys.argv[19] else 0
 frames_dir = output_dir / "frames"
 frame_meta_dir = output_dir / "frame-meta"
 
@@ -441,12 +464,28 @@ state_hash = None
 if frame_files:
     state_hash = scene_pixel_hash(frame_files[-1])
 
+expected_frame_numbers = []
+if not until_exit and requested_interval > 0:
+    expected_frame_numbers = list(range(0, requested_frames + 1, requested_interval))
+expected_frame_names = {f"frame_{frame_no:05d}.bmp" for frame_no in expected_frame_numbers}
+actual_frame_names = {path.name for path in frame_files}
+missing_frames = sorted(expected_frame_names - actual_frame_names)
+missing_meta = sorted(
+    f"frame_{frame_no:05d}.json"
+    for frame_no in expected_frame_numbers
+    if not (frame_meta_dir / f"frame_{frame_no:05d}.json").is_file()
+)
+timed_out = host_exit_code == 124
+
 outcome = {
     "exit_code": host_exit_code,
-    "timed_out": False,
+    "timed_out": timed_out,
     "frames_captured": len(frame_files),
+    "expected_frames": len(expected_frame_numbers),
+    "missing_frame_files": missing_frames,
+    "missing_meta_files": missing_meta,
     "state_hash": state_hash,
-    "has_fatal_error": False,
+    "has_fatal_error": bool(missing_frames or missing_meta or (timed_out and until_exit)),
     "likely_scene_not_started": False,
     "likely_scene_broken": False,
     "likely_visual_broken": False,
@@ -492,7 +531,7 @@ result = {
         "frames": requested_frames,
         "interval": requested_interval,
         "until_exit": until_exit,
-        "timeout": None,
+        "timeout": timeout_seconds,
         "cpu_mode": "host",
         "forced_seed": forced_seed,
         "forced_island_position": (
@@ -537,6 +576,17 @@ result = {
     "visual_entry_scene": outcome.get("visual_entry_scene"),
     "visual_last_scene": outcome.get("visual_last_scene"),
 }, indent=2) + "\n", encoding="utf-8")
+
+if missing_frames or missing_meta:
+    missing = []
+    if missing_frames:
+        missing.append(f"missing frame files: {', '.join(missing_frames)}")
+    if missing_meta:
+        missing.append(f"missing meta files: {', '.join(missing_meta)}")
+    raise SystemExit("capture incomplete: " + "; ".join(missing))
+
+if timed_out and until_exit:
+    raise SystemExit("capture timed out before scene exit")
 
 cards = []
 for png_path in png_files:

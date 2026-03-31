@@ -15,6 +15,12 @@ OUT_DIR="$PROJECT_ROOT/host-script-review"
 TMP_DIR="$PROJECT_ROOT/host-script-review-verify"
 VERIFY_REPRO=1
 
+cleanup_capture_processes() {
+    pkill -f "$PROJECT_ROOT/scripts/capture-host-scene.sh" >/dev/null 2>&1 || true
+    pkill -f "$PROJECT_ROOT/build-host/jc_reborn" >/dev/null 2>&1 || true
+    pkill -f '/usr/bin/xvfb-run -a env SDL_AUDIODRIVER=dummy' >/dev/null 2>&1 || true
+}
+
 usage() {
     cat <<'USAGE'
 Usage: refresh-host-script-review.sh [OPTIONS]
@@ -40,6 +46,7 @@ done
 
 run_with_timeout() {
     local seconds="$1"; shift
+    cleanup_capture_processes
     set +e
     timeout "$seconds" "$@"
     local rc=$?
@@ -125,6 +132,9 @@ PY
 }
 
 "$SCRIPT_DIR/build-host.sh"
+
+trap cleanup_capture_processes EXIT
+cleanup_capture_processes
 
 capture_review_set "$OUT_DIR"
 assert_zero_mismatches "$OUT_DIR/expectation-report.json" "expectation-report"

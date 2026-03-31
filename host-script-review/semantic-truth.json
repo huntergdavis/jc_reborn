@@ -31,6 +31,11 @@
           80
         ],
         "dominant_frame_state": "background_only",
+        "dominant_activity": "idle_background",
+        "stable_context_labels": [
+          "background_visible",
+          "raft_visible"
+        ],
         "transition_points": [
           {
             "frame_number": 80,
@@ -39,6 +44,21 @@
           }
         ],
         "timeline_signature": "0:background_only > 20:background_only > 40:background_only > 60:background_only > 80:johnny_only",
+        "unique_frame_signatures": [
+          "2ade26fa17ea6ebf",
+          "1e76666c6b3a69fe",
+          "1e76666c6b3a69fe",
+          "1e76666c6b3a69fe",
+          "ad90f1db0967e4c5"
+        ],
+        "identification_traits": [
+          "context:background_visible",
+          "context:raft_visible",
+          "dominant_activity:idle_background",
+          "dominant_state:background_only",
+          "entity:johnny",
+          "family:fishing"
+        ],
         "scene_signature": "d14b40d3fb855f5c122d"
       },
       "rows": [
@@ -58,6 +78,7 @@
           "activity_labels": [
             "idle_background"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -67,6 +88,13 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "2ade26fa17ea6ebf",
+          "identification_tokens": [
+            "family:fishing",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none"
+          ],
           "state_changed": false,
           "stable_run_length": 1,
           "previous_frame_state": null
@@ -91,6 +119,7 @@
             "idle_background",
             "raft_context"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -101,6 +130,15 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "1e76666c6b3a69fe",
+          "identification_tokens": [
+            "family:fishing",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
+            "ctx:raft_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": false,
           "stable_run_length": 2,
           "previous_frame_state": "background_only"
@@ -125,6 +163,7 @@
             "idle_background",
             "raft_context"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -135,6 +174,15 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "1e76666c6b3a69fe",
+          "identification_tokens": [
+            "family:fishing",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
+            "ctx:raft_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": false,
           "stable_run_length": 3,
           "previous_frame_state": "background_only"
@@ -159,6 +207,7 @@
             "idle_background",
             "raft_context"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -169,6 +218,15 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "1e76666c6b3a69fe",
+          "identification_tokens": [
+            "family:fishing",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
+            "ctx:raft_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": false,
           "stable_run_length": 4,
           "previous_frame_state": "background_only"
@@ -201,6 +259,7 @@
             "walking_activity",
             "raft_context"
           ],
+          "primary_activity": "walking_activity",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "trusted actor BMPs detected: JOHNWALK.BMP",
@@ -216,6 +275,16 @@
           },
           "region_anchor": "center",
           "frame_signature": "ad90f1db0967e4c5",
+          "identification_tokens": [
+            "family:fishing",
+            "state:johnny_only",
+            "subject:johnny",
+            "activity:walking_activity",
+            "anchor:center",
+            "entity:johnny",
+            "ctx:raft_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": true,
           "stable_run_length": 1,
           "previous_frame_state": "background_only"
@@ -253,6 +322,11 @@
           100
         ],
         "dominant_frame_state": "background_only",
+        "dominant_activity": "idle_background",
+        "stable_context_labels": [
+          "background_visible",
+          "raft_visible"
+        ],
         "transition_points": [
           {
             "frame_number": 100,
@@ -266,6 +340,22 @@
           }
         ],
         "timeline_signature": "0:background_only > 50:background_only > 100:johnny_in_mary_scene > 150:background_only > 200:background_only > 250:background_only",
+        "unique_frame_signatures": [
+          "2ade26fa17ea6ebf",
+          "befebd05033e35e8",
+          "df91b2555e0628ff",
+          "1e76666c6b3a69fe",
+          "1e76666c6b3a69fe",
+          "1e76666c6b3a69fe"
+        ],
+        "identification_traits": [
+          "context:background_visible",
+          "context:raft_visible",
+          "dominant_activity:idle_background",
+          "dominant_state:background_only",
+          "entity:johnny",
+          "family:mary"
+        ],
         "scene_signature": "b76ca5d687eab03cb470"
       },
       "rows": [
@@ -285,6 +375,7 @@
           "activity_labels": [
             "idle_background"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -294,6 +385,13 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "2ade26fa17ea6ebf",
+          "identification_tokens": [
+            "family:mary",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none"
+          ],
           "state_changed": false,
           "stable_run_length": 1,
           "previous_frame_state": null
@@ -320,6 +418,7 @@
             "tree_context",
             "raft_context"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -330,6 +429,16 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "befebd05033e35e8",
+          "identification_tokens": [
+            "family:mary",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
+            "ctx:raft_visible",
+            "ctx:tree_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": false,
           "stable_run_length": 2,
           "previous_frame_state": "background_only"
@@ -364,6 +473,7 @@
             "tree_context",
             "raft_context"
           ],
+          "primary_activity": "walking_activity",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "trusted actor BMPs detected: JOHNWALK.BMP",
@@ -379,6 +489,17 @@
           },
           "region_anchor": "center",
           "frame_signature": "df91b2555e0628ff",
+          "identification_tokens": [
+            "family:mary",
+            "state:johnny_in_mary_scene",
+            "subject:johnny",
+            "activity:walking_activity",
+            "anchor:center",
+            "entity:johnny",
+            "ctx:raft_visible",
+            "ctx:tree_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": true,
           "stable_run_length": 1,
           "previous_frame_state": "background_only"
@@ -403,6 +524,7 @@
             "idle_background",
             "raft_context"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -413,6 +535,15 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "1e76666c6b3a69fe",
+          "identification_tokens": [
+            "family:mary",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
+            "ctx:raft_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": true,
           "stable_run_length": 1,
           "previous_frame_state": "johnny_in_mary_scene"
@@ -437,6 +568,7 @@
             "idle_background",
             "raft_context"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -447,6 +579,15 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "1e76666c6b3a69fe",
+          "identification_tokens": [
+            "family:mary",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
+            "ctx:raft_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": false,
           "stable_run_length": 2,
           "previous_frame_state": "background_only"
@@ -471,6 +612,7 @@
             "idle_background",
             "raft_context"
           ],
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
             "no trusted actor BMPs in deduped visible draws",
@@ -481,6 +623,15 @@
           "actor_region": null,
           "region_anchor": null,
           "frame_signature": "1e76666c6b3a69fe",
+          "identification_tokens": [
+            "family:mary",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
+            "ctx:raft_visible",
+            "ctx:background_visible"
+          ],
           "state_changed": false,
           "stable_run_length": 3,
           "previous_frame_state": "background_only"

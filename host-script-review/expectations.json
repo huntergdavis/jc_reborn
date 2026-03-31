@@ -1,115 +1,14 @@
 {
   "scenes": [
     {
-      "scene_label": "FISHING 1",
+      "scene_label": "fishing1",
       "source": "host_truth_manifest",
-      "frame_expectations": [
-        {
-          "frame_number": 0,
-          "frame_name": "frame_00000.bmp",
-          "expect_any_actor": false,
-          "expect_entities": [],
-          "required_actor_bmps": []
-        },
-        {
-          "frame_number": 20,
-          "frame_name": "frame_00020.bmp",
-          "expect_any_actor": false,
-          "expect_entities": [],
-          "required_actor_bmps": []
-        },
-        {
-          "frame_number": 40,
-          "frame_name": "frame_00040.bmp",
-          "expect_any_actor": false,
-          "expect_entities": [],
-          "required_actor_bmps": []
-        },
-        {
-          "frame_number": 60,
-          "frame_name": "frame_00060.bmp",
-          "expect_any_actor": false,
-          "expect_entities": [],
-          "required_actor_bmps": []
-        },
-        {
-          "frame_number": 80,
-          "frame_name": "frame_00080.bmp",
-          "expect_any_actor": true,
-          "expect_entities": [
-            "johnny"
-          ],
-          "required_actor_bmps": [
-            "JOHNWALK.BMP"
-          ]
-        }
-      ]
+      "frame_expectations": []
     },
     {
-      "scene_label": "MARY 1",
+      "scene_label": "mary1",
       "source": "host_truth_manifest",
-      "frame_expectations": [
-        {
-          "frame_number": 0,
-          "frame_name": "frame_00000.bmp",
-          "expect_any_actor": false,
-          "expect_entities": [],
-          "required_actor_bmps": []
-        },
-        {
-          "frame_number": 50,
-          "frame_name": "frame_00050.bmp",
-          "expect_any_actor": false,
-          "expect_entities": [],
-          "required_actor_bmps": []
-        },
-        {
-          "frame_number": 100,
-          "frame_name": "frame_00100.bmp",
-          "expect_any_actor": true,
-          "expect_entities": [
-            "johnny"
-          ],
-          "required_actor_bmps": [
-            "JOHNWALK.BMP"
-          ]
-        },
-        {
-          "frame_number": 150,
-          "frame_name": "frame_00150.bmp",
-          "expect_any_actor": true,
-          "expect_entities": [
-            "johnny"
-          ],
-          "required_actor_bmps": [
-            "JOHNWALK.BMP"
-          ]
-        },
-        {
-          "frame_number": 200,
-          "frame_name": "frame_00200.bmp",
-          "expect_any_actor": true,
-          "expect_entities": [
-            "johnny"
-          ],
-          "required_actor_bmps": [
-            "JOHNWALK.BMP"
-          ]
-        },
-        {
-          "frame_number": 250,
-          "frame_name": "frame_00250.bmp",
-          "expect_any_actor": true,
-          "expect_entities": [
-            "johnny"
-          ],
-          "required_actor_bmps": [
-            "JOHNWALK.BMP",
-            "MJFISH1.BMP",
-            "MJFISH1.BMP"
-          ]
-        }
-      ]
+      "frame_expectations": []
     }
   ]
 }

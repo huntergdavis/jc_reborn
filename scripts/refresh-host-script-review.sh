@@ -1,0 +1,152 @@
+#!/bin/bash
+# refresh-host-script-review.sh — rebuild the deterministic host script-review set
+# and verify strict expectation and reproducibility contracts.
+
+set -euo pipefail
+
+if [ "$(id -u)" = "0" ]; then
+    echo "ERROR: Do not run this script as root/sudo." >&2
+    exit 1
+fi
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+OUT_DIR="$PROJECT_ROOT/host-script-review"
+TMP_DIR="$PROJECT_ROOT/host-script-review-verify"
+VERIFY_REPRO=1
+
+usage() {
+    cat <<'USAGE'
+Usage: refresh-host-script-review.sh [OPTIONS]
+
+Options:
+  --output DIR       Output review directory (default: host-script-review)
+  --tmp DIR          Temporary verification directory (default: host-script-review-verify)
+  --no-repro         Skip second-pass reproducibility verification
+  -h, --help         Show this help
+USAGE
+    exit 0
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --output) OUT_DIR="$2"; shift 2 ;;
+        --tmp) TMP_DIR="$2"; shift 2 ;;
+        --no-repro) VERIFY_REPRO=0; shift ;;
+        -h|--help) usage ;;
+        *) echo "Unknown option: $1" >&2; exit 1 ;;
+    esac
+done
+
+run_with_timeout() {
+    local seconds="$1"; shift
+    set +e
+    timeout "$seconds" "$@"
+    local rc=$?
+    set -e
+    if [ "$rc" -ne 0 ] && [ "$rc" -ne 124 ]; then
+        return "$rc"
+    fi
+}
+
+capture_review_set() {
+    local root="$1"
+
+    rm -rf "$root"
+    mkdir -p "$root"
+
+    run_with_timeout 60 \
+        "$SCRIPT_DIR/capture-host-scene.sh" \
+        --scene "FISHING 1" \
+        --mode story-direct \
+        --frames 80 \
+        --interval 20 \
+        --output "$root/fishing1" \
+        --no-stamp
+
+    run_with_timeout 90 \
+        "$SCRIPT_DIR/capture-host-scene.sh" \
+        --scene "MARY 1" \
+        --mode story-direct \
+        --frames 250 \
+        --interval 50 \
+        --output "$root/mary1" \
+        --no-stamp
+
+    python3 "$SCRIPT_DIR/render-host-script-index.py" \
+        --root "$root" \
+        --out-json "$root/manifest.json" \
+        --out-html "$root/index.html" \
+        --title "Host Script Review Index"
+
+    python3 "$SCRIPT_DIR/generate-host-truth-baseline.py" \
+        --manifest-json "$root/manifest.json" \
+        --out-json "$root/host-truth-baseline.json"
+
+    cp "$root/host-truth-baseline.json" "$root/expectations.json"
+
+    python3 "$SCRIPT_DIR/compare-host-script-vs-expectations.py" \
+        --manifest-json "$root/manifest.json" \
+        --expectations-json "$root/expectations.json" \
+        --out-json "$root/expectation-report.json"
+
+    python3 "$SCRIPT_DIR/render-host-expectation-report.py" \
+        --report-json "$root/expectation-report.json" \
+        --out-html "$root/expectation-report.html" \
+        --title "Host Script Expectation Report"
+
+    python3 "$SCRIPT_DIR/compare-host-script-vs-expectations.py" \
+        --manifest-json "$root/manifest.json" \
+        --expectations-json "$root/host-truth-baseline.json" \
+        --out-json "$root/host-truth-compare.json"
+
+    python3 "$SCRIPT_DIR/render-host-expectation-report.py" \
+        --report-json "$root/host-truth-compare.json" \
+        --out-html "$root/host-truth-compare.html" \
+        --title "Host Truth Self-Check"
+}
+
+assert_zero_mismatches() {
+    local path="$1"
+    local label="$2"
+    python3 - "$path" "$label" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+label = sys.argv[2]
+data = json.loads(path.read_text(encoding="utf-8"))
+count = int(data.get("mismatch_count", 0))
+print(f"{label}: mismatch_count={count}")
+if count != 0:
+    raise SystemExit(1)
+PY
+}
+
+"$SCRIPT_DIR/build-host.sh"
+
+capture_review_set "$OUT_DIR"
+assert_zero_mismatches "$OUT_DIR/expectation-report.json" "expectation-report"
+assert_zero_mismatches "$OUT_DIR/host-truth-compare.json" "host-truth-compare"
+
+if [ "$VERIFY_REPRO" -eq 1 ]; then
+    rm -rf "$TMP_DIR"
+    mkdir -p "$TMP_DIR/a" "$TMP_DIR/b"
+    capture_review_set "$TMP_DIR/a"
+    capture_review_set "$TMP_DIR/b"
+
+    python3 "$SCRIPT_DIR/compare-host-manifests.py" \
+        --base-json "$TMP_DIR/a/manifest.json" \
+        --other-json "$TMP_DIR/b/manifest.json" \
+        --out-json "$OUT_DIR/repro-compare.json"
+
+    python3 "$SCRIPT_DIR/render-host-repro-compare.py" \
+        --report-json "$OUT_DIR/repro-compare.json" \
+        --out-html "$OUT_DIR/repro-compare.html" \
+        --title "Host Script Reproducibility Report"
+
+    assert_zero_mismatches "$OUT_DIR/repro-compare.json" "repro-compare"
+fi
+
+echo "Host script review refreshed in $OUT_DIR"

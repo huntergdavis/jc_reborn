@@ -28,6 +28,7 @@ assert_clean_tracked_inputs() {
         scripts/compile-host-semantic-truth.py \
         scripts/compare-host-script-vs-expectations.py \
         scripts/evaluate-host-identification.py \
+        scripts/evaluate-host-identification-partials.py \
         scripts/identify-host-scene.py \
         scripts/render-host-expectation-report.py \
         scripts/render-host-repro-compare.py \
@@ -148,6 +149,10 @@ capture_review_set() {
         --report-json "$root/identification-selfcheck.json" \
         --out-json "$root/identification-eval.json"
 
+    python3 "$SCRIPT_DIR/evaluate-host-identification-partials.py" \
+        --semantic-json "$root/semantic-truth.json" \
+        --out-json "$root/identification-partials.json"
+
     python3 "$SCRIPT_DIR/generate-host-truth-baseline.py" \
         --manifest-json "$root/manifest.json" \
         --out-json "$root/host-truth-baseline.json"
@@ -238,6 +243,26 @@ print(
 PY
 }
 
+assert_identification_partials() {
+    local path="$1"
+    python3 - "$path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+if not data.get("passed"):
+    raise SystemExit("partial identification evaluation failed: " + "; ".join(data.get("failures", [])))
+print(
+    "identification-partials: ok "
+    f"query_count={data.get('query_count')} "
+    f"min_margin={data.get('min_margin')} "
+    f"min_ratio={data.get('min_best_to_second_ratio')}"
+)
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -303,12 +328,29 @@ if identify_eval_path.is_file():
     identify_eval["min_best_to_second_ratio"] = payload.get("min_best_to_second_ratio")
 checks["identification-eval"] = identify_eval
 
+identify_partials_path = root / "identification-partials.json"
+identify_partials = {
+    "present": identify_partials_path.is_file(),
+    "passed": False,
+    "query_count": 0,
+    "min_margin": None,
+    "min_best_to_second_ratio": None,
+}
+if identify_partials_path.is_file():
+    payload = json.loads(identify_partials_path.read_text(encoding="utf-8"))
+    identify_partials["passed"] = bool(payload.get("passed"))
+    identify_partials["query_count"] = int(payload.get("query_count", 0))
+    identify_partials["min_margin"] = payload.get("min_margin")
+    identify_partials["min_best_to_second_ratio"] = payload.get("min_best_to_second_ratio")
+checks["identification-partials"] = identify_partials
+
 digest_inputs = {}
 for name in (
     "manifest.json",
     "semantic-truth.json",
     "identification-selfcheck.json",
     "identification-eval.json",
+    "identification-partials.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -343,6 +385,8 @@ summary = {
         and checks["identification-selfcheck"]["passed"]
         and checks["identification-eval"]["present"]
         and checks["identification-eval"]["passed"]
+        and checks["identification-partials"]["present"]
+        and checks["identification-partials"]["passed"]
         and checks["expectation-report"]["present"]
         and checks["expectation-report"]["mismatch_count"] == 0
         and checks["host-truth-compare"]["present"]
@@ -364,7 +408,7 @@ summary = {
 
 (root / "verification-summary.txt").write_text(
     "status={status} git={git_head_short} digest={digest} "
-    "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} "
+    "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} "
     "identify-ratio={identify_ratio} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
@@ -372,6 +416,7 @@ summary = {
         digest=summary["artifact_sha256"],
         identify_selfcheck="ok" if checks["identification-selfcheck"]["passed"] else "fail",
         identify_eval="ok" if checks["identification-eval"]["passed"] else "fail",
+        identify_partials="ok" if checks["identification-partials"]["passed"] else "fail",
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
@@ -393,6 +438,7 @@ assert_zero_mismatches "$OUT_DIR/expectation-report.json" "expectation-report"
 assert_zero_mismatches "$OUT_DIR/host-truth-compare.json" "host-truth-compare"
 assert_identification_selfcheck "$OUT_DIR/identification-selfcheck.json"
 assert_identification_eval "$OUT_DIR/identification-eval.json"
+assert_identification_partials "$OUT_DIR/identification-partials.json"
 
 if [ "$VERIFY_REPRO" -eq 1 ]; then
     rm -rf "$TMP_DIR"

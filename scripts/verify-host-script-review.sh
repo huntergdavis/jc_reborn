@@ -45,6 +45,7 @@ required = [
     "semantic-truth.json",
     "identification-selfcheck.json",
     "identification-eval.json",
+    "identification-partials.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -83,6 +84,18 @@ print(
     f"min_ratio={identify_eval.get('min_best_to_second_ratio')}"
 )
 
+identify_partials = json.loads((root / "identification-partials.json").read_text(encoding="utf-8"))
+if not identify_partials.get("passed"):
+    raise SystemExit(
+        "identification-partials failed: " + "; ".join(identify_partials.get("failures", []))
+    )
+print(
+    "identification-partials: ok "
+    f"query_count={identify_partials.get('query_count')} "
+    f"min_margin={identify_partials.get('min_margin')} "
+    f"min_ratio={identify_partials.get('min_best_to_second_ratio')}"
+)
+
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -111,6 +124,16 @@ if eval_summary.get("max_nonmatch_score") != identify_eval.get("max_nonmatch_sco
     raise SystemExit("summary max_nonmatch_score mismatch for identification-eval")
 if eval_summary.get("min_best_to_second_ratio") != identify_eval.get("min_best_to_second_ratio"):
     raise SystemExit("summary min_best_to_second_ratio mismatch for identification-eval")
+
+partials_summary = ((summary.get("checks") or {}).get("identification-partials") or {})
+if not partials_summary.get("present") or not partials_summary.get("passed"):
+    raise SystemExit("summary reports identification-partials failure")
+if int(partials_summary.get("query_count", 0)) != int(identify_partials.get("query_count", 0)):
+    raise SystemExit("summary query_count mismatch for identification-partials")
+if partials_summary.get("min_margin") != identify_partials.get("min_margin"):
+    raise SystemExit("summary min_margin mismatch for identification-partials")
+if partials_summary.get("min_best_to_second_ratio") != identify_partials.get("min_best_to_second_ratio"):
+    raise SystemExit("summary min_best_to_second_ratio mismatch for identification-partials")
 
 artifact_inputs = summary.get("artifact_inputs") or {}
 if not artifact_inputs:

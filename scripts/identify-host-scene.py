@@ -27,6 +27,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     query_rows = rows_by_frame(query)
     cand_rows = rows_by_frame(candidate)
     shared_frames = sorted(set(query_rows) & set(cand_rows))
+    query_frame_count = len(query_rows)
 
     exact_frame_signature_matches = 0
     exact_state_matches = 0
@@ -53,6 +54,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         )
 
     shared_count = len(shared_frames)
+    shared_frame_coverage = (shared_count / query_frame_count) if query_frame_count else 0.0
     token_similarity = (token_similarity_sum / shared_count) if shared_count else 0.0
     activity_similarity = (activity_overlap_sum / shared_count) if shared_count else 0.0
 
@@ -74,6 +76,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += exact_primary_subject_matches * 2.0
     score += token_similarity * 20.0
     score += activity_similarity * 10.0
+    score += shared_frame_coverage * 25.0
     score += 5.0 if family_match else 0.0
     score += trait_similarity * 10.0
 
@@ -84,6 +87,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "exact_scene_signature": exact_scene_signature,
         "family_match": family_match,
         "shared_frame_count": shared_count,
+        "shared_frame_coverage": round(shared_frame_coverage, 6),
         "exact_frame_signature_matches": exact_frame_signature_matches,
         "exact_state_matches": exact_state_matches,
         "exact_primary_subject_matches": exact_primary_subject_matches,
@@ -98,9 +102,13 @@ def identify_status(best: dict | None, second: dict | None) -> tuple[str, str]:
     if not best:
         return "unknown", "no candidates"
     score = float(best.get("score", 0.0))
-    margin = score - float((second or {}).get("score", 0.0))
+    second_score = float((second or {}).get("score", 0.0))
+    margin = score - second_score
+    ratio = (score / second_score) if second_score > 0.0 else None
     if best.get("exact_scene_signature"):
         return "identified", "exact scene signature match"
+    if score >= 40.0 and margin >= 30.0 and (second_score <= 10.0 or (ratio is not None and ratio >= 4.0)):
+        return "identified", f"strong separated score {score:.3f} margin {margin:.3f}"
     if score >= 80.0 and margin >= 25.0:
         return "identified", f"strong score {score:.3f} with margin {margin:.3f}"
     if score >= 50.0 and margin >= 10.0:

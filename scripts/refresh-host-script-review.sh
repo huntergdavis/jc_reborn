@@ -232,7 +232,8 @@ if not data.get("passed"):
 print(
     "identification-eval: ok "
     f"min_margin={data.get('min_identified_margin')} "
-    f"max_nonmatch_score={data.get('max_nonmatch_score')}"
+    f"max_nonmatch_score={data.get('max_nonmatch_score')} "
+    f"min_ratio={data.get('min_best_to_second_ratio')}"
 )
 PY
 }
@@ -291,6 +292,7 @@ identify_eval = {
     "scene_count": 0,
     "min_identified_margin": None,
     "max_nonmatch_score": None,
+    "min_best_to_second_ratio": None,
 }
 if identify_eval_path.is_file():
     payload = json.loads(identify_eval_path.read_text(encoding="utf-8"))
@@ -298,6 +300,7 @@ if identify_eval_path.is_file():
     identify_eval["scene_count"] = int(payload.get("scene_count", 0))
     identify_eval["min_identified_margin"] = payload.get("min_identified_margin")
     identify_eval["max_nonmatch_score"] = payload.get("max_nonmatch_score")
+    identify_eval["min_best_to_second_ratio"] = payload.get("min_best_to_second_ratio")
 checks["identification-eval"] = identify_eval
 
 digest_inputs = {}
@@ -362,12 +365,14 @@ summary = {
 (root / "verification-summary.txt").write_text(
     "status={status} git={git_head_short} digest={digest} "
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} "
+    "identify-ratio={identify_ratio} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
         git_head_short=git_head_short,
         digest=summary["artifact_sha256"],
         identify_selfcheck="ok" if checks["identification-selfcheck"]["passed"] else "fail",
         identify_eval="ok" if checks["identification-eval"]["passed"] else "fail",
+        identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
         repro=checks["repro-compare"]["mismatch_count"],

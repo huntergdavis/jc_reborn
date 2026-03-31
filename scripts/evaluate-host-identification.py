@@ -11,6 +11,7 @@ def evaluate(report: dict) -> dict:
     min_identified_margin = None
     max_nonmatch_score = None
     min_nonmatch_margin = None
+    min_best_to_second_ratio = None
     failures: list[str] = []
 
     for row in report.get("rows", []):
@@ -19,7 +20,14 @@ def evaluate(report: dict) -> dict:
         best = row.get("best_match") or {}
         second = row.get("second_match") or {}
         margin = float(row.get("score_margin") or 0.0)
+        best_score = float(best.get("score") or 0.0)
         second_score = float(second.get("score") or 0.0)
+        if second_score > 0.0:
+            best_to_second_ratio = best_score / second_score
+        elif best_score > 0.0:
+            best_to_second_ratio = None
+        else:
+            best_to_second_ratio = 0.0
 
         if status != "identified":
             failures.append(f"{query}: status={status}")
@@ -32,11 +40,17 @@ def evaluate(report: dict) -> dict:
             max_nonmatch_score = second_score
         if min_nonmatch_margin is None or margin < min_nonmatch_margin:
             min_nonmatch_margin = margin
+        if best_to_second_ratio is not None and (
+            min_best_to_second_ratio is None or best_to_second_ratio < min_best_to_second_ratio
+        ):
+            min_best_to_second_ratio = best_to_second_ratio
 
         if margin < 100.0:
             failures.append(f"{query}: identification margin too small ({margin:.6f})")
         if second_score > 80.0:
             failures.append(f"{query}: nonmatch score too high ({second_score:.6f})")
+        if best_to_second_ratio is not None and best_to_second_ratio < 3.0:
+            failures.append(f"{query}: best/second ratio too small ({best_to_second_ratio:.6f})")
 
         rows.append(
             {
@@ -47,6 +61,7 @@ def evaluate(report: dict) -> dict:
                 "second_scene_label": second.get("scene_label"),
                 "second_score": second.get("score"),
                 "score_margin": row.get("score_margin"),
+                "best_to_second_ratio": best_to_second_ratio,
             }
         )
 
@@ -56,6 +71,7 @@ def evaluate(report: dict) -> dict:
         "min_identified_margin": min_identified_margin,
         "max_nonmatch_score": max_nonmatch_score,
         "min_nonmatch_margin": min_nonmatch_margin,
+        "min_best_to_second_ratio": min_best_to_second_ratio,
         "passed": not failures,
         "failures": failures,
     }

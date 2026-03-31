@@ -44,6 +44,7 @@ required = [
     "manifest.json",
     "semantic-truth.json",
     "identification-selfcheck.json",
+    "identification-eval.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -70,6 +71,17 @@ for row in identify.get("rows", []):
         raise SystemExit(f"identification selfcheck signature mismatch for {query}")
 print("identification-selfcheck: ok")
 
+identify_eval = json.loads((root / "identification-eval.json").read_text(encoding="utf-8"))
+if not identify_eval.get("passed"):
+    raise SystemExit(
+        "identification-eval failed: " + "; ".join(identify_eval.get("failures", []))
+    )
+print(
+    "identification-eval: ok "
+    f"min_margin={identify_eval.get('min_identified_margin')} "
+    f"max_nonmatch_score={identify_eval.get('max_nonmatch_score')}"
+)
+
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -80,6 +92,22 @@ for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     expected = (((summary.get("checks") or {}).get(name) or {}).get("mismatch_count"))
     if expected != mismatch_count:
         raise SystemExit(f"summary mismatch for {name}: expected {expected}, got {mismatch_count}")
+
+selfcheck_summary = ((summary.get("checks") or {}).get("identification-selfcheck") or {})
+if not selfcheck_summary.get("present") or not selfcheck_summary.get("passed"):
+    raise SystemExit("summary reports identification-selfcheck failure")
+if int(selfcheck_summary.get("row_count", 0)) != len(identify.get("rows", [])):
+    raise SystemExit("summary row_count mismatch for identification-selfcheck")
+
+eval_summary = ((summary.get("checks") or {}).get("identification-eval") or {})
+if not eval_summary.get("present") or not eval_summary.get("passed"):
+    raise SystemExit("summary reports identification-eval failure")
+if int(eval_summary.get("scene_count", 0)) != int(identify_eval.get("scene_count", 0)):
+    raise SystemExit("summary scene_count mismatch for identification-eval")
+if eval_summary.get("min_identified_margin") != identify_eval.get("min_identified_margin"):
+    raise SystemExit("summary min_identified_margin mismatch for identification-eval")
+if eval_summary.get("max_nonmatch_score") != identify_eval.get("max_nonmatch_score"):
+    raise SystemExit("summary max_nonmatch_score mismatch for identification-eval")
 
 artifact_inputs = summary.get("artifact_inputs") or {}
 if not artifact_inputs:

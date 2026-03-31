@@ -27,6 +27,7 @@ assert_clean_tracked_inputs() {
         scripts/capture-host-scene.sh \
         scripts/compile-host-semantic-truth.py \
         scripts/compare-host-script-vs-expectations.py \
+        scripts/evaluate-host-identification.py \
         scripts/identify-host-scene.py \
         scripts/render-host-expectation-report.py \
         scripts/render-host-repro-compare.py \
@@ -143,6 +144,10 @@ capture_review_set() {
         --query-json "$root/semantic-truth.json" \
         --out-json "$root/identification-selfcheck.json"
 
+    python3 "$SCRIPT_DIR/evaluate-host-identification.py" \
+        --report-json "$root/identification-selfcheck.json" \
+        --out-json "$root/identification-eval.json"
+
     python3 "$SCRIPT_DIR/generate-host-truth-baseline.py" \
         --manifest-json "$root/manifest.json" \
         --out-json "$root/host-truth-baseline.json"
@@ -213,6 +218,25 @@ print("identification-selfcheck: ok")
 PY
 }
 
+assert_identification_eval() {
+    local path="$1"
+    python3 - "$path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+if not data.get("passed"):
+    raise SystemExit("identification evaluation failed: " + "; ".join(data.get("failures", [])))
+print(
+    "identification-eval: ok "
+    f"min_margin={data.get('min_identified_margin')} "
+    f"max_nonmatch_score={data.get('max_nonmatch_score')}"
+)
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -242,11 +266,46 @@ for name in ("expectation-report", "host-truth-compare", "repro-compare"):
         "mismatch_count": int(payload.get("mismatch_count", 0)),
     }
 
+identify_selfcheck_path = root / "identification-selfcheck.json"
+identify_selfcheck = {
+    "present": identify_selfcheck_path.is_file(),
+    "passed": False,
+    "row_count": 0,
+}
+if identify_selfcheck_path.is_file():
+    payload = json.loads(identify_selfcheck_path.read_text(encoding="utf-8"))
+    rows = payload.get("rows", [])
+    identify_selfcheck["row_count"] = len(rows)
+    identify_selfcheck["passed"] = bool(rows) and all(
+        row.get("identification_status") == "identified"
+        and ((row.get("best_match") or {}).get("scene_label") == row.get("query_scene_label"))
+        and bool((row.get("best_match") or {}).get("exact_scene_signature"))
+        for row in rows
+    )
+checks["identification-selfcheck"] = identify_selfcheck
+
+identify_eval_path = root / "identification-eval.json"
+identify_eval = {
+    "present": identify_eval_path.is_file(),
+    "passed": False,
+    "scene_count": 0,
+    "min_identified_margin": None,
+    "max_nonmatch_score": None,
+}
+if identify_eval_path.is_file():
+    payload = json.loads(identify_eval_path.read_text(encoding="utf-8"))
+    identify_eval["passed"] = bool(payload.get("passed"))
+    identify_eval["scene_count"] = int(payload.get("scene_count", 0))
+    identify_eval["min_identified_margin"] = payload.get("min_identified_margin")
+    identify_eval["max_nonmatch_score"] = payload.get("max_nonmatch_score")
+checks["identification-eval"] = identify_eval
+
 digest_inputs = {}
 for name in (
     "manifest.json",
     "semantic-truth.json",
     "identification-selfcheck.json",
+    "identification-eval.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -277,7 +336,11 @@ summary = {
     "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
     "artifact_inputs": digest_inputs,
     "all_passed": (
-        checks["expectation-report"]["present"]
+        checks["identification-selfcheck"]["present"]
+        and checks["identification-selfcheck"]["passed"]
+        and checks["identification-eval"]["present"]
+        and checks["identification-eval"]["passed"]
+        and checks["expectation-report"]["present"]
         and checks["expectation-report"]["mismatch_count"] == 0
         and checks["host-truth-compare"]["present"]
         and checks["host-truth-compare"]["mismatch_count"] == 0
@@ -298,10 +361,13 @@ summary = {
 
 (root / "verification-summary.txt").write_text(
     "status={status} git={git_head_short} digest={digest} "
+    "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
         git_head_short=git_head_short,
         digest=summary["artifact_sha256"],
+        identify_selfcheck="ok" if checks["identification-selfcheck"]["passed"] else "fail",
+        identify_eval="ok" if checks["identification-eval"]["passed"] else "fail",
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
         repro=checks["repro-compare"]["mismatch_count"],
@@ -321,6 +387,7 @@ capture_review_set "$OUT_DIR"
 assert_zero_mismatches "$OUT_DIR/expectation-report.json" "expectation-report"
 assert_zero_mismatches "$OUT_DIR/host-truth-compare.json" "host-truth-compare"
 assert_identification_selfcheck "$OUT_DIR/identification-selfcheck.json"
+assert_identification_eval "$OUT_DIR/identification-eval.json"
 
 if [ "$VERIFY_REPRO" -eq 1 ]; then
     rm -rf "$TMP_DIR"

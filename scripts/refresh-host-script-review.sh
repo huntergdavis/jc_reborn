@@ -19,6 +19,29 @@ cleanup_capture_processes() {
     pkill -f "$PROJECT_ROOT/scripts/capture-host-scene.sh" >/dev/null 2>&1 || true
     pkill -f "$PROJECT_ROOT/build-host/jc_reborn" >/dev/null 2>&1 || true
     pkill -f '/usr/bin/xvfb-run -a env SDL_AUDIODRIVER=dummy' >/dev/null 2>&1 || true
+    python3 - <<'PY'
+import os
+import signal
+import subprocess
+
+ps = subprocess.run(
+    ["ps", "-u", os.environ["USER"], "-o", "pid=", "-o", "args="],
+    check=True,
+    capture_output=True,
+    text=True,
+)
+for raw in ps.stdout.splitlines():
+    line = raw.strip()
+    if not line:
+        continue
+    pid_text, _, args = line.partition(" ")
+    args = args.strip()
+    if "Xvfb :" in args and "/tmp/xvfb-run." in args:
+        try:
+            os.kill(int(pid_text), signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+PY
 }
 
 usage() {
@@ -158,5 +181,7 @@ if [ "$VERIFY_REPRO" -eq 1 ]; then
 
     assert_zero_mismatches "$OUT_DIR/repro-compare.json" "repro-compare"
 fi
+
+rm -rf "$TMP_DIR"
 
 echo "Host script review refreshed in $OUT_DIR"

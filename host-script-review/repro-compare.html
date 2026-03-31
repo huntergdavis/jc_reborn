@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Host Script Reproducibility Report</title>
+  <style>
+    :root {
+      --bg:#f6f1e8; --panel:#fffaf3; --line:#d6c7b5; --text:#241d17; --muted:#6f6457;
+      --ok:#edf6ea; --mismatch:#fff0e1;
+    }
+    body {
+      margin:24px;
+      background:linear-gradient(180deg,#faf5ec 0%,#eee2d0 100%);
+      color:var(--text);
+      font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+    main { max-width: 1480px; margin: 0 auto; }
+    .meta { color: var(--muted); margin-bottom: 14px; }
+    table { width:100%; border-collapse:collapse; background:var(--panel); }
+    th,td { border:1px solid var(--line); text-align:left; padding:8px 10px; vertical-align:top; }
+    th { background:#efe1cd; }
+    tr.ok { background:var(--ok); }
+    tr.mismatch { background:var(--mismatch); }
+    a { color:#0f5ea8; text-decoration:none; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Host Script Reproducibility Report</h1>
+    <div class="meta">mismatch_count=0</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Scene</th>
+          <th>No</th>
+          <th>Base Frame</th>
+          <th>Other Frame</th>
+          <th>Base Actors</th>
+          <th>Other Actors</th>
+          <th>Base BMPs</th>
+          <th>Other BMPs</th>
+          <th>Problems</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+<tr class="ok">
+  <td>FISHING 1</td>
+  <td>0</td>
+  <td><a href="../host-script-review-seeded-a/fishing1/frame_00000.bmp">frame_00000.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/fishing1/frame_00000.bmp">frame_00000.bmp</a></td>
+  <td>{}</td>
+  <td>{}</td>
+  <td>[]</td>
+  <td>[]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>FISHING 1</td>
+  <td>20</td>
+  <td><a href="../host-script-review-seeded-a/fishing1/frame_00020.bmp">frame_00020.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/fishing1/frame_00020.bmp">frame_00020.bmp</a></td>
+  <td>{}</td>
+  <td>{}</td>
+  <td>[]</td>
+  <td>[]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>FISHING 1</td>
+  <td>40</td>
+  <td><a href="../host-script-review-seeded-a/fishing1/frame_00040.bmp">frame_00040.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/fishing1/frame_00040.bmp">frame_00040.bmp</a></td>
+  <td>{}</td>
+  <td>{}</td>
+  <td>[]</td>
+  <td>[]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>FISHING 1</td>
+  <td>60</td>
+  <td><a href="../host-script-review-seeded-a/fishing1/frame_00060.bmp">frame_00060.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/fishing1/frame_00060.bmp">frame_00060.bmp</a></td>
+  <td>{}</td>
+  <td>{}</td>
+  <td>[]</td>
+  <td>[]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>FISHING 1</td>
+  <td>80</td>
+  <td><a href="../host-script-review-seeded-a/fishing1/frame_00080.bmp">frame_00080.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/fishing1/frame_00080.bmp">frame_00080.bmp</a></td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>MARY 1</td>
+  <td>0</td>
+  <td><a href="../host-script-review-seeded-a/mary1/frame_00000.bmp">frame_00000.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/mary1/frame_00000.bmp">frame_00000.bmp</a></td>
+  <td>{}</td>
+  <td>{}</td>
+  <td>[]</td>
+  <td>[]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>MARY 1</td>
+  <td>50</td>
+  <td><a href="../host-script-review-seeded-a/mary1/frame_00050.bmp">frame_00050.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/mary1/frame_00050.bmp">frame_00050.bmp</a></td>
+  <td>{}</td>
+  <td>{}</td>
+  <td>[]</td>
+  <td>[]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>MARY 1</td>
+  <td>100</td>
+  <td><a href="../host-script-review-seeded-a/mary1/frame_00100.bmp">frame_00100.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/mary1/frame_00100.bmp">frame_00100.bmp</a></td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>MARY 1</td>
+  <td>150</td>
+  <td><a href="../host-script-review-seeded-a/mary1/frame_00150.bmp">frame_00150.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/mary1/frame_00150.bmp">frame_00150.bmp</a></td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>MARY 1</td>
+  <td>200</td>
+  <td><a href="../host-script-review-seeded-a/mary1/frame_00200.bmp">frame_00200.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/mary1/frame_00200.bmp">frame_00200.bmp</a></td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>{&#x27;johnny&#x27;: 1}</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;]</td>
+  <td>none</td>
+</tr>
+
+<tr class="ok">
+  <td>MARY 1</td>
+  <td>250</td>
+  <td><a href="../host-script-review-seeded-a/mary1/frame_00250.bmp">frame_00250.bmp</a></td>
+  <td><a href="../host-script-review-seeded-b/mary1/frame_00250.bmp">frame_00250.bmp</a></td>
+  <td>{&#x27;johnny&#x27;: 3}</td>
+  <td>{&#x27;johnny&#x27;: 3}</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;, &#x27;MJFISH1.BMP&#x27;, &#x27;MJFISH1.BMP&#x27;]</td>
+  <td>[&#x27;JOHNWALK.BMP&#x27;, &#x27;MJFISH1.BMP&#x27;, &#x27;MJFISH1.BMP&#x27;]</td>
+  <td>none</td>
+</tr>
+
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>

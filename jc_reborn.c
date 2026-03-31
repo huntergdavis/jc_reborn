@@ -44,6 +44,7 @@ int fclose(FILE *stream);
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 #endif
 
 #include "mytypes.h"
@@ -103,6 +104,10 @@ static int  argIsland   = 0;
 
 static char *args[3];
 static int  numArgs  = 0;
+
+#ifndef PS1_BUILD
+static int hostForcedSeed = -1;
+#endif
 
 #ifdef PS1_BUILD
 #define PS1_BOOT_OVERRIDE_FILE "BOOTMODE.TXT"
@@ -193,6 +198,12 @@ static void ps1ApplyBootOverride(char *buffer)
 
     if (!strcmp(tokens[0], "story")) {
         if (tokenCount >= 3 && !strcmp(tokens[1], "single")) {
+            /* "story single N" plays one scene via normal story loop (keeps running) */
+            storySetBootSingleSceneIndex(atoi(tokens[2]));
+            return;
+        }
+        if (tokenCount >= 3 && !strcmp(tokens[1], "direct")) {
+            /* "story direct N" plays one scene directly and exits when ADS finishes */
             ps1BootDirectSceneIndex = atoi(tokens[2]);
             return;
         }
@@ -360,6 +371,13 @@ static void usage()
         printf("         hotkeys         - enable hot keys\n");
         printf("         capture-frame N - capture frame N to file (for visual testing)\n");
         printf("         capture-output FILE - specify output file for captured frame\n");
+        printf("         capture-dir DIR - capture a frame sequence into DIR/frame_XXXXX.bmp\n");
+        printf("         capture-meta-dir DIR - emit per-frame sprite metadata JSON into DIR\n");
+        printf("         capture-range START END - capture inclusive frame range; END=-1 means until exit\n");
+        printf("         capture-interval N - capture every Nth frame in the active range\n");
+        printf("         capture-overlay - embed a machine-readable debug overlay in captures\n");
+        printf("         capture-scene-label TEXT - annotate metadata with the scene label\n");
+        printf("         seed N          - force deterministic RNG seed for host runs\n");
         printf("\n");
         printf(" While-playing hot-keys (if enabled):\n");
         printf("         Esc        - Terminate immediately\n");
@@ -449,6 +467,62 @@ static void parseArgs(int argc, char **argv)
                     usage();
                 }
             }
+            else if (!strcmp(argv[i], "capture-dir")) {
+                if (i + 1 < argc) {
+                    grCaptureDir = argv[++i];
+                } else {
+                    fprintf(stderr, "Error: capture-dir requires a directory\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "capture-meta-dir")) {
+                if (i + 1 < argc) {
+                    grCaptureMetaDir = argv[++i];
+                } else {
+                    fprintf(stderr, "Error: capture-meta-dir requires a directory\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "capture-range")) {
+                if (i + 2 < argc) {
+                    grCaptureStartFrame = atoi(argv[++i]);
+                    grCaptureEndFrame = atoi(argv[++i]);
+                } else {
+                    fprintf(stderr, "Error: capture-range requires START and END\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "capture-interval")) {
+                if (i + 1 < argc) {
+                    grCaptureInterval = atoi(argv[++i]);
+                    if (grCaptureInterval <= 0) {
+                        fprintf(stderr, "Error: capture-interval must be > 0\n");
+                        usage();
+                    }
+                } else {
+                    fprintf(stderr, "Error: capture-interval requires N\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "capture-overlay")) {
+                grCaptureOverlay = 1;
+            }
+            else if (!strcmp(argv[i], "capture-scene-label")) {
+                if (i + 1 < argc) {
+                    grCaptureSetSceneLabel(argv[++i]);
+                } else {
+                    fprintf(stderr, "Error: capture-scene-label requires text\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "seed")) {
+                if (i + 1 < argc) {
+                    hostForcedSeed = atoi(argv[++i]);
+                } else {
+                    fprintf(stderr, "Error: seed requires a value\n");
+                    usage();
+                }
+            }
         }
     }
 
@@ -501,6 +575,11 @@ int main(int argc, char **argv)
         debugMode = 1;
 
     parseResourceFiles("RESOURCE.MAP");
+
+    if (hostForcedSeed >= 0)
+        srand((unsigned int)hostForcedSeed);
+    else
+        srand((unsigned int)time(NULL));
 #endif
 
 #ifdef PS1_BUILD

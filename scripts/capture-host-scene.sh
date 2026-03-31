@@ -21,7 +21,7 @@ OUTPUT_DIR="$PROJECT_ROOT/host-results/scene"
 FRAMES=600
 INTERVAL=60
 DURATION_TABLE=""
-SEED=""
+SEED="1"
 MODE="scene-default"
 ISLAND_X=""
 ISLAND_Y=""
@@ -29,6 +29,7 @@ LOWTIDE=""
 SKIP_VISUAL_DETECT=1
 STAMP_PREFIX=1
 UNTIL_EXIT=0
+CAPTURE_OVERLAY=0
 
 usage() {
     cat <<'USAGE'
@@ -41,7 +42,7 @@ Options:
   --until-exit         Capture every requested frame until the executable returns
   --duration-table P   JSON from estimate-scene-durations.py; used when --frames auto
   --interval N         Capture every Nth frame (default: 60)
-  --seed N             Force deterministic RNG seed
+  --seed N             Force deterministic RNG seed (default: 1)
   --island-x N         Force island X position
   --island-y N         Force island Y position
   --lowtide 0|1        Force low tide state
@@ -50,6 +51,7 @@ Options:
   --visual-detect      Run expensive visual_detect.py postprocess
   --skip-visual-detect Skip expensive visual_detect.py postprocess (default)
   --no-stamp           Do not prefix the output leaf with UTC timestamp
+  --overlay            Embed debug overlay blocks in captured screenshots
   -h, --help           Show this help
 USAGE
     exit 0
@@ -72,6 +74,7 @@ while [ $# -gt 0 ]; do
         --visual-detect) SKIP_VISUAL_DETECT=0; shift ;;
         --skip-visual-detect) SKIP_VISUAL_DETECT=1; shift ;;
         --no-stamp) STAMP_PREFIX=0; shift ;;
+        --overlay) CAPTURE_OVERLAY=1; shift ;;
         -h|--help) usage ;;
         *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
@@ -107,7 +110,9 @@ fi
 mkdir -p "$OUTPUT_DIR"
 OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
 FRAMES_DIR="$OUTPUT_DIR/frames"
+FRAME_META_DIR="$OUTPUT_DIR/frame-meta"
 mkdir -p "$FRAMES_DIR"
+mkdir -p "$FRAME_META_DIR"
 
 SCENE_INDEX=""
 STATUS=""
@@ -216,8 +221,13 @@ capture_ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 pushd "$RES_DIR" >/dev/null
 capture_args=(
     capture-dir "$FRAMES_DIR"
+    capture-meta-dir "$FRAME_META_DIR"
+    capture-scene-label "$SCENE"
     capture-interval "$INTERVAL"
 )
+if [ "$CAPTURE_OVERLAY" -eq 1 ]; then
+    capture_args+=(capture-overlay)
+fi
 if [ "$UNTIL_EXIT" -eq 1 ]; then
     capture_args+=(capture-range 0 -1)
 else
@@ -233,7 +243,7 @@ set -e
 popd >/dev/null
 
 python3 - "$PROJECT_ROOT" "$OUTPUT_DIR" "$SCENE_LIST_FILE" "$ADS_NAME" "$TAG" \
-           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" <<'PY'
+           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" <<'PY'
 import hashlib
 import json
 import os
@@ -260,7 +270,9 @@ forced_low_tide = int(sys.argv[14]) if sys.argv[14] else None
 skip_visual_detect = int(sys.argv[15]) != 0
 until_exit = int(sys.argv[16]) != 0
 host_exit_code = int(sys.argv[17])
+capture_overlay = int(sys.argv[18]) != 0
 frames_dir = output_dir / "frames"
+frame_meta_dir = output_dir / "frame-meta"
 
 frame_files = sorted(frames_dir.glob("frame_*.bmp"))
 png_dir = output_dir / "frames-png"
@@ -493,6 +505,7 @@ result = {
     "paths": {
         "output_dir": str(output_dir.resolve()),
         "frames_dir": str(frames_dir.resolve()),
+        "frame_meta_dir": str(frame_meta_dir.resolve()),
         "visual": str((output_dir / "visual.json").resolve()),
         "visual_batch": str((output_dir / "visual-batch.json").resolve()),
     },
@@ -515,8 +528,10 @@ result = {
     ),
     "forced_low_tide": forced_low_tide,
     "capture_date": capture_ts,
+    "capture_overlay": capture_overlay,
     "frame_count": len(frame_files),
     "frames": [p.name for p in frame_files],
+    "frame_meta_files": [p.name for p in sorted(frame_meta_dir.glob("frame_*.json"))],
     "visual_last": outcome["visual_last"],
     "visual_best": outcome.get("visual_best"),
     "visual_entry_scene": outcome.get("visual_entry_scene"),
@@ -555,6 +570,7 @@ review_html = f"""<!doctype html>
       <h1>{ads_name} {tag} Host Capture Review</h1>
       <div>Boot: <code>{boot_string}</code></div>
       <div>Frames: {len(png_files)} at {requested_interval}-frame interval through {requested_frames}</div>
+      <div>Frame metadata: <code>{frame_meta_dir.resolve()}</code> overlay={str(capture_overlay).lower()}</div>
     </div>
     {''.join(cards)}
   </main>

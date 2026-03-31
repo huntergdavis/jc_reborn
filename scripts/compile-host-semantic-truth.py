@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 from pathlib import Path
@@ -117,6 +118,45 @@ def semantic_reasons(
     return reasons
 
 
+def primary_subject(entities: list[str], actor_count: int, frame_state: str) -> str:
+    if actor_count == 0:
+        return "none"
+    if "johnny" in entities and "mary" not in entities and "suzy" not in entities:
+        return "johnny"
+    if "mary" in entities and "johnny" not in entities and "suzy" not in entities:
+        return "mary"
+    if "suzy" in entities and len(entities) == 1:
+        return "suzy"
+    if frame_state == "johnny_mary_pair":
+        return "johnny_mary_pair"
+    return "mixed"
+
+
+def activity_labels(frame_state: str, pose_labels: list[str], context_labels: list[str], family: str) -> list[str]:
+    labels: list[str] = []
+    if frame_state == "background_only":
+        labels.append("idle_background")
+    if "johnny_fishing_pose" in pose_labels:
+        labels.append("fishing_activity")
+    elif frame_state == "johnny_only" and family == "fishing":
+        labels.append("fishing_scene_presence")
+    if "johnny_walking_pose" in pose_labels:
+        labels.append("walking_activity")
+    if "johnny_reading_pose" in pose_labels:
+        labels.append("reading_activity")
+    if "date_scene_pose" in pose_labels:
+        labels.append("date_activity")
+    if "breakup_scene_pose" in pose_labels:
+        labels.append("breakup_activity")
+    if family == "mary" and frame_state == "johnny_in_mary_scene":
+        labels.append("mary_scene_johnny_presence")
+    if "tree_visible" in context_labels:
+        labels.append("tree_context")
+    if "raft_visible" in context_labels:
+        labels.append("raft_context")
+    return labels
+
+
 def frame_region(summary: dict) -> dict | None:
     actors = summary.get("actor_candidates") or []
     if not actors:
@@ -144,17 +184,77 @@ def region_anchor(region: dict | None) -> str | None:
     return "right"
 
 
+def frame_signature(row: dict) -> str:
+    payload = {
+        "frame_state": row["frame_state"],
+        "primary_subject": row["primary_subject"],
+        "entities": row["entities"],
+        "bmp_names": row["bmp_names"],
+        "pose_labels": row["pose_labels"],
+        "context_labels": row["context_labels"],
+        "region_anchor": row["region_anchor"],
+    }
+    compact = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(compact).hexdigest()[:16]
+
+
+def annotate_transitions(rows: list[dict]) -> None:
+    prev_state = None
+    stable_run_length = 0
+    for row in rows:
+        current = row["frame_state"]
+        if current == prev_state:
+            stable_run_length += 1
+            row["state_changed"] = False
+        else:
+            stable_run_length = 1
+            row["state_changed"] = prev_state is not None
+        row["stable_run_length"] = stable_run_length
+        row["previous_frame_state"] = prev_state
+        prev_state = current
+
+
 def scene_summary(rows: list[dict], family: str) -> dict:
     observed_entities = sorted({entity for row in rows for entity in row["entities"]})
     observed_states = sorted({row["frame_state"] for row in rows})
     observed_pose_labels = sorted({label for row in rows for label in row["pose_labels"]})
+    observed_activities = sorted({label for row in rows for label in row["activity_labels"]})
     key_frames = [row["frame_number"] for row in rows if row["frame_state"] != "background_only"]
+    dominant_state = None
+    if rows:
+        counts: dict[str, int] = {}
+        for row in rows:
+            counts[row["frame_state"]] = counts.get(row["frame_state"], 0) + 1
+        dominant_state = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[0][0]
+    transition_points = [
+        {"frame_number": row["frame_number"], "from": row["previous_frame_state"], "to": row["frame_state"]}
+        for row in rows if row.get("state_changed")
+    ]
+    timeline_signature = " > ".join(
+        f"{row['frame_number']}:{row['frame_state']}"
+        for row in rows
+    )
+    scene_signature_payload = json.dumps(
+        {
+            "family": family,
+            "timeline_signature": timeline_signature,
+            "observed_entities": observed_entities,
+            "observed_activities": observed_activities,
+        },
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
     return {
         "scene_family": family,
         "observed_entities": observed_entities,
         "observed_frame_states": observed_states,
         "observed_pose_labels": observed_pose_labels,
+        "observed_activity_labels": observed_activities,
         "key_frames": key_frames,
+        "dominant_frame_state": dominant_state,
+        "transition_points": transition_points,
+        "timeline_signature": timeline_signature,
+        "scene_signature": hashlib.sha256(scene_signature_payload).hexdigest()[:20],
     }
 
 
@@ -177,23 +277,26 @@ def compile_semantic_truth(root: Path) -> dict:
             pose = classify_pose_labels(bmp_names, entities, family)
             region = frame_region(summary)
             frame_state = classify_frame_state(entities, pose, family)
-            rows.append(
-                {
-                    "frame_number": int(summary.get("frame_number", 0)),
-                    "scene_label": label,
-                    "scene_family": family,
-                    "entities": entities,
-                    "actor_count": int(summary.get("actor_candidate_draw_count", 0)),
-                    "bmp_names": bmp_names,
-                    "pose_labels": pose,
-                    "context_labels": ctx,
-                    "frame_state": frame_state,
-                    "semantic_confidence": semantic_confidence(frame_state, int(summary.get("actor_candidate_draw_count", 0)), bmp_names),
-                    "semantic_reasons": semantic_reasons(family, frame_state, entities, bmp_names, ctx),
-                    "actor_region": region,
-                    "region_anchor": region_anchor(region),
-                }
-            )
+            row = {
+                "frame_number": int(summary.get("frame_number", 0)),
+                "scene_label": label,
+                "scene_family": family,
+                "entities": entities,
+                "actor_count": int(summary.get("actor_candidate_draw_count", 0)),
+                "bmp_names": bmp_names,
+                "pose_labels": pose,
+                "context_labels": ctx,
+                "frame_state": frame_state,
+                "primary_subject": primary_subject(entities, int(summary.get("actor_candidate_draw_count", 0)), frame_state),
+                "activity_labels": activity_labels(frame_state, pose, ctx, family),
+                "semantic_confidence": semantic_confidence(frame_state, int(summary.get("actor_candidate_draw_count", 0)), bmp_names),
+                "semantic_reasons": semantic_reasons(family, frame_state, entities, bmp_names, ctx),
+                "actor_region": region,
+                "region_anchor": region_anchor(region),
+            }
+            row["frame_signature"] = frame_signature(row)
+            rows.append(row)
+        annotate_transitions(rows)
         scenes.append(
             {
                 "scene_dir": scene_dir.name,

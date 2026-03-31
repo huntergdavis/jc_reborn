@@ -157,6 +157,22 @@ def activity_labels(frame_state: str, pose_labels: list[str], context_labels: li
     return labels
 
 
+def primary_activity(activity_labels: list[str]) -> str:
+    for preferred in (
+        "fishing_activity",
+        "date_activity",
+        "breakup_activity",
+        "walking_activity",
+        "reading_activity",
+        "mary_scene_johnny_presence",
+        "fishing_scene_presence",
+        "idle_background",
+    ):
+        if preferred in activity_labels:
+            return preferred
+    return activity_labels[0] if activity_labels else "unknown_activity"
+
+
 def frame_region(summary: dict) -> dict | None:
     actors = summary.get("actor_candidates") or []
     if not actors:
@@ -198,6 +214,19 @@ def frame_signature(row: dict) -> str:
     return hashlib.sha256(compact).hexdigest()[:16]
 
 
+def identification_tokens(row: dict) -> list[str]:
+    tokens = [
+        f"family:{row['scene_family']}",
+        f"state:{row['frame_state']}",
+        f"subject:{row['primary_subject']}",
+        f"activity:{row['primary_activity']}",
+        f"anchor:{row['region_anchor'] or 'none'}",
+    ]
+    tokens.extend(f"entity:{entity}" for entity in row["entities"])
+    tokens.extend(f"ctx:{label}" for label in row["context_labels"])
+    return tokens
+
+
 def annotate_transitions(rows: list[dict]) -> None:
     prev_state = None
     stable_run_length = 0
@@ -230,6 +259,24 @@ def scene_summary(rows: list[dict], family: str) -> dict:
         {"frame_number": row["frame_number"], "from": row["previous_frame_state"], "to": row["frame_state"]}
         for row in rows if row.get("state_changed")
     ]
+    dominant_activity = None
+    if rows:
+        counts: dict[str, int] = {}
+        for row in rows:
+            counts[row["primary_activity"]] = counts.get(row["primary_activity"], 0) + 1
+        dominant_activity = sorted(counts.items(), key=lambda item: (-item[1], item[0]))[0][0]
+    context_counts: dict[str, int] = {}
+    for row in rows:
+        for label in row["context_labels"]:
+            context_counts[label] = context_counts.get(label, 0) + 1
+    stable_context = sorted(label for label, count in context_counts.items() if count >= max(1, len(rows) // 2))
+    identification_traits = sorted({
+        f"family:{family}",
+        f"dominant_state:{dominant_state or 'none'}",
+        f"dominant_activity:{dominant_activity or 'none'}",
+        *(f"context:{label}" for label in stable_context),
+        *(f"entity:{entity}" for entity in observed_entities),
+    })
     timeline_signature = " > ".join(
         f"{row['frame_number']}:{row['frame_state']}"
         for row in rows
@@ -252,8 +299,12 @@ def scene_summary(rows: list[dict], family: str) -> dict:
         "observed_activity_labels": observed_activities,
         "key_frames": key_frames,
         "dominant_frame_state": dominant_state,
+        "dominant_activity": dominant_activity,
+        "stable_context_labels": stable_context,
         "transition_points": transition_points,
         "timeline_signature": timeline_signature,
+        "unique_frame_signatures": [row["frame_signature"] for row in rows],
+        "identification_traits": identification_traits,
         "scene_signature": hashlib.sha256(scene_signature_payload).hexdigest()[:20],
     }
 
@@ -289,12 +340,14 @@ def compile_semantic_truth(root: Path) -> dict:
                 "frame_state": frame_state,
                 "primary_subject": primary_subject(entities, int(summary.get("actor_candidate_draw_count", 0)), frame_state),
                 "activity_labels": activity_labels(frame_state, pose, ctx, family),
+                "primary_activity": primary_activity(activity_labels(frame_state, pose, ctx, family)),
                 "semantic_confidence": semantic_confidence(frame_state, int(summary.get("actor_candidate_draw_count", 0)), bmp_names),
                 "semantic_reasons": semantic_reasons(family, frame_state, entities, bmp_names, ctx),
                 "actor_region": region,
                 "region_anchor": region_anchor(region),
             }
             row["frame_signature"] = frame_signature(row)
+            row["identification_tokens"] = identification_tokens(row)
             rows.append(row)
         annotate_transitions(rows)
         scenes.append(

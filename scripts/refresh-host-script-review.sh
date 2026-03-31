@@ -15,6 +15,29 @@ OUT_DIR="$PROJECT_ROOT/host-script-review"
 TMP_DIR="$PROJECT_ROOT/host-script-review-verify"
 VERIFY_REPRO=1
 
+assert_clean_tracked_inputs() {
+    local status
+    status="$(git -C "$PROJECT_ROOT" status --short --untracked-files=no -- \
+        host-script-review/expectations.json \
+        host-script-review/host-truth-baseline.json \
+        host-script-review/expectation-report.json \
+        host-script-review/host-truth-compare.json \
+        host-script-review/repro-compare.json \
+        host-script-review/verification-summary.json \
+        scripts/capture-host-scene.sh \
+        scripts/compare-host-script-vs-expectations.py \
+        scripts/render-host-expectation-report.py \
+        scripts/render-host-repro-compare.py \
+        scripts/render-host-script-index.py \
+        scripts/generate-host-truth-baseline.py \
+        scripts/refresh-host-script-review.sh)"
+    if [ -n "$status" ]; then
+        echo "ERROR: tracked host-review inputs are dirty; commit or stash them before refresh." >&2
+        echo "$status" >&2
+        exit 1
+    fi
+}
+
 cleanup_capture_processes() {
     pkill -f "$PROJECT_ROOT/scripts/capture-host-scene.sh" >/dev/null 2>&1 || true
     pkill -f "$PROJECT_ROOT/build-host/jc_reborn" >/dev/null 2>&1 || true
@@ -241,6 +264,7 @@ PY
 
 trap cleanup_capture_processes EXIT
 cleanup_capture_processes
+assert_clean_tracked_inputs
 
 capture_review_set "$OUT_DIR"
 assert_zero_mismatches "$OUT_DIR/expectation-report.json" "expectation-report"

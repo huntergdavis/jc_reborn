@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-03-31T22:19:43Z",
-  "git_head": "93682af5eb408b2caa73aca973b121c08a1b3950",
-  "git_head_short": "93682af5",
+  "generated_at": "2026-03-31T22:29:37Z",
+  "git_head": "de95b66b73ba9b193a1191066202f49744c88e7b",
+  "git_head_short": "de95b66b",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -17,10 +17,10 @@
       "mismatch_count": 0
     }
   },
-  "artifact_sha256": "3c7436ab8b7c960045af38cbfec94672f05e477eee1ada3a9baae61802f60760",
+  "artifact_sha256": "4b596efc1d84335d1fc8ea48ff660b291a6cb0a97ca176bbd1ddf0a0fa74c377",
   "artifact_inputs": {
     "manifest.json": "723393ac062242260d851aae83cfec8e1d1519587fe3fb1fce1c0092a0517972",
-    "semantic-truth.json": "a2b52e1150e9c66397e218d2d3dd2ca71588beb2daefe6fb1ac8669d5cb5ddb7",
+    "semantic-truth.json": "76432ef9378bf8bcd729c4329992d52c2d05cdb0981526270dc0f13f5659a96d",
     "expectations.json": "596cccf3ae1939927df9152e691e2bfaaccc2b5f695f2de5f48763dce7d13d34",
     "host-truth-baseline.json": "596cccf3ae1939927df9152e691e2bfaaccc2b5f695f2de5f48763dce7d13d34",
     "expectation-report.json": "ac6cd1b4af7b5661016292697cafd14d9bb64c09a071d577db5783a7c1133500",

@@ -5,6 +5,26 @@
       "scene_dir": "fishing1",
       "scene_label": "FISHING 1",
       "scene_family": "fishing",
+      "scene_summary": {
+        "scene_family": "fishing",
+        "observed_entities": [
+          "johnny"
+        ],
+        "observed_frame_states": [
+          "background_only",
+          "johnny_only"
+        ],
+        "observed_pose_labels": [
+          "actor_visible",
+          "fishing_scene_actor_present",
+          "johnny_visible",
+          "johnny_walking_pose",
+          "no_actor_visible"
+        ],
+        "key_frames": [
+          80
+        ]
+      },
       "rows": [
         {
           "frame_number": 0,
@@ -16,7 +36,16 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=fishing",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 20,
@@ -28,7 +57,20 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [
+            "raft_visible",
+            "background_visible"
+          ],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=fishing",
+            "context=raft_visible,background_visible",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 40,
@@ -40,7 +82,20 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [
+            "raft_visible",
+            "background_visible"
+          ],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=fishing",
+            "context=raft_visible,background_visible",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 60,
@@ -52,7 +107,20 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [
+            "raft_visible",
+            "background_visible"
+          ],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=fishing",
+            "context=raft_visible,background_visible",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 80,
@@ -71,12 +139,25 @@
             "johnny_walking_pose",
             "fishing_scene_actor_present"
           ],
+          "context_labels": [
+            "raft_visible",
+            "background_visible"
+          ],
+          "frame_state": "johnny_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "trusted actor BMPs detected: JOHNWALK.BMP",
+            "scene_family=fishing",
+            "context=raft_visible,background_visible",
+            "frame_state=johnny_only"
+          ],
           "actor_region": {
             "x": 340,
             "y": 254,
             "width": 40,
             "height": 76
-          }
+          },
+          "region_anchor": "center"
         }
       ]
     },
@@ -84,6 +165,26 @@
       "scene_dir": "mary1",
       "scene_label": "MARY 1",
       "scene_family": "mary",
+      "scene_summary": {
+        "scene_family": "mary",
+        "observed_entities": [
+          "johnny"
+        ],
+        "observed_frame_states": [
+          "background_only",
+          "johnny_in_mary_scene"
+        ],
+        "observed_pose_labels": [
+          "actor_visible",
+          "johnny_visible",
+          "johnny_walking_pose",
+          "mary_scene_johnny_only",
+          "no_actor_visible"
+        ],
+        "key_frames": [
+          100
+        ]
+      },
       "rows": [
         {
           "frame_number": 0,
@@ -95,7 +196,16 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=mary",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 50,
@@ -107,7 +217,21 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [
+            "raft_visible",
+            "tree_visible",
+            "background_visible"
+          ],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=mary",
+            "context=raft_visible,tree_visible,background_visible",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 100,
@@ -126,12 +250,26 @@
             "johnny_walking_pose",
             "mary_scene_johnny_only"
           ],
+          "context_labels": [
+            "raft_visible",
+            "tree_visible",
+            "background_visible"
+          ],
+          "frame_state": "johnny_in_mary_scene",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "trusted actor BMPs detected: JOHNWALK.BMP",
+            "scene_family=mary",
+            "context=raft_visible,tree_visible,background_visible",
+            "frame_state=johnny_in_mary_scene"
+          ],
           "actor_region": {
             "x": 286,
             "y": 251,
             "width": 48,
             "height": 73
-          }
+          },
+          "region_anchor": "center"
         },
         {
           "frame_number": 150,
@@ -143,7 +281,20 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [
+            "raft_visible",
+            "background_visible"
+          ],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=mary",
+            "context=raft_visible,background_visible",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 200,
@@ -155,7 +306,20 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [
+            "raft_visible",
+            "background_visible"
+          ],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=mary",
+            "context=raft_visible,background_visible",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         },
         {
           "frame_number": 250,
@@ -167,7 +331,20 @@
           "pose_labels": [
             "no_actor_visible"
           ],
-          "actor_region": null
+          "context_labels": [
+            "raft_visible",
+            "background_visible"
+          ],
+          "frame_state": "background_only",
+          "semantic_confidence": "high",
+          "semantic_reasons": [
+            "no trusted actor BMPs in deduped visible draws",
+            "scene_family=mary",
+            "context=raft_visible,background_visible",
+            "frame_state=background_only"
+          ],
+          "actor_region": null,
+          "region_anchor": null
         }
       ]
     }

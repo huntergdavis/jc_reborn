@@ -25,6 +25,57 @@ def context_change_points(rows: dict[int, dict]) -> set[int]:
     return points
 
 
+def subject_timeline_profile(rows: dict[int, dict]) -> dict:
+    ordered = sorted(rows)
+    if not ordered:
+        return {
+            "subjects": set(),
+            "first_active_frame": None,
+            "last_active_frame": None,
+            "active_span": 0,
+            "active_run_lengths": {},
+        }
+
+    active_subjects = [
+        (frame_no, rows[frame_no].get("primary_subject"))
+        for frame_no in ordered
+        if rows[frame_no].get("frame_state") != "background_only"
+        and rows[frame_no].get("primary_subject") not in (None, "none")
+    ]
+    run_lengths: dict[str, int] = {}
+    current_subject = None
+    current_length = 0
+    for frame_no in ordered:
+        row = rows[frame_no]
+        subject = row.get("primary_subject")
+        if row.get("frame_state") == "background_only" or subject in (None, "none"):
+            if current_subject is not None:
+                run_lengths[current_subject] = max(run_lengths.get(current_subject, 0), current_length)
+            current_subject = None
+            current_length = 0
+            continue
+        if subject == current_subject:
+            current_length += 1
+        else:
+            if current_subject is not None:
+                run_lengths[current_subject] = max(run_lengths.get(current_subject, 0), current_length)
+            current_subject = subject
+            current_length = 1
+    if current_subject is not None:
+        run_lengths[current_subject] = max(run_lengths.get(current_subject, 0), current_length)
+
+    first_active = active_subjects[0][0] if active_subjects else None
+    last_active = active_subjects[-1][0] if active_subjects else None
+    active_span = 0 if not active_subjects else (last_active - first_active)
+    return {
+        "subjects": {subject for _, subject in active_subjects},
+        "first_active_frame": first_active,
+        "last_active_frame": last_active,
+        "active_span": active_span,
+        "active_run_lengths": run_lengths,
+    }
+
+
 def jaccard(a: set[str], b: set[str]) -> float:
     if not a and not b:
         return 1.0
@@ -109,6 +160,18 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("context_transition_alignment")
     elif float(match.get("context_transition_similarity", 0.0)) >= 0.5 and profile["contexts"]:
         evidence.append("partial_context_transition_alignment")
+    if float(match.get("subject_set_similarity", 0.0)) >= 0.95 and profile["subjects"]:
+        evidence.append("subject_alignment")
+    elif float(match.get("subject_set_similarity", 0.0)) >= 0.5 and profile["subjects"]:
+        evidence.append("partial_subject_alignment")
+    if float(match.get("first_active_timing_similarity", 0.0)) >= 0.95 and profile["active_frame_count"] > 0:
+        evidence.append("subject_entry_timing_alignment")
+    elif float(match.get("first_active_timing_similarity", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
+        evidence.append("partial_subject_entry_timing_alignment")
+    if float(match.get("subject_persistence_similarity", 0.0)) >= 0.95 and profile["subjects"]:
+        evidence.append("subject_persistence_alignment")
+    elif float(match.get("subject_persistence_similarity", 0.0)) >= 0.5 and profile["subjects"]:
+        evidence.append("partial_subject_persistence_alignment")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -179,6 +242,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     }
     query_context_change_points = context_change_points(query_rows)
     candidate_context_change_points = context_change_points(cand_rows)
+    query_subject_profile = subject_timeline_profile(query_rows)
+    candidate_subject_profile = subject_timeline_profile(cand_rows)
 
     exact_frame_signature_matches = 0
     exact_state_matches = 0
@@ -244,6 +309,41 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     context_set_similarity = jaccard(query_context_set, candidate_context_set)
     transition_similarity = jaccard(query_transition_points, candidate_transition_points)
     context_transition_similarity = jaccard(query_context_change_points, candidate_context_change_points)
+    subject_set_similarity = jaccard(
+        set(query_subject_profile["subjects"]),
+        set(candidate_subject_profile["subjects"]),
+    )
+    first_active_timing_similarity = 1.0
+    if (
+        query_subject_profile["first_active_frame"] is not None
+        and candidate_subject_profile["first_active_frame"] is not None
+    ):
+        max_first_frame = max(
+            1,
+            query_subject_profile["first_active_frame"],
+            candidate_subject_profile["first_active_frame"],
+        )
+        first_active_timing_similarity = max(
+            0.0,
+            1.0
+            - abs(
+                query_subject_profile["first_active_frame"]
+                - candidate_subject_profile["first_active_frame"]
+            )
+            / max_first_frame,
+        )
+    subject_persistence_similarity = 1.0
+    shared_subjects = set(query_subject_profile["subjects"]) & set(candidate_subject_profile["subjects"])
+    if shared_subjects:
+        persistence_scores = []
+        for subject in sorted(shared_subjects):
+            q_len = query_subject_profile["active_run_lengths"].get(subject, 0)
+            c_len = candidate_subject_profile["active_run_lengths"].get(subject, 0)
+            max_len = max(1, q_len, c_len)
+            persistence_scores.append(1.0 - abs(q_len - c_len) / max_len)
+        subject_persistence_similarity = sum(persistence_scores) / len(persistence_scores)
+    elif query_subject_profile["subjects"] or candidate_subject_profile["subjects"]:
+        subject_persistence_similarity = 0.0
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -281,6 +381,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query else pose_similarity * 12.0
     score += transition_similarity * 8.0
     score += 0.0 if background_only_query else context_transition_similarity * 6.0
+    score += 0.0 if background_only_query else subject_set_similarity * 8.0
+    score += 0.0 if background_only_query else first_active_timing_similarity * 10.0
+    score += 0.0 if background_only_query else subject_persistence_similarity * 8.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
         score -= exact_state_matches * 1.0
@@ -294,6 +397,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= context_set_similarity * 4.0
         score -= (1.0 - transition_similarity) * 6.0
         score -= (1.0 - context_transition_similarity) * 4.0
+        score -= subject_set_similarity * 7.0
+        score -= first_active_timing_similarity * 5.0
+        score -= subject_persistence_similarity * 5.0
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -330,6 +436,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "context_set_similarity": round(context_set_similarity, 6),
         "transition_similarity": round(transition_similarity, 6),
         "context_transition_similarity": round(context_transition_similarity, 6),
+        "subject_set_similarity": round(subject_set_similarity, 6),
+        "first_active_timing_similarity": round(first_active_timing_similarity, 6),
+        "subject_persistence_similarity": round(subject_persistence_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

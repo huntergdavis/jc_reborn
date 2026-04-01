@@ -117,6 +117,24 @@ def state_transition_pairs(rows: dict[int, dict]) -> list[str]:
     return [f"{left}->{right}" for left, right in zip(sequence, sequence[1:])]
 
 
+def timed_state_transition_pairs(rows: dict[int, dict]) -> list[str]:
+    ordered = sorted(rows)
+    if not ordered:
+        return []
+    max_frame = max(ordered) or 1
+    pairs: list[str] = []
+    last_state = None
+    for frame_no in ordered:
+        state = rows[frame_no].get("frame_state")
+        if state != last_state:
+            if last_state is not None:
+                ratio = frame_no / max_frame
+                bucket = "early" if ratio < (1.0 / 3.0) else "mid" if ratio < (2.0 / 3.0) else "late"
+                pairs.append(f"{last_state}->{state}@{bucket}")
+            last_state = state
+    return pairs
+
+
 def jaccard(a: set[str], b: set[str]) -> float:
     if not a and not b:
         return 1.0
@@ -245,6 +263,14 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("transition_pair_count_alignment")
     elif float(match.get("transition_pair_count_similarity", 0.0)) >= 0.5 and profile["state_change_count"] > 0:
         evidence.append("partial_transition_pair_count_alignment")
+    if float(match.get("timed_transition_pair_similarity", 0.0)) >= 0.95 and profile["state_change_count"] > 0:
+        evidence.append("timed_transition_pair_alignment")
+    elif float(match.get("timed_transition_pair_similarity", 0.0)) >= 0.5 and profile["state_change_count"] > 0:
+        evidence.append("partial_timed_transition_pair_alignment")
+    if float(match.get("timed_transition_pair_count_similarity", 0.0)) >= 0.95 and profile["state_change_count"] > 0:
+        evidence.append("timed_transition_pair_count_alignment")
+    elif float(match.get("timed_transition_pair_count_similarity", 0.0)) >= 0.5 and profile["state_change_count"] > 0:
+        evidence.append("partial_timed_transition_pair_count_alignment")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -323,6 +349,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     candidate_state_sequence = state_sequence_profile(cand_rows)
     query_transition_pairs = state_transition_pairs(query_rows)
     candidate_transition_pairs = state_transition_pairs(cand_rows)
+    query_timed_transition_pairs = timed_state_transition_pairs(query_rows)
+    candidate_timed_transition_pairs = timed_state_transition_pairs(cand_rows)
 
     exact_frame_signature_matches = 0
     exact_state_matches = 0
@@ -473,6 +501,16 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     max_pair_len = max(1, len(query_transition_pairs), len(candidate_transition_pairs))
     transition_pair_similarity = transition_pair_prefix_matches / max_pair_len
     transition_pair_count_similarity = 1.0 - abs(len(query_transition_pairs) - len(candidate_transition_pairs)) / max_pair_len
+    timed_transition_pair_prefix_matches = 0
+    for q_pair, c_pair in zip(query_timed_transition_pairs, candidate_timed_transition_pairs):
+        if q_pair != c_pair:
+            break
+        timed_transition_pair_prefix_matches += 1
+    max_timed_pair_len = max(1, len(query_timed_transition_pairs), len(candidate_timed_transition_pairs))
+    timed_transition_pair_similarity = timed_transition_pair_prefix_matches / max_timed_pair_len
+    timed_transition_pair_count_similarity = 1.0 - abs(
+        len(query_timed_transition_pairs) - len(candidate_timed_transition_pairs)
+    ) / max_timed_pair_len
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -521,6 +559,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query or not has_active_alignment else state_count_similarity * 6.0
     score += 0.0 if background_only_query or not has_active_alignment else transition_pair_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else transition_pair_count_similarity * 6.0
+    score += 0.0 if background_only_query or not has_active_alignment else timed_transition_pair_similarity * 10.0
+    score += 0.0 if background_only_query or not has_active_alignment else timed_transition_pair_count_similarity * 6.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
         score -= exact_state_matches * 1.0
@@ -545,6 +585,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= state_count_similarity * 5.0
         score -= transition_pair_similarity * 10.0
         score -= transition_pair_count_similarity * 6.0
+        score -= timed_transition_pair_similarity * 12.0
+        score -= timed_transition_pair_count_similarity * 7.0
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -592,6 +634,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "state_count_similarity": round(state_count_similarity, 6),
         "transition_pair_similarity": round(transition_pair_similarity, 6),
         "transition_pair_count_similarity": round(transition_pair_count_similarity, 6),
+        "timed_transition_pair_similarity": round(timed_transition_pair_similarity, 6),
+        "timed_transition_pair_count_similarity": round(timed_transition_pair_count_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

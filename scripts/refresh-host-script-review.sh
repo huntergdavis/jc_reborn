@@ -23,6 +23,8 @@ assert_clean_tracked_inputs() {
         host-script-review/expectation-report.json \
         host-script-review/host-truth-compare.json \
         host-script-review/repro-compare.json \
+        host-script-review/frame-meta-regression-baseline.json \
+        host-script-review/frame-meta-regression-report.json \
         host-script-review/identification-regression-floors.json \
         host-script-review/semantic-regression-baseline.json \
         host-script-review/semantic-regression-report.json \
@@ -30,6 +32,7 @@ assert_clean_tracked_inputs() {
         scripts/capture-host-scene.sh \
         scripts/compile-host-semantic-truth.py \
         scripts/compare-host-script-vs-expectations.py \
+        scripts/evaluate-frame-meta-regression.py \
         scripts/evaluate-semantic-regression.py \
         scripts/evaluate-host-identification.py \
         scripts/evaluate-host-identification-challenges.py \
@@ -401,6 +404,27 @@ print("identification-regression-floors: ok")
 PY
 }
 
+assert_frame_meta_regression_baseline() {
+    local root="$1"
+    python3 "$SCRIPT_DIR/evaluate-frame-meta-regression.py" \
+        --baseline "$root/frame-meta-regression-baseline.json" \
+        --root "$root" \
+        --out-json "$root/frame-meta-regression-report.json"
+    python3 - "$root/frame-meta-regression-report.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+if not report.get("passed", False):
+    failures = []
+    for failure in report.get("failures", []):
+        failures.append(f"{failure.get('scene')} {failure.get('frame')} {failure.get('field')} drifted")
+    raise SystemExit("frame-meta-regression-baseline failed: " + "; ".join(failures))
+print("frame-meta-regression-baseline: ok")
+PY
+}
+
 assert_semantic_regression_baseline() {
     local root="$1"
     python3 "$SCRIPT_DIR/evaluate-semantic-regression.py" \
@@ -750,6 +774,7 @@ assert_identification_eval "$OUT_DIR/identification-eval.json"
 assert_identification_partials "$OUT_DIR/identification-partials.json"
 assert_identification_challenges "$OUT_DIR/identification-challenges.json"
 assert_identification_temporal "$OUT_DIR/identification-temporal.json"
+assert_frame_meta_regression_baseline "$OUT_DIR"
 assert_identification_regression_floors "$OUT_DIR"
 assert_semantic_regression_baseline "$OUT_DIR"
 

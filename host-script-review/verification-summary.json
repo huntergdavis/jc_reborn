@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T04:26:44Z",
-  "git_head": "e8bcc5c9d52655da712fa1d6a0fab623383acd2e",
-  "git_head_short": "e8bcc5c9",
+  "generated_at": "2026-04-01T04:45:19Z",
+  "git_head": "747c65b8af386864386748c369959960a823656a",
+  "git_head_short": "747c65b8",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -47,23 +47,23 @@
       "max_best_score": 144.638889,
       "max_margin": 144.638889,
       "max_unknown_best_score": 107.75,
-      "max_unknown_margin": 34.607143,
+      "max_unknown_margin": 11.5,
       "max_ambiguous_best_score": 144.638889,
       "max_ambiguous_margin": 144.638889,
       "unknown_score_headroom": 2.25,
-      "unknown_margin_headroom": 0.392857,
+      "unknown_margin_headroom": 23.5,
       "ambiguous_score_headroom": 5.361111,
       "ambiguous_margin_headroom": 5.361111,
-      "tightest_query_label": "FISHING 1 [background-only]",
+      "tightest_query_label": "MIXED [interleaved-contradiction]",
       "tightest_status": "unknown",
-      "tightest_best_scene_label": "FISHING 1",
-      "tightest_metric": "margin",
-      "tightest_value": 34.607143,
-      "tightest_limit": 35.0,
-      "tightest_headroom": 0.392857,
-      "tightest_pressure": 0.988776,
+      "tightest_best_scene_label": "MARY 1",
+      "tightest_metric": "score",
+      "tightest_value": 107.75,
+      "tightest_limit": 110.0,
+      "tightest_headroom": 2.25,
+      "tightest_pressure": 0.979545,
       "warn_count": 1,
-      "danger_count": 1,
+      "danger_count": 0,
       "ambiguous_count": 3,
       "unknown_count": 5
     },
@@ -77,16 +77,16 @@
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "5080a77d0c1a2c4cad2afbe2ff42d60e420e9850848a1883267c37e879bf9f55",
+  "artifact_sha256": "b0b4c7ed64f7355e2c3bfbe07ee9a96f7d1a1509838f162be25165a870d96e1a",
   "artifact_inputs": {
     "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",
     "identification-selfcheck.json": "9d3abd9d74eb7f12985620b294da68ad87879bb5e4c9e82bf1cd20d40cdd1b07",
     "identification-eval.json": "b6b6b615433a755c8a0b31529809213fa0d68226be564afda9bbbf7c31fad2d5",
     "identification-partials.json": "65cdc122e9656af479bb00db4a7fd2329b62d2ba2674b813bdc90d60a22d7548",
-    "identification-challenges.json": "7363a18212b5aeef088e68df4fc9009e35419ca538784eed0057cc161ffd58b4",
-    "identification-temporal.json": "563d4bc66e5f515bf507d4c46c82c0666c210ec683f866f82a3e023467dd7ffa",
-    "identification-review.html": "de632297557ad4d87a512d68e3c52aed1d85f86e97116ac4a1545f3155834c4e",
+    "identification-challenges.json": "394e8f9de841401d174b3b67a8a21da930abe192619adaa1ab4e866e635dd7f4",
+    "identification-temporal.json": "ca2c698fcb276f3d0d4767fb8ee890b65c8fc9aa33c5f27fdd54c76075334e25",
+    "identification-review.html": "aeb0505f293e422e7373018516230c6df09dfbbbde640f17c13cdc337fe4010e",
     "expectations.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "host-truth-baseline.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "expectation-report.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",
@@ -94,5 +94,5 @@
     "repro-compare.json": "067455c2e9c97c65597b11ffecb15ae4471e797ca87a13f19500d424d0ccbd38"
   },
   "all_passed": true,
-  "risk_status": "elevated_risk"
+  "risk_status": "warning"
 }

@@ -346,6 +346,20 @@ git_head = sys.argv[2]
 git_head_short = sys.argv[3]
 verify_repro = sys.argv[4] == "1"
 
+
+def severity(value):
+    if value is None:
+        return "neutral"
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return "neutral"
+    if numeric <= 1.0:
+        return "danger"
+    if numeric <= 3.0:
+        return "warn"
+    return "safe"
+
 checks = {}
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"
@@ -429,6 +443,8 @@ identify_challenges = {
     "unknown_margin_headroom": None,
     "ambiguous_score_headroom": None,
     "ambiguous_margin_headroom": None,
+    "warn_count": 0,
+    "danger_count": 0,
     "ambiguous_count": 0,
     "unknown_count": 0,
 }
@@ -450,6 +466,14 @@ if identify_challenges_path.is_file():
     identify_challenges["unknown_margin_headroom"] = payload.get("unknown_margin_headroom")
     identify_challenges["ambiguous_score_headroom"] = payload.get("ambiguous_score_headroom")
     identify_challenges["ambiguous_margin_headroom"] = payload.get("ambiguous_margin_headroom")
+    levels = [
+        severity(identify_challenges["unknown_score_headroom"]),
+        severity(identify_challenges["unknown_margin_headroom"]),
+        severity(identify_challenges["ambiguous_score_headroom"]),
+        severity(identify_challenges["ambiguous_margin_headroom"]),
+    ]
+    identify_challenges["warn_count"] = sum(1 for level in levels if level == "warn")
+    identify_challenges["danger_count"] = sum(1 for level in levels if level == "danger")
     identify_challenges["ambiguous_count"] = int(payload.get("ambiguous_count", 0))
     identify_challenges["unknown_count"] = int(payload.get("unknown_count", 0))
 checks["identification-challenges"] = identify_challenges
@@ -551,6 +575,7 @@ summary = {
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
     "challenge-unknown-headroom={challenge_unknown_headroom} challenge-unknown-margin-headroom={challenge_unknown_margin_headroom} "
     "challenge-ambiguous-headroom={challenge_ambiguous_headroom} challenge-ambiguous-margin-headroom={challenge_ambiguous_margin_headroom} "
+    "challenge-warn-count={challenge_warn_count} challenge-danger-count={challenge_danger_count} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
         git_head_short=git_head_short,
@@ -569,6 +594,8 @@ summary = {
         challenge_unknown_margin_headroom=checks["identification-challenges"]["unknown_margin_headroom"],
         challenge_ambiguous_headroom=checks["identification-challenges"]["ambiguous_score_headroom"],
         challenge_ambiguous_margin_headroom=checks["identification-challenges"]["ambiguous_margin_headroom"],
+        challenge_warn_count=checks["identification-challenges"]["warn_count"],
+        challenge_danger_count=checks["identification-challenges"]["danger_count"],
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
         repro=checks["repro-compare"]["mismatch_count"],

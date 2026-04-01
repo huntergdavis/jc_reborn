@@ -33,6 +33,8 @@ def subject_timeline_profile(rows: dict[int, dict]) -> dict:
             "first_active_frame": None,
             "last_active_frame": None,
             "active_span": 0,
+            "background_recovery_count": 0,
+            "has_background_recovery": False,
             "active_run_lengths": {},
         }
 
@@ -67,11 +69,20 @@ def subject_timeline_profile(rows: dict[int, dict]) -> dict:
     first_active = active_subjects[0][0] if active_subjects else None
     last_active = active_subjects[-1][0] if active_subjects else None
     active_span = 0 if not active_subjects else (last_active - first_active)
+    background_recovery_count = 0
+    if active_subjects:
+        background_recovery_count = sum(
+            1
+            for frame_no in ordered
+            if frame_no > last_active and rows[frame_no].get("frame_state") == "background_only"
+        )
     return {
         "subjects": {subject for _, subject in active_subjects},
         "first_active_frame": first_active,
         "last_active_frame": last_active,
         "active_span": active_span,
+        "background_recovery_count": background_recovery_count,
+        "has_background_recovery": background_recovery_count > 0,
         "active_run_lengths": run_lengths,
     }
 
@@ -168,10 +179,18 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("subject_entry_timing_alignment")
     elif float(match.get("first_active_timing_similarity", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
         evidence.append("partial_subject_entry_timing_alignment")
+    if float(match.get("last_active_timing_similarity", 0.0)) >= 0.95 and profile["active_frame_count"] > 0:
+        evidence.append("subject_exit_timing_alignment")
+    elif float(match.get("last_active_timing_similarity", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
+        evidence.append("partial_subject_exit_timing_alignment")
     if float(match.get("subject_persistence_similarity", 0.0)) >= 0.95 and profile["subjects"]:
         evidence.append("subject_persistence_alignment")
     elif float(match.get("subject_persistence_similarity", 0.0)) >= 0.5 and profile["subjects"]:
         evidence.append("partial_subject_persistence_alignment")
+    if float(match.get("background_recovery_similarity", 0.0)) >= 0.95 and profile["active_frame_count"] > 0:
+        evidence.append("background_recovery_alignment")
+    elif float(match.get("background_recovery_similarity", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
+        evidence.append("partial_background_recovery_alignment")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -345,6 +364,31 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         subject_persistence_similarity = sum(persistence_scores) / len(persistence_scores)
     elif query_subject_profile["subjects"] or candidate_subject_profile["subjects"]:
         subject_persistence_similarity = 0.0
+    last_active_timing_similarity = 1.0
+    if (
+        query_subject_profile["last_active_frame"] is not None
+        and candidate_subject_profile["last_active_frame"] is not None
+    ):
+        max_last_frame = max(
+            1,
+            query_subject_profile["last_active_frame"],
+            candidate_subject_profile["last_active_frame"],
+        )
+        last_active_timing_similarity = max(
+            0.0,
+            1.0
+            - abs(
+                query_subject_profile["last_active_frame"]
+                - candidate_subject_profile["last_active_frame"]
+            )
+            / max_last_frame,
+        )
+    background_recovery_similarity = 1.0
+    q_recovery = query_subject_profile["background_recovery_count"]
+    c_recovery = candidate_subject_profile["background_recovery_count"]
+    if q_recovery or c_recovery:
+        max_recovery = max(1, q_recovery, c_recovery)
+        background_recovery_similarity = 1.0 - abs(q_recovery - c_recovery) / max_recovery
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -384,7 +428,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query else context_transition_similarity * 6.0
     score += 0.0 if background_only_query or not has_active_alignment else subject_set_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else first_active_timing_similarity * 10.0
+    score += 0.0 if background_only_query or not has_active_alignment else last_active_timing_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else subject_persistence_similarity * 8.0
+    score += 0.0 if background_only_query or not has_active_alignment else background_recovery_similarity * 8.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
         score -= exact_state_matches * 1.0
@@ -400,7 +446,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= (1.0 - context_transition_similarity) * 4.0
         score -= subject_set_similarity * 7.0
         score -= first_active_timing_similarity * 5.0
+        score -= last_active_timing_similarity * 4.0
         score -= subject_persistence_similarity * 5.0
+        score -= background_recovery_similarity * 4.0
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -439,7 +487,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "context_transition_similarity": round(context_transition_similarity, 6),
         "subject_set_similarity": round(subject_set_similarity, 6),
         "first_active_timing_similarity": round(first_active_timing_similarity, 6),
+        "last_active_timing_similarity": round(last_active_timing_similarity, 6),
         "subject_persistence_similarity": round(subject_persistence_similarity, 6),
+        "background_recovery_similarity": round(background_recovery_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

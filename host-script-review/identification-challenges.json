@@ -7,6 +7,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 83.857143,
       "score_margin": 34.607143,
+      "score_limit": 110.0,
+      "score_headroom": 26.142857,
+      "margin_limit": 35.0,
+      "margin_headroom": 0.392857,
       "reason": "background-only query lacks actor evidence"
     },
     {
@@ -16,6 +20,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 73.75,
       "score_margin": 18.25,
+      "score_limit": 110.0,
+      "score_headroom": 36.25,
+      "margin_limit": 35.0,
+      "margin_headroom": 16.75,
       "reason": "background-only query lacks actor evidence"
     },
     {
@@ -25,6 +33,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 92.0,
       "score_margin": 0.0,
+      "score_limit": 110.0,
+      "score_headroom": 18.0,
+      "margin_limit": 35.0,
+      "margin_headroom": 35.0,
       "reason": "unknown-family weak score 92.000 margin 0.000"
     },
     {
@@ -34,6 +46,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 144.638889,
       "score_margin": 144.638889,
+      "score_limit": 150.0,
+      "score_headroom": 5.361111,
+      "margin_limit": 150.0,
+      "margin_headroom": 5.361111,
       "reason": "unknown-family partial match score 144.639 margin 144.639"
     },
     {
@@ -43,6 +59,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 92.277778,
       "score_margin": 0.277778,
+      "score_limit": 110.0,
+      "score_headroom": 17.722222,
+      "margin_limit": 35.0,
+      "margin_headroom": 34.722222,
       "reason": "unknown-family weak score 92.278 margin 0.278"
     },
     {
@@ -52,6 +72,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 115.416667,
       "score_margin": 50.178572,
+      "score_limit": 150.0,
+      "score_headroom": 34.583333,
+      "margin_limit": 150.0,
+      "margin_headroom": 99.821428,
       "reason": "unknown-family partial match score 115.417 margin 50.179"
     },
     {
@@ -61,6 +85,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 115.416667,
       "score_margin": 50.0,
+      "score_limit": 150.0,
+      "score_headroom": 34.583333,
+      "margin_limit": 150.0,
+      "margin_headroom": 100.0,
       "reason": "unknown-family partial match score 115.417 margin 50.000"
     },
     {
@@ -70,6 +98,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 107.75,
       "score_margin": 11.5,
+      "score_limit": 110.0,
+      "score_headroom": 2.25,
+      "margin_limit": 35.0,
+      "margin_headroom": 23.5,
       "reason": "unknown-family weak score 107.750 margin 11.500"
     }
   ],
@@ -90,6 +122,14 @@
   "ambiguous_margin_headroom": 5.361111,
   "ambiguous_count": 3,
   "unknown_count": 5,
+  "tightest_query_label": "FISHING 1 [background-only]",
+  "tightest_status": "unknown",
+  "tightest_best_scene_label": "FISHING 1",
+  "tightest_metric": "margin",
+  "tightest_value": 34.607143,
+  "tightest_limit": 35.0,
+  "tightest_headroom": 0.392857,
+  "tightest_pressure": 0.988776,
   "passed": true,
   "failures": []
 }

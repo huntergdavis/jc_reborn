@@ -28,6 +28,24 @@
       "reason": "unknown-family weak score 92.000 margin 0.000"
     },
     {
+      "query_scene_label": "MIXED [pose-conflict-walk-vs-fish]",
+      "expected_status": "non_identified",
+      "status": "ambiguous",
+      "best_scene_label": "MARY 1",
+      "best_score": 144.638889,
+      "score_margin": 144.638889,
+      "reason": "unknown-family partial match score 144.639 margin 144.639"
+    },
+    {
+      "query_scene_label": "MIXED [pose-conflict-cross-scene]",
+      "expected_status": "non_identified",
+      "status": "unknown",
+      "best_scene_label": "MARY 1",
+      "best_score": 92.277778,
+      "score_margin": 0.277778,
+      "reason": "unknown-family weak score 92.278 margin 0.278"
+    },
+    {
       "query_scene_label": "MIXED [fishing-bg-plus-mary-active]",
       "expected_status": "non_identified",
       "status": "ambiguous",
@@ -55,11 +73,11 @@
       "reason": "unknown-family weak score 107.750 margin 11.500"
     }
   ],
-  "query_count": 6,
-  "max_best_score": 115.416667,
-  "max_margin": 50.178572,
-  "ambiguous_count": 2,
-  "unknown_count": 4,
+  "query_count": 8,
+  "max_best_score": 144.638889,
+  "max_margin": 144.638889,
+  "ambiguous_count": 3,
+  "unknown_count": 5,
   "passed": true,
   "failures": []
 }

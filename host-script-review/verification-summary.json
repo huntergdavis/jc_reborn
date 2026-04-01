@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T02:43:15Z",
-  "git_head": "937f2f1eb9f2f32f76a6ed36fbb75dd414972cfa",
-  "git_head_short": "937f2f1e",
+  "generated_at": "2026-04-01T02:53:12Z",
+  "git_head": "880d603bbb82cf72b0e59386c87fd9566bec66ed",
+  "git_head_short": "880d603b",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -39,11 +39,11 @@
     "identification-challenges": {
       "present": true,
       "passed": true,
-      "query_count": 6,
-      "max_best_score": 115.416667,
-      "max_margin": 50.178572,
-      "ambiguous_count": 2,
-      "unknown_count": 4
+      "query_count": 8,
+      "max_best_score": 144.638889,
+      "max_margin": 144.638889,
+      "ambiguous_count": 3,
+      "unknown_count": 5
     },
     "identification-temporal": {
       "present": true,
@@ -55,16 +55,16 @@
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "a7e71179d2aaca1d1d00ca0c3b06328517b10d03eb142664cf0dca4bf5745c05",
+  "artifact_sha256": "2cc2a6e7a5f49d2c03487d8f29e657e57d4c2e2149833a9986b9c6be727867dd",
   "artifact_inputs": {
     "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",
     "identification-selfcheck.json": "9d3abd9d74eb7f12985620b294da68ad87879bb5e4c9e82bf1cd20d40cdd1b07",
     "identification-eval.json": "b6b6b615433a755c8a0b31529809213fa0d68226be564afda9bbbf7c31fad2d5",
     "identification-partials.json": "65cdc122e9656af479bb00db4a7fd2329b62d2ba2674b813bdc90d60a22d7548",
-    "identification-challenges.json": "6642b989e7a72048cac5de5e0937f15c48c1feb893b0d4be03d51fe61ae9b0f8",
+    "identification-challenges.json": "8b42bb6dd249fa2324783795f04eb9b2d43ca1497b3bd86d63712b46fe2fe61c",
     "identification-temporal.json": "563d4bc66e5f515bf507d4c46c82c0666c210ec683f866f82a3e023467dd7ffa",
-    "identification-review.html": "7f9d3794dc43106ec3d4d74a91d751b60037e5dc8af92d551068cbff9eec0b86",
+    "identification-review.html": "7a5b2cdddabe229356d788e12b8f0a77d347a9e7f574ebd0f2c0c03fb436467e",
     "expectations.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "host-truth-baseline.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "expectation-report.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",

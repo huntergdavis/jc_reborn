@@ -73,7 +73,7 @@
       "score_headroom": 150.0,
       "margin_limit": 150.0,
       "margin_headroom": 150.0,
-      "reason": "unknown-family late active island risk 0.517"
+      "reason": "unknown-family sparse active evidence ratio 0.333"
     },
     {
       "query_scene_label": "MIXED [mary-bg-plus-fishing-active]",

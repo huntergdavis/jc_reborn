@@ -63,9 +63,9 @@
       "prefix_len": 5,
       "status": "identified",
       "best_scene_label": "FISHING 1",
-      "best_score": 336.319048,
-      "score_margin": 276.985715,
-      "best_to_second_ratio": 5.668298593642127,
+      "best_score": 338.319048,
+      "score_margin": 283.569048,
+      "best_to_second_ratio": 6.179343342465754,
       "query_frame_count": 5,
       "query_active_frame_count": 1,
       "query_state_change_count": 1
@@ -105,9 +105,9 @@
       "prefix_len": 3,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 264.425926,
-      "score_margin": 201.759259,
-      "best_to_second_ratio": 4.219562626491689,
+      "best_score": 268.366667,
+      "score_margin": 210.283334,
+      "best_to_second_ratio": 4.6203730595143355,
       "query_frame_count": 3,
       "query_active_frame_count": 1,
       "query_state_change_count": 1
@@ -119,12 +119,12 @@
       "prefix_len": 4,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 313.105159,
-      "score_margin": 252.521826,
-      "best_to_second_ratio": 5.168173216881283,
+      "best_score": 310.091667,
+      "score_margin": 254.091667,
+      "best_to_second_ratio": 5.537351196428571,
       "query_frame_count": 4,
-      "query_active_frame_count": 1,
-      "query_state_change_count": 2
+      "query_active_frame_count": 2,
+      "query_state_change_count": 1
     },
     {
       "query_scene_label": "MARY 1 [prefix-5]",
@@ -133,12 +133,12 @@
       "prefix_len": 5,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 328.779365,
-      "score_margin": 269.446032,
-      "best_to_second_ratio": 5.541225283939467,
+      "best_score": 356.766667,
+      "score_margin": 302.016667,
+      "best_to_second_ratio": 6.516286155251141,
       "query_frame_count": 5,
-      "query_active_frame_count": 1,
-      "query_state_change_count": 2
+      "query_active_frame_count": 3,
+      "query_state_change_count": 1
     },
     {
       "query_scene_label": "MARY 1 [prefix-6]",
@@ -147,11 +147,11 @@
       "prefix_len": 6,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 344.451058,
-      "score_margin": 285.951058,
-      "best_to_second_ratio": 5.8880522735042735,
+      "best_score": 436.62963,
+      "score_margin": 382.712963,
+      "best_to_second_ratio": 8.098231109129948,
       "query_frame_count": 6,
-      "query_active_frame_count": 1,
+      "query_active_frame_count": 4,
       "query_state_change_count": 2
     }
   ],
@@ -160,8 +160,8 @@
     "FISHING 1": 1,
     "MARY 1": 1
   },
-  "min_identified_margin": 201.759259,
-  "min_identified_ratio": 4.219562626491689,
+  "min_identified_margin": 210.283334,
+  "min_identified_ratio": 4.6203730595143355,
   "max_score_drop": 0.0,
   "max_identified_margin_drop": 0.0,
   "passed": true,

@@ -301,6 +301,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         shared_active_count / len(query_active_frames)
         if query_active_frames else 0.0
     )
+    has_active_alignment = shared_active_count > 0
     token_similarity = (token_similarity_sum / shared_count) if shared_count else 0.0
     activity_similarity = (activity_overlap_sum / shared_count) if shared_count else 0.0
     pose_similarity = (pose_overlap_sum / shared_count) if shared_count else 0.0
@@ -381,9 +382,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query else pose_similarity * 12.0
     score += transition_similarity * 8.0
     score += 0.0 if background_only_query else context_transition_similarity * 6.0
-    score += 0.0 if background_only_query else subject_set_similarity * 8.0
-    score += 0.0 if background_only_query else first_active_timing_similarity * 10.0
-    score += 0.0 if background_only_query else subject_persistence_similarity * 8.0
+    score += 0.0 if background_only_query or not has_active_alignment else subject_set_similarity * 8.0
+    score += 0.0 if background_only_query or not has_active_alignment else first_active_timing_similarity * 10.0
+    score += 0.0 if background_only_query or not has_active_alignment else subject_persistence_similarity * 8.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
         score -= exact_state_matches * 1.0

@@ -632,7 +632,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
-            score -= 16.0
+            score -= 20.0
         if query_frame_count == len(query_active_frames):
             score -= 8.0
         if len(query_active_states) > 1:

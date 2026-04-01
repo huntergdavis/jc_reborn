@@ -229,8 +229,6 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query else pose_similarity * 12.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
-        score += active_state_set_similarity * 14.0
-        score += active_pose_set_similarity * 8.0
         if len(query_active_states) > 1:
             score -= (1.0 - active_state_set_similarity) * 24.0
         if len(query_pose_set) > 1:

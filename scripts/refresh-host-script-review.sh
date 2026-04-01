@@ -415,12 +415,20 @@ identify_challenges = {
     "present": identify_challenges_path.is_file(),
     "passed": False,
     "query_count": 0,
+    "unknown_score_limit": None,
+    "unknown_margin_limit": None,
+    "ambiguous_score_limit": None,
+    "ambiguous_margin_limit": None,
     "max_best_score": None,
     "max_margin": None,
     "max_unknown_best_score": None,
     "max_unknown_margin": None,
     "max_ambiguous_best_score": None,
     "max_ambiguous_margin": None,
+    "unknown_score_headroom": None,
+    "unknown_margin_headroom": None,
+    "ambiguous_score_headroom": None,
+    "ambiguous_margin_headroom": None,
     "ambiguous_count": 0,
     "unknown_count": 0,
 }
@@ -428,12 +436,20 @@ if identify_challenges_path.is_file():
     payload = json.loads(identify_challenges_path.read_text(encoding="utf-8"))
     identify_challenges["passed"] = bool(payload.get("passed"))
     identify_challenges["query_count"] = int(payload.get("query_count", 0))
+    identify_challenges["unknown_score_limit"] = payload.get("unknown_score_limit")
+    identify_challenges["unknown_margin_limit"] = payload.get("unknown_margin_limit")
+    identify_challenges["ambiguous_score_limit"] = payload.get("ambiguous_score_limit")
+    identify_challenges["ambiguous_margin_limit"] = payload.get("ambiguous_margin_limit")
     identify_challenges["max_best_score"] = payload.get("max_best_score")
     identify_challenges["max_margin"] = payload.get("max_margin")
     identify_challenges["max_unknown_best_score"] = payload.get("max_unknown_best_score")
     identify_challenges["max_unknown_margin"] = payload.get("max_unknown_margin")
     identify_challenges["max_ambiguous_best_score"] = payload.get("max_ambiguous_best_score")
     identify_challenges["max_ambiguous_margin"] = payload.get("max_ambiguous_margin")
+    identify_challenges["unknown_score_headroom"] = payload.get("unknown_score_headroom")
+    identify_challenges["unknown_margin_headroom"] = payload.get("unknown_margin_headroom")
+    identify_challenges["ambiguous_score_headroom"] = payload.get("ambiguous_score_headroom")
+    identify_challenges["ambiguous_margin_headroom"] = payload.get("ambiguous_margin_headroom")
     identify_challenges["ambiguous_count"] = int(payload.get("ambiguous_count", 0))
     identify_challenges["unknown_count"] = int(payload.get("unknown_count", 0))
 checks["identification-challenges"] = identify_challenges
@@ -533,6 +549,8 @@ summary = {
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
+    "challenge-unknown-headroom={challenge_unknown_headroom} challenge-unknown-margin-headroom={challenge_unknown_margin_headroom} "
+    "challenge-ambiguous-headroom={challenge_ambiguous_headroom} challenge-ambiguous-margin-headroom={challenge_ambiguous_margin_headroom} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
         git_head_short=git_head_short,
@@ -547,6 +565,10 @@ summary = {
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],
         challenge_ambiguous_score=checks["identification-challenges"]["max_ambiguous_best_score"],
         challenge_ambiguous_margin=checks["identification-challenges"]["max_ambiguous_margin"],
+        challenge_unknown_headroom=checks["identification-challenges"]["unknown_score_headroom"],
+        challenge_unknown_margin_headroom=checks["identification-challenges"]["unknown_margin_headroom"],
+        challenge_ambiguous_headroom=checks["identification-challenges"]["ambiguous_score_headroom"],
+        challenge_ambiguous_margin_headroom=checks["identification-challenges"]["ambiguous_margin_headroom"],
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
         repro=checks["repro-compare"]["mismatch_count"],

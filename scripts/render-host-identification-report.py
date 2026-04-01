@@ -468,6 +468,10 @@ def build_html(
         <div class="card"><div class="label">Unknown Max Margin</div><div class="value">{esc(challenges.get('max_unknown_margin', 'n/a'))}</div></div>
         <div class="card"><div class="label">Ambiguous Max Score</div><div class="value">{esc(challenges.get('max_ambiguous_best_score', 'n/a'))}</div></div>
         <div class="card"><div class="label">Ambiguous Max Margin</div><div class="value">{esc(challenges.get('max_ambiguous_margin', 'n/a'))}</div></div>
+        <div class="card"><div class="label">Unknown Score Headroom</div><div class="value">{esc(challenges.get('unknown_score_headroom', 'n/a'))}</div></div>
+        <div class="card"><div class="label">Unknown Margin Headroom</div><div class="value">{esc(challenges.get('unknown_margin_headroom', 'n/a'))}</div></div>
+        <div class="card"><div class="label">Ambiguous Score Headroom</div><div class="value">{esc(challenges.get('ambiguous_score_headroom', 'n/a'))}</div></div>
+        <div class="card"><div class="label">Ambiguous Margin Headroom</div><div class="value">{esc(challenges.get('ambiguous_margin_headroom', 'n/a'))}</div></div>
       </div>
       <table>
         <thead>

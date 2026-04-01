@@ -19,6 +19,11 @@ def load_identify():
 
 identify = load_identify()
 
+UNKNOWN_SCORE_LIMIT = 110.0
+UNKNOWN_MARGIN_LIMIT = 35.0
+AMBIGUOUS_SCORE_LIMIT = 150.0
+AMBIGUOUS_MARGIN_LIMIT = 150.0
+
 
 def redact_rows(rows: list[dict], query_label: str) -> list[dict]:
     output = []
@@ -200,9 +205,9 @@ def evaluate(database: dict) -> dict:
                     max_ambiguous_best_score = best_score
                 if max_ambiguous_margin is None or margin > max_ambiguous_margin:
                     max_ambiguous_margin = margin
-                if best_score > 150.0:
+                if best_score > AMBIGUOUS_SCORE_LIMIT:
                     failures.append(f"{query_label}: ambiguous challenge score too high ({best_score:.6f})")
-                if margin > 150.0:
+                if margin > AMBIGUOUS_MARGIN_LIMIT:
                     failures.append(f"{query_label}: ambiguous challenge margin too high ({margin:.6f})")
             elif status == "unknown":
                 unknown_count += 1
@@ -210,9 +215,9 @@ def evaluate(database: dict) -> dict:
                     max_unknown_best_score = best_score
                 if max_unknown_margin is None or margin > max_unknown_margin:
                     max_unknown_margin = margin
-                if best_score > 110.0:
+                if best_score > UNKNOWN_SCORE_LIMIT:
                     failures.append(f"{query_label}: unknown challenge score too high ({best_score:.6f})")
-                if margin > 35.0:
+                if margin > UNKNOWN_MARGIN_LIMIT:
                     failures.append(f"{query_label}: unknown challenge margin too high ({margin:.6f})")
             else:
                 failures.append(f"{query_label}: unexpected status {status}")
@@ -234,12 +239,20 @@ def evaluate(database: dict) -> dict:
     return {
         "rows": rows,
         "query_count": len(rows),
+        "unknown_score_limit": UNKNOWN_SCORE_LIMIT,
+        "unknown_margin_limit": UNKNOWN_MARGIN_LIMIT,
+        "ambiguous_score_limit": AMBIGUOUS_SCORE_LIMIT,
+        "ambiguous_margin_limit": AMBIGUOUS_MARGIN_LIMIT,
         "max_best_score": max_best_score,
         "max_margin": max_margin,
         "max_unknown_best_score": max_unknown_best_score,
         "max_unknown_margin": max_unknown_margin,
         "max_ambiguous_best_score": max_ambiguous_best_score,
         "max_ambiguous_margin": max_ambiguous_margin,
+        "unknown_score_headroom": None if max_unknown_best_score is None else round(UNKNOWN_SCORE_LIMIT - max_unknown_best_score, 6),
+        "unknown_margin_headroom": None if max_unknown_margin is None else round(UNKNOWN_MARGIN_LIMIT - max_unknown_margin, 6),
+        "ambiguous_score_headroom": None if max_ambiguous_best_score is None else round(AMBIGUOUS_SCORE_LIMIT - max_ambiguous_best_score, 6),
+        "ambiguous_margin_headroom": None if max_ambiguous_margin is None else round(AMBIGUOUS_MARGIN_LIMIT - max_ambiguous_margin, 6),
         "ambiguous_count": ambiguous_count,
         "unknown_count": unknown_count,
         "passed": not failures,

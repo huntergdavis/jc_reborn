@@ -789,6 +789,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     ):
         borrowed_background_context_penalty = (
             borrowed_background_risk * 8.0
+            + borrowed_background_mismatch * 10.0
             + (1.0 - float(query_profile_data.get("active_context_novelty", 1.0))) * 10.0
         )
     blended_active_narrative_penalty = 0.0

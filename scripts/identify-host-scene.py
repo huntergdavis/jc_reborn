@@ -915,13 +915,13 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= trait_similarity * 12.0
         score -= borrowed_background_risk * 20.0
         score -= borrowed_background_mismatch * 24.0
-        score -= contamination_risk * 12.0
+        score -= contamination_risk * 14.0
         score -= sparse_active_evidence_penalty
         score -= fragmented_active_coverage_penalty
         score -= active_semantic_diversity_penalty
         score -= active_island_penalty * 3.42
         score -= borrowed_background_context_penalty
-        score -= blended_active_narrative_penalty
+        score -= blended_active_narrative_penalty * 1.2
         score -= single_active_alignment_penalty
         score -= low_novelty_multi_active_penalty
         score -= late_active_island_context_penalty

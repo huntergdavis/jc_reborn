@@ -443,6 +443,14 @@ identify_challenges = {
     "unknown_margin_headroom": None,
     "ambiguous_score_headroom": None,
     "ambiguous_margin_headroom": None,
+    "tightest_query_label": None,
+    "tightest_status": None,
+    "tightest_best_scene_label": None,
+    "tightest_metric": None,
+    "tightest_value": None,
+    "tightest_limit": None,
+    "tightest_headroom": None,
+    "tightest_pressure": None,
     "warn_count": 0,
     "danger_count": 0,
     "ambiguous_count": 0,
@@ -466,6 +474,14 @@ if identify_challenges_path.is_file():
     identify_challenges["unknown_margin_headroom"] = payload.get("unknown_margin_headroom")
     identify_challenges["ambiguous_score_headroom"] = payload.get("ambiguous_score_headroom")
     identify_challenges["ambiguous_margin_headroom"] = payload.get("ambiguous_margin_headroom")
+    identify_challenges["tightest_query_label"] = payload.get("tightest_query_label")
+    identify_challenges["tightest_status"] = payload.get("tightest_status")
+    identify_challenges["tightest_best_scene_label"] = payload.get("tightest_best_scene_label")
+    identify_challenges["tightest_metric"] = payload.get("tightest_metric")
+    identify_challenges["tightest_value"] = payload.get("tightest_value")
+    identify_challenges["tightest_limit"] = payload.get("tightest_limit")
+    identify_challenges["tightest_headroom"] = payload.get("tightest_headroom")
+    identify_challenges["tightest_pressure"] = payload.get("tightest_pressure")
     levels = [
         severity(identify_challenges["unknown_score_headroom"]),
         severity(identify_challenges["unknown_margin_headroom"]),
@@ -585,6 +601,8 @@ summary["risk_status"] = (
     "challenge-unknown-headroom={challenge_unknown_headroom} challenge-unknown-margin-headroom={challenge_unknown_margin_headroom} "
     "challenge-ambiguous-headroom={challenge_ambiguous_headroom} challenge-ambiguous-margin-headroom={challenge_ambiguous_margin_headroom} "
     "challenge-warn-count={challenge_warn_count} challenge-danger-count={challenge_danger_count} "
+    "challenge-tightest={challenge_tightest} challenge-tightest-metric={challenge_tightest_metric} "
+    "challenge-tightest-headroom={challenge_tightest_headroom} challenge-tightest-pressure={challenge_tightest_pressure} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
         risk_status=summary["risk_status"],
@@ -606,6 +624,10 @@ summary["risk_status"] = (
         challenge_ambiguous_margin_headroom=checks["identification-challenges"]["ambiguous_margin_headroom"],
         challenge_warn_count=checks["identification-challenges"]["warn_count"],
         challenge_danger_count=checks["identification-challenges"]["danger_count"],
+        challenge_tightest=checks["identification-challenges"]["tightest_query_label"],
+        challenge_tightest_metric=checks["identification-challenges"]["tightest_metric"],
+        challenge_tightest_headroom=checks["identification-challenges"]["tightest_headroom"],
+        challenge_tightest_pressure=checks["identification-challenges"]["tightest_pressure"],
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
         repro=checks["repro-compare"]["mismatch_count"],

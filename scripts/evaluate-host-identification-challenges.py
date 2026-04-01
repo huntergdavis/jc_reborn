@@ -180,6 +180,7 @@ def evaluate(database: dict) -> dict:
     max_unknown_margin = None
     max_ambiguous_best_score = None
     max_ambiguous_margin = None
+    tightest: dict | None = None
 
     expectations = {scene["scene_label"]: scene.get("_expected_status", "non_identified") for scene in query_scenes}
 
@@ -190,6 +191,10 @@ def evaluate(database: dict) -> dict:
         best = row.get("best_match") or {}
         margin = float(row.get("score_margin") or 0.0)
         best_score = float(best.get("score") or 0.0)
+        score_limit = None
+        margin_limit = None
+        score_headroom = None
+        margin_headroom = None
 
         if max_best_score is None or best_score > max_best_score:
             max_best_score = best_score
@@ -201,28 +206,76 @@ def evaluate(database: dict) -> dict:
                 failures.append(f"{query_label}: challenge query must not identify as {best.get('scene_label')}")
             elif status == "ambiguous":
                 ambiguous_count += 1
+                score_limit = AMBIGUOUS_SCORE_LIMIT
+                margin_limit = AMBIGUOUS_MARGIN_LIMIT
+                score_headroom = round(score_limit - best_score, 6)
+                margin_headroom = round(margin_limit - margin, 6)
                 if max_ambiguous_best_score is None or best_score > max_ambiguous_best_score:
                     max_ambiguous_best_score = best_score
                 if max_ambiguous_margin is None or margin > max_ambiguous_margin:
                     max_ambiguous_margin = margin
-                if best_score > AMBIGUOUS_SCORE_LIMIT:
+                if best_score > score_limit:
                     failures.append(f"{query_label}: ambiguous challenge score too high ({best_score:.6f})")
-                if margin > AMBIGUOUS_MARGIN_LIMIT:
+                if margin > margin_limit:
                     failures.append(f"{query_label}: ambiguous challenge margin too high ({margin:.6f})")
             elif status == "unknown":
                 unknown_count += 1
+                score_limit = UNKNOWN_SCORE_LIMIT
+                margin_limit = UNKNOWN_MARGIN_LIMIT
+                score_headroom = round(score_limit - best_score, 6)
+                margin_headroom = round(margin_limit - margin, 6)
                 if max_unknown_best_score is None or best_score > max_unknown_best_score:
                     max_unknown_best_score = best_score
                 if max_unknown_margin is None or margin > max_unknown_margin:
                     max_unknown_margin = margin
-                if best_score > UNKNOWN_SCORE_LIMIT:
+                if best_score > score_limit:
                     failures.append(f"{query_label}: unknown challenge score too high ({best_score:.6f})")
-                if margin > UNKNOWN_MARGIN_LIMIT:
+                if margin > margin_limit:
                     failures.append(f"{query_label}: unknown challenge margin too high ({margin:.6f})")
             else:
                 failures.append(f"{query_label}: unexpected status {status}")
         elif status != expected_status:
             failures.append(f"{query_label}: expected {expected_status}, got {status}")
+
+        if score_limit is not None and margin_limit is not None:
+            candidates = [
+                {
+                    "metric": "score",
+                    "value": round(best_score, 6),
+                    "limit": score_limit,
+                    "headroom": score_headroom,
+                    "pressure": 0.0 if score_limit <= 0 else round(best_score / score_limit, 6),
+                },
+                {
+                    "metric": "margin",
+                    "value": round(margin, 6),
+                    "limit": margin_limit,
+                    "headroom": margin_headroom,
+                    "pressure": 0.0 if margin_limit <= 0 else round(margin / margin_limit, 6),
+                },
+            ]
+            row_tightest = min(candidates, key=lambda item: (item["headroom"], -item["pressure"], item["metric"]))
+            if tightest is None or (
+                row_tightest["headroom"],
+                -row_tightest["pressure"],
+                row_tightest["metric"],
+                query_label,
+            ) < (
+                tightest["headroom"],
+                -tightest["pressure"],
+                tightest["metric"],
+                tightest["query_scene_label"],
+            ):
+                tightest = {
+                    "query_scene_label": query_label,
+                    "status": status,
+                    "best_scene_label": best.get("scene_label"),
+                    "metric": row_tightest["metric"],
+                    "value": row_tightest["value"],
+                    "limit": row_tightest["limit"],
+                    "headroom": row_tightest["headroom"],
+                    "pressure": row_tightest["pressure"],
+                }
 
         rows.append(
             {
@@ -232,6 +285,10 @@ def evaluate(database: dict) -> dict:
                 "best_scene_label": best.get("scene_label"),
                 "best_score": best.get("score"),
                 "score_margin": row.get("score_margin"),
+                "score_limit": score_limit,
+                "score_headroom": score_headroom,
+                "margin_limit": margin_limit,
+                "margin_headroom": margin_headroom,
                 "reason": row.get("identification_reason"),
             }
         )
@@ -255,6 +312,14 @@ def evaluate(database: dict) -> dict:
         "ambiguous_margin_headroom": None if max_ambiguous_margin is None else round(AMBIGUOUS_MARGIN_LIMIT - max_ambiguous_margin, 6),
         "ambiguous_count": ambiguous_count,
         "unknown_count": unknown_count,
+        "tightest_query_label": None if tightest is None else tightest["query_scene_label"],
+        "tightest_status": None if tightest is None else tightest["status"],
+        "tightest_best_scene_label": None if tightest is None else tightest["best_scene_label"],
+        "tightest_metric": None if tightest is None else tightest["metric"],
+        "tightest_value": None if tightest is None else tightest["value"],
+        "tightest_limit": None if tightest is None else tightest["limit"],
+        "tightest_headroom": None if tightest is None else tightest["headroom"],
+        "tightest_pressure": None if tightest is None else tightest["pressure"],
         "passed": not failures,
         "failures": failures,
     }

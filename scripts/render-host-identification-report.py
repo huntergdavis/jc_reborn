@@ -52,6 +52,23 @@ def render_metric_card(label: str, value: object, level: str = "neutral") -> str
     )
 
 
+def render_tightest_challenge(challenges: dict) -> str:
+    query_label = challenges.get("tightest_query_label")
+    if not query_label:
+        return render_metric_card("Tightest Challenge", "n/a")
+    level = classify_headroom(challenges.get("tightest_headroom"))
+    return (
+        f'<div class="card metric-card metric-{esc(level)}">'
+        f'<div class="label">Tightest Challenge</div>'
+        f'<div class="value">{esc(query_label)}</div>'
+        f'<div class="query-meta">metric={esc(challenges.get("tightest_metric"))} '
+        f'value={esc(challenges.get("tightest_value"))}/{esc(challenges.get("tightest_limit"))} '
+        f'headroom={esc(challenges.get("tightest_headroom"))} '
+        f'pressure={esc(challenges.get("tightest_pressure"))}</div>'
+        "</div>"
+    )
+
+
 def challenge_risk_status(challenges: dict) -> tuple[str, str]:
     levels = [
         classify_headroom(challenges.get("unknown_score_headroom")),
@@ -510,6 +527,7 @@ def build_html(
       <h2>Challenge Queries</h2>
       <div class="meta">ambiguous={esc(challenges.get('ambiguous_count'))} unknown={esc(challenges.get('unknown_count'))}</div>
       <div class="mini-summary">
+        {render_tightest_challenge(challenges)}
         {render_metric_card("Unknown Max Score", challenges.get('max_unknown_best_score', 'n/a'))}
         {render_metric_card("Unknown Max Margin", challenges.get('max_unknown_margin', 'n/a'))}
         {render_metric_card("Ambiguous Max Score", challenges.get('max_ambiguous_best_score', 'n/a'))}
@@ -522,10 +540,10 @@ def build_html(
       <table>
         <thead>
           <tr>
-            <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Margin</th><th>Reason</th>
+            <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Score Headroom</th><th>Margin</th><th>Margin Headroom</th><th>Reason</th>
           </tr>
         </thead>
-        <tbody>{render_simple_rows(challenges.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('score_margin','text'), ('reason','text')], scene_index, semantic_index, output_path)}</tbody>
+        <tbody>{render_simple_rows(challenges.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('score_headroom','text'), ('score_margin','text'), ('margin_headroom','text'), ('reason','text')], scene_index, semantic_index, output_path)}</tbody>
       </table>
     </section>
 

@@ -31,6 +31,14 @@ def query_profile(scene: dict) -> dict:
     subjects = sorted({row.get("primary_subject") for row in active_rows if row.get("primary_subject") not in (None, "none")})
     activities = sorted({label for row in rows for label in row.get("activity_labels", [])})
     contexts = sorted({label for row in rows for label in row.get("context_labels", [])})
+    poses = sorted(
+        {
+            label
+            for row in active_rows
+            for label in row.get("pose_labels", [])
+            if label not in ("no_actor_visible", "actor_visible")
+        }
+    )
     return {
         "frame_count": len(rows),
         "active_frame_count": len(active_rows),
@@ -39,6 +47,7 @@ def query_profile(scene: dict) -> dict:
         "subjects": subjects,
         "activities": activities,
         "contexts": contexts,
+        "poses": poses,
     }
 
 
@@ -57,8 +66,12 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("active_state_alignment")
     if int(match.get("exact_active_primary_subject_matches", 0)) > 0:
         evidence.append("active_subject_alignment")
+    if int(match.get("exact_active_pose_matches", 0)) > 0:
+        evidence.append("active_pose_alignment")
     if profile["state_change_count"] > 0:
         evidence.append("state_transition_evidence")
+    if float(match.get("pose_similarity", 0.0)) >= 0.8 and profile["poses"]:
+        evidence.append("pose_alignment")
     if float(match.get("activity_similarity", 0.0)) >= 0.95:
         evidence.append("activity_alignment")
     if float(match.get("token_similarity", 0.0)) >= 0.8:
@@ -99,8 +112,10 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     exact_primary_subject_matches = 0
     exact_active_state_matches = 0
     exact_active_primary_subject_matches = 0
+    exact_active_pose_matches = 0
     token_similarity_sum = 0.0
     activity_overlap_sum = 0.0
+    pose_overlap_sum = 0.0
 
     for frame_no in shared_frames:
         q = query_rows[frame_no]
@@ -119,6 +134,13 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
             set(q.get("activity_labels", [])),
             set(c.get("activity_labels", [])),
         )
+        q_pose_labels = {
+            label for label in q.get("pose_labels", []) if label not in ("no_actor_visible", "actor_visible")
+        }
+        c_pose_labels = {
+            label for label in c.get("pose_labels", []) if label not in ("no_actor_visible", "actor_visible")
+        }
+        pose_overlap_sum += jaccard(q_pose_labels, c_pose_labels)
         if (
             frame_no in query_active_frames
             and c.get("frame_state") != "background_only"
@@ -127,6 +149,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
                 exact_active_state_matches += 1
             if q.get("primary_subject") == c.get("primary_subject"):
                 exact_active_primary_subject_matches += 1
+            if q_pose_labels and q_pose_labels == c_pose_labels:
+                exact_active_pose_matches += 1
 
     shared_count = len(shared_frames)
     shared_active_count = len(query_active_frames & set(cand_rows))
@@ -137,6 +161,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     )
     token_similarity = (token_similarity_sum / shared_count) if shared_count else 0.0
     activity_similarity = (activity_overlap_sum / shared_count) if shared_count else 0.0
+    pose_similarity = (pose_overlap_sum / shared_count) if shared_count else 0.0
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -160,7 +185,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += shared_active_frame_coverage * 30.0
     score += exact_active_state_matches * 8.0
     score += exact_active_primary_subject_matches * 6.0
+    score += exact_active_pose_matches * 6.0
     score += 5.0 if family_match else 0.0
+    score += pose_similarity * 12.0
     score += trait_similarity * 10.0
 
     return {
@@ -178,8 +205,10 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "exact_primary_subject_matches": exact_primary_subject_matches,
         "exact_active_state_matches": exact_active_state_matches,
         "exact_active_primary_subject_matches": exact_active_primary_subject_matches,
+        "exact_active_pose_matches": exact_active_pose_matches,
         "token_similarity": round(token_similarity, 6),
         "activity_similarity": round(activity_similarity, 6),
+        "pose_similarity": round(pose_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

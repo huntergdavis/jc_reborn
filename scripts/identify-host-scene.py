@@ -92,6 +92,13 @@ def query_contamination_profile(rows: dict[int, dict]) -> dict:
     post_contexts = set(provenance["post_active_contexts"])
     pre_post_similarity = jaccard(pre_contexts, post_contexts)
     background_active_similarity = jaccard(background_contexts, active_contexts)
+    active_island_risk = 0.0
+    if len(active_rows) == 1 and len(background_rows) >= 1:
+        active_island_risk += (1.0 - background_active_similarity) * 0.5
+        if provenance["pre_active_count"] > 0 and provenance["post_active_count"] == 0:
+            active_island_risk += 0.35
+        if provenance["pre_active_count"] == 0 and provenance["post_active_count"] > 0:
+            active_island_risk += 0.2
     contamination_risk = 0.0
     if len(active_rows) == 1 and len(ordered) > 1:
         contamination_risk += 0.45
@@ -109,6 +116,7 @@ def query_contamination_profile(rows: dict[int, dict]) -> dict:
         "background_context_count": len(background_contexts),
         "background_active_context_similarity": round(background_active_similarity, 6),
         "pre_post_background_similarity": round(pre_post_similarity, 6),
+        "active_island_risk": round(min(1.0, active_island_risk), 6),
         "contamination_risk": round(min(1.0, contamination_risk), 6),
     }
 
@@ -287,6 +295,7 @@ def query_profile(scene: dict) -> dict:
         "active_state_variety": active_state_variety,
         "active_state_variety_count": len(active_state_variety),
         "contamination_risk": contamination["contamination_risk"],
+        "active_island_risk": contamination["active_island_risk"],
         "background_frame_count": contamination["background_frame_count"],
         "background_active_context_similarity": contamination["background_active_context_similarity"],
         "pre_post_background_similarity": contamination["pre_post_background_similarity"],
@@ -424,6 +433,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("active_semantic_diversity_conflict")
     elif float(match.get("active_semantic_diversity_penalty", 0.0)) >= 6.0:
         evidence.append("partial_active_semantic_diversity_conflict")
+    if float(match.get("active_island_penalty", 0.0)) >= 12.0:
+        evidence.append("late_active_island_conflict")
+    elif float(match.get("active_island_penalty", 0.0)) >= 6.0:
+        evidence.append("partial_late_active_island_conflict")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -738,6 +751,10 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
             + (1.0 - active_pose_set_similarity) * 8.0
             + (1.0 - subject_activity_sequence_similarity) * 10.0
         )
+    active_island_penalty = 0.0
+    query_profile_data = query_profile(query)
+    if not background_only_query and len(query_active_frames) == 1 and query_frame_count > 1:
+        active_island_penalty = float(query_profile_data.get("active_island_risk", 0.0)) * 12.0
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -827,6 +844,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= sparse_active_evidence_penalty
         score -= fragmented_active_coverage_penalty
         score -= active_semantic_diversity_penalty
+        score -= active_island_penalty
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -887,6 +905,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "sparse_active_evidence_penalty": round(sparse_active_evidence_penalty, 6),
         "fragmented_active_coverage_penalty": round(fragmented_active_coverage_penalty, 6),
         "active_semantic_diversity_penalty": round(active_semantic_diversity_penalty, 6),
+        "active_island_penalty": round(active_island_penalty, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }
@@ -915,6 +934,8 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
         contamination_risk = float(profile.get("contamination_risk", 0.0))
         if contamination_risk >= 0.6 and active_row_count == 1 and profile["frame_count"] > 1:
             return "ambiguous", f"unknown-family contaminated mixed query risk {contamination_risk:.3f}"
+        if float(profile.get("active_island_risk", 0.0)) >= 0.5 and active_row_count == 1 and profile["frame_count"] > 1:
+            return "ambiguous", f"unknown-family late active island risk {float(profile.get('active_island_risk', 0.0)):.3f}"
         if float(profile.get("active_frame_ratio", 0.0)) <= 0.34 and active_row_count == 1 and profile["frame_count"] > 1:
             return "ambiguous", f"unknown-family sparse active evidence ratio {float(profile.get('active_frame_ratio', 0.0)):.3f}"
         borrowed_background_risk = float(best.get("borrowed_background_risk", 0.0))

@@ -48,6 +48,8 @@ required = [
     "identification-partials.json",
     "identification-challenges.json",
     "identification-temporal.json",
+    "frame-image-regression-baseline.json",
+    "frame-image-regression-report.json",
     "frame-meta-regression-baseline.json",
     "frame-meta-regression-report.json",
     "identification-regression-floors.json",
@@ -131,6 +133,14 @@ print(
     f"max_score_drop={identify_temporal.get('max_score_drop')} "
     f"max_margin_drop={identify_temporal.get('max_identified_margin_drop')}"
 )
+
+frame_image_regression = json.loads((root / "frame-image-regression-report.json").read_text(encoding="utf-8"))
+if not frame_image_regression.get("passed", False):
+    frame_image_failures = []
+    for failure in frame_image_regression.get("failures", []):
+        frame_image_failures.append(f"{failure.get('scene')} {failure.get('frame')} {failure.get('field')} drifted")
+    raise SystemExit("frame-image-regression-baseline failed: " + "; ".join(frame_image_failures))
+print("frame-image-regression-baseline: ok")
 
 frame_meta_regression = json.loads((root / "frame-meta-regression-report.json").read_text(encoding="utf-8"))
 if not frame_meta_regression.get("passed", False):

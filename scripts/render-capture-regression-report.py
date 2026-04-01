@@ -26,26 +26,35 @@ def render_html(payload: dict) -> str:
     def fmt_status(passed: bool) -> str:
         return "pass" if passed else "fail"
 
+    report_links = (
+        '<div class="links">'
+        '<a href="frame-image-regression-report.json">frame-image-regression-report.json</a> '
+        '<a href="frame-meta-regression-report.json">frame-meta-regression-report.json</a> '
+        '<a href="semantic-regression-report.json">semantic-regression-report.json</a> '
+        '<a href="capture-regression-report.json">capture-regression-report.json</a>'
+        "</div>"
+    )
+
     def render_rows(name: str, label_key: str, rows: list[dict]) -> str:
         body = []
         for row in rows:
             label = row.get(label_key, "")
             status = fmt_status(bool(row.get("passed", False)))
             failure_count = row.get("failure_count", 0)
-            path_hint = (
-                f"{label.lower()}/frames" if label_key == "scene" else label.lower().replace(" ", "")
-            )
+            scene_slug = label if label_key == "scene" else label.lower().replace(" ", "")
+            frame_href = f"{scene_slug}/frames/"
+            meta_href = f"{scene_slug}/frame-meta/"
             body.append(
                 "<tr>"
                 f"<td>{html.escape(str(label))}</td>"
                 f"<td class=\"{status}\">{status.upper()}</td>"
                 f"<td>{failure_count}</td>"
-                f"<td>{html.escape(path_hint)}</td>"
+                f"<td><a href=\"{html.escape(frame_href)}\">frames</a> <a href=\"{html.escape(meta_href)}\">frame-meta</a></td>"
                 "</tr>"
             )
         return (
             f"<section><h2>{html.escape(name)}</h2>"
-            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>Path Hint</th></tr></thead>"
+            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>Links</th></tr></thead>"
             f"<tbody>{''.join(body)}</tbody></table></section>"
         )
 
@@ -71,6 +80,8 @@ def render_html(payload: dict) -> str:
     th, td {{ border: 1px solid #223; padding: 8px 10px; text-align: left; }}
     h1, h2 {{ margin: 0 0 12px 0; }}
     h2 {{ margin-top: 20px; }}
+    a {{ color: #8bd5ff; text-decoration: none; margin-right: 12px; }}
+    .links {{ margin-top: 10px; }}
   </style>
 </head>
 <body>
@@ -78,6 +89,7 @@ def render_html(payload: dict) -> str:
     <div class="summary">
       <h1>Capture Regression Review</h1>
       <div class="{overall}">Overall: {overall.upper()}</div>
+      {report_links}
     </div>
     {''.join(sections)}
   </main>

@@ -385,6 +385,9 @@ def build_html(
     .card {{
       background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;
     }}
+    .mini-summary {{
+      display:grid; grid-template-columns:repeat(4,minmax(180px,1fr)); gap:12px; margin:12px 0 16px;
+    }}
     .label {{ color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }}
     .value {{ font-size:20px; color:var(--accent); margin-top:6px; }}
     section {{ margin-top: 22px; }}
@@ -460,6 +463,12 @@ def build_html(
     <section>
       <h2>Challenge Queries</h2>
       <div class="meta">ambiguous={esc(challenges.get('ambiguous_count'))} unknown={esc(challenges.get('unknown_count'))}</div>
+      <div class="mini-summary">
+        <div class="card"><div class="label">Unknown Max Score</div><div class="value">{esc(challenges.get('max_unknown_best_score', 'n/a'))}</div></div>
+        <div class="card"><div class="label">Unknown Max Margin</div><div class="value">{esc(challenges.get('max_unknown_margin', 'n/a'))}</div></div>
+        <div class="card"><div class="label">Ambiguous Max Score</div><div class="value">{esc(challenges.get('max_ambiguous_best_score', 'n/a'))}</div></div>
+        <div class="card"><div class="label">Ambiguous Max Margin</div><div class="value">{esc(challenges.get('max_ambiguous_margin', 'n/a'))}</div></div>
+      </div>
       <table>
         <thead>
           <tr>

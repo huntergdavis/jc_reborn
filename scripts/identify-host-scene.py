@@ -407,6 +407,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("sparse_active_evidence")
     elif float(match.get("sparse_active_evidence_penalty", 0.0)) >= 6.0:
         evidence.append("partial_sparse_active_evidence")
+    if float(match.get("fragmented_active_coverage_penalty", 0.0)) >= 12.0:
+        evidence.append("fragmented_active_coverage")
+    elif float(match.get("fragmented_active_coverage_penalty", 0.0)) >= 6.0:
+        evidence.append("partial_fragmented_active_coverage")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -706,6 +710,13 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         sparse_active_evidence_penalty = (1.0 - active_ratio) * 12.0
         if query_transition_points:
             sparse_active_evidence_penalty += max(0.0, 2.0 - len(query_transition_points)) * 2.0
+    fragmented_active_coverage_penalty = 0.0
+    if not background_only_query and len(query_active_frames) > 1:
+        fragmented_active_coverage_penalty = (
+            (1.0 - shared_active_frame_coverage) * 14.0
+            + (1.0 - active_state_set_similarity) * 10.0
+            + (1.0 - subject_activity_sequence_similarity) * 8.0
+        )
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -793,6 +804,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= borrowed_background_mismatch * 24.0
         score -= contamination_risk * 10.0
         score -= sparse_active_evidence_penalty
+        score -= fragmented_active_coverage_penalty
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -851,6 +863,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "borrowed_background_risk": round(borrowed_background_risk, 6),
         "borrowed_background_mismatch": round(borrowed_background_mismatch, 6),
         "sparse_active_evidence_penalty": round(sparse_active_evidence_penalty, 6),
+        "fragmented_active_coverage_penalty": round(fragmented_active_coverage_penalty, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

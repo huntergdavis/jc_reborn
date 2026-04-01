@@ -6,7 +6,7 @@
       "query_scene_signature": "d14b40d3fb855f5c122d",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 242.333333,
+      "score_margin": 248.333333,
       "decision_context": {
         "query_profile": {
           "frame_count": 5,
@@ -28,6 +28,11 @@
           "contexts": [
             "background_visible",
             "raft_visible"
+          ],
+          "poses": [
+            "fishing_scene_actor_present",
+            "johnny_visible",
+            "johnny_walking_pose"
           ]
         },
         "best_evidence": [
@@ -36,22 +41,25 @@
           "full_active_frame_coverage",
           "active_state_alignment",
           "active_subject_alignment",
+          "active_pose_alignment",
           "state_transition_evidence",
+          "pose_alignment",
           "activity_alignment",
           "token_alignment",
           "trait_alignment"
         ],
         "second_evidence": [
           "state_transition_evidence",
+          "pose_alignment",
           "activity_alignment"
         ],
-        "score_margin": 242.333333,
-        "score_ratio": 6.192857
+        "score_margin": 248.333333,
+        "score_ratio": 5.232955
       },
       "best_match": {
         "scene_label": "FISHING 1",
         "scene_family": "fishing",
-        "score": 289.0,
+        "score": 307.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 5,
@@ -63,15 +71,17 @@
         "exact_primary_subject_matches": 5,
         "exact_active_state_matches": 1,
         "exact_active_primary_subject_matches": 1,
+        "exact_active_pose_matches": 1,
         "token_similarity": 1.0,
         "activity_similarity": 1.0,
+        "pose_similarity": 1.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
       "second_match": {
         "scene_label": "MARY 1",
         "scene_family": "mary",
-        "score": 46.666667,
+        "score": 58.666667,
         "exact_scene_signature": false,
         "family_match": false,
         "shared_frame_count": 1,
@@ -83,8 +93,10 @@
         "exact_primary_subject_matches": 1,
         "exact_active_state_matches": 0,
         "exact_active_primary_subject_matches": 0,
+        "exact_active_pose_matches": 0,
         "token_similarity": 0.666667,
         "activity_similarity": 1.0,
+        "pose_similarity": 1.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -92,7 +104,7 @@
         {
           "scene_label": "FISHING 1",
           "scene_family": "fishing",
-          "score": 289.0,
+          "score": 307.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 5,
@@ -104,15 +116,17 @@
           "exact_primary_subject_matches": 5,
           "exact_active_state_matches": 1,
           "exact_active_primary_subject_matches": 1,
+          "exact_active_pose_matches": 1,
           "token_similarity": 1.0,
           "activity_similarity": 1.0,
+          "pose_similarity": 1.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
         {
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "score": 46.666667,
+          "score": 58.666667,
           "exact_scene_signature": false,
           "family_match": false,
           "shared_frame_count": 1,
@@ -124,8 +138,10 @@
           "exact_primary_subject_matches": 1,
           "exact_active_state_matches": 0,
           "exact_active_primary_subject_matches": 0,
+          "exact_active_pose_matches": 0,
           "token_similarity": 0.666667,
           "activity_similarity": 1.0,
+          "pose_similarity": 1.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -137,7 +153,7 @@
       "query_scene_signature": "c9856615c81a3a8572c6",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 300.166667,
+      "score_margin": 324.166667,
       "decision_context": {
         "query_profile": {
           "frame_count": 6,
@@ -163,6 +179,12 @@
             "background_visible",
             "raft_visible",
             "tree_visible"
+          ],
+          "poses": [
+            "johnny_fishing_pose",
+            "johnny_visible",
+            "johnny_walking_pose",
+            "mary_scene_johnny_only"
           ]
         },
         "best_evidence": [
@@ -171,22 +193,25 @@
           "full_active_frame_coverage",
           "active_state_alignment",
           "active_subject_alignment",
+          "active_pose_alignment",
           "state_transition_evidence",
+          "pose_alignment",
           "activity_alignment",
           "token_alignment",
           "trait_alignment"
         ],
         "second_evidence": [
           "state_transition_evidence",
+          "pose_alignment",
           "activity_alignment"
         ],
-        "score_margin": 300.166667,
-        "score_ratio": 7.549091
+        "score_margin": 324.166667,
+        "score_ratio": 6.605187
       },
       "best_match": {
         "scene_label": "MARY 1",
         "scene_family": "mary",
-        "score": 346.0,
+        "score": 382.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 6,
@@ -198,15 +223,17 @@
         "exact_primary_subject_matches": 6,
         "exact_active_state_matches": 4,
         "exact_active_primary_subject_matches": 4,
+        "exact_active_pose_matches": 4,
         "token_similarity": 1.0,
         "activity_similarity": 1.0,
+        "pose_similarity": 1.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
       "second_match": {
         "scene_label": "FISHING 1",
         "scene_family": "fishing",
-        "score": 45.833333,
+        "score": 57.833333,
         "exact_scene_signature": false,
         "family_match": false,
         "shared_frame_count": 1,
@@ -218,8 +245,10 @@
         "exact_primary_subject_matches": 1,
         "exact_active_state_matches": 0,
         "exact_active_primary_subject_matches": 0,
+        "exact_active_pose_matches": 0,
         "token_similarity": 0.666667,
         "activity_similarity": 1.0,
+        "pose_similarity": 1.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -227,7 +256,7 @@
         {
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "score": 346.0,
+          "score": 382.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 6,
@@ -239,15 +268,17 @@
           "exact_primary_subject_matches": 6,
           "exact_active_state_matches": 4,
           "exact_active_primary_subject_matches": 4,
+          "exact_active_pose_matches": 4,
           "token_similarity": 1.0,
           "activity_similarity": 1.0,
+          "pose_similarity": 1.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
         {
           "scene_label": "FISHING 1",
           "scene_family": "fishing",
-          "score": 45.833333,
+          "score": 57.833333,
           "exact_scene_signature": false,
           "family_match": false,
           "shared_frame_count": 1,
@@ -259,8 +290,10 @@
           "exact_primary_subject_matches": 1,
           "exact_active_state_matches": 0,
           "exact_active_primary_subject_matches": 0,
+          "exact_active_pose_matches": 0,
           "token_similarity": 0.666667,
           "activity_similarity": 1.0,
+          "pose_similarity": 1.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

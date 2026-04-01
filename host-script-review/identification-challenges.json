@@ -5,7 +5,7 @@
       "expected_status": "non_identified",
       "status": "unknown",
       "best_scene_label": "FISHING 1",
-      "best_score": 71.857143,
+      "best_score": 83.857143,
       "score_margin": 34.607143,
       "reason": "background-only query lacks actor evidence"
     },
@@ -14,7 +14,7 @@
       "expected_status": "non_identified",
       "status": "unknown",
       "best_scene_label": "MARY 1",
-      "best_score": 61.75,
+      "best_score": 73.75,
       "score_margin": 18.25,
       "reason": "background-only query lacks actor evidence"
     },
@@ -23,41 +23,41 @@
       "expected_status": "non_identified",
       "status": "unknown",
       "best_scene_label": "FISHING 1",
-      "best_score": 74.0,
+      "best_score": 92.0,
       "score_margin": 0.0,
-      "reason": "unknown-family weak score 74.000 margin 0.000"
+      "reason": "unknown-family weak score 92.000 margin 0.000"
     },
     {
       "query_scene_label": "MIXED [fishing-bg-plus-mary-active]",
       "expected_status": "non_identified",
       "status": "ambiguous",
       "best_scene_label": "MARY 1",
-      "best_score": 97.416667,
-      "score_margin": 44.178572,
-      "reason": "unknown-family partial match score 97.417 margin 44.179"
+      "best_score": 115.416667,
+      "score_margin": 50.178572,
+      "reason": "unknown-family partial match score 115.417 margin 50.179"
     },
     {
       "query_scene_label": "MIXED [mary-bg-plus-fishing-active]",
       "expected_status": "non_identified",
       "status": "ambiguous",
       "best_scene_label": "FISHING 1",
-      "best_score": 97.416667,
-      "score_margin": 44.0,
-      "reason": "unknown-family partial match score 97.417 margin 44.000"
+      "best_score": 115.416667,
+      "score_margin": 50.0,
+      "reason": "unknown-family partial match score 115.417 margin 50.000"
     },
     {
       "query_scene_label": "MIXED [interleaved-contradiction]",
       "expected_status": "non_identified",
       "status": "unknown",
       "best_scene_label": "MARY 1",
-      "best_score": 89.75,
+      "best_score": 107.75,
       "score_margin": 11.5,
-      "reason": "unknown-family weak score 89.750 margin 11.500"
+      "reason": "unknown-family weak score 107.750 margin 11.500"
     }
   ],
   "query_count": 6,
-  "max_best_score": 97.416667,
-  "max_margin": 44.178572,
+  "max_best_score": 115.416667,
+  "max_margin": 50.178572,
   "ambiguous_count": 2,
   "unknown_count": 4,
   "passed": true,

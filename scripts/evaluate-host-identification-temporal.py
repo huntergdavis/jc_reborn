@@ -20,6 +20,14 @@ def load_identify():
 identify = load_identify()
 
 
+def slice_profile(rows: list[dict]) -> dict[str, int]:
+    return {
+        "frame_count": len(rows),
+        "active_frame_count": sum(1 for row in rows if (row.get("actor_count") or 0) > 0),
+        "state_change_count": sum(1 for row in rows if row.get("state_changed")),
+    }
+
+
 def redact_prefix(scene: dict, rows: list[dict], prefix_len: int) -> dict:
     query_label = f"{scene.get('scene_label')} [prefix-{prefix_len}]"
     prefix_rows = rows[:prefix_len]
@@ -98,6 +106,13 @@ def evaluate(database: dict) -> dict:
             "score_margin": row.get("score_margin"),
             "best_to_second_ratio": ratio,
         }
+        record.update(
+            {
+                "query_frame_count": slice_profile(expected.get("rows", []))["frame_count"],
+                "query_active_frame_count": slice_profile(expected.get("rows", []))["active_frame_count"],
+                "query_state_change_count": slice_profile(expected.get("rows", []))["state_change_count"],
+            }
+        )
         rows.append(record)
         by_expected_scene.setdefault(expected["_expected_scene_label"], []).append(record)
 
@@ -107,6 +122,8 @@ def evaluate(database: dict) -> dict:
             )
         if record["expected_status"] == "identified" and record["best_scene_label"] != record["expected_scene_label"]:
             failures.append(f"{query_label}: best_match={record['best_scene_label']}")
+        if record["expected_status"] == "identified" and record["query_active_frame_count"] < 1:
+            failures.append(f"{query_label}: identified prefix lacks active semantic evidence")
 
     transition_counts = {}
     min_identified_margin = None

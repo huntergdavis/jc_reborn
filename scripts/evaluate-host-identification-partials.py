@@ -20,6 +20,14 @@ def load_identify():
 identify = load_identify()
 
 
+def slice_profile(rows: list[dict]) -> dict[str, int]:
+    return {
+        "frame_count": len(rows),
+        "active_frame_count": sum(1 for row in rows if (row.get("actor_count") or 0) > 0),
+        "state_change_count": sum(1 for row in rows if row.get("state_changed")),
+    }
+
+
 def strip_query_scene(scene: dict, rows: list[dict], variant_name: str) -> dict:
     query_label = f"{scene.get('scene_label')} [{variant_name}]"
     summary = dict(scene.get("scene_summary") or {})
@@ -115,7 +123,10 @@ def evaluate(database: dict) -> dict:
                 variant_name = scene.get("_query_variant", variant_name)
                 expected_scene_label = scene.get("_expected_scene_label")
                 expected_status = scene.get("_expected_status", expected_status)
+                profile = slice_profile(scene.get("rows", []))
                 break
+        else:
+            profile = {"frame_count": 0, "active_frame_count": 0, "state_change_count": 0}
 
         if min_margin is None or margin < min_margin:
             min_margin = margin
@@ -132,6 +143,8 @@ def evaluate(database: dict) -> dict:
             failures.append(f"{query_label}: margin too small ({margin:.6f})")
         if expected_status == "identified" and ratio is not None and ratio < 2.0:
             failures.append(f"{query_label}: ratio too small ({ratio:.6f})")
+        if expected_status == "identified" and profile["active_frame_count"] < 1:
+            failures.append(f"{query_label}: identified query lacks active semantic evidence")
 
         rows.append(
             {
@@ -148,6 +161,9 @@ def evaluate(database: dict) -> dict:
                 "best_to_second_ratio": ratio,
                 "shared_frame_count": best.get("shared_frame_count"),
                 "exact_scene_signature": best.get("exact_scene_signature"),
+                "query_frame_count": profile["frame_count"],
+                "query_active_frame_count": profile["active_frame_count"],
+                "query_state_change_count": profile["state_change_count"],
             }
         )
 

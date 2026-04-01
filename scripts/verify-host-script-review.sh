@@ -47,6 +47,7 @@ required = [
     "identification-eval.json",
     "identification-partials.json",
     "identification-challenges.json",
+    "identification-temporal.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -109,6 +110,18 @@ print(
     f"max_margin={identify_challenges.get('max_margin')}"
 )
 
+identify_temporal = json.loads((root / "identification-temporal.json").read_text(encoding="utf-8"))
+if not identify_temporal.get("passed"):
+    raise SystemExit(
+        "identification-temporal failed: " + "; ".join(identify_temporal.get("failures", []))
+    )
+print(
+    "identification-temporal: ok "
+    f"query_count={identify_temporal.get('query_count')} "
+    f"min_margin={identify_temporal.get('min_identified_margin')} "
+    f"min_ratio={identify_temporal.get('min_identified_ratio')}"
+)
+
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"
     payload = json.loads(path.read_text(encoding="utf-8"))
@@ -157,6 +170,16 @@ if challenges_summary.get("max_best_score") != identify_challenges.get("max_best
     raise SystemExit("summary max_best_score mismatch for identification-challenges")
 if challenges_summary.get("max_margin") != identify_challenges.get("max_margin"):
     raise SystemExit("summary max_margin mismatch for identification-challenges")
+
+temporal_summary = ((summary.get("checks") or {}).get("identification-temporal") or {})
+if not temporal_summary.get("present") or not temporal_summary.get("passed"):
+    raise SystemExit("summary reports identification-temporal failure")
+if int(temporal_summary.get("query_count", 0)) != int(identify_temporal.get("query_count", 0)):
+    raise SystemExit("summary query_count mismatch for identification-temporal")
+if temporal_summary.get("min_identified_margin") != identify_temporal.get("min_identified_margin"):
+    raise SystemExit("summary min_identified_margin mismatch for identification-temporal")
+if temporal_summary.get("min_identified_ratio") != identify_temporal.get("min_identified_ratio"):
+    raise SystemExit("summary min_identified_ratio mismatch for identification-temporal")
 
 artifact_inputs = summary.get("artifact_inputs") or {}
 if not artifact_inputs:

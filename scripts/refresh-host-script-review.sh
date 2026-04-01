@@ -30,6 +30,7 @@ assert_clean_tracked_inputs() {
         scripts/evaluate-host-identification.py \
         scripts/evaluate-host-identification-challenges.py \
         scripts/evaluate-host-identification-partials.py \
+        scripts/evaluate-host-identification-temporal.py \
         scripts/identify-host-scene.py \
         scripts/render-host-expectation-report.py \
         scripts/render-host-repro-compare.py \
@@ -157,6 +158,10 @@ capture_review_set() {
     python3 "$SCRIPT_DIR/evaluate-host-identification-challenges.py" \
         --semantic-json "$root/semantic-truth.json" \
         --out-json "$root/identification-challenges.json"
+
+    python3 "$SCRIPT_DIR/evaluate-host-identification-temporal.py" \
+        --semantic-json "$root/semantic-truth.json" \
+        --out-json "$root/identification-temporal.json"
 
     python3 "$SCRIPT_DIR/generate-host-truth-baseline.py" \
         --manifest-json "$root/manifest.json" \
@@ -288,6 +293,26 @@ print(
 PY
 }
 
+assert_identification_temporal() {
+    local path="$1"
+    python3 - "$path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+data = json.loads(path.read_text(encoding="utf-8"))
+if not data.get("passed"):
+    raise SystemExit("temporal identification evaluation failed: " + "; ".join(data.get("failures", [])))
+print(
+    "identification-temporal: ok "
+    f"query_count={data.get('query_count')} "
+    f"min_margin={data.get('min_identified_margin')} "
+    f"min_ratio={data.get('min_identified_ratio')}"
+)
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -385,6 +410,22 @@ if identify_challenges_path.is_file():
     identify_challenges["max_margin"] = payload.get("max_margin")
 checks["identification-challenges"] = identify_challenges
 
+identify_temporal_path = root / "identification-temporal.json"
+identify_temporal = {
+    "present": identify_temporal_path.is_file(),
+    "passed": False,
+    "query_count": 0,
+    "min_identified_margin": None,
+    "min_identified_ratio": None,
+}
+if identify_temporal_path.is_file():
+    payload = json.loads(identify_temporal_path.read_text(encoding="utf-8"))
+    identify_temporal["passed"] = bool(payload.get("passed"))
+    identify_temporal["query_count"] = int(payload.get("query_count", 0))
+    identify_temporal["min_identified_margin"] = payload.get("min_identified_margin")
+    identify_temporal["min_identified_ratio"] = payload.get("min_identified_ratio")
+checks["identification-temporal"] = identify_temporal
+
 digest_inputs = {}
 for name in (
     "manifest.json",
@@ -393,6 +434,7 @@ for name in (
     "identification-eval.json",
     "identification-partials.json",
     "identification-challenges.json",
+    "identification-temporal.json",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",
@@ -431,6 +473,8 @@ summary = {
         and checks["identification-partials"]["passed"]
         and checks["identification-challenges"]["present"]
         and checks["identification-challenges"]["passed"]
+        and checks["identification-temporal"]["present"]
+        and checks["identification-temporal"]["passed"]
         and checks["expectation-report"]["present"]
         and checks["expectation-report"]["mismatch_count"] == 0
         and checks["host-truth-compare"]["present"]
@@ -452,7 +496,7 @@ summary = {
 
 (root / "verification-summary.txt").write_text(
     "status={status} git={git_head_short} digest={digest} "
-    "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} "
+    "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "identify-ratio={identify_ratio} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
@@ -462,6 +506,7 @@ summary = {
         identify_eval="ok" if checks["identification-eval"]["passed"] else "fail",
         identify_partials="ok" if checks["identification-partials"]["passed"] else "fail",
         identify_challenges="ok" if checks["identification-challenges"]["passed"] else "fail",
+        identify_temporal="ok" if checks["identification-temporal"]["passed"] else "fail",
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
@@ -485,6 +530,7 @@ assert_identification_selfcheck "$OUT_DIR/identification-selfcheck.json"
 assert_identification_eval "$OUT_DIR/identification-eval.json"
 assert_identification_partials "$OUT_DIR/identification-partials.json"
 assert_identification_challenges "$OUT_DIR/identification-challenges.json"
+assert_identification_temporal "$OUT_DIR/identification-temporal.json"
 
 if [ "$VERIFY_REPRO" -eq 1 ]; then
     rm -rf "$TMP_DIR"

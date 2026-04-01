@@ -31,6 +31,27 @@ def render_tokens(values: list[str]) -> str:
     return "".join(f'<span class="pill">{esc(value)}</span>' for value in values)
 
 
+def classify_headroom(value: object) -> str:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return "neutral"
+    if numeric <= 1.0:
+        return "danger"
+    if numeric <= 3.0:
+        return "warn"
+    return "safe"
+
+
+def render_metric_card(label: str, value: object, level: str = "neutral") -> str:
+    return (
+        f'<div class="card metric-card metric-{esc(level)}">'
+        f'<div class="label">{esc(label)}</div>'
+        f'<div class="value">{esc(value)}</div>'
+        "</div>"
+    )
+
+
 def build_scene_index(manifest: dict) -> dict[str, dict]:
     index = {}
     for scene in manifest.get("scenes", []):
@@ -385,6 +406,9 @@ def build_html(
     .card {{
       background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;
     }}
+    .metric-warn {{ border-color:#9a6b14; background:#241b0e; }}
+    .metric-danger {{ border-color:#a33a3a; background:#2a1212; }}
+    .metric-safe {{ border-color:#245d3a; }}
     .mini-summary {{
       display:grid; grid-template-columns:repeat(4,minmax(180px,1fr)); gap:12px; margin:12px 0 16px;
     }}
@@ -430,10 +454,10 @@ def build_html(
     <h1>{esc(title)}</h1>
     <div class="meta">Deterministic matcher review across exact, partial, challenge, and temporal audits.</div>
     <div class="summary">
-      <div class="card"><div class="label">Exact Min Margin</div><div class="value">{esc(selfcheck.get('min_identified_margin', 'n/a'))}</div></div>
-      <div class="card"><div class="label">Partial Min Margin</div><div class="value">{esc(partials.get('min_margin', 'n/a'))}</div></div>
-      <div class="card"><div class="label">Challenge Non-Identified</div><div class="value">{esc(challenges.get('query_count', 'n/a'))}</div></div>
-      <div class="card"><div class="label">Temporal Max Score Drop</div><div class="value">{esc(temporal.get('max_score_drop', 'n/a'))}</div></div>
+      {render_metric_card("Exact Min Margin", selfcheck.get('min_identified_margin', 'n/a'))}
+      {render_metric_card("Partial Min Margin", partials.get('min_margin', 'n/a'))}
+      {render_metric_card("Challenge Non-Identified", challenges.get('query_count', 'n/a'))}
+      {render_metric_card("Temporal Max Score Drop", temporal.get('max_score_drop', 'n/a'))}
     </div>
 
     <section>
@@ -464,14 +488,14 @@ def build_html(
       <h2>Challenge Queries</h2>
       <div class="meta">ambiguous={esc(challenges.get('ambiguous_count'))} unknown={esc(challenges.get('unknown_count'))}</div>
       <div class="mini-summary">
-        <div class="card"><div class="label">Unknown Max Score</div><div class="value">{esc(challenges.get('max_unknown_best_score', 'n/a'))}</div></div>
-        <div class="card"><div class="label">Unknown Max Margin</div><div class="value">{esc(challenges.get('max_unknown_margin', 'n/a'))}</div></div>
-        <div class="card"><div class="label">Ambiguous Max Score</div><div class="value">{esc(challenges.get('max_ambiguous_best_score', 'n/a'))}</div></div>
-        <div class="card"><div class="label">Ambiguous Max Margin</div><div class="value">{esc(challenges.get('max_ambiguous_margin', 'n/a'))}</div></div>
-        <div class="card"><div class="label">Unknown Score Headroom</div><div class="value">{esc(challenges.get('unknown_score_headroom', 'n/a'))}</div></div>
-        <div class="card"><div class="label">Unknown Margin Headroom</div><div class="value">{esc(challenges.get('unknown_margin_headroom', 'n/a'))}</div></div>
-        <div class="card"><div class="label">Ambiguous Score Headroom</div><div class="value">{esc(challenges.get('ambiguous_score_headroom', 'n/a'))}</div></div>
-        <div class="card"><div class="label">Ambiguous Margin Headroom</div><div class="value">{esc(challenges.get('ambiguous_margin_headroom', 'n/a'))}</div></div>
+        {render_metric_card("Unknown Max Score", challenges.get('max_unknown_best_score', 'n/a'))}
+        {render_metric_card("Unknown Max Margin", challenges.get('max_unknown_margin', 'n/a'))}
+        {render_metric_card("Ambiguous Max Score", challenges.get('max_ambiguous_best_score', 'n/a'))}
+        {render_metric_card("Ambiguous Max Margin", challenges.get('max_ambiguous_margin', 'n/a'))}
+        {render_metric_card("Unknown Score Headroom", challenges.get('unknown_score_headroom', 'n/a'), classify_headroom(challenges.get('unknown_score_headroom')))}
+        {render_metric_card("Unknown Margin Headroom", challenges.get('unknown_margin_headroom', 'n/a'), classify_headroom(challenges.get('unknown_margin_headroom')))}
+        {render_metric_card("Ambiguous Score Headroom", challenges.get('ambiguous_score_headroom', 'n/a'), classify_headroom(challenges.get('ambiguous_score_headroom')))}
+        {render_metric_card("Ambiguous Margin Headroom", challenges.get('ambiguous_margin_headroom', 'n/a'), classify_headroom(challenges.get('ambiguous_margin_headroom')))}
       </div>
       <table>
         <thead>

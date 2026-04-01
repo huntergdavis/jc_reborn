@@ -52,6 +52,16 @@ def render_metric_card(label: str, value: object, level: str = "neutral") -> str
     )
 
 
+def challenge_risk_status(challenges: dict) -> tuple[str, str]:
+    danger_count = int(challenges.get("danger_count") or 0)
+    warn_count = int(challenges.get("warn_count") or 0)
+    if danger_count > 0:
+        return "elevated_risk", "metric-danger"
+    if warn_count > 0:
+        return "warning", "metric-warn"
+    return "normal", "metric-safe"
+
+
 def build_scene_index(manifest: dict) -> dict[str, dict]:
     index = {}
     for scene in manifest.get("scenes", []):
@@ -383,6 +393,7 @@ def build_html(
 ) -> str:
     scene_index = build_scene_index(manifest)
     semantic_index = build_semantic_index(semantic_truth)
+    challenge_risk_label, challenge_risk_class = challenge_risk_status(challenges)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -409,6 +420,10 @@ def build_html(
     .metric-warn {{ border-color:#9a6b14; background:#241b0e; }}
     .metric-danger {{ border-color:#a33a3a; background:#2a1212; }}
     .metric-safe {{ border-color:#245d3a; }}
+    .risk-banner {{
+      margin:14px 0 18px; padding:12px 16px; border-radius:12px; border:1px solid var(--line);
+      background:var(--panel);
+    }}
     .mini-summary {{
       display:grid; grid-template-columns:repeat(4,minmax(180px,1fr)); gap:12px; margin:12px 0 16px;
     }}
@@ -453,6 +468,7 @@ def build_html(
   <main>
     <h1>{esc(title)}</h1>
     <div class="meta">Deterministic matcher review across exact, partial, challenge, and temporal audits.</div>
+    <div class="risk-banner {esc(challenge_risk_class)}"><span class="label">Challenge Risk</span><div class="value">{esc(challenge_risk_label)}</div></div>
     <div class="summary">
       {render_metric_card("Exact Min Margin", selfcheck.get('min_identified_margin', 'n/a'))}
       {render_metric_card("Partial Min Margin", partials.get('min_margin', 'n/a'))}

@@ -561,6 +561,15 @@ summary = {
         )
     ),
 }
+summary["risk_status"] = (
+    "elevated_risk"
+    if checks["identification-challenges"]["danger_count"] > 0
+    else (
+        "warning"
+        if checks["identification-challenges"]["warn_count"] > 0
+        else "normal"
+    )
+)
 
 (root / "verification-summary.json").write_text(
     json.dumps(summary, indent=2) + "\n",
@@ -568,7 +577,7 @@ summary = {
 )
 
 (root / "verification-summary.txt").write_text(
-    "status={status} git={git_head_short} digest={digest} "
+    "status={status} risk={risk_status} git={git_head_short} digest={digest} "
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
@@ -578,6 +587,7 @@ summary = {
     "challenge-warn-count={challenge_warn_count} challenge-danger-count={challenge_danger_count} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
+        risk_status=summary["risk_status"],
         git_head_short=git_head_short,
         digest=summary["artifact_sha256"],
         identify_selfcheck="ok" if checks["identification-selfcheck"]["passed"] else "fail",

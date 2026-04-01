@@ -1,0 +1,36 @@
+{
+  "rows": [
+    {
+      "query_scene_label": "FISHING 1 [background-only]",
+      "expected_status": "unknown",
+      "status": "unknown",
+      "best_scene_label": "FISHING 1",
+      "best_score": 71.857143,
+      "score_margin": 34.607143,
+      "reason": "background-only query lacks actor evidence"
+    },
+    {
+      "query_scene_label": "MARY 1 [background-only]",
+      "expected_status": "unknown",
+      "status": "unknown",
+      "best_scene_label": "MARY 1",
+      "best_score": 76.985714,
+      "score_margin": 40.985714,
+      "reason": "background-only query lacks actor evidence"
+    },
+    {
+      "query_scene_label": "MIXED [active-pair]",
+      "expected_status": "unknown",
+      "status": "unknown",
+      "best_scene_label": "MARY 1",
+      "best_score": 45.277778,
+      "score_margin": 0.277778,
+      "reason": "weak score 45.278 margin 0.278"
+    }
+  ],
+  "query_count": 3,
+  "max_best_score": 76.985714,
+  "max_margin": 40.985714,
+  "passed": true,
+  "failures": []
+}

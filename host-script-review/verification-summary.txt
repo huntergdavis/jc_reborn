@@ -1,1 +1,1 @@
-status=PASS git=5c180389 digest=1efe6230d4e954d7c78732abe9f754e923ea2307aa999a94407eba5271806516 identify-selfcheck=ok identify-eval=ok identify-partials=ok identify-ratio=4.853773630695978 expectation-report=0 host-truth-compare=0 repro-compare=0
+status=PASS git=f7125dd0 digest=50a171a4233139fae732d7b7f1c0617cf0a4af488ad1b252ec1a2dae300d2a65 identify-selfcheck=ok identify-eval=ok identify-partials=ok identify-challenges=ok identify-ratio=4.853773630695978 expectation-report=0 host-truth-compare=0 repro-compare=0

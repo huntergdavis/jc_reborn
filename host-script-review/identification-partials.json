@@ -3,6 +3,7 @@
     {
       "query_scene_label": "FISHING 1 [full-redacted]",
       "expected_scene_label": "FISHING 1",
+      "expected_status": "identified",
       "variant": "full-redacted",
       "status": "identified",
       "best_scene_label": "FISHING 1",
@@ -17,6 +18,7 @@
     {
       "query_scene_label": "FISHING 1 [tail-half]",
       "expected_scene_label": "FISHING 1",
+      "expected_status": "identified",
       "variant": "tail-half",
       "status": "identified",
       "best_scene_label": "FISHING 1",
@@ -31,6 +33,7 @@
     {
       "query_scene_label": "FISHING 1 [active-only]",
       "expected_scene_label": "FISHING 1",
+      "expected_status": "identified",
       "variant": "active-only",
       "status": "identified",
       "best_scene_label": "FISHING 1",
@@ -45,6 +48,7 @@
     {
       "query_scene_label": "FISHING 1 [transition-only]",
       "expected_scene_label": "FISHING 1",
+      "expected_status": "identified",
       "variant": "transition-only",
       "status": "identified",
       "best_scene_label": "FISHING 1",
@@ -59,6 +63,7 @@
     {
       "query_scene_label": "MARY 1 [full-redacted]",
       "expected_scene_label": "MARY 1",
+      "expected_status": "identified",
       "variant": "full-redacted",
       "status": "identified",
       "best_scene_label": "MARY 1",
@@ -73,8 +78,9 @@
     {
       "query_scene_label": "MARY 1 [tail-half]",
       "expected_scene_label": "MARY 1",
+      "expected_status": "unknown",
       "variant": "tail-half",
-      "status": "identified",
+      "status": "unknown",
       "best_scene_label": "MARY 1",
       "best_score": 80.47619,
       "second_scene_label": "FISHING 1",
@@ -87,6 +93,7 @@
     {
       "query_scene_label": "MARY 1 [active-only]",
       "expected_scene_label": "MARY 1",
+      "expected_status": "identified",
       "variant": "active-only",
       "status": "identified",
       "best_scene_label": "MARY 1",
@@ -101,6 +108,7 @@
     {
       "query_scene_label": "MARY 1 [transition-only]",
       "expected_scene_label": "MARY 1",
+      "expected_status": "identified",
       "variant": "transition-only",
       "status": "identified",
       "best_scene_label": "MARY 1",

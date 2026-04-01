@@ -141,6 +141,9 @@ def build_semantic_slice_summary(rows: list[dict]) -> dict[str, str]:
             "entities": "none",
             "transition_text": "none",
             "timeline": "n/a",
+            "frame_count": "0",
+            "active_frame_count": "0",
+            "state_change_count": "0",
         }
     state_counts: dict[str, int] = {}
     activity_counts: dict[str, int] = {}
@@ -162,12 +165,17 @@ def build_semantic_slice_summary(rows: list[dict]) -> dict[str, str]:
             )
     dominant_state = max(state_counts.items(), key=lambda item: (item[1], item[0]))[0]
     dominant_activity = max(activity_counts.items(), key=lambda item: (item[1], item[0]))[0]
+    active_frame_count = sum(1 for row in rows if (row.get("actor_count") or 0) > 0)
+    state_change_count = sum(1 for row in rows if row.get("state_changed"))
     return {
         "dominant_state": dominant_state,
         "dominant_activity": dominant_activity,
         "entities": ", ".join(entity_names) or "none",
         "transition_text": "; ".join(transitions) if transitions else "none",
         "timeline": " > ".join(timeline_parts),
+        "frame_count": str(len(rows)),
+        "active_frame_count": str(active_frame_count),
+        "state_change_count": str(state_change_count),
     }
 
 
@@ -252,6 +260,7 @@ def build_semantic_summary(semantic_index: dict[str, dict], query_label: str) ->
     summary = build_semantic_slice_summary(semantic_rows_for_variant(scene.get("rows") or [], variant))
     return (
         '<div class="semantic-summary">'
+        f'<div><span class="muted">frames</span> {esc(summary["frame_count"])} <span class="muted">active</span> {esc(summary["active_frame_count"])} <span class="muted">changes</span> {esc(summary["state_change_count"])}</div>'
         f'<div><span class="muted">state</span> {esc(summary["dominant_state"])}</div>'
         f'<div><span class="muted">activity</span> {esc(summary["dominant_activity"])}</div>'
         f'<div><span class="muted">entities</span> {esc(summary["entities"])}</div>'

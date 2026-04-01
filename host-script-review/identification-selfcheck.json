@@ -6,7 +6,7 @@
       "query_scene_signature": "d14b40d3fb855f5c122d",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 458.333333,
+      "score_margin": 461.733333,
       "decision_context": {
         "query_profile": {
           "frame_count": 5,
@@ -104,8 +104,8 @@
         "best_borrowed_background_mismatch": 0.0,
         "second_borrowed_background_risk": 0.0,
         "second_borrowed_background_mismatch": 0.0,
-        "score_margin": 458.333333,
-        "score_ratio": 13.5
+        "score_margin": 461.733333,
+        "score_ratio": 14.879759
       },
       "best_match": {
         "scene_label": "FISHING 1",
@@ -167,7 +167,7 @@
       "second_match": {
         "scene_label": "MARY 1",
         "scene_family": "mary",
-        "score": 36.666667,
+        "score": 33.266667,
         "exact_scene_signature": false,
         "family_match": false,
         "shared_frame_count": 1,
@@ -282,7 +282,7 @@
         {
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "score": 36.666667,
+          "score": 33.266667,
           "exact_scene_signature": false,
           "family_match": false,
           "shared_frame_count": 1,
@@ -344,7 +344,7 @@
       "query_scene_signature": "c9856615c81a3a8572c6",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 567.166667,
+      "score_margin": 570.0,
       "decision_context": {
         "query_profile": {
           "frame_count": 6,
@@ -452,8 +452,8 @@
         "best_borrowed_background_mismatch": 0.0,
         "second_borrowed_background_risk": 0.0,
         "second_borrowed_background_mismatch": 0.0,
-        "score_margin": 567.166667,
-        "score_ratio": 16.827907
+        "score_margin": 570.0,
+        "score_ratio": 18.272727
       },
       "best_match": {
         "scene_label": "MARY 1",
@@ -515,7 +515,7 @@
       "second_match": {
         "scene_label": "FISHING 1",
         "scene_family": "fishing",
-        "score": 35.833333,
+        "score": 33.0,
         "exact_scene_signature": false,
         "family_match": false,
         "shared_frame_count": 1,
@@ -630,7 +630,7 @@
         {
           "scene_label": "FISHING 1",
           "scene_family": "fishing",
-          "score": 35.833333,
+          "score": 33.0,
           "exact_scene_signature": false,
           "family_match": false,
           "shared_frame_count": 1,

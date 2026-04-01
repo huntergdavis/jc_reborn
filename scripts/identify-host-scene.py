@@ -458,6 +458,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("low_novelty_multi_active_conflict")
     elif float(match.get("low_novelty_multi_active_penalty", 0.0)) >= 5.0:
         evidence.append("partial_low_novelty_multi_active_conflict")
+    if float(match.get("late_active_island_context_penalty", 0.0)) >= 8.0:
+        evidence.append("late_active_island_context_conflict")
+    elif float(match.get("late_active_island_context_penalty", 0.0)) >= 4.0:
+        evidence.append("partial_late_active_island_context_conflict")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -809,6 +813,12 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
             + (1.0 - shared_active_frame_coverage) * 8.0
             + (1.0 - context_set_similarity) * 6.0
         )
+    late_active_island_context_penalty = 0.0
+    if not background_only_query and len(query_active_frames) == 1 and query_frame_count > 1:
+        late_active_island_context_penalty = (
+            float(query_profile_data.get("active_island_risk", 0.0)) * 8.0
+            + (1.0 - float(query_profile_data.get("active_context_novelty", 1.0))) * 8.0
+        ) * (1.0 - background_provenance_similarity)
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -903,6 +913,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= blended_active_narrative_penalty
         score -= single_active_alignment_penalty
         score -= low_novelty_multi_active_penalty
+        score -= late_active_island_context_penalty
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -969,6 +980,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "blended_active_narrative_penalty": round(blended_active_narrative_penalty, 6),
         "single_active_alignment_penalty": round(single_active_alignment_penalty, 6),
         "low_novelty_multi_active_penalty": round(low_novelty_multi_active_penalty, 6),
+        "late_active_island_context_penalty": round(late_active_island_context_penalty, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

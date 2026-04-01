@@ -837,10 +837,10 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     if background_only_query:
         score += exact_state_matches * 0.1
         score += exact_context_matches * 0.1
-        score += token_similarity * 0.5
-        score += activity_similarity * 0.1
-        score += shared_frame_coverage * 0.5
-        score += context_set_similarity * 4.0
+        score += token_similarity * 0.25
+        score += activity_similarity * 0.05
+        score += shared_frame_coverage * 0.25
+        score += context_set_similarity * 3.0
     else:
         score += exact_state_matches * 3.0
         score += exact_context_matches * 1.0

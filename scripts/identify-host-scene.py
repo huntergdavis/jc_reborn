@@ -834,7 +834,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
 
     score = 0.0
     score += 100.0 if exact_scene_signature else 0.0
-    score += exact_frame_signature_matches * 10.0
+    score += exact_frame_signature_matches * (2.0 if background_only_query else 10.0)
     if background_only_query:
         score += exact_state_matches * 0.015
         score += exact_context_matches * 0.015

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T01:12:35Z",
-  "git_head": "a44708fa7c0c0ff1906c143a1b4ef3c61c704611",
-  "git_head_short": "a44708fa",
+  "generated_at": "2026-04-01T01:23:16Z",
+  "git_head": "9cd84885c3572d6401e6db9a22afbe36efd1489d",
+  "git_head_short": "9cd84885",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -55,21 +55,21 @@
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "c6420dc98e245f0d2b1ac8e34c9bc402792fdfe5cd57f8d304c3c1042602034e",
+  "artifact_sha256": "097ba87d00f6f5ebd4ba3cf400b20b96c80b0bc5bdb9d5c0077469f5fbf31b0c",
   "artifact_inputs": {
-    "manifest.json": "723393ac062242260d851aae83cfec8e1d1519587fe3fb1fce1c0092a0517972",
+    "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",
     "identification-selfcheck.json": "1c76d3ea6a2ea3672be5a9b10ac5d64a51159c670b14a074720562050d9ff441",
     "identification-eval.json": "a767b5d18b11d6ad5c4ace66d0e7ec5515417cc06fbc819c90d56d8c466f396e",
     "identification-partials.json": "9186bcfbf751b472e833b3c2374b92942583f0a9d848b8d46092acdb4037f8ad",
     "identification-challenges.json": "02e713b75b0601c2c2e1e990ea2346cce1ae7eb1f0b6b08dd40771ae966797e3",
     "identification-temporal.json": "269145486ee45af33390c9126a6f64d02fdacde1b30bdcaaf3e73ef6c5b5fcf6",
-    "identification-review.html": "d921b3a0b5e1c396b6876f50fd460d174517384eebbab893174764bfd11da812",
-    "expectations.json": "596cccf3ae1939927df9152e691e2bfaaccc2b5f695f2de5f48763dce7d13d34",
-    "host-truth-baseline.json": "596cccf3ae1939927df9152e691e2bfaaccc2b5f695f2de5f48763dce7d13d34",
-    "expectation-report.json": "ac6cd1b4af7b5661016292697cafd14d9bb64c09a071d577db5783a7c1133500",
-    "host-truth-compare.json": "ac6cd1b4af7b5661016292697cafd14d9bb64c09a071d577db5783a7c1133500",
-    "repro-compare.json": "ac6cd1b4af7b5661016292697cafd14d9bb64c09a071d577db5783a7c1133500"
+    "identification-review.html": "3c08023fa4bb3608d148e8a71d719b3585ba9c46def2e4083f3dc477d959d701",
+    "expectations.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
+    "host-truth-baseline.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
+    "expectation-report.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",
+    "host-truth-compare.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",
+    "repro-compare.json": "067455c2e9c97c65597b11ffecb15ae4471e797ca87a13f19500d424d0ccbd38"
   },
   "all_passed": true
 }

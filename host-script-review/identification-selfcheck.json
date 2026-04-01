@@ -11,6 +11,7 @@
         "query_profile": {
           "frame_count": 5,
           "active_frame_count": 1,
+          "active_frame_ratio": 0.2,
           "state_change_count": 1,
           "frame_states": [
             "background_only",
@@ -72,6 +73,7 @@
           "timed_transition_pair_count_alignment",
           "subject_activity_sequence_alignment",
           "subject_activity_count_alignment",
+          "partial_sparse_active_evidence",
           "trait_alignment"
         ],
         "second_evidence": [
@@ -89,7 +91,8 @@
           "partial_state_count_alignment",
           "partial_transition_pair_count_alignment",
           "partial_timed_transition_pair_count_alignment",
-          "partial_subject_activity_count_alignment"
+          "partial_subject_activity_count_alignment",
+          "partial_sparse_active_evidence"
         ],
         "best_borrowed_background_risk": 0.0,
         "best_borrowed_background_mismatch": 0.0,
@@ -143,6 +146,7 @@
         "subject_activity_count_similarity": 1.0,
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
+        "sparse_active_evidence_penalty": 11.6,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -191,6 +195,7 @@
         "subject_activity_count_similarity": 0.666667,
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
+        "sparse_active_evidence_penalty": 11.6,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -240,6 +245,7 @@
           "subject_activity_count_similarity": 1.0,
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
+          "sparse_active_evidence_penalty": 11.6,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -288,6 +294,7 @@
           "subject_activity_count_similarity": 0.666667,
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
+          "sparse_active_evidence_penalty": 11.6,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -304,6 +311,7 @@
         "query_profile": {
           "frame_count": 6,
           "active_frame_count": 4,
+          "active_frame_ratio": 0.666667,
           "state_change_count": 2,
           "frame_states": [
             "background_only",
@@ -441,6 +449,7 @@
         "subject_activity_count_similarity": 1.0,
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
+        "sparse_active_evidence_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -489,6 +498,7 @@
         "subject_activity_count_similarity": 0.666667,
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
+        "sparse_active_evidence_penalty": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -538,6 +548,7 @@
           "subject_activity_count_similarity": 1.0,
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
+          "sparse_active_evidence_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -586,6 +597,7 @@
           "subject_activity_count_similarity": 0.666667,
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
+          "sparse_active_evidence_penalty": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

@@ -28,10 +28,17 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     cand_rows = rows_by_frame(candidate)
     shared_frames = sorted(set(query_rows) & set(cand_rows))
     query_frame_count = len(query_rows)
+    query_active_frames = {
+        frame_no
+        for frame_no, row in query_rows.items()
+        if row.get("frame_state") != "background_only"
+    }
 
     exact_frame_signature_matches = 0
     exact_state_matches = 0
     exact_primary_subject_matches = 0
+    exact_active_state_matches = 0
+    exact_active_primary_subject_matches = 0
     token_similarity_sum = 0.0
     activity_overlap_sum = 0.0
 
@@ -52,9 +59,22 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
             set(q.get("activity_labels", [])),
             set(c.get("activity_labels", [])),
         )
+        if (
+            frame_no in query_active_frames
+            and c.get("frame_state") != "background_only"
+        ):
+            if q.get("frame_state") == c.get("frame_state"):
+                exact_active_state_matches += 1
+            if q.get("primary_subject") == c.get("primary_subject"):
+                exact_active_primary_subject_matches += 1
 
     shared_count = len(shared_frames)
+    shared_active_count = len(query_active_frames & set(cand_rows))
     shared_frame_coverage = (shared_count / query_frame_count) if query_frame_count else 0.0
+    shared_active_frame_coverage = (
+        shared_active_count / len(query_active_frames)
+        if query_active_frames else 0.0
+    )
     token_similarity = (token_similarity_sum / shared_count) if shared_count else 0.0
     activity_similarity = (activity_overlap_sum / shared_count) if shared_count else 0.0
 
@@ -77,6 +97,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += token_similarity * 20.0
     score += activity_similarity * 10.0
     score += shared_frame_coverage * 25.0
+    score += shared_active_frame_coverage * 30.0
+    score += exact_active_state_matches * 8.0
+    score += exact_active_primary_subject_matches * 6.0
     score += 5.0 if family_match else 0.0
     score += trait_similarity * 10.0
 
@@ -88,9 +111,13 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "family_match": family_match,
         "shared_frame_count": shared_count,
         "shared_frame_coverage": round(shared_frame_coverage, 6),
+        "shared_active_frame_count": shared_active_count,
+        "shared_active_frame_coverage": round(shared_active_frame_coverage, 6),
         "exact_frame_signature_matches": exact_frame_signature_matches,
         "exact_state_matches": exact_state_matches,
         "exact_primary_subject_matches": exact_primary_subject_matches,
+        "exact_active_state_matches": exact_active_state_matches,
+        "exact_active_primary_subject_matches": exact_active_primary_subject_matches,
         "token_similarity": round(token_similarity, 6),
         "activity_similarity": round(activity_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),

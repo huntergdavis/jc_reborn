@@ -25,6 +25,54 @@ def context_change_points(rows: dict[int, dict]) -> set[int]:
     return points
 
 
+def background_provenance_profile(rows: dict[int, dict]) -> dict:
+    ordered = sorted(rows)
+    if not ordered:
+        return {
+            "pre_active_contexts": set(),
+            "post_active_contexts": set(),
+            "pre_active_count": 0,
+            "post_active_count": 0,
+        }
+
+    active_frames = [
+        frame_no
+        for frame_no in ordered
+        if rows[frame_no].get("frame_state") != "background_only"
+    ]
+    if not active_frames:
+        background_contexts = {
+            label
+            for frame_no in ordered
+            for label in rows[frame_no].get("context_labels", [])
+        }
+        return {
+            "pre_active_contexts": background_contexts,
+            "post_active_contexts": set(),
+            "pre_active_count": len(ordered),
+            "post_active_count": 0,
+        }
+
+    first_active = active_frames[0]
+    last_active = active_frames[-1]
+    pre_active_frames = [frame_no for frame_no in ordered if frame_no < first_active]
+    post_active_frames = [frame_no for frame_no in ordered if frame_no > last_active]
+    return {
+        "pre_active_contexts": {
+            label
+            for frame_no in pre_active_frames
+            for label in rows[frame_no].get("context_labels", [])
+        },
+        "post_active_contexts": {
+            label
+            for frame_no in post_active_frames
+            for label in rows[frame_no].get("context_labels", [])
+        },
+        "pre_active_count": len(pre_active_frames),
+        "post_active_count": len(post_active_frames),
+    }
+
+
 def subject_timeline_profile(rows: dict[int, dict]) -> dict:
     ordered = sorted(rows)
     if not ordered:
@@ -237,6 +285,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("context_transition_alignment")
     elif float(match.get("context_transition_similarity", 0.0)) >= 0.5 and profile["contexts"]:
         evidence.append("partial_context_transition_alignment")
+    if float(match.get("background_provenance_similarity", 0.0)) >= 0.95 and profile["active_frame_count"] > 0:
+        evidence.append("background_provenance_alignment")
+    elif float(match.get("background_provenance_similarity", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
+        evidence.append("partial_background_provenance_alignment")
     if float(match.get("subject_set_similarity", 0.0)) >= 0.95 and profile["subjects"]:
         evidence.append("subject_alignment")
     elif float(match.get("subject_set_similarity", 0.0)) >= 0.5 and profile["subjects"]:
@@ -373,6 +425,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     }
     query_context_change_points = context_change_points(query_rows)
     candidate_context_change_points = context_change_points(cand_rows)
+    query_background_provenance = background_provenance_profile(query_rows)
+    candidate_background_provenance = background_provenance_profile(cand_rows)
     query_subject_profile = subject_timeline_profile(query_rows)
     candidate_subject_profile = subject_timeline_profile(cand_rows)
     query_phase_sequence = phase_sequence_profile(query_rows)
@@ -451,6 +505,24 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     context_set_similarity = jaccard(query_context_set, candidate_context_set)
     transition_similarity = jaccard(query_transition_points, candidate_transition_points)
     context_transition_similarity = jaccard(query_context_change_points, candidate_context_change_points)
+    pre_active_context_similarity = jaccard(
+        set(query_background_provenance["pre_active_contexts"]),
+        set(candidate_background_provenance["pre_active_contexts"]),
+    )
+    post_active_context_similarity = jaccard(
+        set(query_background_provenance["post_active_contexts"]),
+        set(candidate_background_provenance["post_active_contexts"]),
+    )
+    provenance_scores = []
+    if query_background_provenance["pre_active_count"] > 0 or candidate_background_provenance["pre_active_count"] > 0:
+        provenance_scores.append(pre_active_context_similarity)
+    if query_background_provenance["post_active_count"] > 0 or candidate_background_provenance["post_active_count"] > 0:
+        provenance_scores.append(post_active_context_similarity)
+    background_provenance_similarity = (
+        sum(provenance_scores) / len(provenance_scores)
+        if provenance_scores
+        else 1.0
+    )
     subject_set_similarity = jaccard(
         set(query_subject_profile["subjects"]),
         set(candidate_subject_profile["subjects"]),
@@ -607,6 +679,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query else pose_similarity * 12.0
     score += transition_similarity * 8.0
     score += 0.0 if background_only_query else context_transition_similarity * 6.0
+    score += 0.0 if background_only_query or not has_active_alignment else background_provenance_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else subject_set_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else first_active_timing_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else last_active_timing_similarity * 8.0
@@ -635,6 +708,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= context_set_similarity * 4.0
         score -= (1.0 - transition_similarity) * 6.0
         score -= (1.0 - context_transition_similarity) * 4.0
+        score -= background_provenance_similarity * 8.0
         score -= subject_set_similarity * 7.0
         score -= first_active_timing_similarity * 5.0
         score -= last_active_timing_similarity * 4.0
@@ -688,6 +762,9 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "context_set_similarity": round(context_set_similarity, 6),
         "transition_similarity": round(transition_similarity, 6),
         "context_transition_similarity": round(context_transition_similarity, 6),
+        "pre_active_context_similarity": round(pre_active_context_similarity, 6),
+        "post_active_context_similarity": round(post_active_context_similarity, 6),
+        "background_provenance_similarity": round(background_provenance_similarity, 6),
         "subject_set_similarity": round(subject_set_similarity, 6),
         "first_active_timing_similarity": round(first_active_timing_similarity, 6),
         "last_active_timing_similarity": round(last_active_timing_similarity, 6),

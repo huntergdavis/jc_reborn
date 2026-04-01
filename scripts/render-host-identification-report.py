@@ -540,10 +540,10 @@ def build_html(
       <table>
         <thead>
           <tr>
-            <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Score Headroom</th><th>Margin</th><th>Margin Headroom</th><th>Reason</th>
+            <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Borrowed Risk</th><th>Score Headroom</th><th>Margin</th><th>Margin Headroom</th><th>Reason</th>
           </tr>
         </thead>
-        <tbody>{render_simple_rows(challenges.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('score_headroom','text'), ('score_margin','text'), ('margin_headroom','text'), ('reason','text')], scene_index, semantic_index, output_path)}</tbody>
+        <tbody>{render_simple_rows(challenges.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('borrowed_background_risk','text'), ('score_headroom','text'), ('score_margin','text'), ('margin_headroom','text'), ('reason','text')], scene_index, semantic_index, output_path)}</tbody>
       </table>
     </section>
 

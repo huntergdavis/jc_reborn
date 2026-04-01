@@ -297,6 +297,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("subject_activity_count_alignment")
     elif float(match.get("subject_activity_count_similarity", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
         evidence.append("partial_subject_activity_count_alignment")
+    if float(match.get("borrowed_background_risk", 0.0)) >= 0.8:
+        evidence.append("borrowed_background_detected")
+    elif float(match.get("borrowed_background_risk", 0.0)) >= 0.4:
+        evidence.append("partial_borrowed_background_risk")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -312,6 +316,8 @@ def summarize_decision_context(query_scene: dict, best: dict | None, second: dic
         "query_profile": profile,
         "best_evidence": summarize_match_evidence(query_scene, best or {}),
         "second_evidence": summarize_match_evidence(query_scene, second or {}) if second else [],
+        "best_borrowed_background_risk": round(float((best or {}).get("borrowed_background_risk", 0.0)), 6),
+        "second_borrowed_background_risk": round(float((second or {}).get("borrowed_background_risk", 0.0)), 6) if second else None,
         "score_margin": round(best_score - second_score, 6),
         "score_ratio": round(best_score / second_score, 6) if second_score > 0.0 else None,
     }
@@ -549,6 +555,21 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     subject_activity_count_similarity = 1.0 - abs(
         len(query_subject_activity_sequence) - len(candidate_subject_activity_sequence)
     ) / max_subject_activity_len
+    borrowed_background_risk = 0.0
+    if (
+        not background_only_query
+        and len(query_active_frames) == 1
+        and query_frame_count > 1
+        and shared_active_frame_coverage >= 1.0
+    ):
+        borrowed_background_risk = min(
+            1.0,
+            (
+                (1.0 - shared_frame_coverage) * 0.35
+                + (1.0 - context_set_similarity) * 0.15
+                + (1.0 - context_transition_similarity) * 0.5
+            ),
+        )
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -629,6 +650,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= timed_transition_pair_count_similarity * 7.0
         score -= subject_activity_sequence_similarity * 14.0
         score -= subject_activity_count_similarity * 8.0
+        score -= borrowed_background_risk * 20.0
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -681,6 +703,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "timed_transition_pair_count_similarity": round(timed_transition_pair_count_similarity, 6),
         "subject_activity_sequence_similarity": round(subject_activity_sequence_similarity, 6),
         "subject_activity_count_similarity": round(subject_activity_count_similarity, 6),
+        "borrowed_background_risk": round(borrowed_background_risk, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }
@@ -708,6 +731,8 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
             return "unknown", f"unknown-family query lacks semantic evidence active={active_row_count} changes={state_change_count}"
         if score >= 110.0 and margin >= 60.0 and ratio is not None and ratio >= 3.0:
             return "identified", f"strong unknown-family score {score:.3f} margin {margin:.3f}"
+        if score >= 40.0 and margin >= 100.0:
+            return "ambiguous", f"unknown-family strongly separated low-score match {score:.3f} margin {margin:.3f}"
         if score >= 50.0 and margin >= 80.0:
             return "ambiguous", f"unknown-family separated low-score match {score:.3f} margin {margin:.3f}"
         if score >= 60.0 and margin >= 20.0:

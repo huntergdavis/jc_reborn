@@ -33,7 +33,11 @@
             "fishing_scene_actor_present",
             "johnny_visible",
             "johnny_walking_pose"
-          ]
+          ],
+          "contamination_risk": 0.45,
+          "background_frame_count": 4,
+          "background_active_context_similarity": 1.0,
+          "pre_post_background_similarity": 0.0
         },
         "best_evidence": [
           "exact_scene_signature",
@@ -327,7 +331,11 @@
             "johnny_visible",
             "johnny_walking_pose",
             "mary_scene_johnny_only"
-          ]
+          ],
+          "contamination_risk": 0.0,
+          "background_frame_count": 2,
+          "background_active_context_similarity": 1.0,
+          "pre_post_background_similarity": 0.0
         },
         "best_evidence": [
           "exact_scene_signature",

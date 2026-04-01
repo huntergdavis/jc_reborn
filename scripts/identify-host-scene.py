@@ -919,7 +919,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= sparse_active_evidence_penalty
         score -= fragmented_active_coverage_penalty
         score -= active_semantic_diversity_penalty
-        score -= active_island_penalty * 2.37
+        score -= active_island_penalty * 2.55
         score -= borrowed_background_context_penalty
         score -= blended_active_narrative_penalty
         score -= single_active_alignment_penalty

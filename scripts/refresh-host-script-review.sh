@@ -308,7 +308,9 @@ print(
     "identification-temporal: ok "
     f"query_count={data.get('query_count')} "
     f"min_margin={data.get('min_identified_margin')} "
-    f"min_ratio={data.get('min_identified_ratio')}"
+    f"min_ratio={data.get('min_identified_ratio')} "
+    f"max_score_drop={data.get('max_score_drop')} "
+    f"max_margin_drop={data.get('max_identified_margin_drop')}"
 )
 PY
 }
@@ -417,6 +419,8 @@ identify_temporal = {
     "query_count": 0,
     "min_identified_margin": None,
     "min_identified_ratio": None,
+    "max_score_drop": None,
+    "max_identified_margin_drop": None,
 }
 if identify_temporal_path.is_file():
     payload = json.loads(identify_temporal_path.read_text(encoding="utf-8"))
@@ -424,6 +428,8 @@ if identify_temporal_path.is_file():
     identify_temporal["query_count"] = int(payload.get("query_count", 0))
     identify_temporal["min_identified_margin"] = payload.get("min_identified_margin")
     identify_temporal["min_identified_ratio"] = payload.get("min_identified_ratio")
+    identify_temporal["max_score_drop"] = payload.get("max_score_drop")
+    identify_temporal["max_identified_margin_drop"] = payload.get("max_identified_margin_drop")
 checks["identification-temporal"] = identify_temporal
 
 digest_inputs = {}

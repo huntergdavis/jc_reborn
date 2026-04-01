@@ -119,7 +119,9 @@ print(
     "identification-temporal: ok "
     f"query_count={identify_temporal.get('query_count')} "
     f"min_margin={identify_temporal.get('min_identified_margin')} "
-    f"min_ratio={identify_temporal.get('min_identified_ratio')}"
+    f"min_ratio={identify_temporal.get('min_identified_ratio')} "
+    f"max_score_drop={identify_temporal.get('max_score_drop')} "
+    f"max_margin_drop={identify_temporal.get('max_identified_margin_drop')}"
 )
 
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
@@ -180,6 +182,10 @@ if temporal_summary.get("min_identified_margin") != identify_temporal.get("min_i
     raise SystemExit("summary min_identified_margin mismatch for identification-temporal")
 if temporal_summary.get("min_identified_ratio") != identify_temporal.get("min_identified_ratio"):
     raise SystemExit("summary min_identified_ratio mismatch for identification-temporal")
+if temporal_summary.get("max_score_drop") != identify_temporal.get("max_score_drop"):
+    raise SystemExit("summary max_score_drop mismatch for identification-temporal")
+if temporal_summary.get("max_identified_margin_drop") != identify_temporal.get("max_identified_margin_drop"):
+    raise SystemExit("summary max_identified_margin_drop mismatch for identification-temporal")
 
 artifact_inputs = summary.get("artifact_inputs") or {}
 if not artifact_inputs:

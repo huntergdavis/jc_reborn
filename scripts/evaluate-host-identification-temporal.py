@@ -111,16 +111,28 @@ def evaluate(database: dict) -> dict:
     transition_counts = {}
     min_identified_margin = None
     min_identified_ratio = None
+    max_score_drop = 0.0
+    max_identified_margin_drop = 0.0
 
     for scene_label, scene_rows in by_expected_scene.items():
         scene_rows.sort(key=lambda row: row["prefix_len"])
         previous_status = None
+        previous_score = None
+        previous_identified_margin = None
         seen_identified = False
         transition_count = 0
         for record in scene_rows:
             status = record["status"]
+            score = float(record["best_score"] or 0.0)
             if previous_status is not None and status != previous_status:
                 transition_count += 1
+            if previous_score is not None and score < previous_score:
+                score_drop = previous_score - score
+                if score_drop > max_score_drop:
+                    max_score_drop = score_drop
+                failures.append(
+                    f"{scene_label}: best score regressed at prefix {record['prefix_len']} by {score_drop:.6f}"
+                )
             if status == "identified":
                 seen_identified = True
                 margin = float(record["score_margin"] or 0.0)
@@ -129,9 +141,18 @@ def evaluate(database: dict) -> dict:
                     min_identified_margin = margin
                 if ratio is not None and (min_identified_ratio is None or ratio < min_identified_ratio):
                     min_identified_ratio = ratio
+                if previous_identified_margin is not None and margin < previous_identified_margin:
+                    margin_drop = previous_identified_margin - margin
+                    if margin_drop > max_identified_margin_drop:
+                        max_identified_margin_drop = margin_drop
+                    failures.append(
+                        f"{scene_label}: identified margin regressed at prefix {record['prefix_len']} by {margin_drop:.6f}"
+                    )
+                previous_identified_margin = margin
             elif seen_identified:
                 failures.append(f"{scene_label}: status regressed from identified to {status}")
             previous_status = status
+            previous_score = score
 
         transition_counts[scene_label] = transition_count
         if transition_count > 1:
@@ -143,6 +164,8 @@ def evaluate(database: dict) -> dict:
         "transition_counts": transition_counts,
         "min_identified_margin": min_identified_margin,
         "min_identified_ratio": min_identified_ratio,
+        "max_score_drop": max_score_drop,
+        "max_identified_margin_drop": max_identified_margin_drop,
         "passed": not failures,
         "failures": failures,
     }

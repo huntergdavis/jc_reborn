@@ -143,22 +143,61 @@ def build_frame_preview(scene_index: dict[str, dict], output_path: Path, query_l
     return f'<div class="thumb-strip">{"".join(cards)}</div>'
 
 
+def build_scene_review_link(scene_index: dict[str, dict], output_path: Path, query_label: str) -> str:
+    base_label, _variant = parse_query_scene_label(query_label)
+    scene = scene_index.get(base_label) or scene_index.get(normalize_label(base_label))
+    if not scene:
+        return ""
+    scene_dir = scene.get("scene_dir")
+    if not scene_dir:
+        return ""
+    review_path = output_path.parent / scene_dir / "review.html"
+    if not review_path.exists():
+        return ""
+    return f'<div class="query-meta"><a href="{esc(rel(review_path, output_path.parent))}">scene review</a></div>'
+
+
+def render_query_cell(scene_index: dict[str, dict], output_path: Path, query_label: str) -> str:
+    return (
+        f"{esc(query_label)}"
+        f'<div class="query-meta">{build_frame_links(scene_index, output_path, query_label)}</div>'
+        f"{build_scene_review_link(scene_index, output_path, query_label)}"
+        f"{build_frame_preview(scene_index, output_path, query_label)}"
+    )
+
+
+def render_evidence_delta(best_evidence: list[str], second_evidence: list[str]) -> tuple[str, str, str]:
+    best_set = set(best_evidence)
+    second_set = set(second_evidence)
+    best_only = [value for value in best_evidence if value not in second_set]
+    shared = [value for value in best_evidence if value in second_set]
+    second_only = [value for value in second_evidence if value not in best_set]
+    return render_tokens(best_only), render_tokens(shared), render_tokens(second_only)
+
+
 def render_selfcheck(rows: list[dict], scene_index: dict[str, dict], output_path: Path) -> str:
     body = []
     for row in rows:
         ctx = row.get("decision_context") or {}
         profile = ctx.get("query_profile") or {}
+        best_only, shared, second_only = render_evidence_delta(
+            ctx.get("best_evidence") or [],
+            ctx.get("second_evidence") or [],
+        )
+        second_match = row.get("second_match") or {}
         body.append(
             f"""
 <tr>
-  <td>{esc(row.get('query_scene_label'))}<div>{build_frame_links(scene_index, output_path, str(row.get('query_scene_label')))}</div>{build_frame_preview(scene_index, output_path, str(row.get('query_scene_label')))}</td>
+  <td>{render_query_cell(scene_index, output_path, str(row.get('query_scene_label')))}</td>
   <td>{esc(row.get('identification_status'))}</td>
   <td>{esc(row.get('identification_reason'))}</td>
   <td>{esc(ctx.get('score_margin'))}</td>
   <td>{esc(ctx.get('score_ratio'))}</td>
   <td>{esc(profile.get('active_frame_count'))}/{esc(profile.get('frame_count'))}</td>
-  <td>{render_tokens(ctx.get('best_evidence') or [])}</td>
-  <td>{render_tokens(ctx.get('second_evidence') or [])}</td>
+  <td>{esc(second_match.get('scene_label') or second_match.get('label') or 'n/a')}</td>
+  <td>{best_only}</td>
+  <td>{shared}</td>
+  <td>{second_only}</td>
 </tr>
 """
         )
@@ -174,9 +213,7 @@ def render_simple_rows(rows: list[dict], columns: list[tuple[str, str]], scene_i
             if kind == "tokens":
                 cells.append(f"<td>{render_tokens(value or [])}</td>")
             elif kind == "query":
-                cells.append(
-                    f"<td>{esc(value)}<div>{build_frame_links(scene_index, output_path, str(value))}</div>{build_frame_preview(scene_index, output_path, str(value))}</td>"
-                )
+                cells.append(f"<td>{render_query_cell(scene_index, output_path, str(value))}</td>")
             else:
                 cells.append(f"<td>{esc(value)}</td>")
         body.append("<tr>" + "".join(cells) + "</tr>")
@@ -234,6 +271,9 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
     .thumb-label {{
       color:var(--muted); font-size:11px;
     }}
+    .query-meta {{
+      margin-top:6px; color:var(--muted);
+    }}
   </style>
 </head>
 <body>
@@ -252,7 +292,7 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
       <table>
         <thead>
           <tr>
-            <th>Scene</th><th>Status</th><th>Reason</th><th>Margin</th><th>Ratio</th><th>Active/Frames</th><th>Best Evidence</th><th>Runner-Up Evidence</th>
+            <th>Scene</th><th>Status</th><th>Reason</th><th>Margin</th><th>Ratio</th><th>Active/Frames</th><th>Runner-Up</th><th>Winner Edge</th><th>Shared Evidence</th><th>Runner-Up Only</th>
           </tr>
         </thead>
         <tbody>{render_selfcheck(selfcheck.get('rows') or [], scene_index, output_path)}</tbody>

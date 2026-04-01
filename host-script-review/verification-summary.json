@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T08:28:15Z",
-  "git_head": "feb859994e67d7f9092d660d4c566481c91f2a4a",
-  "git_head_short": "feb85999",
+  "generated_at": "2026-04-01T08:39:15Z",
+  "git_head": "c7fca14024e0c95ac1bac4015cc11e1ae1760a2c",
+  "git_head_short": "c7fca140",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -44,25 +44,25 @@
       "unknown_margin_limit": 35.0,
       "ambiguous_score_limit": 150.0,
       "ambiguous_margin_limit": 150.0,
-      "max_best_score": 84.391667,
-      "max_margin": 147.508334,
+      "max_best_score": 66.391667,
+      "max_margin": 142.563334,
       "max_unknown_best_score": 56.758333,
       "max_unknown_margin": 8.566667,
-      "max_ambiguous_best_score": 84.391667,
-      "max_ambiguous_margin": 147.508334,
+      "max_ambiguous_best_score": 66.391667,
+      "max_ambiguous_margin": 142.563334,
       "unknown_score_headroom": 53.241667,
       "unknown_margin_headroom": 26.433333,
-      "ambiguous_score_headroom": 65.608333,
-      "ambiguous_margin_headroom": 2.491666,
-      "tightest_query_label": "MIXED [fishing-bg-plus-mary-active]",
+      "ambiguous_score_headroom": 83.608333,
+      "ambiguous_margin_headroom": 7.436666,
+      "tightest_query_label": "MIXED [mary-bg-plus-fishing-active]",
       "tightest_status": "ambiguous",
-      "tightest_best_scene_label": "MARY 1",
+      "tightest_best_scene_label": "FISHING 1",
       "tightest_metric": "margin",
-      "tightest_value": 147.508334,
+      "tightest_value": 142.563334,
       "tightest_limit": 150.0,
-      "tightest_headroom": 2.491666,
-      "tightest_pressure": 0.983389,
-      "warn_count": 1,
+      "tightest_headroom": 7.436666,
+      "tightest_pressure": 0.950422,
+      "warn_count": 0,
       "danger_count": 0,
       "ambiguous_count": 2,
       "unknown_count": 5
@@ -77,16 +77,16 @@
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "6423f1ba4a89117906977c5205aff6df60620fc99b8d49495fb4058d179221a8",
+  "artifact_sha256": "e2abe0942abefd87bdf560fed34628d4b8923c613ca642f4111310b2a39abf1b",
   "artifact_inputs": {
     "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",
     "identification-selfcheck.json": "ade2f733c2097fa24e2e1b28ccb6299399bb03d7e55ec247da1111058c730e1c",
     "identification-eval.json": "4b048fb2a7db72e6b8bdd743154d066f666ecbcd7a7aac135e454e6ed21cc93d",
     "identification-partials.json": "df46c95a912072280f7881584cadde987430cd41e8d4b4a72ab5329deb358338",
-    "identification-challenges.json": "9a106770f73e924ddeb48d70702c4aea0ad21d0bb6a1b477488cbfcbaebb6585",
+    "identification-challenges.json": "46eb0e7822894eaba1d7f76ff9f8a07503d8012efe7429898b546ebd245d27c4",
     "identification-temporal.json": "6ad7680e79f5fea424d13e37e0ffdb1521819f9ee830f5ee23b0755d53be5eda",
-    "identification-review.html": "ad6512b1bc411a86d1a2e00c1abd3de85ec7632dd944f32ca8a68ac9a431dc3c",
+    "identification-review.html": "c98b8a83a2abc58cccea21e630ef265ec5c749363afb9b0b023b60b9dfe13887",
     "expectations.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "host-truth-baseline.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "expectation-report.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",
@@ -94,5 +94,5 @@
     "repro-compare.json": "067455c2e9c97c65597b11ffecb15ae4471e797ca87a13f19500d424d0ccbd38"
   },
   "all_passed": true,
-  "risk_status": "warning"
+  "risk_status": "normal"
 }

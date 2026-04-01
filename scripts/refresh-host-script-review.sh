@@ -27,6 +27,7 @@ assert_clean_tracked_inputs() {
         host-script-review/frame-image-regression-report.json \
         host-script-review/frame-meta-regression-baseline.json \
         host-script-review/frame-meta-regression-report.json \
+        host-script-review/capture-regression-report.json \
         host-script-review/identification-regression-floors.json \
         host-script-review/semantic-regression-baseline.json \
         host-script-review/semantic-regression-report.json \
@@ -37,6 +38,7 @@ assert_clean_tracked_inputs() {
         scripts/evaluate-frame-image-regression.py \
         scripts/evaluate-frame-meta-regression.py \
         scripts/evaluate-semantic-regression.py \
+        scripts/render-capture-regression-report.py \
         scripts/evaluate-host-identification.py \
         scripts/evaluate-host-identification-challenges.py \
         scripts/evaluate-host-identification-partials.py \
@@ -476,6 +478,15 @@ print("semantic-regression-baseline: ok")
 PY
 }
 
+write_capture_regression_report() {
+    local root="$1"
+    python3 "$SCRIPT_DIR/render-capture-regression-report.py" \
+        --frame-image "$root/frame-image-regression-report.json" \
+        --frame-meta "$root/frame-meta-regression-report.json" \
+        --semantic "$root/semantic-regression-report.json" \
+        --out-json "$root/capture-regression-report.json"
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -802,6 +813,7 @@ assert_frame_image_regression_baseline "$OUT_DIR"
 assert_frame_meta_regression_baseline "$OUT_DIR"
 assert_identification_regression_floors "$OUT_DIR"
 assert_semantic_regression_baseline "$OUT_DIR"
+write_capture_regression_report "$OUT_DIR"
 
 if [ "$VERIFY_REPRO" -eq 1 ]; then
     rm -rf "$TMP_DIR"

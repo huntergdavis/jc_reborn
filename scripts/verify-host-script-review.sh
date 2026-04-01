@@ -52,6 +52,7 @@ required = [
     "frame-image-regression-report.json",
     "frame-meta-regression-baseline.json",
     "frame-meta-regression-report.json",
+    "capture-regression-report.json",
     "identification-regression-floors.json",
     "semantic-regression-baseline.json",
     "semantic-regression-report.json",
@@ -191,6 +192,11 @@ if not semantic_report.get("passed", False):
             semantic_failures.append(f"{scene} frame {frame} {field} drifted")
     raise SystemExit("semantic-regression-baseline failed: " + "; ".join(semantic_failures))
 print("semantic-regression-baseline: ok")
+
+capture_regression = json.loads((root / "capture-regression-report.json").read_text(encoding="utf-8"))
+if not capture_regression.get("passed", False):
+    raise SystemExit("capture-regression-report failed")
+print("capture-regression-report: ok")
 
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"

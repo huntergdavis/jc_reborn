@@ -35,6 +35,10 @@
             "johnny_visible",
             "johnny_walking_pose"
           ],
+          "active_state_variety": [
+            "johnny_only"
+          ],
+          "active_state_variety_count": 1,
           "contamination_risk": 0.45,
           "background_frame_count": 4,
           "background_active_context_similarity": 1.0,
@@ -148,6 +152,7 @@
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 11.6,
         "fragmented_active_coverage_penalty": 0.0,
+        "active_semantic_diversity_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -198,6 +203,7 @@
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 11.6,
         "fragmented_active_coverage_penalty": 0.0,
+        "active_semantic_diversity_penalty": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -249,6 +255,7 @@
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 11.6,
           "fragmented_active_coverage_penalty": 0.0,
+          "active_semantic_diversity_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -299,6 +306,7 @@
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 11.6,
           "fragmented_active_coverage_penalty": 0.0,
+          "active_semantic_diversity_penalty": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -344,6 +352,11 @@
             "johnny_walking_pose",
             "mary_scene_johnny_only"
           ],
+          "active_state_variety": [
+            "johnny_fishing",
+            "johnny_in_mary_scene"
+          ],
+          "active_state_variety_count": 2,
           "contamination_risk": 0.0,
           "background_frame_count": 2,
           "background_active_context_similarity": 1.0,
@@ -400,7 +413,8 @@
           "partial_transition_pair_count_alignment",
           "partial_timed_transition_pair_count_alignment",
           "partial_subject_activity_count_alignment",
-          "fragmented_active_coverage"
+          "fragmented_active_coverage",
+          "active_semantic_diversity_conflict"
         ],
         "best_borrowed_background_risk": 0.0,
         "best_borrowed_background_mismatch": 0.0,
@@ -456,6 +470,7 @@
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 0.0,
         "fragmented_active_coverage_penalty": 0.0,
+        "active_semantic_diversity_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -506,6 +521,7 @@
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 0.0,
         "fragmented_active_coverage_penalty": 29.333333,
+        "active_semantic_diversity_penalty": 29.466667,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -557,6 +573,7 @@
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 0.0,
           "fragmented_active_coverage_penalty": 0.0,
+          "active_semantic_diversity_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -607,6 +624,7 @@
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 0.0,
           "fragmented_active_coverage_penalty": 29.333333,
+          "active_semantic_diversity_penalty": 29.466667,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

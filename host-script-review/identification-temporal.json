@@ -9,7 +9,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 69.333333,
       "score_margin": 9.583333,
-      "best_to_second_ratio": 1.160390510460251
+      "best_to_second_ratio": 1.160390510460251,
+      "query_frame_count": 1,
+      "query_active_frame_count": 0,
+      "query_state_change_count": 0
     },
     {
       "query_scene_label": "FISHING 1 [prefix-2]",
@@ -20,7 +23,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 74.904762,
       "score_margin": 27.654762,
-      "best_to_second_ratio": 1.5852859682539684
+      "best_to_second_ratio": 1.5852859682539684,
+      "query_frame_count": 2,
+      "query_active_frame_count": 0,
+      "query_state_change_count": 0
     },
     {
       "query_scene_label": "FISHING 1 [prefix-3]",
@@ -31,7 +37,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 80.095238,
       "score_margin": 37.011905,
-      "best_to_second_ratio": 1.859077105292666
+      "best_to_second_ratio": 1.859077105292666,
+      "query_frame_count": 3,
+      "query_active_frame_count": 0,
+      "query_state_change_count": 0
     },
     {
       "query_scene_label": "FISHING 1 [prefix-4]",
@@ -42,7 +51,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 85.190476,
       "score_margin": 44.190476,
-      "best_to_second_ratio": 2.077816487804878
+      "best_to_second_ratio": 2.077816487804878,
+      "query_frame_count": 4,
+      "query_active_frame_count": 0,
+      "query_state_change_count": 0
     },
     {
       "query_scene_label": "FISHING 1 [prefix-5]",
@@ -53,7 +65,10 @@
       "best_scene_label": "FISHING 1",
       "best_score": 134.319048,
       "score_margin": 94.569048,
-      "best_to_second_ratio": 3.3790955471698116
+      "best_to_second_ratio": 3.3790955471698116,
+      "query_frame_count": 5,
+      "query_active_frame_count": 1,
+      "query_state_change_count": 1
     },
     {
       "query_scene_label": "MARY 1 [prefix-1]",
@@ -64,7 +79,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 69.333333,
       "score_margin": 9.583333,
-      "best_to_second_ratio": 1.160390510460251
+      "best_to_second_ratio": 1.160390510460251,
+      "query_frame_count": 1,
+      "query_active_frame_count": 0,
+      "query_state_change_count": 0
     },
     {
       "query_scene_label": "MARY 1 [prefix-2]",
@@ -75,7 +93,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 75.083333,
       "score_margin": 27.833333,
-      "best_to_second_ratio": 1.5890652486772485
+      "best_to_second_ratio": 1.5890652486772485,
+      "query_frame_count": 2,
+      "query_active_frame_count": 0,
+      "query_state_change_count": 0
     },
     {
       "query_scene_label": "MARY 1 [prefix-3]",
@@ -86,7 +107,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 124.333333,
       "score_margin": 81.25,
-      "best_to_second_ratio": 2.885880091960387
+      "best_to_second_ratio": 2.885880091960387,
+      "query_frame_count": 3,
+      "query_active_frame_count": 1,
+      "query_state_change_count": 1
     },
     {
       "query_scene_label": "MARY 1 [prefix-4]",
@@ -97,7 +121,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 143.458333,
       "score_margin": 102.458333,
-      "best_to_second_ratio": 3.4989837317073174
+      "best_to_second_ratio": 3.4989837317073174,
+      "query_frame_count": 4,
+      "query_active_frame_count": 2,
+      "query_state_change_count": 1
     },
     {
       "query_scene_label": "MARY 1 [prefix-5]",
@@ -108,7 +135,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 162.533333,
       "score_margin": 122.783333,
-      "best_to_second_ratio": 4.088888880503145
+      "best_to_second_ratio": 4.088888880503145,
+      "query_frame_count": 5,
+      "query_active_frame_count": 3,
+      "query_state_change_count": 1
     },
     {
       "query_scene_label": "MARY 1 [prefix-6]",
@@ -119,7 +149,10 @@
       "best_scene_label": "MARY 1",
       "best_score": 181.62963,
       "score_margin": 142.712963,
-      "best_to_second_ratio": 4.667142486791071
+      "best_to_second_ratio": 4.667142486791071,
+      "query_frame_count": 6,
+      "query_active_frame_count": 4,
+      "query_state_change_count": 2
     }
   ],
   "query_count": 11,

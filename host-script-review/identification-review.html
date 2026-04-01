@@ -34,6 +34,19 @@
       background:var(--pill); color:var(--good);
     }
     .muted { color:var(--muted); }
+    .thumb-strip {
+      display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;
+    }
+    .thumb-card {
+      display:inline-flex; flex-direction:column; gap:4px; text-decoration:none; color:var(--text);
+    }
+    .thumb {
+      width:120px; height:90px; object-fit:cover; border:1px solid var(--line); border-radius:8px;
+      background:#0b1117;
+    }
+    .thumb-label {
+      color:var(--muted); font-size:11px;
+    }
   </style>
 </head>
 <body>
@@ -57,7 +70,27 @@
         </thead>
         <tbody>
 <tr>
-  <td>FISHING 1<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div></td>
+  <td>FISHING 1<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+</div></td>
   <td>identified</td>
   <td>exact scene signature match</td>
   <td>242.333333</td>
@@ -68,7 +101,27 @@
 </tr>
 
 <tr>
-  <td>MARY 1<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td>
+  <td>MARY 1<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td>
   <td>identified</td>
   <td>exact scene signature match</td>
   <td>300.166667</td>
@@ -89,7 +142,152 @@
             <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Margin</th><th>Ratio</th><th>Frames</th>
           </tr>
         </thead>
-        <tbody><tr><td>FISHING 1 [full-redacted]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>94.569048</td><td>3.3790955471698116</td><td>5</td></tr><tr><td>FISHING 1 [tail-half]<div><a href="fishing1/frames/frame_00060.bmp">frame 60</a> <a href="fishing1/frames/frame_00080.bmp">frame 80</a></div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>115.904762</td><td>31.907936533333334</td><td>2</td></tr><tr><td>FISHING 1 [active-only]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>111.083333</td><td>30.62222213333333</td><td>1</td></tr><tr><td>FISHING 1 [transition-only]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>111.083333</td><td>30.62222213333333</td><td>1</td></tr><tr><td>MARY 1 [full-redacted]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>142.712963</td><td>4.667142486791071</td><td>6</td></tr><tr><td>MARY 1 [tail-half]<div><a href="mary1/frames/frame_00150.bmp">frame 150</a> <a href="mary1/frames/frame_00200.bmp">frame 200</a> <a href="mary1/frames/frame_00250.bmp">frame 250</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>149.175926</td><td>40.78024693333334</td><td>3</td></tr><tr><td>MARY 1 [active-only]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>168.152778</td><td>45.840740800000006</td><td>4</td></tr><tr><td>MARY 1 [transition-only]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>130.222222</td><td>35.725925866666664</td><td>2</td></tr></tbody>
+        <tbody><tr><td>FISHING 1 [full-redacted]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>94.569048</td><td>3.3790955471698116</td><td>5</td></tr><tr><td>FISHING 1 [tail-half]<div><a href="fishing1/frames/frame_00060.bmp">frame 60</a> <a href="fishing1/frames/frame_00080.bmp">frame 80</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00080.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00080.bmp" alt="FISHING 1 frame 80" loading="lazy">
+  <span class="thumb-label">frame 80</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>115.904762</td><td>31.907936533333334</td><td>2</td></tr><tr><td>FISHING 1 [active-only]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>111.083333</td><td>30.62222213333333</td><td>1</td></tr><tr><td>FISHING 1 [transition-only]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>111.083333</td><td>30.62222213333333</td><td>1</td></tr><tr><td>MARY 1 [full-redacted]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>142.712963</td><td>4.667142486791071</td><td>6</td></tr><tr><td>MARY 1 [tail-half]<div><a href="mary1/frames/frame_00150.bmp">frame 150</a> <a href="mary1/frames/frame_00200.bmp">frame 200</a> <a href="mary1/frames/frame_00250.bmp">frame 250</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00200.bmp">
+  <img class="thumb" src="mary1/frames/frame_00200.bmp" alt="MARY 1 frame 200" loading="lazy">
+  <span class="thumb-label">frame 200</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00250.bmp">
+  <img class="thumb" src="mary1/frames/frame_00250.bmp" alt="MARY 1 frame 250" loading="lazy">
+  <span class="thumb-label">frame 250</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>149.175926</td><td>40.78024693333334</td><td>3</td></tr><tr><td>MARY 1 [active-only]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>168.152778</td><td>45.840740800000006</td><td>4</td></tr><tr><td>MARY 1 [transition-only]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>130.222222</td><td>35.725925866666664</td><td>2</td></tr></tbody>
       </table>
     </section>
 
@@ -102,7 +300,47 @@
             <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Margin</th><th>Reason</th>
           </tr>
         </thead>
-        <tbody><tr><td>FISHING 1 [background-only]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div></td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>71.857143</td><td>34.607143</td><td>background-only query lacks actor evidence</td></tr><tr><td>MARY 1 [background-only]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>61.75</td><td>18.25</td><td>background-only query lacks actor evidence</td></tr><tr><td>MIXED [active-pair]<div><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>74.0</td><td>0.0</td><td>unknown-family weak score 74.000 margin 0.000</td></tr><tr><td>MIXED [fishing-bg-plus-mary-active]<div><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>MARY 1</td><td>97.416667</td><td>44.178572</td><td>unknown-family partial match score 97.417 margin 44.179</td></tr><tr><td>MIXED [mary-bg-plus-fishing-active]<div><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>FISHING 1</td><td>97.416667</td><td>44.0</td><td>unknown-family partial match score 97.417 margin 44.000</td></tr><tr><td>MIXED [interleaved-contradiction]<div><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>89.75</td><td>11.5</td><td>unknown-family weak score 89.750 margin 11.500</td></tr></tbody>
+        <tbody><tr><td>FISHING 1 [background-only]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+</div></td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>71.857143</td><td>34.607143</td><td>background-only query lacks actor evidence</td></tr><tr><td>MARY 1 [background-only]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>61.75</td><td>18.25</td><td>background-only query lacks actor evidence</td></tr><tr><td>MIXED [active-pair]<div><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>74.0</td><td>0.0</td><td>unknown-family weak score 74.000 margin 0.000</td></tr><tr><td>MIXED [fishing-bg-plus-mary-active]<div><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>MARY 1</td><td>97.416667</td><td>44.178572</td><td>unknown-family partial match score 97.417 margin 44.179</td></tr><tr><td>MIXED [mary-bg-plus-fishing-active]<div><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>FISHING 1</td><td>97.416667</td><td>44.0</td><td>unknown-family partial match score 97.417 margin 44.000</td></tr><tr><td>MIXED [interleaved-contradiction]<div><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>89.75</td><td>11.5</td><td>unknown-family weak score 89.750 margin 11.500</td></tr></tbody>
       </table>
     </section>
 
@@ -115,7 +353,167 @@
             <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Margin</th><th>Ratio</th>
           </tr>
         </thead>
-        <tbody><tr><td>FISHING 1 [prefix-1]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a></div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>69.333333</td><td>9.583333</td><td>1.160390510460251</td></tr><tr><td>FISHING 1 [prefix-2]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a></div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>74.904762</td><td>27.654762</td><td>1.5852859682539684</td></tr><tr><td>FISHING 1 [prefix-3]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a></div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>80.095238</td><td>37.011905</td><td>1.859077105292666</td></tr><tr><td>FISHING 1 [prefix-4]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>85.190476</td><td>44.190476</td><td>2.077816487804878</td></tr><tr><td>FISHING 1 [prefix-5]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>134.319048</td><td>94.569048</td><td>3.3790955471698116</td></tr><tr><td>MARY 1 [prefix-1]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a></div></td><td>unknown</td><td>unknown</td><td>MARY 1</td><td>69.333333</td><td>9.583333</td><td>1.160390510460251</td></tr><tr><td>MARY 1 [prefix-2]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a></div></td><td>unknown</td><td>unknown</td><td>MARY 1</td><td>75.083333</td><td>27.833333</td><td>1.5890652486772485</td></tr><tr><td>MARY 1 [prefix-3]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>124.333333</td><td>81.25</td><td>2.885880091960387</td></tr><tr><td>MARY 1 [prefix-4]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>143.458333</td><td>102.458333</td><td>3.4989837317073174</td></tr><tr><td>MARY 1 [prefix-5]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>162.533333</td><td>122.783333</td><td>4.088888880503145</td></tr><tr><td>MARY 1 [prefix-6]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>181.62963</td><td>142.712963</td><td>4.667142486791071</td></tr></tbody>
+        <tbody><tr><td>FISHING 1 [prefix-1]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+</div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>69.333333</td><td>9.583333</td><td>1.160390510460251</td></tr><tr><td>FISHING 1 [prefix-2]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+</div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>74.904762</td><td>27.654762</td><td>1.5852859682539684</td></tr><tr><td>FISHING 1 [prefix-3]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+</div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>80.095238</td><td>37.011905</td><td>1.859077105292666</td></tr><tr><td>FISHING 1 [prefix-4]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+</div></td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>85.190476</td><td>44.190476</td><td>2.077816487804878</td></tr><tr><td>FISHING 1 [prefix-5]<div><a href="fishing1/frames/frame_00000.bmp">frame 0</a> <a href="fishing1/frames/frame_00020.bmp">frame 20</a> <a href="fishing1/frames/frame_00040.bmp">frame 40</a> <a href="fishing1/frames/frame_00060.bmp">frame 60</a></div><div class="thumb-strip">
+<a class="thumb-card" href="fishing1/frames/frame_00000.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00000.bmp" alt="FISHING 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00020.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00020.bmp" alt="FISHING 1 frame 20" loading="lazy">
+  <span class="thumb-label">frame 20</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00040.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00040.bmp" alt="FISHING 1 frame 40" loading="lazy">
+  <span class="thumb-label">frame 40</span>
+</a>
+
+<a class="thumb-card" href="fishing1/frames/frame_00060.bmp">
+  <img class="thumb" src="fishing1/frames/frame_00060.bmp" alt="FISHING 1 frame 60" loading="lazy">
+  <span class="thumb-label">frame 60</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>FISHING 1</td><td>134.319048</td><td>94.569048</td><td>3.3790955471698116</td></tr><tr><td>MARY 1 [prefix-1]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+</div></td><td>unknown</td><td>unknown</td><td>MARY 1</td><td>69.333333</td><td>9.583333</td><td>1.160390510460251</td></tr><tr><td>MARY 1 [prefix-2]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+</div></td><td>unknown</td><td>unknown</td><td>MARY 1</td><td>75.083333</td><td>27.833333</td><td>1.5890652486772485</td></tr><tr><td>MARY 1 [prefix-3]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>124.333333</td><td>81.25</td><td>2.885880091960387</td></tr><tr><td>MARY 1 [prefix-4]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>143.458333</td><td>102.458333</td><td>3.4989837317073174</td></tr><tr><td>MARY 1 [prefix-5]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>162.533333</td><td>122.783333</td><td>4.088888880503145</td></tr><tr><td>MARY 1 [prefix-6]<div><a href="mary1/frames/frame_00000.bmp">frame 0</a> <a href="mary1/frames/frame_00050.bmp">frame 50</a> <a href="mary1/frames/frame_00100.bmp">frame 100</a> <a href="mary1/frames/frame_00150.bmp">frame 150</a></div><div class="thumb-strip">
+<a class="thumb-card" href="mary1/frames/frame_00000.bmp">
+  <img class="thumb" src="mary1/frames/frame_00000.bmp" alt="MARY 1 frame 0" loading="lazy">
+  <span class="thumb-label">frame 0</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00050.bmp">
+  <img class="thumb" src="mary1/frames/frame_00050.bmp" alt="MARY 1 frame 50" loading="lazy">
+  <span class="thumb-label">frame 50</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00100.bmp">
+  <img class="thumb" src="mary1/frames/frame_00100.bmp" alt="MARY 1 frame 100" loading="lazy">
+  <span class="thumb-label">frame 100</span>
+</a>
+
+<a class="thumb-card" href="mary1/frames/frame_00150.bmp">
+  <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
+  <span class="thumb-label">frame 150</span>
+</a>
+</div></td><td>identified</td><td>identified</td><td>MARY 1</td><td>181.62963</td><td>142.712963</td><td>4.667142486791071</td></tr></tbody>
       </table>
     </section>
   </main>

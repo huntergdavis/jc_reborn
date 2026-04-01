@@ -87,6 +87,19 @@ def subject_timeline_profile(rows: dict[int, dict]) -> dict:
     }
 
 
+def phase_sequence_profile(rows: dict[int, dict]) -> list[str]:
+    ordered = sorted(rows)
+    phases: list[str] = []
+    last = None
+    for frame_no in ordered:
+        row = rows[frame_no]
+        phase = "actor" if row.get("frame_state") != "background_only" else "background"
+        if phase != last:
+            phases.append(phase)
+            last = phase
+    return phases
+
+
 def jaccard(a: set[str], b: set[str]) -> float:
     if not a and not b:
         return 1.0
@@ -191,6 +204,14 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("background_recovery_alignment")
     elif float(match.get("background_recovery_similarity", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
         evidence.append("partial_background_recovery_alignment")
+    if float(match.get("phase_sequence_similarity", 0.0)) >= 0.95 and profile["frame_count"] > 0:
+        evidence.append("phase_sequence_alignment")
+    elif float(match.get("phase_sequence_similarity", 0.0)) >= 0.5 and profile["frame_count"] > 0:
+        evidence.append("partial_phase_sequence_alignment")
+    if float(match.get("phase_count_similarity", 0.0)) >= 0.95 and profile["frame_count"] > 0:
+        evidence.append("phase_count_alignment")
+    elif float(match.get("phase_count_similarity", 0.0)) >= 0.5 and profile["frame_count"] > 0:
+        evidence.append("partial_phase_count_alignment")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -263,6 +284,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     candidate_context_change_points = context_change_points(cand_rows)
     query_subject_profile = subject_timeline_profile(query_rows)
     candidate_subject_profile = subject_timeline_profile(cand_rows)
+    query_phase_sequence = phase_sequence_profile(query_rows)
+    candidate_phase_sequence = phase_sequence_profile(cand_rows)
 
     exact_frame_signature_matches = 0
     exact_state_matches = 0
@@ -389,6 +412,14 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     if q_recovery or c_recovery:
         max_recovery = max(1, q_recovery, c_recovery)
         background_recovery_similarity = 1.0 - abs(q_recovery - c_recovery) / max_recovery
+    phase_prefix_matches = 0
+    for q_phase, c_phase in zip(query_phase_sequence, candidate_phase_sequence):
+        if q_phase != c_phase:
+            break
+        phase_prefix_matches += 1
+    max_phase_len = max(1, len(query_phase_sequence), len(candidate_phase_sequence))
+    phase_sequence_similarity = phase_prefix_matches / max_phase_len
+    phase_count_similarity = 1.0 - abs(len(query_phase_sequence) - len(candidate_phase_sequence)) / max_phase_len
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -431,6 +462,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query or not has_active_alignment else last_active_timing_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else subject_persistence_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else background_recovery_similarity * 8.0
+    score += 0.0 if background_only_query or not has_active_alignment else phase_sequence_similarity * 10.0
+    score += 0.0 if background_only_query or not has_active_alignment else phase_count_similarity * 6.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
         score -= exact_state_matches * 1.0
@@ -449,6 +482,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= last_active_timing_similarity * 4.0
         score -= subject_persistence_similarity * 5.0
         score -= background_recovery_similarity * 4.0
+        score -= phase_sequence_similarity * 6.0
+        score -= phase_count_similarity * 4.0
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -490,6 +525,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "last_active_timing_similarity": round(last_active_timing_similarity, 6),
         "subject_persistence_similarity": round(subject_persistence_similarity, 6),
         "background_recovery_similarity": round(background_recovery_similarity, 6),
+        "phase_sequence_similarity": round(phase_sequence_similarity, 6),
+        "phase_count_similarity": round(phase_count_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

@@ -49,6 +49,7 @@ required = [
     "identification-challenges.json",
     "identification-temporal.json",
     "identification-regression-floors.json",
+    "semantic-regression-baseline.json",
     "identification-review.html",
     "expectations.json",
     "host-truth-baseline.json",
@@ -155,6 +156,39 @@ if float(identify_challenges.get("max_margin", 0.0)) > float(floors["identificat
 if regression_failures:
     raise SystemExit("identification-regression-floors failed: " + "; ".join(regression_failures))
 print("identification-regression-floors: ok")
+
+semantic_baseline = json.loads((root / "semantic-regression-baseline.json").read_text(encoding="utf-8"))
+semantic_truth = json.loads((root / "semantic-truth.json").read_text(encoding="utf-8"))
+semantic_scenes = {scene["scene_label"]: scene for scene in semantic_truth.get("scenes", [])}
+semantic_failures = []
+for label, expected in semantic_baseline.get("scenes", {}).items():
+    scene = semantic_scenes.get(label)
+    if scene is None:
+        semantic_failures.append(f"{label} missing from semantic-truth")
+        continue
+    summary = scene.get("scene_summary", {})
+    rows = {row["frame_number"]: row for row in scene.get("rows", [])}
+    if summary.get("scene_signature") != expected.get("scene_signature"):
+        semantic_failures.append(f"{label} scene_signature drifted")
+    if summary.get("timeline_signature") != expected.get("timeline_signature"):
+        semantic_failures.append(f"{label} timeline_signature drifted")
+    if summary.get("dominant_frame_state") != expected.get("dominant_frame_state"):
+        semantic_failures.append(f"{label} dominant_frame_state drifted")
+    if summary.get("dominant_activity") != expected.get("dominant_activity"):
+        semantic_failures.append(f"{label} dominant_activity drifted")
+    if summary.get("transition_points") != expected.get("transition_points"):
+        semantic_failures.append(f"{label} transition_points drifted")
+    for expected_row in expected.get("frames", []):
+        row = rows.get(expected_row["frame_number"])
+        if row is None:
+            semantic_failures.append(f"{label} frame {expected_row['frame_number']} missing")
+            continue
+        for key in ("frame_state", "primary_subject", "primary_activity", "frame_signature"):
+            if row.get(key) != expected_row.get(key):
+                semantic_failures.append(f"{label} frame {expected_row['frame_number']} {key} drifted")
+if semantic_failures:
+    raise SystemExit("semantic-regression-baseline failed: " + "; ".join(semantic_failures))
+print("semantic-regression-baseline: ok")
 
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"

@@ -729,6 +729,9 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
     if query_family in (None, "", "unknown"):
         if active_row_count < 1 or (active_row_count < 2 and state_change_count < 1):
             return "unknown", f"unknown-family query lacks semantic evidence active={active_row_count} changes={state_change_count}"
+        borrowed_background_risk = float(best.get("borrowed_background_risk", 0.0))
+        if borrowed_background_risk >= 0.5 and active_row_count == 1 and profile["frame_count"] > 1:
+            return "ambiguous", f"unknown-family borrowed-background mix risk {borrowed_background_risk:.3f}"
         if score >= 110.0 and margin >= 60.0 and ratio is not None and ratio >= 3.0:
             return "identified", f"strong unknown-family score {score:.3f} margin {margin:.3f}"
         if score >= 40.0 and margin >= 100.0:

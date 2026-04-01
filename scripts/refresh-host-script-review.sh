@@ -112,9 +112,20 @@ run_with_timeout() {
 
 capture_review_set() {
     local root="$1"
+    local floors_path="$root/identification-regression-floors.json"
+    local floors_tmp=""
+
+    if [ -f "$floors_path" ]; then
+        floors_tmp="$(mktemp)"
+        cp "$floors_path" "$floors_tmp"
+    fi
 
     rm -rf "$root"
     mkdir -p "$root"
+
+    if [ -n "$floors_tmp" ]; then
+        mv "$floors_tmp" "$floors_path"
+    fi
 
     run_with_timeout 60 \
         "$SCRIPT_DIR/capture-host-scene.sh" \

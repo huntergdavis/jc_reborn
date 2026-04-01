@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T17:46:21Z",
-  "git_head": "dedcfc212892d9e5ccbad38047e9655ee7cfe367",
-  "git_head_short": "dedcfc21",
+  "generated_at": "2026-04-01T18:06:26Z",
+  "git_head": "7df4fb09af70cc19ac68a9dee96ed75510eafd88",
+  "git_head_short": "7df4fb09",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -25,16 +25,16 @@
       "present": true,
       "passed": true,
       "scene_count": 2,
-      "min_identified_margin": 465.733333,
+      "min_identified_margin": 467.733333,
       "max_nonmatch_score": 33.266667,
-      "min_best_to_second_ratio": 14.999999849699401
+      "min_best_to_second_ratio": 15.060120089577955
     },
     "identification-partials": {
       "present": true,
       "passed": true,
       "query_count": 8,
-      "min_margin": 223.0,
-      "min_best_to_second_ratio": 13.704610119521911
+      "min_margin": 225.0,
+      "min_best_to_second_ratio": 13.78429139442231
     },
     "identification-challenges": {
       "present": true,
@@ -71,22 +71,22 @@
       "present": true,
       "passed": true,
       "query_count": 11,
-      "min_identified_margin": 247.866666,
-      "min_identified_ratio": 10.472611318820238,
+      "min_identified_margin": 248.866666,
+      "min_identified_ratio": 10.510827878842958,
       "max_score_drop": 0.0,
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "21fcdb5d9b8fb0d5b79bf6fb10e3e5b8db726376c55cda5a8ece2779f57c6d75",
+  "artifact_sha256": "bbe111d38f22d6fadcab5ae710db31662dbc1f455b896bfab37842bd8ca24c9d",
   "artifact_inputs": {
     "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",
-    "identification-selfcheck.json": "f731c5053bb830bcaa5b1b0e78fa895340583f874cbc09c8d9018353ffc5af28",
-    "identification-eval.json": "2c28f11dc0d54b8b55f3b0dcaf51ac63aa2165868861aed96965d20bcbe31de3",
-    "identification-partials.json": "74d2d4e6ea89289c412ea4b1c0f2b3b9a556dd805c5570ecde417219edfc4a9b",
+    "identification-selfcheck.json": "021c6bc03b2765f0ce7587cee2c889f3b84b2c52135139dea98e90cefc53237a",
+    "identification-eval.json": "0a7f837f4bc663d5ac64fcc3b97cce3e3d6ee1707bcf89a1bacf72f3673886ef",
+    "identification-partials.json": "0fbd55ad9a69961d4e6c759017109bb61d9d634a778b6fd25b44141a86464862",
     "identification-challenges.json": "2e2f297cc0937c50bf294c48af203c56bfeb151c4d03e21cae81d08df13faf86",
-    "identification-temporal.json": "6c6c928401a1f3bb0f303fb6b4325a8be72359ff8a59a01934475e4aeeb63fb7",
-    "identification-review.html": "cae3d7d5ff167b43517be42987ad36a7b80f04ce53985034e673680801ed4963",
+    "identification-temporal.json": "5dcd207e4b0e54e170fd10722295feec1eafc70741127c6f6fe58eabb286cedf",
+    "identification-review.html": "ca7248db5f74dd8e69c28ee1377d34235a38c5995725b645607073306d024e12",
     "expectations.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "host-truth-baseline.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "expectation-report.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",

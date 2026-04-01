@@ -85,6 +85,8 @@
           "partial_timed_transition_pair_count_alignment",
           "partial_subject_activity_count_alignment"
         ],
+        "best_borrowed_background_risk": 0.0,
+        "second_borrowed_background_risk": 0.0,
         "score_margin": 388.333333,
         "score_ratio": 7.50838
       },
@@ -128,6 +130,7 @@
         "timed_transition_pair_count_similarity": 1.0,
         "subject_activity_sequence_similarity": 1.0,
         "subject_activity_count_similarity": 1.0,
+        "borrowed_background_risk": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -171,6 +174,7 @@
         "timed_transition_pair_count_similarity": 0.5,
         "subject_activity_sequence_similarity": 0.333333,
         "subject_activity_count_similarity": 0.666667,
+        "borrowed_background_risk": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -215,6 +219,7 @@
           "timed_transition_pair_count_similarity": 1.0,
           "subject_activity_sequence_similarity": 1.0,
           "subject_activity_count_similarity": 1.0,
+          "borrowed_background_risk": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -258,6 +263,7 @@
           "timed_transition_pair_count_similarity": 0.5,
           "subject_activity_sequence_similarity": 0.333333,
           "subject_activity_count_similarity": 0.666667,
+          "borrowed_background_risk": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -353,6 +359,8 @@
           "partial_timed_transition_pair_count_alignment",
           "partial_subject_activity_count_alignment"
         ],
+        "best_borrowed_background_risk": 0.0,
+        "second_borrowed_background_risk": 0.0,
         "score_margin": 465.166667,
         "score_ratio": 8.906516
       },
@@ -396,6 +404,7 @@
         "timed_transition_pair_count_similarity": 1.0,
         "subject_activity_sequence_similarity": 1.0,
         "subject_activity_count_similarity": 1.0,
+        "borrowed_background_risk": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -439,6 +448,7 @@
         "timed_transition_pair_count_similarity": 0.5,
         "subject_activity_sequence_similarity": 0.333333,
         "subject_activity_count_similarity": 0.666667,
+        "borrowed_background_risk": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -483,6 +493,7 @@
           "timed_transition_pair_count_similarity": 1.0,
           "subject_activity_sequence_similarity": 1.0,
           "subject_activity_count_similarity": 1.0,
+          "borrowed_background_risk": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -526,6 +537,7 @@
           "timed_transition_pair_count_similarity": 0.5,
           "subject_activity_sequence_similarity": 0.333333,
           "subject_activity_count_similarity": 0.666667,
+          "borrowed_background_risk": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

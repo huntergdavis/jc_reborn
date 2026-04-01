@@ -88,7 +88,9 @@
           "partial_subject_activity_count_alignment"
         ],
         "best_borrowed_background_risk": 0.0,
+        "best_borrowed_background_mismatch": 0.0,
         "second_borrowed_background_risk": 0.0,
+        "second_borrowed_background_mismatch": 0.0,
         "score_margin": 396.333333,
         "score_ratio": 7.642458
       },
@@ -136,6 +138,7 @@
         "subject_activity_sequence_similarity": 1.0,
         "subject_activity_count_similarity": 1.0,
         "borrowed_background_risk": 0.0,
+        "borrowed_background_mismatch": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -183,6 +186,7 @@
         "subject_activity_sequence_similarity": 0.333333,
         "subject_activity_count_similarity": 0.666667,
         "borrowed_background_risk": 0.0,
+        "borrowed_background_mismatch": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -231,6 +235,7 @@
           "subject_activity_sequence_similarity": 1.0,
           "subject_activity_count_similarity": 1.0,
           "borrowed_background_risk": 0.0,
+          "borrowed_background_mismatch": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -278,6 +283,7 @@
           "subject_activity_sequence_similarity": 0.333333,
           "subject_activity_count_similarity": 0.666667,
           "borrowed_background_risk": 0.0,
+          "borrowed_background_mismatch": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -376,7 +382,9 @@
           "partial_subject_activity_count_alignment"
         ],
         "best_borrowed_background_risk": 0.0,
+        "best_borrowed_background_mismatch": 0.0,
         "second_borrowed_background_risk": 0.0,
+        "second_borrowed_background_mismatch": 0.0,
         "score_margin": 473.166667,
         "score_ratio": 9.042493
       },
@@ -424,6 +432,7 @@
         "subject_activity_sequence_similarity": 1.0,
         "subject_activity_count_similarity": 1.0,
         "borrowed_background_risk": 0.0,
+        "borrowed_background_mismatch": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -471,6 +480,7 @@
         "subject_activity_sequence_similarity": 0.333333,
         "subject_activity_count_similarity": 0.666667,
         "borrowed_background_risk": 0.0,
+        "borrowed_background_mismatch": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -519,6 +529,7 @@
           "subject_activity_sequence_similarity": 1.0,
           "subject_activity_count_similarity": 1.0,
           "borrowed_background_risk": 0.0,
+          "borrowed_background_mismatch": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -566,6 +577,7 @@
           "subject_activity_sequence_similarity": 0.333333,
           "subject_activity_count_similarity": 0.666667,
           "borrowed_background_risk": 0.0,
+          "borrowed_background_mismatch": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

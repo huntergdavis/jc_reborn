@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T03:13:22Z",
-  "git_head": "8387cea1efcf5344252ebc5f5e42e9556db7fb6f",
-  "git_head_short": "8387cea1",
+  "generated_at": "2026-04-01T03:24:00Z",
+  "git_head": "14e04b7e956f3e246667d3911a0965e005bacf44",
+  "git_head_short": "14e04b7e",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -42,6 +42,10 @@
       "query_count": 8,
       "max_best_score": 144.638889,
       "max_margin": 144.638889,
+      "max_unknown_best_score": 107.75,
+      "max_unknown_margin": 34.607143,
+      "max_ambiguous_best_score": 144.638889,
+      "max_ambiguous_margin": 144.638889,
       "ambiguous_count": 3,
       "unknown_count": 5
     },
@@ -55,7 +59,7 @@
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "40b0cbf9683170834ea1bdf2b5f2894f70699ba92281d371032e9c299ade7e52",
+  "artifact_sha256": "59534e83c5cd1bcec8648aa9bc606a508d14204ee4ba6bbb3032e13130cc8e01",
   "artifact_inputs": {
     "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",

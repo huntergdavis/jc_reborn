@@ -129,6 +129,8 @@
   },
   "min_identified_margin": 81.25,
   "min_identified_ratio": 2.885880091960387,
+  "max_score_drop": 0.0,
+  "max_identified_margin_drop": 0.0,
   "passed": true,
   "failures": []
 }

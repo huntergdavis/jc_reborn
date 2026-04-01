@@ -245,6 +245,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query else pose_similarity * 12.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
+        score -= exact_state_matches * 1.0
         score -= exact_primary_subject_matches * 1.0
         score -= exact_active_primary_subject_matches * 3.0
         score -= exact_active_pose_matches * 3.0
@@ -252,6 +253,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= token_similarity * 6.0
         score -= activity_similarity * 4.0
         score -= context_set_similarity * 4.0
+        score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
             score -= 16.0
@@ -311,7 +313,7 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
             return "unknown", f"unknown-family query lacks semantic evidence active={active_row_count} changes={state_change_count}"
         if score >= 110.0 and margin >= 60.0 and ratio is not None and ratio >= 3.0:
             return "identified", f"strong unknown-family score {score:.3f} margin {margin:.3f}"
-        if score >= 70.0 and margin >= 20.0:
+        if score >= 60.0 and margin >= 20.0:
             return "ambiguous", f"unknown-family partial match score {score:.3f} margin {margin:.3f}"
         return "unknown", f"unknown-family weak score {score:.3f} margin {margin:.3f}"
     if score >= 40.0 and margin >= 30.0 and (second_score <= 10.0 or (ratio is not None and ratio >= 4.0)):

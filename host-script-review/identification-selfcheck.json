@@ -6,7 +6,7 @@
       "query_scene_signature": "d14b40d3fb855f5c122d",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 304.52381,
+      "score_margin": 320.52381,
       "decision_context": {
         "query_profile": {
           "frame_count": 5,
@@ -57,6 +57,8 @@
           "subject_exit_timing_alignment",
           "subject_persistence_alignment",
           "background_recovery_alignment",
+          "phase_sequence_alignment",
+          "phase_count_alignment",
           "trait_alignment"
         ],
         "second_evidence": [
@@ -70,15 +72,17 @@
           "partial_subject_entry_timing_alignment",
           "partial_subject_exit_timing_alignment",
           "subject_persistence_alignment",
+          "partial_phase_sequence_alignment",
+          "partial_phase_count_alignment",
           "trait_alignment"
         ],
-        "score_margin": 304.52381,
-        "score_ratio": 5.797449
+        "score_margin": 320.52381,
+        "score_ratio": 6.049512
       },
       "best_match": {
         "scene_label": "FISHING 1",
         "scene_family": "fishing",
-        "score": 368.0,
+        "score": 384.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 5,
@@ -105,6 +109,8 @@
         "last_active_timing_similarity": 1.0,
         "subject_persistence_similarity": 1.0,
         "background_recovery_similarity": 1.0,
+        "phase_sequence_similarity": 1.0,
+        "phase_count_similarity": 1.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -138,6 +144,8 @@
         "last_active_timing_similarity": 0.8,
         "subject_persistence_similarity": 1.0,
         "background_recovery_similarity": 0.0,
+        "phase_sequence_similarity": 0.666667,
+        "phase_count_similarity": 0.666667,
         "trait_similarity": 0.714286,
         "candidate_scene_signature": "b76ca5d687eab03cb470"
       },
@@ -145,7 +153,7 @@
         {
           "scene_label": "FISHING 1",
           "scene_family": "fishing",
-          "score": 368.0,
+          "score": 384.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 5,
@@ -172,6 +180,8 @@
           "last_active_timing_similarity": 1.0,
           "subject_persistence_similarity": 1.0,
           "background_recovery_similarity": 1.0,
+          "phase_sequence_similarity": 1.0,
+          "phase_count_similarity": 1.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -205,6 +215,8 @@
           "last_active_timing_similarity": 0.8,
           "subject_persistence_similarity": 1.0,
           "background_recovery_similarity": 0.0,
+          "phase_sequence_similarity": 0.666667,
+          "phase_count_similarity": 0.666667,
           "trait_similarity": 0.714286,
           "candidate_scene_signature": "b76ca5d687eab03cb470"
         }
@@ -216,7 +228,7 @@
       "query_scene_signature": "b76ca5d687eab03cb470",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 321.357143,
+      "score_margin": 337.357143,
       "decision_context": {
         "query_profile": {
           "frame_count": 6,
@@ -269,6 +281,8 @@
           "subject_exit_timing_alignment",
           "subject_persistence_alignment",
           "background_recovery_alignment",
+          "phase_sequence_alignment",
+          "phase_count_alignment",
           "trait_alignment"
         ],
         "second_evidence": [
@@ -282,15 +296,17 @@
           "partial_subject_entry_timing_alignment",
           "partial_subject_exit_timing_alignment",
           "subject_persistence_alignment",
+          "partial_phase_sequence_alignment",
+          "partial_phase_count_alignment",
           "trait_alignment"
         ],
-        "score_margin": 321.357143,
-        "score_ratio": 6.129989
+        "score_margin": 337.357143,
+        "score_ratio": 6.385405
       },
       "best_match": {
         "scene_label": "MARY 1",
         "scene_family": "mary",
-        "score": 384.0,
+        "score": 400.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 6,
@@ -317,6 +333,8 @@
         "last_active_timing_similarity": 1.0,
         "subject_persistence_similarity": 1.0,
         "background_recovery_similarity": 1.0,
+        "phase_sequence_similarity": 1.0,
+        "phase_count_similarity": 1.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "b76ca5d687eab03cb470"
       },
@@ -350,6 +368,8 @@
         "last_active_timing_similarity": 0.8,
         "subject_persistence_similarity": 1.0,
         "background_recovery_similarity": 0.0,
+        "phase_sequence_similarity": 0.666667,
+        "phase_count_similarity": 0.666667,
         "trait_similarity": 0.714286,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -357,7 +377,7 @@
         {
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "score": 384.0,
+          "score": 400.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 6,
@@ -384,6 +404,8 @@
           "last_active_timing_similarity": 1.0,
           "subject_persistence_similarity": 1.0,
           "background_recovery_similarity": 1.0,
+          "phase_sequence_similarity": 1.0,
+          "phase_count_similarity": 1.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "b76ca5d687eab03cb470"
         },
@@ -417,6 +439,8 @@
           "last_active_timing_similarity": 0.8,
           "subject_persistence_similarity": 1.0,
           "background_recovery_similarity": 0.0,
+          "phase_sequence_similarity": 0.666667,
+          "phase_count_similarity": 0.666667,
           "trait_similarity": 0.714286,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

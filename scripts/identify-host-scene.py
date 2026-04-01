@@ -154,6 +154,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
 
     shared_count = len(shared_frames)
     shared_active_count = len(query_active_frames & set(cand_rows))
+    background_only_query = not query_active_frames
     shared_frame_coverage = (shared_count / query_frame_count) if query_frame_count else 0.0
     shared_active_frame_coverage = (
         shared_active_count / len(query_active_frames)
@@ -177,17 +178,23 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score = 0.0
     score += 100.0 if exact_scene_signature else 0.0
     score += exact_frame_signature_matches * 10.0
-    score += exact_state_matches * 3.0
-    score += exact_primary_subject_matches * 2.0
-    score += token_similarity * 20.0
-    score += activity_similarity * 10.0
-    score += shared_frame_coverage * 25.0
+    if background_only_query:
+        score += exact_state_matches * 1.0
+        score += token_similarity * 8.0
+        score += activity_similarity * 3.0
+        score += shared_frame_coverage * 8.0
+    else:
+        score += exact_state_matches * 3.0
+        score += exact_primary_subject_matches * 2.0
+        score += token_similarity * 20.0
+        score += activity_similarity * 10.0
+        score += shared_frame_coverage * 25.0
     score += shared_active_frame_coverage * 30.0
     score += exact_active_state_matches * 8.0
     score += exact_active_primary_subject_matches * 6.0
     score += exact_active_pose_matches * 6.0
     score += 5.0 if family_match else 0.0
-    score += pose_similarity * 12.0
+    score += 0.0 if background_only_query else pose_similarity * 12.0
     score += trait_similarity * 10.0
 
     return {

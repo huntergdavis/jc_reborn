@@ -270,6 +270,7 @@ def query_profile(scene: dict) -> dict:
     return {
         "frame_count": len(rows),
         "active_frame_count": len(active_rows),
+        "active_frame_ratio": round((len(active_rows) / len(rows)) if rows else 0.0, 6),
         "state_change_count": state_change_count,
         "frame_states": frame_states,
         "subjects": subjects,
@@ -402,6 +403,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("borrowed_background_mismatch")
     elif float(match.get("borrowed_background_mismatch", 0.0)) >= 0.25:
         evidence.append("partial_borrowed_background_mismatch")
+    if float(match.get("sparse_active_evidence_penalty", 0.0)) >= 12.0:
+        evidence.append("sparse_active_evidence")
+    elif float(match.get("sparse_active_evidence_penalty", 0.0)) >= 6.0:
+        evidence.append("partial_sparse_active_evidence")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -695,6 +700,12 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         )
 
     borrowed_background_mismatch = borrowed_background_risk * (1.0 - background_provenance_similarity)
+    sparse_active_evidence_penalty = 0.0
+    if not background_only_query and query_frame_count > 1 and len(query_active_frames) == 1:
+        active_ratio = len(query_active_frames) / query_frame_count
+        sparse_active_evidence_penalty = (1.0 - active_ratio) * 12.0
+        if query_transition_points:
+            sparse_active_evidence_penalty += max(0.0, 2.0 - len(query_transition_points)) * 2.0
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -781,6 +792,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= borrowed_background_risk * 20.0
         score -= borrowed_background_mismatch * 24.0
         score -= contamination_risk * 10.0
+        score -= sparse_active_evidence_penalty
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -838,6 +850,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "subject_activity_count_similarity": round(subject_activity_count_similarity, 6),
         "borrowed_background_risk": round(borrowed_background_risk, 6),
         "borrowed_background_mismatch": round(borrowed_background_mismatch, 6),
+        "sparse_active_evidence_penalty": round(sparse_active_evidence_penalty, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }
@@ -866,6 +879,8 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
         contamination_risk = float(profile.get("contamination_risk", 0.0))
         if contamination_risk >= 0.6 and active_row_count == 1 and profile["frame_count"] > 1:
             return "ambiguous", f"unknown-family contaminated mixed query risk {contamination_risk:.3f}"
+        if float(profile.get("active_frame_ratio", 0.0)) <= 0.34 and active_row_count == 1 and profile["frame_count"] > 1:
+            return "ambiguous", f"unknown-family sparse active evidence ratio {float(profile.get('active_frame_ratio', 0.0)):.3f}"
         borrowed_background_risk = float(best.get("borrowed_background_risk", 0.0))
         if borrowed_background_risk >= 0.5 and active_row_count == 1 and profile["frame_count"] > 1:
             return "ambiguous", f"unknown-family borrowed-background mix risk {borrowed_background_risk:.3f}"

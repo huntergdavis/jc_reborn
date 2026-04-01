@@ -417,6 +417,10 @@ identify_challenges = {
     "query_count": 0,
     "max_best_score": None,
     "max_margin": None,
+    "max_unknown_best_score": None,
+    "max_unknown_margin": None,
+    "max_ambiguous_best_score": None,
+    "max_ambiguous_margin": None,
     "ambiguous_count": 0,
     "unknown_count": 0,
 }
@@ -426,6 +430,10 @@ if identify_challenges_path.is_file():
     identify_challenges["query_count"] = int(payload.get("query_count", 0))
     identify_challenges["max_best_score"] = payload.get("max_best_score")
     identify_challenges["max_margin"] = payload.get("max_margin")
+    identify_challenges["max_unknown_best_score"] = payload.get("max_unknown_best_score")
+    identify_challenges["max_unknown_margin"] = payload.get("max_unknown_margin")
+    identify_challenges["max_ambiguous_best_score"] = payload.get("max_ambiguous_best_score")
+    identify_challenges["max_ambiguous_margin"] = payload.get("max_ambiguous_margin")
     identify_challenges["ambiguous_count"] = int(payload.get("ambiguous_count", 0))
     identify_challenges["unknown_count"] = int(payload.get("unknown_count", 0))
 checks["identification-challenges"] = identify_challenges
@@ -523,6 +531,8 @@ summary = {
     "status={status} git={git_head_short} digest={digest} "
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "identify-ratio={identify_ratio} "
+    "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
+    "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
     "expectation-report={expectation} host-truth-compare={host_truth} repro-compare={repro}\n".format(
         status="PASS" if summary["all_passed"] else "FAIL",
         git_head_short=git_head_short,
@@ -533,6 +543,10 @@ summary = {
         identify_challenges="ok" if checks["identification-challenges"]["passed"] else "fail",
         identify_temporal="ok" if checks["identification-temporal"]["passed"] else "fail",
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
+        challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
+        challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],
+        challenge_ambiguous_score=checks["identification-challenges"]["max_ambiguous_best_score"],
+        challenge_ambiguous_margin=checks["identification-challenges"]["max_ambiguous_margin"],
         expectation=checks["expectation-report"]["mismatch_count"],
         host_truth=checks["host-truth-compare"]["mismatch_count"],
         repro=checks["repro-compare"]["mismatch_count"],

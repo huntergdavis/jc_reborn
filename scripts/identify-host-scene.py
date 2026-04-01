@@ -844,8 +844,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score += context_set_similarity * 0.0
     else:
         score += exact_state_matches * 3.0
-        score += exact_context_matches * 1.0
-        score += exact_primary_subject_matches * 2.0
+        score += exact_context_matches * 2.0
+        score += exact_primary_subject_matches * 3.0
         score += token_similarity * 20.0
         score += activity_similarity * 10.0
         score += shared_frame_coverage * 25.0
@@ -879,8 +879,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
         contamination_risk = query_profile(query)["contamination_risk"]
         score -= exact_state_matches * 1.0
-        score -= exact_context_matches * 0.5
-        score -= exact_primary_subject_matches * 1.0
+        score -= exact_context_matches * 1.0
+        score -= exact_primary_subject_matches * 2.0
         score -= exact_active_state_matches * 10.0
         score -= exact_active_primary_subject_matches * 5.0
         score -= exact_active_pose_matches * 3.0

@@ -102,6 +102,7 @@ static void grInitSurfacePool(void);
 static void grCleanupSurfacePool(void);
 static void grCaptureResetLedger(SDL_Surface *surface);
 static struct TSurfaceCaptureLedger *grCaptureFindLedger(SDL_Surface *surface, int create);
+void grFreeLayer(SDL_Surface *sfc);
 
 static void grReleaseScreen()
 {
@@ -116,7 +117,7 @@ static void grReleaseSavedLayer()
 {
     if (grSavedZonesLayer != NULL) {
         grCaptureResetLedger(grSavedZonesLayer);
-        SDL_FreeSurface(grSavedZonesLayer);
+        grFreeLayer(grSavedZonesLayer);
         grSavedZonesLayer = NULL;
         if (debugMode) {
             printf("Freed grSavedZonesLayer (307KB saved)\n");

@@ -450,6 +450,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("blended_active_narrative_conflict")
     elif float(match.get("blended_active_narrative_penalty", 0.0)) >= 6.0:
         evidence.append("partial_blended_active_narrative_conflict")
+    if float(match.get("single_active_alignment_penalty", 0.0)) >= 10.0:
+        evidence.append("single_active_alignment_overweight")
+    elif float(match.get("single_active_alignment_penalty", 0.0)) >= 5.0:
+        evidence.append("partial_single_active_alignment_overweight")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -786,6 +790,14 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
             + (1.0 - shared_active_frame_coverage) * 10.0
             + (1.0 - context_transition_similarity) * 6.0
         )
+    single_active_alignment_penalty = 0.0
+    if not background_only_query and len(query_active_frames) == 1 and query_frame_count > 1:
+        single_active_alignment_penalty = (
+            shared_active_frame_coverage * 6.0
+            + exact_active_state_matches * 4.0
+            + exact_active_primary_subject_matches * 3.0
+            + exact_active_pose_matches * 3.0
+        ) * (1.0 - background_provenance_similarity)
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -878,6 +890,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= active_island_penalty
         score -= borrowed_background_context_penalty
         score -= blended_active_narrative_penalty
+        score -= single_active_alignment_penalty
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -942,6 +955,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "active_island_penalty": round(active_island_penalty, 6),
         "borrowed_background_context_penalty": round(borrowed_background_context_penalty, 6),
         "blended_active_narrative_penalty": round(blended_active_narrative_penalty, 6),
+        "single_active_alignment_penalty": round(single_active_alignment_penalty, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

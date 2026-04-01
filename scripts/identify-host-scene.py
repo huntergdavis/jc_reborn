@@ -851,7 +851,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score += shared_frame_coverage * (25.0 if has_active_alignment else 8.0)
     score += shared_active_frame_coverage * 34.0
     score += exact_active_state_matches * 16.0
-    score += exact_active_primary_subject_matches * 8.0
+    score += exact_active_primary_subject_matches * 10.0
     score += exact_active_pose_matches * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else active_state_set_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else active_pose_set_similarity * 6.0

@@ -875,7 +875,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query or not has_active_alignment else state_count_similarity * 6.0
     score += 0.0 if background_only_query or not has_active_alignment else transition_pair_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else transition_pair_count_similarity * 6.0
-    score += 0.0 if background_only_query or not has_active_alignment else timed_transition_pair_similarity * 12.0
+    score += 0.0 if background_only_query or not has_active_alignment else timed_transition_pair_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else timed_transition_pair_count_similarity * 6.0
     score += 0.0 if background_only_query or not has_active_alignment else subject_activity_sequence_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else subject_activity_count_similarity * 6.0
@@ -919,7 +919,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= sparse_active_evidence_penalty
         score -= fragmented_active_coverage_penalty
         score -= active_semantic_diversity_penalty
-        score -= active_island_penalty * 3.5
+        score -= active_island_penalty * 3.42
         score -= borrowed_background_context_penalty
         score -= blended_active_narrative_penalty * 1.2
         score -= single_active_alignment_penalty

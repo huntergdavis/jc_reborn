@@ -33,6 +33,13 @@ def redact_rows(rows: list[dict], query_label: str) -> list[dict]:
     return output
 
 
+def first_row_with_pose(rows: list[dict], pose_label: str) -> dict | None:
+    for row in rows:
+        if pose_label in (row.get("pose_labels") or []):
+            return row
+    return None
+
+
 def build_queries(database: dict) -> list[dict]:
     scenes = {scene["scene_label"]: scene for scene in database.get("scenes", [])}
     queries: list[dict] = []
@@ -59,6 +66,9 @@ def build_queries(database: dict) -> list[dict]:
         fishing_active = [row for row in fishing.get("rows", []) if row.get("frame_state") != "background_only"]
         mary_active = [row for row in mary.get("rows", []) if row.get("frame_state") != "background_only"]
         if fishing_active and mary_active:
+            fishing_walk = first_row_with_pose(fishing_active, "johnny_walking_pose") or fishing_active[-1]
+            mary_walk = first_row_with_pose(mary_active, "johnny_walking_pose") or mary_active[0]
+            mary_fish = first_row_with_pose(mary_active, "johnny_fishing_pose") or mary_active[-1]
             mixed_rows = [fishing_active[-1], mary_active[0]]
             queries.append(
                 {
@@ -69,6 +79,36 @@ def build_queries(database: dict) -> list[dict]:
                         "identification_traits": [],
                     },
                     "rows": redact_rows(mixed_rows, "MIXED [active-pair]"),
+                    "_expected_status": "non_identified",
+                }
+            )
+            queries.append(
+                {
+                    "scene_label": "MIXED [pose-conflict-walk-vs-fish]",
+                    "scene_family": "unknown",
+                    "scene_summary": {
+                        "scene_signature": None,
+                        "identification_traits": [],
+                    },
+                    "rows": redact_rows(
+                        [mary_walk, mary_fish],
+                        "MIXED [pose-conflict-walk-vs-fish]",
+                    ),
+                    "_expected_status": "non_identified",
+                }
+            )
+            queries.append(
+                {
+                    "scene_label": "MIXED [pose-conflict-cross-scene]",
+                    "scene_family": "unknown",
+                    "scene_summary": {
+                        "scene_signature": None,
+                        "identification_traits": [],
+                    },
+                    "rows": redact_rows(
+                        [fishing_walk, mary_fish],
+                        "MIXED [pose-conflict-cross-scene]",
+                    ),
                     "_expected_status": "non_identified",
                 }
             )

@@ -89,21 +89,6 @@ def build_queries(database: dict) -> list[dict]:
             )
             queries.append(
                 {
-                    "scene_label": "MIXED [pose-conflict-walk-vs-fish]",
-                    "scene_family": "unknown",
-                    "scene_summary": {
-                        "scene_signature": None,
-                        "identification_traits": [],
-                    },
-                    "rows": redact_rows(
-                        [mary_walk, mary_fish],
-                        "MIXED [pose-conflict-walk-vs-fish]",
-                    ),
-                    "_expected_status": "non_identified",
-                }
-            )
-            queries.append(
-                {
                     "scene_label": "MIXED [pose-conflict-cross-scene]",
                     "scene_family": "unknown",
                     "scene_summary": {

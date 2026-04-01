@@ -23,6 +23,62 @@ def jaccard(a: set[str], b: set[str]) -> float:
     return len(a & b) / len(union)
 
 
+def query_profile(scene: dict) -> dict:
+    rows = list(scene.get("rows", []))
+    active_rows = [row for row in rows if row.get("frame_state") != "background_only"]
+    frame_states = sorted({row.get("frame_state") for row in rows if row.get("frame_state")})
+    subjects = sorted({row.get("primary_subject") for row in active_rows if row.get("primary_subject") not in (None, "none")})
+    activities = sorted({label for row in rows for label in row.get("activity_labels", [])})
+    contexts = sorted({label for row in rows for label in row.get("context_labels", [])})
+    return {
+        "frame_count": len(rows),
+        "active_frame_count": len(active_rows),
+        "frame_states": frame_states,
+        "subjects": subjects,
+        "activities": activities,
+        "contexts": contexts,
+    }
+
+
+def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
+    profile = query_profile(query_scene)
+    evidence: list[str] = []
+    if match.get("exact_scene_signature"):
+        evidence.append("exact_scene_signature")
+    if match.get("family_match"):
+        evidence.append("scene_family_match")
+    if float(match.get("shared_active_frame_coverage", 0.0)) >= 1.0 and profile["active_frame_count"] > 0:
+        evidence.append("full_active_frame_coverage")
+    elif float(match.get("shared_active_frame_coverage", 0.0)) >= 0.5 and profile["active_frame_count"] > 0:
+        evidence.append("partial_active_frame_coverage")
+    if int(match.get("exact_active_state_matches", 0)) > 0:
+        evidence.append("active_state_alignment")
+    if int(match.get("exact_active_primary_subject_matches", 0)) > 0:
+        evidence.append("active_subject_alignment")
+    if float(match.get("activity_similarity", 0.0)) >= 0.95:
+        evidence.append("activity_alignment")
+    if float(match.get("token_similarity", 0.0)) >= 0.8:
+        evidence.append("token_alignment")
+    if float(match.get("trait_similarity", 0.0)) >= 0.5:
+        evidence.append("trait_alignment")
+    if profile["active_frame_count"] == 0:
+        evidence.append("background_only_query")
+    return evidence
+
+
+def summarize_decision_context(query_scene: dict, best: dict | None, second: dict | None) -> dict:
+    profile = query_profile(query_scene)
+    best_score = float((best or {}).get("score", 0.0))
+    second_score = float((second or {}).get("score", 0.0))
+    return {
+        "query_profile": profile,
+        "best_evidence": summarize_match_evidence(query_scene, best or {}),
+        "second_evidence": summarize_match_evidence(query_scene, second or {}) if second else [],
+        "score_margin": round(best_score - second_score, 6),
+        "score_ratio": round(best_score / second_score, 6) if second_score > 0.0 else None,
+    }
+
+
 def compare_scenes(query: dict, candidate: dict) -> dict:
     query_rows = rows_by_frame(query)
     cand_rows = rows_by_frame(candidate)
@@ -163,6 +219,7 @@ def identify(database: dict, query: dict) -> dict:
         best = matches[0] if matches else None
         second = matches[1] if len(matches) > 1 else None
         status, reason = identify_status(query_scene, best, second)
+        decision_context = summarize_decision_context(query_scene, best, second)
         rows.append(
             {
                 "query_scene_label": query_scene.get("scene_label"),
@@ -171,6 +228,7 @@ def identify(database: dict, query: dict) -> dict:
                 "identification_status": status,
                 "identification_reason": reason,
                 "score_margin": round(float(best.get("score", 0.0)) - float((second or {}).get("score", 0.0)), 6) if best else None,
+                "decision_context": decision_context,
                 "best_match": best,
                 "second_match": second,
                 "matches": matches,

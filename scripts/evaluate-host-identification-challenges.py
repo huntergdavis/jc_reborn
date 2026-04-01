@@ -171,6 +171,10 @@ def evaluate(database: dict) -> dict:
     max_margin = None
     ambiguous_count = 0
     unknown_count = 0
+    max_unknown_best_score = None
+    max_unknown_margin = None
+    max_ambiguous_best_score = None
+    max_ambiguous_margin = None
 
     expectations = {scene["scene_label"]: scene.get("_expected_status", "non_identified") for scene in query_scenes}
 
@@ -192,8 +196,24 @@ def evaluate(database: dict) -> dict:
                 failures.append(f"{query_label}: challenge query must not identify as {best.get('scene_label')}")
             elif status == "ambiguous":
                 ambiguous_count += 1
+                if max_ambiguous_best_score is None or best_score > max_ambiguous_best_score:
+                    max_ambiguous_best_score = best_score
+                if max_ambiguous_margin is None or margin > max_ambiguous_margin:
+                    max_ambiguous_margin = margin
+                if best_score > 150.0:
+                    failures.append(f"{query_label}: ambiguous challenge score too high ({best_score:.6f})")
+                if margin > 150.0:
+                    failures.append(f"{query_label}: ambiguous challenge margin too high ({margin:.6f})")
             elif status == "unknown":
                 unknown_count += 1
+                if max_unknown_best_score is None or best_score > max_unknown_best_score:
+                    max_unknown_best_score = best_score
+                if max_unknown_margin is None or margin > max_unknown_margin:
+                    max_unknown_margin = margin
+                if best_score > 110.0:
+                    failures.append(f"{query_label}: unknown challenge score too high ({best_score:.6f})")
+                if margin > 35.0:
+                    failures.append(f"{query_label}: unknown challenge margin too high ({margin:.6f})")
             else:
                 failures.append(f"{query_label}: unexpected status {status}")
         elif status != expected_status:
@@ -216,6 +236,10 @@ def evaluate(database: dict) -> dict:
         "query_count": len(rows),
         "max_best_score": max_best_score,
         "max_margin": max_margin,
+        "max_unknown_best_score": max_unknown_best_score,
+        "max_unknown_margin": max_unknown_margin,
+        "max_ambiguous_best_score": max_ambiguous_best_score,
+        "max_ambiguous_margin": max_ambiguous_margin,
         "ambiguous_count": ambiguous_count,
         "unknown_count": unknown_count,
         "passed": not failures,

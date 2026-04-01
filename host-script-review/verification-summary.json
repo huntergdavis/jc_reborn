@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T13:12:12Z",
-  "git_head": "a21c91ce5fa555c79691621ad73e996cc03365c7",
-  "git_head_short": "a21c91ce",
+  "generated_at": "2026-04-01T13:22:19Z",
+  "git_head": "587aa74516445737f82c5188b4bd1852827efff5",
+  "git_head_short": "587aa745",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -77,7 +77,7 @@
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "f4366b869e29a35007469e947959d74787b2dd3a495ffeead076fa433888c522",
+  "artifact_sha256": "97fb6ce0c813c9b3493038e07bc0e2b2451ca5d75176d07bea8067b9d5b1d722",
   "artifact_inputs": {
     "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",

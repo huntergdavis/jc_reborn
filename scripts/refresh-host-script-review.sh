@@ -170,6 +170,7 @@ capture_review_set() {
         --partials-json "$root/identification-partials.json" \
         --challenges-json "$root/identification-challenges.json" \
         --temporal-json "$root/identification-temporal.json" \
+        --manifest-json "$root/manifest.json" \
         --out-html "$root/identification-review.html" \
         --title "Host Identification Review"
 

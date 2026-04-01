@@ -7,6 +7,44 @@
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
       "score_margin": 242.333333,
+      "decision_context": {
+        "query_profile": {
+          "frame_count": 5,
+          "active_frame_count": 1,
+          "frame_states": [
+            "background_only",
+            "johnny_only"
+          ],
+          "subjects": [
+            "johnny"
+          ],
+          "activities": [
+            "fishing_scene_presence",
+            "idle_background",
+            "raft_context",
+            "walking_activity"
+          ],
+          "contexts": [
+            "background_visible",
+            "raft_visible"
+          ]
+        },
+        "best_evidence": [
+          "exact_scene_signature",
+          "scene_family_match",
+          "full_active_frame_coverage",
+          "active_state_alignment",
+          "active_subject_alignment",
+          "activity_alignment",
+          "token_alignment",
+          "trait_alignment"
+        ],
+        "second_evidence": [
+          "activity_alignment"
+        ],
+        "score_margin": 242.333333,
+        "score_ratio": 6.192857
+      },
       "best_match": {
         "scene_label": "FISHING 1",
         "scene_family": "fishing",
@@ -97,6 +135,48 @@
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
       "score_margin": 300.166667,
+      "decision_context": {
+        "query_profile": {
+          "frame_count": 6,
+          "active_frame_count": 4,
+          "frame_states": [
+            "background_only",
+            "johnny_fishing",
+            "johnny_in_mary_scene"
+          ],
+          "subjects": [
+            "johnny"
+          ],
+          "activities": [
+            "fishing_activity",
+            "idle_background",
+            "mary_scene_johnny_presence",
+            "raft_context",
+            "tree_context",
+            "walking_activity"
+          ],
+          "contexts": [
+            "background_visible",
+            "raft_visible",
+            "tree_visible"
+          ]
+        },
+        "best_evidence": [
+          "exact_scene_signature",
+          "scene_family_match",
+          "full_active_frame_coverage",
+          "active_state_alignment",
+          "active_subject_alignment",
+          "activity_alignment",
+          "token_alignment",
+          "trait_alignment"
+        ],
+        "second_evidence": [
+          "activity_alignment"
+        ],
+        "score_margin": 300.166667,
+        "score_ratio": 7.549091
+      },
       "best_match": {
         "scene_label": "MARY 1",
         "scene_family": "mary",

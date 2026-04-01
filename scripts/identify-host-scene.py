@@ -92,6 +92,9 @@ def query_contamination_profile(rows: dict[int, dict]) -> dict:
     post_contexts = set(provenance["post_active_contexts"])
     pre_post_similarity = jaccard(pre_contexts, post_contexts)
     background_active_similarity = jaccard(background_contexts, active_contexts)
+    active_context_novelty = 1.0
+    if active_contexts:
+        active_context_novelty = 1.0 - (len(active_contexts & background_contexts) / max(1, len(active_contexts)))
     active_island_risk = 0.0
     if len(active_rows) == 1 and len(background_rows) >= 1:
         active_island_risk += (1.0 - background_active_similarity) * 0.5
@@ -115,6 +118,7 @@ def query_contamination_profile(rows: dict[int, dict]) -> dict:
         "post_active_count": provenance["post_active_count"],
         "background_context_count": len(background_contexts),
         "background_active_context_similarity": round(background_active_similarity, 6),
+        "active_context_novelty": round(active_context_novelty, 6),
         "pre_post_background_similarity": round(pre_post_similarity, 6),
         "active_island_risk": round(min(1.0, active_island_risk), 6),
         "contamination_risk": round(min(1.0, contamination_risk), 6),
@@ -298,6 +302,7 @@ def query_profile(scene: dict) -> dict:
         "active_island_risk": contamination["active_island_risk"],
         "background_frame_count": contamination["background_frame_count"],
         "background_active_context_similarity": contamination["background_active_context_similarity"],
+        "active_context_novelty": contamination["active_context_novelty"],
         "pre_post_background_similarity": contamination["pre_post_background_similarity"],
     }
 
@@ -437,6 +442,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("late_active_island_conflict")
     elif float(match.get("active_island_penalty", 0.0)) >= 6.0:
         evidence.append("partial_late_active_island_conflict")
+    if float(match.get("borrowed_background_context_penalty", 0.0)) >= 10.0:
+        evidence.append("borrowed_background_context_conflict")
+    elif float(match.get("borrowed_background_context_penalty", 0.0)) >= 5.0:
+        evidence.append("partial_borrowed_background_context_conflict")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -755,6 +764,17 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     query_profile_data = query_profile(query)
     if not background_only_query and len(query_active_frames) == 1 and query_frame_count > 1:
         active_island_penalty = float(query_profile_data.get("active_island_risk", 0.0)) * 12.0
+    borrowed_background_context_penalty = 0.0
+    if (
+        not background_only_query
+        and len(query_active_frames) == 1
+        and query_frame_count > 1
+        and borrowed_background_risk > 0.0
+    ):
+        borrowed_background_context_penalty = (
+            borrowed_background_risk * 8.0
+            + (1.0 - float(query_profile_data.get("active_context_novelty", 1.0))) * 10.0
+        )
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -845,6 +865,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= fragmented_active_coverage_penalty
         score -= active_semantic_diversity_penalty
         score -= active_island_penalty
+        score -= borrowed_background_context_penalty
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -907,6 +928,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "fragmented_active_coverage_penalty": round(fragmented_active_coverage_penalty, 6),
         "active_semantic_diversity_penalty": round(active_semantic_diversity_penalty, 6),
         "active_island_penalty": round(active_island_penalty, 6),
+        "borrowed_background_context_penalty": round(borrowed_background_context_penalty, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

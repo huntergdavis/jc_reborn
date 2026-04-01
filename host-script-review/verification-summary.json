@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T03:34:18Z",
-  "git_head": "cfef612db33de9ad3fe1cfba4bc9377476246548",
-  "git_head_short": "cfef612d",
+  "generated_at": "2026-04-01T03:44:16Z",
+  "git_head": "8dc5063d3b4af557ebbf9197497281d67821ef22",
+  "git_head_short": "8dc5063d",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -67,7 +67,7 @@
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "61380a7d3afb9865af57dae1488603beca66914cb29f7246611b70b69ded408d",
+  "artifact_sha256": "14449767dc55a078ae0a75c39c5ec5cc7b8fdfaf1934a0c62fbb498a7967b9eb",
   "artifact_inputs": {
     "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
     "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",
@@ -76,7 +76,7 @@
     "identification-partials.json": "65cdc122e9656af479bb00db4a7fd2329b62d2ba2674b813bdc90d60a22d7548",
     "identification-challenges.json": "47c428c2f4c7d521d60906477ee93cd4a13daf940f7bc19ab26b44ef15e809e2",
     "identification-temporal.json": "563d4bc66e5f515bf507d4c46c82c0666c210ec683f866f82a3e023467dd7ffa",
-    "identification-review.html": "6af600ae511d07481175b8d872047c37d0566f016a0e8fea61fbecc77a3b00a9",
+    "identification-review.html": "9339b003031d8d8ae144d7504aa97a5b0244c7c105248c52858e5b4a03bb29b8",
     "expectations.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "host-truth-baseline.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
     "expectation-report.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",

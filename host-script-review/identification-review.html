@@ -21,6 +21,9 @@
     .card {
       background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;
     }
+    .metric-warn { border-color:#9a6b14; background:#241b0e; }
+    .metric-danger { border-color:#a33a3a; background:#2a1212; }
+    .metric-safe { border-color:#245d3a; }
     .mini-summary {
       display:grid; grid-template-columns:repeat(4,minmax(180px,1fr)); gap:12px; margin:12px 0 16px;
     }
@@ -66,10 +69,10 @@
     <h1>Host Identification Review</h1>
     <div class="meta">Deterministic matcher review across exact, partial, challenge, and temporal audits.</div>
     <div class="summary">
-      <div class="card"><div class="label">Exact Min Margin</div><div class="value">248.333333</div></div>
-      <div class="card"><div class="label">Partial Min Margin</div><div class="value">100.569048</div></div>
-      <div class="card"><div class="label">Challenge Non-Identified</div><div class="value">8</div></div>
-      <div class="card"><div class="label">Temporal Max Score Drop</div><div class="value">0.0</div></div>
+      <div class="card metric-card metric-neutral"><div class="label">Exact Min Margin</div><div class="value">248.333333</div></div>
+      <div class="card metric-card metric-neutral"><div class="label">Partial Min Margin</div><div class="value">100.569048</div></div>
+      <div class="card metric-card metric-neutral"><div class="label">Challenge Non-Identified</div><div class="value">8</div></div>
+      <div class="card metric-card metric-neutral"><div class="label">Temporal Max Score Drop</div><div class="value">0.0</div></div>
     </div>
 
     <section>
@@ -311,14 +314,14 @@
       <h2>Challenge Queries</h2>
       <div class="meta">ambiguous=3 unknown=5</div>
       <div class="mini-summary">
-        <div class="card"><div class="label">Unknown Max Score</div><div class="value">107.75</div></div>
-        <div class="card"><div class="label">Unknown Max Margin</div><div class="value">34.607143</div></div>
-        <div class="card"><div class="label">Ambiguous Max Score</div><div class="value">144.638889</div></div>
-        <div class="card"><div class="label">Ambiguous Max Margin</div><div class="value">144.638889</div></div>
-        <div class="card"><div class="label">Unknown Score Headroom</div><div class="value">2.25</div></div>
-        <div class="card"><div class="label">Unknown Margin Headroom</div><div class="value">0.392857</div></div>
-        <div class="card"><div class="label">Ambiguous Score Headroom</div><div class="value">5.361111</div></div>
-        <div class="card"><div class="label">Ambiguous Margin Headroom</div><div class="value">5.361111</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Unknown Max Score</div><div class="value">107.75</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Unknown Max Margin</div><div class="value">34.607143</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Ambiguous Max Score</div><div class="value">144.638889</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Ambiguous Max Margin</div><div class="value">144.638889</div></div>
+        <div class="card metric-card metric-warn"><div class="label">Unknown Score Headroom</div><div class="value">2.25</div></div>
+        <div class="card metric-card metric-danger"><div class="label">Unknown Margin Headroom</div><div class="value">0.392857</div></div>
+        <div class="card metric-card metric-safe"><div class="label">Ambiguous Score Headroom</div><div class="value">5.361111</div></div>
+        <div class="card metric-card metric-safe"><div class="label">Ambiguous Margin Headroom</div><div class="value">5.361111</div></div>
       </div>
       <table>
         <thead>

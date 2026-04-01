@@ -1,5 +1,226 @@
 {
-  "rows": [],
+  "rows": [
+    {
+      "scene_label": "FISHING 1",
+      "frame_number": 0,
+      "frame_name": "frame_00000.bmp",
+      "actual_entities": [],
+      "actual_bmps": [],
+      "expected": {
+        "frame_number": 0,
+        "frame_name": "frame_00000.bmp",
+        "expect_any_actor": false,
+        "expect_entities": [],
+        "required_actor_bmps": []
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "FISHING 1",
+      "frame_number": 20,
+      "frame_name": "frame_00020.bmp",
+      "actual_entities": [],
+      "actual_bmps": [],
+      "expected": {
+        "frame_number": 20,
+        "frame_name": "frame_00020.bmp",
+        "expect_any_actor": false,
+        "expect_entities": [],
+        "required_actor_bmps": []
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "FISHING 1",
+      "frame_number": 40,
+      "frame_name": "frame_00040.bmp",
+      "actual_entities": [],
+      "actual_bmps": [],
+      "expected": {
+        "frame_number": 40,
+        "frame_name": "frame_00040.bmp",
+        "expect_any_actor": false,
+        "expect_entities": [],
+        "required_actor_bmps": []
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "FISHING 1",
+      "frame_number": 60,
+      "frame_name": "frame_00060.bmp",
+      "actual_entities": [],
+      "actual_bmps": [],
+      "expected": {
+        "frame_number": 60,
+        "frame_name": "frame_00060.bmp",
+        "expect_any_actor": false,
+        "expect_entities": [],
+        "required_actor_bmps": []
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "FISHING 1",
+      "frame_number": 80,
+      "frame_name": "frame_00080.bmp",
+      "actual_entities": [
+        "johnny"
+      ],
+      "actual_bmps": [
+        "JOHNWALK.BMP"
+      ],
+      "expected": {
+        "frame_number": 80,
+        "frame_name": "frame_00080.bmp",
+        "expect_any_actor": true,
+        "expect_entities": [
+          "johnny"
+        ],
+        "required_actor_bmps": [
+          "JOHNWALK.BMP"
+        ]
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "MARY 1",
+      "frame_number": 0,
+      "frame_name": "frame_00000.bmp",
+      "actual_entities": [],
+      "actual_bmps": [],
+      "expected": {
+        "frame_number": 0,
+        "frame_name": "frame_00000.bmp",
+        "expect_any_actor": false,
+        "expect_entities": [],
+        "required_actor_bmps": []
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "MARY 1",
+      "frame_number": 50,
+      "frame_name": "frame_00050.bmp",
+      "actual_entities": [],
+      "actual_bmps": [],
+      "expected": {
+        "frame_number": 50,
+        "frame_name": "frame_00050.bmp",
+        "expect_any_actor": false,
+        "expect_entities": [],
+        "required_actor_bmps": []
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "MARY 1",
+      "frame_number": 100,
+      "frame_name": "frame_00100.bmp",
+      "actual_entities": [
+        "johnny"
+      ],
+      "actual_bmps": [
+        "JOHNWALK.BMP"
+      ],
+      "expected": {
+        "frame_number": 100,
+        "frame_name": "frame_00100.bmp",
+        "expect_any_actor": true,
+        "expect_entities": [
+          "johnny"
+        ],
+        "required_actor_bmps": [
+          "JOHNWALK.BMP"
+        ]
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "MARY 1",
+      "frame_number": 150,
+      "frame_name": "frame_00150.bmp",
+      "actual_entities": [
+        "johnny"
+      ],
+      "actual_bmps": [
+        "JOHNWALK.BMP"
+      ],
+      "expected": {
+        "frame_number": 150,
+        "frame_name": "frame_00150.bmp",
+        "expect_any_actor": true,
+        "expect_entities": [
+          "johnny"
+        ],
+        "required_actor_bmps": [
+          "JOHNWALK.BMP"
+        ]
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "MARY 1",
+      "frame_number": 200,
+      "frame_name": "frame_00200.bmp",
+      "actual_entities": [
+        "johnny"
+      ],
+      "actual_bmps": [
+        "JOHNWALK.BMP"
+      ],
+      "expected": {
+        "frame_number": 200,
+        "frame_name": "frame_00200.bmp",
+        "expect_any_actor": true,
+        "expect_entities": [
+          "johnny"
+        ],
+        "required_actor_bmps": [
+          "JOHNWALK.BMP"
+        ]
+      },
+      "status": "ok",
+      "problems": []
+    },
+    {
+      "scene_label": "MARY 1",
+      "frame_number": 250,
+      "frame_name": "frame_00250.bmp",
+      "actual_entities": [
+        "johnny"
+      ],
+      "actual_bmps": [
+        "JOHNWALK.BMP",
+        "MJFISH1.BMP",
+        "MJFISH1.BMP"
+      ],
+      "expected": {
+        "frame_number": 250,
+        "frame_name": "frame_00250.bmp",
+        "expect_any_actor": true,
+        "expect_entities": [
+          "johnny"
+        ],
+        "required_actor_bmps": [
+          "JOHNWALK.BMP",
+          "MJFISH1.BMP",
+          "MJFISH1.BMP"
+        ]
+      },
+      "status": "ok",
+      "problems": []
+    }
+  ],
   "mismatch_count": 0,
   "mismatches": []
 }

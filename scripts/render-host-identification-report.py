@@ -53,8 +53,14 @@ def render_metric_card(label: str, value: object, level: str = "neutral") -> str
 
 
 def challenge_risk_status(challenges: dict) -> tuple[str, str]:
-    danger_count = int(challenges.get("danger_count") or 0)
-    warn_count = int(challenges.get("warn_count") or 0)
+    levels = [
+        classify_headroom(challenges.get("unknown_score_headroom")),
+        classify_headroom(challenges.get("unknown_margin_headroom")),
+        classify_headroom(challenges.get("ambiguous_score_headroom")),
+        classify_headroom(challenges.get("ambiguous_margin_headroom")),
+    ]
+    danger_count = sum(1 for level in levels if level == "danger")
+    warn_count = sum(1 for level in levels if level == "warn")
     if danger_count > 0:
         return "elevated_risk", "metric-danger"
     if warn_count > 0:

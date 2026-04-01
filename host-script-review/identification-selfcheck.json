@@ -43,6 +43,7 @@
           "active_island_risk": 0.35,
           "background_frame_count": 4,
           "background_active_context_similarity": 1.0,
+          "active_context_novelty": 0.0,
           "pre_post_background_similarity": 0.0
         },
         "best_evidence": [
@@ -155,6 +156,7 @@
         "fragmented_active_coverage_penalty": 0.0,
         "active_semantic_diversity_penalty": 0.0,
         "active_island_penalty": 4.2,
+        "borrowed_background_context_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -207,6 +209,7 @@
         "fragmented_active_coverage_penalty": 0.0,
         "active_semantic_diversity_penalty": 0.0,
         "active_island_penalty": 4.2,
+        "borrowed_background_context_penalty": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -260,6 +263,7 @@
           "fragmented_active_coverage_penalty": 0.0,
           "active_semantic_diversity_penalty": 0.0,
           "active_island_penalty": 4.2,
+          "borrowed_background_context_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -312,6 +316,7 @@
           "fragmented_active_coverage_penalty": 0.0,
           "active_semantic_diversity_penalty": 0.0,
           "active_island_penalty": 4.2,
+          "borrowed_background_context_penalty": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -366,6 +371,7 @@
           "active_island_risk": 0.0,
           "background_frame_count": 2,
           "background_active_context_similarity": 1.0,
+          "active_context_novelty": 0.0,
           "pre_post_background_similarity": 0.0
         },
         "best_evidence": [
@@ -478,6 +484,7 @@
         "fragmented_active_coverage_penalty": 0.0,
         "active_semantic_diversity_penalty": 0.0,
         "active_island_penalty": 0.0,
+        "borrowed_background_context_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -530,6 +537,7 @@
         "fragmented_active_coverage_penalty": 29.333333,
         "active_semantic_diversity_penalty": 29.466667,
         "active_island_penalty": 0.0,
+        "borrowed_background_context_penalty": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -583,6 +591,7 @@
           "fragmented_active_coverage_penalty": 0.0,
           "active_semantic_diversity_penalty": 0.0,
           "active_island_penalty": 0.0,
+          "borrowed_background_context_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -635,6 +644,7 @@
           "fragmented_active_coverage_penalty": 29.333333,
           "active_semantic_diversity_penalty": 29.466667,
           "active_island_penalty": 0.0,
+          "borrowed_background_context_penalty": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

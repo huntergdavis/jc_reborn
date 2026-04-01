@@ -270,6 +270,7 @@ def evaluate(database: dict) -> dict:
                 "best_scene_label": best.get("scene_label"),
                 "best_score": best.get("score"),
                 "borrowed_background_risk": (row.get("decision_context") or {}).get("best_borrowed_background_risk"),
+                "borrowed_background_mismatch": (row.get("decision_context") or {}).get("best_borrowed_background_mismatch"),
                 "score_margin": row.get("score_margin"),
                 "score_limit": score_limit,
                 "score_headroom": score_headroom,

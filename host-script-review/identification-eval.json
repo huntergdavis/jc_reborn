@@ -4,28 +4,28 @@
       "query_scene_label": "FISHING 1",
       "status": "identified",
       "best_scene_label": "FISHING 1",
-      "best_score": 307.0,
+      "best_score": 315.0,
       "second_scene_label": "MARY 1",
       "second_score": 62.47619,
-      "score_margin": 244.52381,
-      "best_to_second_ratio": 4.913871988672804
+      "score_margin": 252.52381,
+      "best_to_second_ratio": 5.041920770136591
     },
     {
       "query_scene_label": "MARY 1",
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 322.0,
+      "best_score": 330.0,
       "second_scene_label": "FISHING 1",
       "second_score": 61.642857,
-      "score_margin": 260.357143,
-      "best_to_second_ratio": 5.223638482557679
+      "score_margin": 268.357143,
+      "best_to_second_ratio": 5.353418320633646
     }
   ],
   "scene_count": 2,
-  "min_identified_margin": 244.52381,
+  "min_identified_margin": 252.52381,
   "max_nonmatch_score": 62.47619,
-  "min_nonmatch_margin": 244.52381,
-  "min_best_to_second_ratio": 4.913871988672804,
+  "min_nonmatch_margin": 252.52381,
+  "min_best_to_second_ratio": 5.041920770136591,
   "passed": true,
   "failures": []
 }

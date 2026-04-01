@@ -6,7 +6,7 @@
       "query_scene_signature": "d14b40d3fb855f5c122d",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 244.52381,
+      "score_margin": 252.52381,
       "decision_context": {
         "query_profile": {
           "frame_count": 5,
@@ -45,6 +45,7 @@
           "active_state_set_alignment",
           "active_pose_set_alignment",
           "state_transition_evidence",
+          "transition_alignment",
           "pose_alignment",
           "activity_alignment",
           "token_alignment",
@@ -59,13 +60,13 @@
           "partial_context_alignment",
           "trait_alignment"
         ],
-        "score_margin": 244.52381,
-        "score_ratio": 4.913872
+        "score_margin": 252.52381,
+        "score_ratio": 5.041921
       },
       "best_match": {
         "scene_label": "FISHING 1",
         "scene_family": "fishing",
-        "score": 307.0,
+        "score": 315.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 5,
@@ -84,6 +85,7 @@
         "active_state_set_similarity": 1.0,
         "active_pose_set_similarity": 1.0,
         "context_set_similarity": 1.0,
+        "transition_similarity": 1.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -109,6 +111,7 @@
         "active_state_set_similarity": 0.0,
         "active_pose_set_similarity": 0.5,
         "context_set_similarity": 0.666667,
+        "transition_similarity": 0.0,
         "trait_similarity": 0.714286,
         "candidate_scene_signature": "b76ca5d687eab03cb470"
       },
@@ -116,7 +119,7 @@
         {
           "scene_label": "FISHING 1",
           "scene_family": "fishing",
-          "score": 307.0,
+          "score": 315.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 5,
@@ -135,6 +138,7 @@
           "active_state_set_similarity": 1.0,
           "active_pose_set_similarity": 1.0,
           "context_set_similarity": 1.0,
+          "transition_similarity": 1.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -160,6 +164,7 @@
           "active_state_set_similarity": 0.0,
           "active_pose_set_similarity": 0.5,
           "context_set_similarity": 0.666667,
+          "transition_similarity": 0.0,
           "trait_similarity": 0.714286,
           "candidate_scene_signature": "b76ca5d687eab03cb470"
         }
@@ -171,7 +176,7 @@
       "query_scene_signature": "b76ca5d687eab03cb470",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 260.357143,
+      "score_margin": 268.357143,
       "decision_context": {
         "query_profile": {
           "frame_count": 6,
@@ -212,6 +217,7 @@
           "active_state_set_alignment",
           "active_pose_set_alignment",
           "state_transition_evidence",
+          "transition_alignment",
           "pose_alignment",
           "activity_alignment",
           "token_alignment",
@@ -226,13 +232,13 @@
           "partial_context_alignment",
           "trait_alignment"
         ],
-        "score_margin": 260.357143,
-        "score_ratio": 5.223638
+        "score_margin": 268.357143,
+        "score_ratio": 5.353418
       },
       "best_match": {
         "scene_label": "MARY 1",
         "scene_family": "mary",
-        "score": 322.0,
+        "score": 330.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 6,
@@ -251,6 +257,7 @@
         "active_state_set_similarity": 1.0,
         "active_pose_set_similarity": 1.0,
         "context_set_similarity": 1.0,
+        "transition_similarity": 1.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "b76ca5d687eab03cb470"
       },
@@ -276,6 +283,7 @@
         "active_state_set_similarity": 0.0,
         "active_pose_set_similarity": 0.5,
         "context_set_similarity": 0.666667,
+        "transition_similarity": 0.0,
         "trait_similarity": 0.714286,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -283,7 +291,7 @@
         {
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "score": 322.0,
+          "score": 330.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 6,
@@ -302,6 +310,7 @@
           "active_state_set_similarity": 1.0,
           "active_pose_set_similarity": 1.0,
           "context_set_similarity": 1.0,
+          "transition_similarity": 1.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "b76ca5d687eab03cb470"
         },
@@ -327,6 +336,7 @@
           "active_state_set_similarity": 0.0,
           "active_pose_set_similarity": 0.5,
           "context_set_similarity": 0.666667,
+          "transition_similarity": 0.0,
           "trait_similarity": 0.714286,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

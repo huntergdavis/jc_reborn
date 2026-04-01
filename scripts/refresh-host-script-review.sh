@@ -171,6 +171,7 @@ capture_review_set() {
         --challenges-json "$root/identification-challenges.json" \
         --temporal-json "$root/identification-temporal.json" \
         --manifest-json "$root/manifest.json" \
+        --semantic-truth-json "$root/semantic-truth.json" \
         --out-html "$root/identification-review.html" \
         --title "Host Identification Review"
 

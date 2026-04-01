@@ -54,6 +54,22 @@ def build_scene_index(manifest: dict) -> dict[str, dict]:
     return index
 
 
+def build_semantic_index(semantic_truth: dict) -> dict[str, dict]:
+    index = {}
+    for scene in semantic_truth.get("scenes", []):
+        scene_label = str(scene.get("scene_label") or "")
+        scene_dir = str(scene.get("scene_dir") or "")
+        entry = {
+            "scene_summary": scene.get("scene_summary") or {},
+        }
+        index[scene_label] = entry
+        index[normalize_label(scene_label)] = entry
+        if scene_dir:
+            index[scene_dir] = entry
+            index[normalize_label(scene_dir)] = entry
+    return index
+
+
 def parse_query_scene_label(label: str) -> tuple[str, str | None]:
     match = re.match(r"^(.*?)(?: \[(.+)\])?$", label)
     if not match:
@@ -157,11 +173,45 @@ def build_scene_review_link(scene_index: dict[str, dict], output_path: Path, que
     return f'<div class="query-meta"><a href="{esc(rel(review_path, output_path.parent))}">scene review</a></div>'
 
 
-def render_query_cell(scene_index: dict[str, dict], output_path: Path, query_label: str) -> str:
+def build_semantic_summary(semantic_index: dict[str, dict], query_label: str) -> str:
+    base_label, _variant = parse_query_scene_label(query_label)
+    scene = semantic_index.get(base_label) or semantic_index.get(normalize_label(base_label))
+    if not scene:
+        return ""
+    summary = scene.get("scene_summary") or {}
+    dominant_state = summary.get("dominant_frame_state") or "n/a"
+    dominant_activity = summary.get("dominant_activity") or "n/a"
+    entities = ", ".join(summary.get("observed_entities") or []) or "none"
+    timeline = summary.get("timeline_signature") or "n/a"
+    transitions = summary.get("transition_points") or []
+    transition_text = "none"
+    if transitions:
+        transition_text = "; ".join(
+            f"{item.get('frame_number')}:{item.get('from')}->{item.get('to')}"
+            for item in transitions
+        )
+    return (
+        '<div class="semantic-summary">'
+        f'<div><span class="muted">state</span> {esc(dominant_state)}</div>'
+        f'<div><span class="muted">activity</span> {esc(dominant_activity)}</div>'
+        f'<div><span class="muted">entities</span> {esc(entities)}</div>'
+        f'<div><span class="muted">transitions</span> {esc(transition_text)}</div>'
+        f'<div><span class="muted">timeline</span> {esc(timeline)}</div>'
+        "</div>"
+    )
+
+
+def render_query_cell(
+    scene_index: dict[str, dict],
+    semantic_index: dict[str, dict],
+    output_path: Path,
+    query_label: str,
+) -> str:
     return (
         f"{esc(query_label)}"
         f'<div class="query-meta">{build_frame_links(scene_index, output_path, query_label)}</div>'
         f"{build_scene_review_link(scene_index, output_path, query_label)}"
+        f"{build_semantic_summary(semantic_index, query_label)}"
         f"{build_frame_preview(scene_index, output_path, query_label)}"
     )
 
@@ -175,7 +225,12 @@ def render_evidence_delta(best_evidence: list[str], second_evidence: list[str]) 
     return render_tokens(best_only), render_tokens(shared), render_tokens(second_only)
 
 
-def render_selfcheck(rows: list[dict], scene_index: dict[str, dict], output_path: Path) -> str:
+def render_selfcheck(
+    rows: list[dict],
+    scene_index: dict[str, dict],
+    semantic_index: dict[str, dict],
+    output_path: Path,
+) -> str:
     body = []
     for row in rows:
         ctx = row.get("decision_context") or {}
@@ -188,7 +243,7 @@ def render_selfcheck(rows: list[dict], scene_index: dict[str, dict], output_path
         body.append(
             f"""
 <tr>
-  <td>{render_query_cell(scene_index, output_path, str(row.get('query_scene_label')))}</td>
+  <td>{render_query_cell(scene_index, semantic_index, output_path, str(row.get('query_scene_label')))}</td>
   <td>{esc(row.get('identification_status'))}</td>
   <td>{esc(row.get('identification_reason'))}</td>
   <td>{esc(ctx.get('score_margin'))}</td>
@@ -204,7 +259,13 @@ def render_selfcheck(rows: list[dict], scene_index: dict[str, dict], output_path
     return "".join(body)
 
 
-def render_simple_rows(rows: list[dict], columns: list[tuple[str, str]], scene_index: dict[str, dict], output_path: Path) -> str:
+def render_simple_rows(
+    rows: list[dict],
+    columns: list[tuple[str, str]],
+    scene_index: dict[str, dict],
+    semantic_index: dict[str, dict],
+    output_path: Path,
+) -> str:
     body = []
     for row in rows:
         cells = []
@@ -213,15 +274,25 @@ def render_simple_rows(rows: list[dict], columns: list[tuple[str, str]], scene_i
             if kind == "tokens":
                 cells.append(f"<td>{render_tokens(value or [])}</td>")
             elif kind == "query":
-                cells.append(f"<td>{render_query_cell(scene_index, output_path, str(value))}</td>")
+                cells.append(f"<td>{render_query_cell(scene_index, semantic_index, output_path, str(value))}</td>")
             else:
                 cells.append(f"<td>{esc(value)}</td>")
         body.append("<tr>" + "".join(cells) + "</tr>")
     return "".join(body)
 
 
-def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict, manifest: dict, output_path: Path, title: str) -> str:
+def build_html(
+    selfcheck: dict,
+    partials: dict,
+    challenges: dict,
+    temporal: dict,
+    manifest: dict,
+    semantic_truth: dict,
+    output_path: Path,
+    title: str,
+) -> str:
     scene_index = build_scene_index(manifest)
+    semantic_index = build_semantic_index(semantic_truth)
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -274,6 +345,12 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
     .query-meta {{
       margin-top:6px; color:var(--muted);
     }}
+    .semantic-summary {{
+      margin-top:8px; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#101820;
+    }}
+    .semantic-summary div {{
+      margin-top:3px;
+    }}
   </style>
 </head>
 <body>
@@ -295,7 +372,7 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
             <th>Scene</th><th>Status</th><th>Reason</th><th>Margin</th><th>Ratio</th><th>Active/Frames</th><th>Runner-Up</th><th>Winner Edge</th><th>Shared Evidence</th><th>Runner-Up Only</th>
           </tr>
         </thead>
-        <tbody>{render_selfcheck(selfcheck.get('rows') or [], scene_index, output_path)}</tbody>
+        <tbody>{render_selfcheck(selfcheck.get('rows') or [], scene_index, semantic_index, output_path)}</tbody>
       </table>
     </section>
 
@@ -307,7 +384,7 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
             <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Margin</th><th>Ratio</th><th>Frames</th>
           </tr>
         </thead>
-        <tbody>{render_simple_rows(partials.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('score_margin','text'), ('best_to_second_ratio','text'), ('shared_frame_count','text')], scene_index, output_path)}</tbody>
+        <tbody>{render_simple_rows(partials.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('score_margin','text'), ('best_to_second_ratio','text'), ('shared_frame_count','text')], scene_index, semantic_index, output_path)}</tbody>
       </table>
     </section>
 
@@ -320,7 +397,7 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
             <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Margin</th><th>Reason</th>
           </tr>
         </thead>
-        <tbody>{render_simple_rows(challenges.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('score_margin','text'), ('reason','text')], scene_index, output_path)}</tbody>
+        <tbody>{render_simple_rows(challenges.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('score_margin','text'), ('reason','text')], scene_index, semantic_index, output_path)}</tbody>
       </table>
     </section>
 
@@ -333,7 +410,7 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
             <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Margin</th><th>Ratio</th>
           </tr>
         </thead>
-        <tbody>{render_simple_rows(temporal.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('score_margin','text'), ('best_to_second_ratio','text')], scene_index, output_path)}</tbody>
+        <tbody>{render_simple_rows(temporal.get('rows') or [], [('query_scene_label','query'), ('expected_status','text'), ('status','text'), ('best_scene_label','text'), ('best_score','text'), ('score_margin','text'), ('best_to_second_ratio','text')], scene_index, semantic_index, output_path)}</tbody>
       </table>
     </section>
   </main>
@@ -350,6 +427,7 @@ def main() -> int:
     parser.add_argument("--challenges-json", type=Path, required=True)
     parser.add_argument("--temporal-json", type=Path, required=True)
     parser.add_argument("--manifest-json", type=Path, required=True)
+    parser.add_argument("--semantic-truth-json", type=Path, required=True)
     parser.add_argument("--out-html", type=Path, required=True)
     parser.add_argument("--title", default="Host Identification Review")
     args = parser.parse_args()
@@ -361,10 +439,11 @@ def main() -> int:
     challenges = load_json(args.challenges_json)
     temporal = load_json(args.temporal_json)
     manifest = load_json(args.manifest_json)
+    semantic_truth = load_json(args.semantic_truth_json)
 
     args.out_html.parent.mkdir(parents=True, exist_ok=True)
     args.out_html.write_text(
-        build_html(summary, partials, challenges, temporal, manifest, args.out_html, args.title),
+        build_html(summary, partials, challenges, temporal, manifest, semantic_truth, args.out_html, args.title),
         encoding="utf-8",
     )
     return 0

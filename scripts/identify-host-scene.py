@@ -867,7 +867,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query or not has_active_alignment else subject_set_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else first_active_timing_similarity * 12.0
     score += 0.0 if background_only_query or not has_active_alignment else last_active_timing_similarity * 10.0
-    score += 0.0 if background_only_query or not has_active_alignment else subject_persistence_similarity * 8.0
+    score += 0.0 if background_only_query or not has_active_alignment else subject_persistence_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else background_recovery_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else phase_sequence_similarity * 10.0
     score += 0.0 if background_only_query or not has_active_alignment else phase_count_similarity * 6.0

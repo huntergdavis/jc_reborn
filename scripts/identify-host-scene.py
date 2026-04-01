@@ -73,6 +73,46 @@ def background_provenance_profile(rows: dict[int, dict]) -> dict:
     }
 
 
+def query_contamination_profile(rows: dict[int, dict]) -> dict:
+    ordered = sorted(rows)
+    background_rows = [rows[frame_no] for frame_no in ordered if rows[frame_no].get("frame_state") == "background_only"]
+    active_rows = [rows[frame_no] for frame_no in ordered if rows[frame_no].get("frame_state") != "background_only"]
+    provenance = background_provenance_profile(rows)
+    background_contexts = {
+        label
+        for row in background_rows
+        for label in row.get("context_labels", [])
+    }
+    active_contexts = {
+        label
+        for row in active_rows
+        for label in row.get("context_labels", [])
+    }
+    pre_contexts = set(provenance["pre_active_contexts"])
+    post_contexts = set(provenance["post_active_contexts"])
+    pre_post_similarity = jaccard(pre_contexts, post_contexts)
+    background_active_similarity = jaccard(background_contexts, active_contexts)
+    contamination_risk = 0.0
+    if len(active_rows) == 1 and len(ordered) > 1:
+        contamination_risk += 0.45
+    if provenance["pre_active_count"] > 0 and provenance["post_active_count"] > 0:
+        contamination_risk += 0.15
+    if background_rows and active_rows:
+        contamination_risk += (1.0 - background_active_similarity) * 0.2
+    if pre_contexts and post_contexts:
+        contamination_risk += (1.0 - pre_post_similarity) * 0.2
+    return {
+        "background_frame_count": len(background_rows),
+        "active_frame_count": len(active_rows),
+        "pre_active_count": provenance["pre_active_count"],
+        "post_active_count": provenance["post_active_count"],
+        "background_context_count": len(background_contexts),
+        "background_active_context_similarity": round(background_active_similarity, 6),
+        "pre_post_background_similarity": round(pre_post_similarity, 6),
+        "contamination_risk": round(min(1.0, contamination_risk), 6),
+    }
+
+
 def subject_timeline_profile(rows: dict[int, dict]) -> dict:
     ordered = sorted(rows)
     if not ordered:
@@ -213,6 +253,7 @@ def jaccard(a: set[str], b: set[str]) -> float:
 def query_profile(scene: dict) -> dict:
     rows = list(scene.get("rows", []))
     active_rows = [row for row in rows if row.get("frame_state") != "background_only"]
+    contamination = query_contamination_profile(rows_by_frame(scene))
     state_change_count = sum(1 for row in rows if row.get("state_changed"))
     frame_states = sorted({row.get("frame_state") for row in rows if row.get("frame_state")})
     subjects = sorted({row.get("primary_subject") for row in active_rows if row.get("primary_subject") not in (None, "none")})
@@ -235,6 +276,10 @@ def query_profile(scene: dict) -> dict:
         "activities": activities,
         "contexts": contexts,
         "poses": poses,
+        "contamination_risk": contamination["contamination_risk"],
+        "background_frame_count": contamination["background_frame_count"],
+        "background_active_context_similarity": contamination["background_active_context_similarity"],
+        "pre_post_background_similarity": contamination["pre_post_background_similarity"],
     }
 
 
@@ -705,6 +750,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 0.0 if background_only_query or not has_active_alignment else subject_activity_count_similarity * 6.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
+        contamination_risk = query_profile(query)["contamination_risk"]
         score -= exact_state_matches * 1.0
         score -= exact_context_matches * 0.5
         score -= exact_primary_subject_matches * 1.0
@@ -734,6 +780,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= subject_activity_count_similarity * 8.0
         score -= borrowed_background_risk * 20.0
         score -= borrowed_background_mismatch * 24.0
+        score -= contamination_risk * 10.0
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -816,6 +863,9 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
     if query_family in (None, "", "unknown"):
         if active_row_count < 1 or (active_row_count < 2 and state_change_count < 1):
             return "unknown", f"unknown-family query lacks semantic evidence active={active_row_count} changes={state_change_count}"
+        contamination_risk = float(profile.get("contamination_risk", 0.0))
+        if contamination_risk >= 0.6 and active_row_count == 1 and profile["frame_count"] > 1:
+            return "ambiguous", f"unknown-family contaminated mixed query risk {contamination_risk:.3f}"
         borrowed_background_risk = float(best.get("borrowed_background_risk", 0.0))
         if borrowed_background_risk >= 0.5 and active_row_count == 1 and profile["frame_count"] > 1:
             return "ambiguous", f"unknown-family borrowed-background mix risk {borrowed_background_risk:.3f}"

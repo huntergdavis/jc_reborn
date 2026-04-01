@@ -1,0 +1,134 @@
+{
+  "rows": [
+    {
+      "query_scene_label": "FISHING 1 [prefix-1]",
+      "expected_scene_label": "FISHING 1",
+      "expected_status": "unknown",
+      "prefix_len": 1,
+      "status": "unknown",
+      "best_scene_label": "FISHING 1",
+      "best_score": 69.333333,
+      "score_margin": 9.583333,
+      "best_to_second_ratio": 1.160390510460251
+    },
+    {
+      "query_scene_label": "FISHING 1 [prefix-2]",
+      "expected_scene_label": "FISHING 1",
+      "expected_status": "unknown",
+      "prefix_len": 2,
+      "status": "unknown",
+      "best_scene_label": "FISHING 1",
+      "best_score": 74.904762,
+      "score_margin": 27.654762,
+      "best_to_second_ratio": 1.5852859682539684
+    },
+    {
+      "query_scene_label": "FISHING 1 [prefix-3]",
+      "expected_scene_label": "FISHING 1",
+      "expected_status": "unknown",
+      "prefix_len": 3,
+      "status": "unknown",
+      "best_scene_label": "FISHING 1",
+      "best_score": 80.095238,
+      "score_margin": 37.011905,
+      "best_to_second_ratio": 1.859077105292666
+    },
+    {
+      "query_scene_label": "FISHING 1 [prefix-4]",
+      "expected_scene_label": "FISHING 1",
+      "expected_status": "unknown",
+      "prefix_len": 4,
+      "status": "unknown",
+      "best_scene_label": "FISHING 1",
+      "best_score": 85.190476,
+      "score_margin": 44.190476,
+      "best_to_second_ratio": 2.077816487804878
+    },
+    {
+      "query_scene_label": "FISHING 1 [prefix-5]",
+      "expected_scene_label": "FISHING 1",
+      "expected_status": "identified",
+      "prefix_len": 5,
+      "status": "identified",
+      "best_scene_label": "FISHING 1",
+      "best_score": 90.319048,
+      "score_margin": 50.569048,
+      "best_to_second_ratio": 2.2721773081761003
+    },
+    {
+      "query_scene_label": "MARY 1 [prefix-1]",
+      "expected_scene_label": "MARY 1",
+      "expected_status": "unknown",
+      "prefix_len": 1,
+      "status": "unknown",
+      "best_scene_label": "MARY 1",
+      "best_score": 69.333333,
+      "score_margin": 9.583333,
+      "best_to_second_ratio": 1.160390510460251
+    },
+    {
+      "query_scene_label": "MARY 1 [prefix-2]",
+      "expected_scene_label": "MARY 1",
+      "expected_status": "unknown",
+      "prefix_len": 2,
+      "status": "unknown",
+      "best_scene_label": "MARY 1",
+      "best_score": 75.083333,
+      "score_margin": 27.833333,
+      "best_to_second_ratio": 1.5890652486772485
+    },
+    {
+      "query_scene_label": "MARY 1 [prefix-3]",
+      "expected_scene_label": "MARY 1",
+      "expected_status": "identified",
+      "prefix_len": 3,
+      "status": "identified",
+      "best_scene_label": "MARY 1",
+      "best_score": 80.333333,
+      "score_margin": 37.25,
+      "best_to_second_ratio": 1.8646034883141467
+    },
+    {
+      "query_scene_label": "MARY 1 [prefix-4]",
+      "expected_scene_label": "MARY 1",
+      "expected_status": "identified",
+      "prefix_len": 4,
+      "status": "identified",
+      "best_scene_label": "MARY 1",
+      "best_score": 85.458333,
+      "score_margin": 44.458333,
+      "best_to_second_ratio": 2.0843495853658536
+    },
+    {
+      "query_scene_label": "MARY 1 [prefix-5]",
+      "expected_scene_label": "MARY 1",
+      "expected_status": "identified",
+      "prefix_len": 5,
+      "status": "identified",
+      "best_scene_label": "MARY 1",
+      "best_score": 90.533333,
+      "score_margin": 50.783333,
+      "best_to_second_ratio": 2.2775681257861633
+    },
+    {
+      "query_scene_label": "MARY 1 [prefix-6]",
+      "expected_scene_label": "MARY 1",
+      "expected_status": "identified",
+      "prefix_len": 6,
+      "status": "identified",
+      "best_scene_label": "MARY 1",
+      "best_score": 95.62963,
+      "score_margin": 56.712963,
+      "best_to_second_ratio": 2.457292398652742
+    }
+  ],
+  "query_count": 11,
+  "transition_counts": {
+    "FISHING 1": 1,
+    "MARY 1": 1
+  },
+  "min_identified_margin": 37.25,
+  "min_identified_ratio": 1.8646034883141467,
+  "passed": true,
+  "failures": []
+}

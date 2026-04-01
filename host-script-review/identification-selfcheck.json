@@ -160,6 +160,7 @@
         "blended_active_narrative_penalty": 0.0,
         "single_active_alignment_penalty": 0.0,
         "low_novelty_multi_active_penalty": 0.0,
+        "late_active_island_context_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -216,6 +217,7 @@
         "blended_active_narrative_penalty": 0.0,
         "single_active_alignment_penalty": 0.0,
         "low_novelty_multi_active_penalty": 0.0,
+        "late_active_island_context_penalty": 3.6,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -273,6 +275,7 @@
           "blended_active_narrative_penalty": 0.0,
           "single_active_alignment_penalty": 0.0,
           "low_novelty_multi_active_penalty": 0.0,
+          "late_active_island_context_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -329,6 +332,7 @@
           "blended_active_narrative_penalty": 0.0,
           "single_active_alignment_penalty": 0.0,
           "low_novelty_multi_active_penalty": 0.0,
+          "late_active_island_context_penalty": 3.6,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -504,6 +508,7 @@
         "blended_active_narrative_penalty": 8.0,
         "single_active_alignment_penalty": 0.0,
         "low_novelty_multi_active_penalty": 10.0,
+        "late_active_island_context_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -560,6 +565,7 @@
         "blended_active_narrative_penalty": 24.0,
         "single_active_alignment_penalty": 0.0,
         "low_novelty_multi_active_penalty": 20.0,
+        "late_active_island_context_penalty": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -617,6 +623,7 @@
           "blended_active_narrative_penalty": 8.0,
           "single_active_alignment_penalty": 0.0,
           "low_novelty_multi_active_penalty": 10.0,
+          "late_active_island_context_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -673,6 +680,7 @@
           "blended_active_narrative_penalty": 24.0,
           "single_active_alignment_penalty": 0.0,
           "low_novelty_multi_active_penalty": 20.0,
+          "late_active_island_context_penalty": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

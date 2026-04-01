@@ -78,6 +78,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("partial_active_pose_set_alignment")
     if profile["state_change_count"] > 0:
         evidence.append("state_transition_evidence")
+    if float(match.get("transition_similarity", 0.0)) >= 0.95 and profile["state_change_count"] > 0:
+        evidence.append("transition_alignment")
+    elif float(match.get("transition_similarity", 0.0)) >= 0.5 and profile["state_change_count"] > 0:
+        evidence.append("partial_transition_alignment")
     if float(match.get("pose_similarity", 0.0)) >= 0.8 and profile["poses"]:
         evidence.append("pose_alignment")
     if float(match.get("activity_similarity", 0.0)) >= 0.95:
@@ -123,10 +127,16 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         for row in query_rows.values()
         if row.get("frame_state") and row.get("frame_state") != "background_only"
     }
+    query_transition_points = {
+        frame_no for frame_no, row in query_rows.items() if row.get("state_changed")
+    }
     candidate_active_states = {
         row.get("frame_state")
         for row in cand_rows.values()
         if row.get("frame_state") and row.get("frame_state") != "background_only"
+    }
+    candidate_transition_points = {
+        frame_no for frame_no, row in cand_rows.items() if row.get("state_changed")
     }
     query_pose_set = {
         label
@@ -210,6 +220,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     active_state_set_similarity = jaccard(query_active_states, candidate_active_states)
     active_pose_set_similarity = jaccard(query_pose_set, candidate_pose_set)
     context_set_similarity = jaccard(query_context_set, candidate_context_set)
+    transition_similarity = jaccard(query_transition_points, candidate_transition_points)
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -243,6 +254,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += exact_active_pose_matches * 6.0
     score += 5.0 if family_match else 0.0
     score += 0.0 if background_only_query else pose_similarity * 12.0
+    score += transition_similarity * 8.0
     score += trait_similarity * 10.0
     if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
         score -= exact_state_matches * 1.0
@@ -253,6 +265,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= token_similarity * 6.0
         score -= activity_similarity * 4.0
         score -= context_set_similarity * 4.0
+        score -= (1.0 - transition_similarity) * 6.0
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -286,6 +299,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "active_state_set_similarity": round(active_state_set_similarity, 6),
         "active_pose_set_similarity": round(active_pose_set_similarity, 6),
         "context_set_similarity": round(context_set_similarity, 6),
+        "transition_similarity": round(transition_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

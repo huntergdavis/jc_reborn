@@ -6,7 +6,7 @@
       "query_scene_signature": "d14b40d3fb855f5c122d",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 412.52381,
+      "score_margin": 415.52381,
       "decision_context": {
         "query_profile": {
           "frame_count": 5,
@@ -107,13 +107,13 @@
         "best_borrowed_background_mismatch": 0.0,
         "second_borrowed_background_risk": 0.0,
         "second_borrowed_background_mismatch": 0.0,
-        "score_margin": 412.52381,
-        "score_ratio": 7.498875
+        "score_margin": 415.52381,
+        "score_ratio": 7.546137
       },
       "best_match": {
         "scene_label": "FISHING 1",
         "scene_family": "fishing",
-        "score": 476.0,
+        "score": 479.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 5,
@@ -228,7 +228,7 @@
         {
           "scene_label": "FISHING 1",
           "scene_family": "fishing",
-          "score": 476.0,
+          "score": 479.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 5,
@@ -347,7 +347,7 @@
       "query_scene_signature": "b76ca5d687eab03cb470",
       "identification_status": "identified",
       "identification_reason": "exact scene signature match",
-      "score_margin": 429.357143,
+      "score_margin": 432.357143,
       "decision_context": {
         "query_profile": {
           "frame_count": 6,
@@ -450,13 +450,13 @@
         "best_borrowed_background_mismatch": 0.0,
         "second_borrowed_background_risk": 0.0,
         "second_borrowed_background_mismatch": 0.0,
-        "score_margin": 429.357143,
-        "score_ratio": 7.854048
+        "score_margin": 432.357143,
+        "score_ratio": 7.901938
       },
       "best_match": {
         "scene_label": "MARY 1",
         "scene_family": "mary",
-        "score": 492.0,
+        "score": 495.0,
         "exact_scene_signature": true,
         "family_match": true,
         "shared_frame_count": 6,
@@ -571,7 +571,7 @@
         {
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "score": 492.0,
+          "score": 495.0,
           "exact_scene_signature": true,
           "family_match": true,
           "shared_frame_count": 6,

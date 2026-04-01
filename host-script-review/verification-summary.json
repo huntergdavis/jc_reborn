@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-01T13:52:45Z",
-  "git_head": "2632a91f81dd934f049bff113b372ab6d2c032e5",
-  "git_head_short": "2632a91f",
+  "generated_at": "2026-04-01T14:17:39Z",
+  "git_head": "c82c1aac415a166aa8e31cba29620544691bbda0",
+  "git_head_short": "c82c1aac",
   "verify_repro": true,
   "checks": {
     "expectation-report": {
@@ -25,16 +25,16 @@
       "present": true,
       "passed": true,
       "scene_count": 2,
-      "min_identified_margin": 396.333333,
-      "max_nonmatch_score": 59.666667,
-      "min_best_to_second_ratio": 7.642458057863363
+      "min_identified_margin": 392.52381,
+      "max_nonmatch_score": 63.47619,
+      "min_best_to_second_ratio": 7.183796002879189
     },
     "identification-partials": {
       "present": true,
       "passed": true,
       "query_count": 8,
-      "min_margin": 189.083333,
-      "min_best_to_second_ratio": 5.712209440758294
+      "min_margin": 0.916667,
+      "min_best_to_second_ratio": 4.666668
     },
     "identification-challenges": {
       "present": true,
@@ -71,27 +71,27 @@
       "present": true,
       "passed": true,
       "query_count": 11,
-      "min_identified_margin": 184.783334,
-      "min_identified_ratio": 4.294799437116192,
+      "min_identified_margin": 172.759259,
+      "min_identified_ratio": 3.8476800777599998,
       "max_score_drop": 0.0,
       "max_identified_margin_drop": 0.0
     }
   },
-  "artifact_sha256": "109b2a750b75cd39157d53e7b22d305ef2b410ff5332e0beff706e58c21dcd65",
+  "artifact_sha256": "af7e44ed99ba2aa8d30342445450b33338b42c022b40c7e89e3edf374de9ec11",
   "artifact_inputs": {
-    "manifest.json": "bc1e1cae938771e94bd637296d9ee259e20d99e307ea66779a3a55ad9546a4b1",
-    "semantic-truth.json": "aa066125b73a2da2c1ac900470fa71d397b1bf041609dc16f46351ddc4b5aef6",
-    "identification-selfcheck.json": "a5710001aad057277884e1bf770c6ca54f4ccb2f72468181a366b02fdd1a699a",
-    "identification-eval.json": "ffd5d43226ccaf286910045ec20b6d1ade7f709efb5194bb9eced297e075cc63",
-    "identification-partials.json": "7c86dcf02436f4fe498f6e226f7fa6f86cc85c61611e4b8d2125a3203efd1e9d",
-    "identification-challenges.json": "07ad4790aa5520177742f2836cbf43b1b6a4e261a0e7e7b142623cccaeea8842",
-    "identification-temporal.json": "b7674e0a1493fd99db45d16f1d3743f81b1b09d90e6075e26ac96070e65a3b09",
-    "identification-review.html": "1eadc098d80a8d1ee9040f39b9fe9bab94a4ba0c4901f2103234913b04611a00",
-    "expectations.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
-    "host-truth-baseline.json": "f45aae1d7eb5881aa41a011b2cc0cf027c932078a98923cd1398ebcede4b2e6f",
-    "expectation-report.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",
-    "host-truth-compare.json": "bcb732acee949b3de7f4b413dd1a0d8cbe81c747824b8072b4a1e85927602ea2",
-    "repro-compare.json": "067455c2e9c97c65597b11ffecb15ae4471e797ca87a13f19500d424d0ccbd38"
+    "manifest.json": "9469aebc50d353b2ceec0c258e5f538eb0c15c0b3dcbff926a8030f61eee3a6b",
+    "semantic-truth.json": "af327ad48f53a417ebe9023aacc51001d065e78e8895ae8f47a99f75b1fb9d33",
+    "identification-selfcheck.json": "9c7aeeac43d42878e9aaac9eb5dd06cf1636efdd3dd1643c1709788c70886edd",
+    "identification-eval.json": "793cfb999c66a3b3bd7eb4d3a45989fb2bd4b4b420ce15c74da5c0d6465eabc1",
+    "identification-partials.json": "dd1851e62672059056f3b4304e917b270adf3f777097bfe51dfbee827697e9fb",
+    "identification-challenges.json": "2585c54b7de581852dd1c02126511b3ac5e4f44572045078e74687946f875dfd",
+    "identification-temporal.json": "49ef16e34ef72d1aa9bac150d4ce2116395f2200c6bb152e2b24756233c2dc2e",
+    "identification-review.html": "3f01111c5606ff27c3c1cf82f05c5bb47ecf95baea560a93291d0dff56614a54",
+    "expectations.json": "ecd21a4558a99f605ebb00e0f97bca22327dc1f48b4fc0f409bf6e7f58a471a0",
+    "host-truth-baseline.json": "ecd21a4558a99f605ebb00e0f97bca22327dc1f48b4fc0f409bf6e7f58a471a0",
+    "expectation-report.json": "f55215490007dad655ab87ab388aac1dff9a52b80d8e0a32523e59dc7edc26d9",
+    "host-truth-compare.json": "f55215490007dad655ab87ab388aac1dff9a52b80d8e0a32523e59dc7edc26d9",
+    "repro-compare.json": "846ab62927ac7c55658a7d0fc0b4c00866fd857faae202519178171c6676da13"
   },
   "all_passed": true,
   "risk_status": "normal"

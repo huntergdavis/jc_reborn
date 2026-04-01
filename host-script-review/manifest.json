@@ -22,7 +22,7 @@
           "image_path": "/home/hunter/workspace/jc_reborn/host-script-review/fishing1/frames/frame_00020.bmp",
           "actor_summary": {},
           "actor_candidate_draw_count": 0,
-          "visible_unique_draw_count": 15,
+          "visible_unique_draw_count": 17,
           "bmp_names": []
         },
         {
@@ -31,7 +31,7 @@
           "image_path": "/home/hunter/workspace/jc_reborn/host-script-review/fishing1/frames/frame_00040.bmp",
           "actor_summary": {},
           "actor_candidate_draw_count": 0,
-          "visible_unique_draw_count": 16,
+          "visible_unique_draw_count": 18,
           "bmp_names": []
         },
         {
@@ -40,7 +40,7 @@
           "image_path": "/home/hunter/workspace/jc_reborn/host-script-review/fishing1/frames/frame_00060.bmp",
           "actor_summary": {},
           "actor_candidate_draw_count": 0,
-          "visible_unique_draw_count": 16,
+          "visible_unique_draw_count": 18,
           "bmp_names": []
         },
         {
@@ -51,7 +51,7 @@
             "johnny": 1
           },
           "actor_candidate_draw_count": 1,
-          "visible_unique_draw_count": 15,
+          "visible_unique_draw_count": 17,
           "bmp_names": [
             "JOHNWALK.BMP"
           ]
@@ -79,7 +79,7 @@
           "image_path": "/home/hunter/workspace/jc_reborn/host-script-review/mary1/frames/frame_00050.bmp",
           "actor_summary": {},
           "actor_candidate_draw_count": 0,
-          "visible_unique_draw_count": 16,
+          "visible_unique_draw_count": 18,
           "bmp_names": []
         },
         {
@@ -90,7 +90,7 @@
             "johnny": 1
           },
           "actor_candidate_draw_count": 1,
-          "visible_unique_draw_count": 15,
+          "visible_unique_draw_count": 19,
           "bmp_names": [
             "JOHNWALK.BMP"
           ]
@@ -99,42 +99,28 @@
           "frame_number": 150,
           "frame_name": "frame_00150.bmp",
           "image_path": "/home/hunter/workspace/jc_reborn/host-script-review/mary1/frames/frame_00150.bmp",
-          "actor_summary": {
-            "johnny": 1
-          },
-          "actor_candidate_draw_count": 1,
-          "visible_unique_draw_count": 15,
-          "bmp_names": [
-            "JOHNWALK.BMP"
-          ]
+          "actor_summary": {},
+          "actor_candidate_draw_count": 0,
+          "visible_unique_draw_count": 18,
+          "bmp_names": []
         },
         {
           "frame_number": 200,
           "frame_name": "frame_00200.bmp",
           "image_path": "/home/hunter/workspace/jc_reborn/host-script-review/mary1/frames/frame_00200.bmp",
-          "actor_summary": {
-            "johnny": 1
-          },
-          "actor_candidate_draw_count": 1,
-          "visible_unique_draw_count": 15,
-          "bmp_names": [
-            "JOHNWALK.BMP"
-          ]
+          "actor_summary": {},
+          "actor_candidate_draw_count": 0,
+          "visible_unique_draw_count": 18,
+          "bmp_names": []
         },
         {
           "frame_number": 250,
           "frame_name": "frame_00250.bmp",
           "image_path": "/home/hunter/workspace/jc_reborn/host-script-review/mary1/frames/frame_00250.bmp",
-          "actor_summary": {
-            "johnny": 3
-          },
-          "actor_candidate_draw_count": 3,
-          "visible_unique_draw_count": 18,
-          "bmp_names": [
-            "JOHNWALK.BMP",
-            "MJFISH1.BMP",
-            "MJFISH1.BMP"
-          ]
+          "actor_summary": {},
+          "actor_candidate_draw_count": 0,
+          "visible_unique_draw_count": 19,
+          "bmp_names": []
         }
       ]
     }

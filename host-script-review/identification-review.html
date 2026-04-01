@@ -72,11 +72,11 @@
   <main>
     <h1>Host Identification Review</h1>
     <div class="meta">Deterministic matcher review across exact, partial, challenge, and temporal audits.</div>
-    <div class="risk-banner metric-warn"><span class="label">Challenge Risk</span><div class="value">warning</div></div>
+    <div class="risk-banner metric-safe"><span class="label">Challenge Risk</span><div class="value">normal</div></div>
     <div class="summary">
       <div class="card metric-card metric-neutral"><div class="label">Exact Min Margin</div><div class="value">248.333333</div></div>
       <div class="card metric-card metric-neutral"><div class="label">Partial Min Margin</div><div class="value">100.569048</div></div>
-      <div class="card metric-card metric-neutral"><div class="label">Challenge Non-Identified</div><div class="value">8</div></div>
+      <div class="card metric-card metric-neutral"><div class="label">Challenge Non-Identified</div><div class="value">7</div></div>
       <div class="card metric-card metric-neutral"><div class="label">Temporal Max Score Drop</div><div class="value">0.0</div></div>
     </div>
 
@@ -117,7 +117,7 @@
   <td>5.232955</td>
   <td>1/5</td>
   <td>MARY 1</td>
-  <td><span class="pill">exact_scene_signature</span><span class="pill">scene_family_match</span><span class="pill">full_active_frame_coverage</span><span class="pill">active_state_alignment</span><span class="pill">active_subject_alignment</span><span class="pill">active_pose_alignment</span><span class="pill">token_alignment</span><span class="pill">trait_alignment</span></td>
+  <td><span class="pill">exact_scene_signature</span><span class="pill">scene_family_match</span><span class="pill">full_active_frame_coverage</span><span class="pill">active_state_alignment</span><span class="pill">active_subject_alignment</span><span class="pill">active_pose_alignment</span><span class="pill">active_state_set_alignment</span><span class="pill">active_pose_set_alignment</span><span class="pill">token_alignment</span><span class="pill">trait_alignment</span></td>
   <td><span class="pill">state_transition_evidence</span><span class="pill">pose_alignment</span><span class="pill">activity_alignment</span></td>
   <td><span class="muted">none</span></td>
 </tr>
@@ -150,7 +150,7 @@
   <td>6.605187</td>
   <td>4/6</td>
   <td>FISHING 1</td>
-  <td><span class="pill">exact_scene_signature</span><span class="pill">scene_family_match</span><span class="pill">full_active_frame_coverage</span><span class="pill">active_state_alignment</span><span class="pill">active_subject_alignment</span><span class="pill">active_pose_alignment</span><span class="pill">token_alignment</span><span class="pill">trait_alignment</span></td>
+  <td><span class="pill">exact_scene_signature</span><span class="pill">scene_family_match</span><span class="pill">full_active_frame_coverage</span><span class="pill">active_state_alignment</span><span class="pill">active_subject_alignment</span><span class="pill">active_pose_alignment</span><span class="pill">active_state_set_alignment</span><span class="pill">active_pose_set_alignment</span><span class="pill">token_alignment</span><span class="pill">trait_alignment</span></td>
   <td><span class="pill">state_transition_evidence</span><span class="pill">pose_alignment</span><span class="pill">activity_alignment</span></td>
   <td><span class="muted">none</span></td>
 </tr>
@@ -317,17 +317,17 @@
 
     <section>
       <h2>Challenge Queries</h2>
-      <div class="meta">ambiguous=3 unknown=5</div>
+      <div class="meta">ambiguous=2 unknown=5</div>
       <div class="mini-summary">
-        <div class="card metric-card metric-warn"><div class="label">Tightest Challenge</div><div class="value">MIXED [interleaved-contradiction]</div><div class="query-meta">metric=score value=107.75/110.0 headroom=2.25 pressure=0.979545</div></div>
-        <div class="card metric-card metric-neutral"><div class="label">Unknown Max Score</div><div class="value">107.75</div></div>
-        <div class="card metric-card metric-neutral"><div class="label">Unknown Max Margin</div><div class="value">11.5</div></div>
-        <div class="card metric-card metric-neutral"><div class="label">Ambiguous Max Score</div><div class="value">144.638889</div></div>
-        <div class="card metric-card metric-neutral"><div class="label">Ambiguous Max Margin</div><div class="value">144.638889</div></div>
-        <div class="card metric-card metric-warn"><div class="label">Unknown Score Headroom</div><div class="value">2.25</div></div>
-        <div class="card metric-card metric-safe"><div class="label">Unknown Margin Headroom</div><div class="value">23.5</div></div>
-        <div class="card metric-card metric-safe"><div class="label">Ambiguous Score Headroom</div><div class="value">5.361111</div></div>
-        <div class="card metric-card metric-safe"><div class="label">Ambiguous Margin Headroom</div><div class="value">5.361111</div></div>
+        <div class="card metric-card metric-safe"><div class="label">Tightest Challenge</div><div class="value">FISHING 1 [background-only]</div><div class="query-meta">metric=margin value=9.342857/35.0 headroom=25.657143 pressure=0.266939</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Unknown Max Score</div><div class="value">71.95</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Unknown Max Margin</div><div class="value">9.342857</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Ambiguous Max Score</div><div class="value">101.416667</div></div>
+        <div class="card metric-card metric-neutral"><div class="label">Ambiguous Max Margin</div><div class="value">51.2</div></div>
+        <div class="card metric-card metric-safe"><div class="label">Unknown Score Headroom</div><div class="value">38.05</div></div>
+        <div class="card metric-card metric-safe"><div class="label">Unknown Margin Headroom</div><div class="value">25.657143</div></div>
+        <div class="card metric-card metric-safe"><div class="label">Ambiguous Score Headroom</div><div class="value">48.583333</div></div>
+        <div class="card metric-card metric-safe"><div class="label">Ambiguous Margin Headroom</div><div class="value">98.8</div></div>
       </div>
       <table>
         <thead>
@@ -375,7 +375,7 @@
   <img class="thumb" src="mary1/frames/frame_00150.bmp" alt="MARY 1 frame 150" loading="lazy">
   <span class="thumb-label">frame 150</span>
 </a>
-</div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>19.7</td><td>90.3</td><td>5.3</td><td>29.7</td><td>background-only query lacks actor evidence</td></tr><tr><td>MIXED [active-pair]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>92.0</td><td>18.0</td><td>0.0</td><td>35.0</td><td>unknown-family weak score 92.000 margin 0.000</td></tr><tr><td>MIXED [pose-conflict-walk-vs-fish]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>MARY 1</td><td>144.638889</td><td>5.361111</td><td>144.638889</td><td>5.361111</td><td>unknown-family partial match score 144.639 margin 144.639</td></tr><tr><td>MIXED [pose-conflict-cross-scene]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>92.277778</td><td>17.722222</td><td>0.277778</td><td>34.722222</td><td>unknown-family weak score 92.278 margin 0.278</td></tr><tr><td>MIXED [fishing-bg-plus-mary-active]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>MARY 1</td><td>115.416667</td><td>34.583333</td><td>50.178572</td><td>99.821428</td><td>unknown-family partial match score 115.417 margin 50.179</td></tr><tr><td>MIXED [mary-bg-plus-fishing-active]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>FISHING 1</td><td>115.416667</td><td>34.583333</td><td>50.0</td><td>100.0</td><td>unknown-family partial match score 115.417 margin 50.000</td></tr><tr><td>MIXED [interleaved-contradiction]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>107.75</td><td>2.25</td><td>11.5</td><td>23.5</td><td>unknown-family weak score 107.750 margin 11.500</td></tr></tbody>
+</div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>19.7</td><td>90.3</td><td>5.3</td><td>29.7</td><td>background-only query lacks actor evidence</td></tr><tr><td>MIXED [active-pair]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>56.0</td><td>54.0</td><td>5.8</td><td>29.2</td><td>unknown-family weak score 56.000 margin 5.800</td></tr><tr><td>MIXED [pose-conflict-cross-scene]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>54.2</td><td>55.8</td><td>1.322222</td><td>33.677778</td><td>unknown-family weak score 54.200 margin 1.322</td></tr><tr><td>MIXED [fishing-bg-plus-mary-active]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>MARY 1</td><td>98.416667</td><td>51.583333</td><td>47.178572</td><td>102.821428</td><td>unknown-family partial match score 98.417 margin 47.179</td></tr><tr><td>MIXED [mary-bg-plus-fishing-active]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>ambiguous</td><td>FISHING 1</td><td>101.416667</td><td>48.583333</td><td>51.2</td><td>98.8</td><td>unknown-family partial match score 101.417 margin 51.200</td></tr><tr><td>MIXED [interleaved-contradiction]<div class="query-meta"><span class="muted">none</span></div></td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>71.95</td><td>38.05</td><td>4.7</td><td>30.3</td><td>unknown-family weak score 71.950 margin 4.700</td></tr></tbody>
       </table>
     </section>
 

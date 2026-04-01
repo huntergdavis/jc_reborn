@@ -157,6 +157,7 @@
         "active_semantic_diversity_penalty": 0.0,
         "active_island_penalty": 4.2,
         "borrowed_background_context_penalty": 0.0,
+        "blended_active_narrative_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -210,6 +211,7 @@
         "active_semantic_diversity_penalty": 0.0,
         "active_island_penalty": 4.2,
         "borrowed_background_context_penalty": 0.0,
+        "blended_active_narrative_penalty": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -264,6 +266,7 @@
           "active_semantic_diversity_penalty": 0.0,
           "active_island_penalty": 4.2,
           "borrowed_background_context_penalty": 0.0,
+          "blended_active_narrative_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -317,6 +320,7 @@
           "active_semantic_diversity_penalty": 0.0,
           "active_island_penalty": 4.2,
           "borrowed_background_context_penalty": 0.0,
+          "blended_active_narrative_penalty": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -407,6 +411,7 @@
           "timed_transition_pair_count_alignment",
           "subject_activity_sequence_alignment",
           "subject_activity_count_alignment",
+          "partial_blended_active_narrative_conflict",
           "trait_alignment"
         ],
         "second_evidence": [
@@ -426,7 +431,8 @@
           "partial_timed_transition_pair_count_alignment",
           "partial_subject_activity_count_alignment",
           "fragmented_active_coverage",
-          "active_semantic_diversity_conflict"
+          "active_semantic_diversity_conflict",
+          "blended_active_narrative_conflict"
         ],
         "best_borrowed_background_risk": 0.0,
         "best_borrowed_background_mismatch": 0.0,
@@ -485,6 +491,7 @@
         "active_semantic_diversity_penalty": 0.0,
         "active_island_penalty": 0.0,
         "borrowed_background_context_penalty": 0.0,
+        "blended_active_narrative_penalty": 8.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -538,6 +545,7 @@
         "active_semantic_diversity_penalty": 29.466667,
         "active_island_penalty": 0.0,
         "borrowed_background_context_penalty": 0.0,
+        "blended_active_narrative_penalty": 24.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -592,6 +600,7 @@
           "active_semantic_diversity_penalty": 0.0,
           "active_island_penalty": 0.0,
           "borrowed_background_context_penalty": 0.0,
+          "blended_active_narrative_penalty": 8.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -645,6 +654,7 @@
           "active_semantic_diversity_penalty": 29.466667,
           "active_island_penalty": 0.0,
           "borrowed_background_context_penalty": 0.0,
+          "blended_active_narrative_penalty": 24.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

@@ -68,6 +68,14 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("active_subject_alignment")
     if int(match.get("exact_active_pose_matches", 0)) > 0:
         evidence.append("active_pose_alignment")
+    if float(match.get("active_state_set_similarity", 0.0)) >= 0.95 and len(profile["frame_states"]) > 1:
+        evidence.append("active_state_set_alignment")
+    elif float(match.get("active_state_set_similarity", 0.0)) >= 0.5 and len(profile["frame_states"]) > 1:
+        evidence.append("partial_active_state_set_alignment")
+    if float(match.get("active_pose_set_similarity", 0.0)) >= 0.95 and profile["poses"]:
+        evidence.append("active_pose_set_alignment")
+    elif float(match.get("active_pose_set_similarity", 0.0)) >= 0.5 and profile["poses"]:
+        evidence.append("partial_active_pose_set_alignment")
     if profile["state_change_count"] > 0:
         evidence.append("state_transition_evidence")
     if float(match.get("pose_similarity", 0.0)) >= 0.8 and profile["poses"]:
@@ -105,6 +113,28 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         frame_no
         for frame_no, row in query_rows.items()
         if row.get("frame_state") != "background_only"
+    }
+    query_active_states = {
+        row.get("frame_state")
+        for row in query_rows.values()
+        if row.get("frame_state") and row.get("frame_state") != "background_only"
+    }
+    candidate_active_states = {
+        row.get("frame_state")
+        for row in cand_rows.values()
+        if row.get("frame_state") and row.get("frame_state") != "background_only"
+    }
+    query_pose_set = {
+        label
+        for row in query_rows.values()
+        for label in row.get("pose_labels", [])
+        if label not in ("no_actor_visible", "actor_visible")
+    }
+    candidate_pose_set = {
+        label
+        for row in cand_rows.values()
+        for label in row.get("pose_labels", [])
+        if label not in ("no_actor_visible", "actor_visible")
     }
 
     exact_frame_signature_matches = 0
@@ -163,6 +193,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     token_similarity = (token_similarity_sum / shared_count) if shared_count else 0.0
     activity_similarity = (activity_overlap_sum / shared_count) if shared_count else 0.0
     pose_similarity = (pose_overlap_sum / shared_count) if shared_count else 0.0
+    active_state_set_similarity = jaccard(query_active_states, candidate_active_states)
+    active_pose_set_similarity = jaccard(query_pose_set, candidate_pose_set)
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -196,6 +228,13 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += 5.0 if family_match else 0.0
     score += 0.0 if background_only_query else pose_similarity * 12.0
     score += trait_similarity * 10.0
+    if query.get("scene_family") in (None, "", "unknown") and not background_only_query:
+        score += active_state_set_similarity * 14.0
+        score += active_pose_set_similarity * 8.0
+        if len(query_active_states) > 1:
+            score -= (1.0 - active_state_set_similarity) * 24.0
+        if len(query_pose_set) > 1:
+            score -= (1.0 - active_pose_set_similarity) * 12.0
 
     return {
         "scene_label": candidate.get("scene_label"),
@@ -216,6 +255,8 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "token_similarity": round(token_similarity, 6),
         "activity_similarity": round(activity_similarity, 6),
         "pose_similarity": round(pose_similarity, 6),
+        "active_state_set_similarity": round(active_state_set_similarity, 6),
+        "active_pose_set_similarity": round(active_pose_set_similarity, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

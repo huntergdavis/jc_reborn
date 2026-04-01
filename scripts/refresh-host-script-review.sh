@@ -23,6 +23,7 @@ assert_clean_tracked_inputs() {
         host-script-review/expectation-report.json \
         host-script-review/host-truth-compare.json \
         host-script-review/repro-compare.json \
+        host-script-review/identification-regression-floors.json \
         host-script-review/verification-summary.json \
         scripts/capture-host-scene.sh \
         scripts/compile-host-semantic-truth.py \
@@ -326,6 +327,54 @@ print(
     f"max_score_drop={data.get('max_score_drop')} "
     f"max_margin_drop={data.get('max_identified_margin_drop')}"
 )
+PY
+}
+
+assert_identification_regression_floors() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+floors = json.loads((root / "identification-regression-floors.json").read_text(encoding="utf-8"))
+identify_eval = json.loads((root / "identification-eval.json").read_text(encoding="utf-8"))
+identify_partials = json.loads((root / "identification-partials.json").read_text(encoding="utf-8"))
+identify_challenges = json.loads((root / "identification-challenges.json").read_text(encoding="utf-8"))
+identify_temporal = json.loads((root / "identification-temporal.json").read_text(encoding="utf-8"))
+
+failures = []
+if float(identify_eval["min_identified_margin"]) < float(floors["identification-eval"]["min_identified_margin"]):
+    failures.append("identification-eval min_identified_margin below floor")
+if float(identify_eval["min_best_to_second_ratio"]) < float(floors["identification-eval"]["min_best_to_second_ratio"]):
+    failures.append("identification-eval min_best_to_second_ratio below floor")
+if float(identify_eval["max_nonmatch_score"]) > float(floors["identification-eval"]["max_nonmatch_score"]):
+    failures.append("identification-eval max_nonmatch_score above ceiling")
+
+if float(identify_partials["min_margin"]) < float(floors["identification-partials"]["min_margin"]):
+    failures.append("identification-partials min_margin below floor")
+if float(identify_partials["min_best_to_second_ratio"]) < float(floors["identification-partials"]["min_best_to_second_ratio"]):
+    failures.append("identification-partials min_best_to_second_ratio below floor")
+
+if float(identify_temporal["min_identified_margin"]) < float(floors["identification-temporal"]["min_identified_margin"]):
+    failures.append("identification-temporal min_identified_margin below floor")
+if float(identify_temporal["min_identified_ratio"]) < float(floors["identification-temporal"]["min_identified_ratio"]):
+    failures.append("identification-temporal min_identified_ratio below floor")
+if float(identify_temporal["max_score_drop"]) > float(floors["identification-temporal"]["max_score_drop"]):
+    failures.append("identification-temporal max_score_drop above ceiling")
+if float(identify_temporal["max_identified_margin_drop"]) > float(floors["identification-temporal"]["max_identified_margin_drop"]):
+    failures.append("identification-temporal max_identified_margin_drop above ceiling")
+
+if float(identify_challenges["max_best_score"]) > float(floors["identification-challenges"]["max_best_score"]):
+    failures.append("identification-challenges max_best_score above ceiling")
+if float(identify_challenges["max_margin"]) > float(floors["identification-challenges"]["max_margin"]):
+    failures.append("identification-challenges max_margin above ceiling")
+
+if failures:
+    raise SystemExit("identification-regression-floors failed: " + "; ".join(failures))
+
+print("identification-regression-floors: ok")
 PY
 }
 
@@ -651,6 +700,7 @@ assert_identification_eval "$OUT_DIR/identification-eval.json"
 assert_identification_partials "$OUT_DIR/identification-partials.json"
 assert_identification_challenges "$OUT_DIR/identification-challenges.json"
 assert_identification_temporal "$OUT_DIR/identification-temporal.json"
+assert_identification_regression_floors "$OUT_DIR"
 
 if [ "$VERIFY_REPRO" -eq 1 ]; then
     rm -rf "$TMP_DIR"

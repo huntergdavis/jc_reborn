@@ -48,6 +48,7 @@ required = [
     "identification-partials.json",
     "identification-challenges.json",
     "identification-temporal.json",
+    "identification-regression-floors.json",
     "identification-review.html",
     "expectations.json",
     "host-truth-baseline.json",
@@ -126,6 +127,34 @@ print(
     f"max_score_drop={identify_temporal.get('max_score_drop')} "
     f"max_margin_drop={identify_temporal.get('max_identified_margin_drop')}"
 )
+
+floors = json.loads((root / "identification-regression-floors.json").read_text(encoding="utf-8"))
+regression_failures = []
+if float(identify_eval.get("min_identified_margin", 0.0)) < float(floors["identification-eval"]["min_identified_margin"]):
+    regression_failures.append("identification-eval min_identified_margin below floor")
+if float(identify_eval.get("min_best_to_second_ratio", 0.0)) < float(floors["identification-eval"]["min_best_to_second_ratio"]):
+    regression_failures.append("identification-eval min_best_to_second_ratio below floor")
+if float(identify_eval.get("max_nonmatch_score", 0.0)) > float(floors["identification-eval"]["max_nonmatch_score"]):
+    regression_failures.append("identification-eval max_nonmatch_score above ceiling")
+if float(identify_partials.get("min_margin", 0.0)) < float(floors["identification-partials"]["min_margin"]):
+    regression_failures.append("identification-partials min_margin below floor")
+if float(identify_partials.get("min_best_to_second_ratio", 0.0)) < float(floors["identification-partials"]["min_best_to_second_ratio"]):
+    regression_failures.append("identification-partials min_best_to_second_ratio below floor")
+if float(identify_temporal.get("min_identified_margin", 0.0)) < float(floors["identification-temporal"]["min_identified_margin"]):
+    regression_failures.append("identification-temporal min_identified_margin below floor")
+if float(identify_temporal.get("min_identified_ratio", 0.0)) < float(floors["identification-temporal"]["min_identified_ratio"]):
+    regression_failures.append("identification-temporal min_identified_ratio below floor")
+if float(identify_temporal.get("max_score_drop", 0.0)) > float(floors["identification-temporal"]["max_score_drop"]):
+    regression_failures.append("identification-temporal max_score_drop above ceiling")
+if float(identify_temporal.get("max_identified_margin_drop", 0.0)) > float(floors["identification-temporal"]["max_identified_margin_drop"]):
+    regression_failures.append("identification-temporal max_identified_margin_drop above ceiling")
+if float(identify_challenges.get("max_best_score", 0.0)) > float(floors["identification-challenges"]["max_best_score"]):
+    regression_failures.append("identification-challenges max_best_score above ceiling")
+if float(identify_challenges.get("max_margin", 0.0)) > float(floors["identification-challenges"]["max_margin"]):
+    regression_failures.append("identification-challenges max_margin above ceiling")
+if regression_failures:
+    raise SystemExit("identification-regression-floors failed: " + "; ".join(regression_failures))
+print("identification-regression-floors: ok")
 
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"

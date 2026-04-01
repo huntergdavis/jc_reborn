@@ -48,6 +48,7 @@ required = [
     "identification-partials.json",
     "identification-challenges.json",
     "identification-temporal.json",
+    "identification-review.html",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",

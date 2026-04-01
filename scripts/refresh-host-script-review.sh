@@ -33,6 +33,7 @@ assert_clean_tracked_inputs() {
         scripts/evaluate-host-identification-temporal.py \
         scripts/identify-host-scene.py \
         scripts/render-host-expectation-report.py \
+        scripts/render-host-identification-report.py \
         scripts/render-host-repro-compare.py \
         scripts/render-host-script-index.py \
         scripts/generate-host-truth-baseline.py \
@@ -162,6 +163,15 @@ capture_review_set() {
     python3 "$SCRIPT_DIR/evaluate-host-identification-temporal.py" \
         --semantic-json "$root/semantic-truth.json" \
         --out-json "$root/identification-temporal.json"
+
+    python3 "$SCRIPT_DIR/render-host-identification-report.py" \
+        --selfcheck-json "$root/identification-selfcheck.json" \
+        --eval-json "$root/identification-eval.json" \
+        --partials-json "$root/identification-partials.json" \
+        --challenges-json "$root/identification-challenges.json" \
+        --temporal-json "$root/identification-temporal.json" \
+        --out-html "$root/identification-review.html" \
+        --title "Host Identification Review"
 
     python3 "$SCRIPT_DIR/generate-host-truth-baseline.py" \
         --manifest-json "$root/manifest.json" \
@@ -447,6 +457,7 @@ for name in (
     "identification-partials.json",
     "identification-challenges.json",
     "identification-temporal.json",
+    "identification-review.html",
     "expectations.json",
     "host-truth-baseline.json",
     "expectation-report.json",

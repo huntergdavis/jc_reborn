@@ -267,6 +267,13 @@ def query_profile(scene: dict) -> dict:
             if label not in ("no_actor_visible", "actor_visible")
         }
     )
+    active_state_variety = sorted(
+        {
+            row.get("frame_state")
+            for row in active_rows
+            if row.get("frame_state")
+        }
+    )
     return {
         "frame_count": len(rows),
         "active_frame_count": len(active_rows),
@@ -277,6 +284,8 @@ def query_profile(scene: dict) -> dict:
         "activities": activities,
         "contexts": contexts,
         "poses": poses,
+        "active_state_variety": active_state_variety,
+        "active_state_variety_count": len(active_state_variety),
         "contamination_risk": contamination["contamination_risk"],
         "background_frame_count": contamination["background_frame_count"],
         "background_active_context_similarity": contamination["background_active_context_similarity"],
@@ -411,6 +420,10 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("fragmented_active_coverage")
     elif float(match.get("fragmented_active_coverage_penalty", 0.0)) >= 6.0:
         evidence.append("partial_fragmented_active_coverage")
+    if float(match.get("active_semantic_diversity_penalty", 0.0)) >= 12.0:
+        evidence.append("active_semantic_diversity_conflict")
+    elif float(match.get("active_semantic_diversity_penalty", 0.0)) >= 6.0:
+        evidence.append("partial_active_semantic_diversity_conflict")
     if float(match.get("trait_similarity", 0.0)) >= 0.5:
         evidence.append("trait_alignment")
     if profile["active_frame_count"] == 0:
@@ -717,6 +730,14 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
             + (1.0 - active_state_set_similarity) * 10.0
             + (1.0 - subject_activity_sequence_similarity) * 8.0
         )
+    active_semantic_diversity_penalty = 0.0
+    if not background_only_query and len(query_active_states) > 1:
+        active_semantic_diversity_penalty = (
+            max(0.0, len(query_active_states) - len(candidate_active_states)) * 6.0
+            + (1.0 - active_state_set_similarity) * 12.0
+            + (1.0 - active_pose_set_similarity) * 8.0
+            + (1.0 - subject_activity_sequence_similarity) * 10.0
+        )
 
     exact_scene_signature = (
         (query.get("scene_summary") or {}).get("scene_signature")
@@ -805,6 +826,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= contamination_risk * 10.0
         score -= sparse_active_evidence_penalty
         score -= fragmented_active_coverage_penalty
+        score -= active_semantic_diversity_penalty
         score -= shared_frame_coverage * 8.0
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
@@ -864,6 +886,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         "borrowed_background_mismatch": round(borrowed_background_mismatch, 6),
         "sparse_active_evidence_penalty": round(sparse_active_evidence_penalty, 6),
         "fragmented_active_coverage_penalty": round(fragmented_active_coverage_penalty, 6),
+        "active_semantic_diversity_penalty": round(active_semantic_diversity_penalty, 6),
         "trait_similarity": round(trait_similarity, 6),
         "candidate_scene_signature": (candidate.get("scene_summary") or {}).get("scene_signature"),
     }

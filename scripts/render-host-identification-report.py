@@ -109,6 +109,40 @@ def build_frame_links(scene_index: dict[str, dict], output_path: Path, query_lab
     return " ".join(links) if links else '<span class="muted">none</span>'
 
 
+def build_frame_preview(scene_index: dict[str, dict], output_path: Path, query_label: str) -> str:
+    base_label, variant = parse_query_scene_label(query_label)
+    scene = scene_index.get(base_label) or scene_index.get(normalize_label(base_label))
+    if not scene:
+        return ""
+    frame_index = scene["frame_index"]
+    frame_numbers = sorted(frame_index)
+    selected = frame_numbers_for_variant(frame_numbers, variant)
+    if variant == "active-only":
+        selected = [frame for frame in frame_numbers if frame_index.get(frame)]
+    if variant == "transition-only":
+        selected = frame_numbers[:]
+    if not selected:
+        selected = frame_numbers[:2]
+    selected = selected[:4]
+    cards = []
+    for frame_no in selected:
+        image_path = frame_index.get(frame_no)
+        if not image_path or not image_path.exists():
+            continue
+        image_href = esc(rel(image_path, output_path.parent))
+        cards.append(
+            f"""
+<a class="thumb-card" href="{image_href}">
+  <img class="thumb" src="{image_href}" alt="{esc(base_label)} frame {esc(frame_no)}" loading="lazy">
+  <span class="thumb-label">frame {esc(frame_no)}</span>
+</a>
+"""
+        )
+    if not cards:
+        return ""
+    return f'<div class="thumb-strip">{"".join(cards)}</div>'
+
+
 def render_selfcheck(rows: list[dict], scene_index: dict[str, dict], output_path: Path) -> str:
     body = []
     for row in rows:
@@ -117,7 +151,7 @@ def render_selfcheck(rows: list[dict], scene_index: dict[str, dict], output_path
         body.append(
             f"""
 <tr>
-  <td>{esc(row.get('query_scene_label'))}<div>{build_frame_links(scene_index, output_path, str(row.get('query_scene_label')))}</div></td>
+  <td>{esc(row.get('query_scene_label'))}<div>{build_frame_links(scene_index, output_path, str(row.get('query_scene_label')))}</div>{build_frame_preview(scene_index, output_path, str(row.get('query_scene_label')))}</td>
   <td>{esc(row.get('identification_status'))}</td>
   <td>{esc(row.get('identification_reason'))}</td>
   <td>{esc(ctx.get('score_margin'))}</td>
@@ -141,7 +175,7 @@ def render_simple_rows(rows: list[dict], columns: list[tuple[str, str]], scene_i
                 cells.append(f"<td>{render_tokens(value or [])}</td>")
             elif kind == "query":
                 cells.append(
-                    f"<td>{esc(value)}<div>{build_frame_links(scene_index, output_path, str(value))}</div></td>"
+                    f"<td>{esc(value)}<div>{build_frame_links(scene_index, output_path, str(value))}</div>{build_frame_preview(scene_index, output_path, str(value))}</td>"
                 )
             else:
                 cells.append(f"<td>{esc(value)}</td>")
@@ -187,6 +221,19 @@ def build_html(selfcheck: dict, partials: dict, challenges: dict, temporal: dict
       background:var(--pill); color:var(--good);
     }}
     .muted {{ color:var(--muted); }}
+    .thumb-strip {{
+      display:flex; gap:8px; flex-wrap:wrap; margin-top:8px;
+    }}
+    .thumb-card {{
+      display:inline-flex; flex-direction:column; gap:4px; text-decoration:none; color:var(--text);
+    }}
+    .thumb {{
+      width:120px; height:90px; object-fit:cover; border:1px solid var(--line); border-radius:8px;
+      background:#0b1117;
+    }}
+    .thumb-label {{
+      color:var(--muted); font-size:11px;
+    }}
   </style>
 </head>
 <body>

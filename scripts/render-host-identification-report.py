@@ -61,6 +61,7 @@ def build_semantic_index(semantic_truth: dict) -> dict[str, dict]:
         scene_dir = str(scene.get("scene_dir") or "")
         entry = {
             "scene_summary": scene.get("scene_summary") or {},
+            "rows": scene.get("rows") or [],
         }
         index[scene_label] = entry
         index[normalize_label(scene_label)] = entry
@@ -98,6 +99,76 @@ def frame_numbers_for_variant(scene_rows: list[int], variant: str | None) -> lis
             return scene_rows
         return scene_rows[:count]
     return scene_rows
+
+
+def semantic_rows_for_variant(rows: list[dict], variant: str | None) -> list[dict]:
+    if not rows:
+        return []
+    if not variant or variant == "full-redacted":
+        return rows
+    if variant == "tail-half":
+        tail_count = max(2, len(rows) // 2)
+        return rows[-tail_count:]
+    if variant == "active-only":
+        active_rows = [row for row in rows if (row.get("actor_count") or 0) > 0]
+        return active_rows or rows[:1]
+    if variant == "transition-only":
+        transition_rows = [row for row in rows if row.get("state_changed")]
+        return transition_rows or rows[:1]
+    if variant.startswith("prefix-"):
+        try:
+            count = int(variant.split("-", 1)[1])
+        except ValueError:
+            return rows
+        return rows[:count]
+    return rows
+
+
+def joined_unique(rows: list[dict], key: str) -> list[str]:
+    seen = []
+    for row in rows:
+        for value in row.get(key) or []:
+            if value not in seen:
+                seen.append(value)
+    return seen
+
+
+def build_semantic_slice_summary(rows: list[dict]) -> dict[str, str]:
+    if not rows:
+        return {
+            "dominant_state": "n/a",
+            "dominant_activity": "n/a",
+            "entities": "none",
+            "transition_text": "none",
+            "timeline": "n/a",
+        }
+    state_counts: dict[str, int] = {}
+    activity_counts: dict[str, int] = {}
+    entity_names: list[str] = []
+    transitions: list[str] = []
+    timeline_parts: list[str] = []
+    for row in rows:
+        frame_state = str(row.get("frame_state") or "unknown")
+        state_counts[frame_state] = state_counts.get(frame_state, 0) + 1
+        primary_activity = str(row.get("primary_activity") or "n/a")
+        activity_counts[primary_activity] = activity_counts.get(primary_activity, 0) + 1
+        timeline_parts.append(f"{row.get('frame_number')}:{frame_state}")
+        for entity in row.get("entities") or []:
+            if entity not in entity_names:
+                entity_names.append(entity)
+        if row.get("state_changed"):
+            transitions.append(
+                f"{row.get('frame_number')}:{row.get('previous_frame_state') or 'start'}->{frame_state}"
+            )
+    dominant_state = max(state_counts.items(), key=lambda item: (item[1], item[0]))[0]
+    dominant_activity = max(activity_counts.items(), key=lambda item: (item[1], item[0]))[0]
+    return {
+        "dominant_state": dominant_state,
+        "dominant_activity": dominant_activity,
+        "entities": ", ".join(entity_names) or "none",
+        "transition_text": "; ".join(transitions) if transitions else "none",
+        "timeline": " > ".join(timeline_parts),
+    }
 
 
 def build_frame_links(scene_index: dict[str, dict], output_path: Path, query_label: str) -> str:
@@ -174,29 +245,18 @@ def build_scene_review_link(scene_index: dict[str, dict], output_path: Path, que
 
 
 def build_semantic_summary(semantic_index: dict[str, dict], query_label: str) -> str:
-    base_label, _variant = parse_query_scene_label(query_label)
+    base_label, variant = parse_query_scene_label(query_label)
     scene = semantic_index.get(base_label) or semantic_index.get(normalize_label(base_label))
     if not scene:
         return ""
-    summary = scene.get("scene_summary") or {}
-    dominant_state = summary.get("dominant_frame_state") or "n/a"
-    dominant_activity = summary.get("dominant_activity") or "n/a"
-    entities = ", ".join(summary.get("observed_entities") or []) or "none"
-    timeline = summary.get("timeline_signature") or "n/a"
-    transitions = summary.get("transition_points") or []
-    transition_text = "none"
-    if transitions:
-        transition_text = "; ".join(
-            f"{item.get('frame_number')}:{item.get('from')}->{item.get('to')}"
-            for item in transitions
-        )
+    summary = build_semantic_slice_summary(semantic_rows_for_variant(scene.get("rows") or [], variant))
     return (
         '<div class="semantic-summary">'
-        f'<div><span class="muted">state</span> {esc(dominant_state)}</div>'
-        f'<div><span class="muted">activity</span> {esc(dominant_activity)}</div>'
-        f'<div><span class="muted">entities</span> {esc(entities)}</div>'
-        f'<div><span class="muted">transitions</span> {esc(transition_text)}</div>'
-        f'<div><span class="muted">timeline</span> {esc(timeline)}</div>'
+        f'<div><span class="muted">state</span> {esc(summary["dominant_state"])}</div>'
+        f'<div><span class="muted">activity</span> {esc(summary["dominant_activity"])}</div>'
+        f'<div><span class="muted">entities</span> {esc(summary["entities"])}</div>'
+        f'<div><span class="muted">transitions</span> {esc(summary["transition_text"])}</div>'
+        f'<div><span class="muted">timeline</span> {esc(summary["timeline"])}</div>'
         "</div>"
     )
 

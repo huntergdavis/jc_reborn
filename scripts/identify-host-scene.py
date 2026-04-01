@@ -26,6 +26,7 @@ def jaccard(a: set[str], b: set[str]) -> float:
 def query_profile(scene: dict) -> dict:
     rows = list(scene.get("rows", []))
     active_rows = [row for row in rows if row.get("frame_state") != "background_only"]
+    state_change_count = sum(1 for row in rows if row.get("state_changed"))
     frame_states = sorted({row.get("frame_state") for row in rows if row.get("frame_state")})
     subjects = sorted({row.get("primary_subject") for row in active_rows if row.get("primary_subject") not in (None, "none")})
     activities = sorted({label for row in rows for label in row.get("activity_labels", [])})
@@ -33,6 +34,7 @@ def query_profile(scene: dict) -> dict:
     return {
         "frame_count": len(rows),
         "active_frame_count": len(active_rows),
+        "state_change_count": state_change_count,
         "frame_states": frame_states,
         "subjects": subjects,
         "activities": activities,
@@ -55,6 +57,8 @@ def summarize_match_evidence(query_scene: dict, match: dict) -> list[str]:
         evidence.append("active_state_alignment")
     if int(match.get("exact_active_primary_subject_matches", 0)) > 0:
         evidence.append("active_subject_alignment")
+    if profile["state_change_count"] > 0:
+        evidence.append("state_transition_evidence")
     if float(match.get("activity_similarity", 0.0)) >= 0.95:
         evidence.append("activity_alignment")
     if float(match.get("token_similarity", 0.0)) >= 0.8:
@@ -184,11 +188,14 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
 def identify_status(query_scene: dict, best: dict | None, second: dict | None) -> tuple[str, str]:
     if not best:
         return "unknown", "no candidates"
-    query_rows = query_scene.get("rows", [])
+    profile = query_profile(query_scene)
     query_family = query_scene.get("scene_family")
-    active_row_count = sum(1 for row in query_rows if row.get("frame_state") != "background_only")
+    active_row_count = profile["active_frame_count"]
+    state_change_count = profile["state_change_count"]
     if active_row_count == 0 and not best.get("exact_scene_signature"):
         return "unknown", "background-only query lacks actor evidence"
+    if active_row_count > 0 and state_change_count == 0 and profile["frame_count"] <= 1 and not best.get("exact_scene_signature"):
+        return "unknown", "single-frame active query lacks transition evidence"
     score = float(best.get("score", 0.0))
     second_score = float((second or {}).get("score", 0.0))
     margin = score - second_score
@@ -196,6 +203,8 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
     if best.get("exact_scene_signature"):
         return "identified", "exact scene signature match"
     if query_family in (None, "", "unknown"):
+        if active_row_count < 1 or (active_row_count < 2 and state_change_count < 1):
+            return "unknown", f"unknown-family query lacks semantic evidence active={active_row_count} changes={state_change_count}"
         if score >= 110.0 and margin >= 60.0 and ratio is not None and ratio >= 3.0:
             return "identified", f"strong unknown-family score {score:.3f} margin {margin:.3f}"
         if score >= 70.0 and margin >= 20.0:

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Host Identification Review</title>
+  <style>
+    :root {
+      --bg:#0e141a; --panel:#15202b; --line:#2d3d4c; --text:#eaf1f7; --muted:#9cb0c2;
+      --accent:#f0c36b; --pill:#213243; --good:#d3f9d8; --warn:#ffe7a6;
+    }
+    body {
+      margin:24px;
+      background:linear-gradient(180deg,#0d141b 0%,#101923 100%);
+      color:var(--text);
+      font:14px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;
+    }
+    main { max-width: 1520px; margin: 0 auto; }
+    .summary {
+      display:grid; grid-template-columns:repeat(4,minmax(180px,1fr)); gap:12px; margin:18px 0 24px;
+    }
+    .card {
+      background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px 16px;
+    }
+    .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.08em; }
+    .value { font-size:20px; color:var(--accent); margin-top:6px; }
+    section { margin-top: 22px; }
+    h1,h2 { margin:0 0 12px; }
+    .meta { color:var(--muted); margin-bottom: 12px; }
+    table { width:100%; border-collapse:collapse; background:var(--panel); }
+    th,td { border:1px solid var(--line); text-align:left; padding:8px 10px; vertical-align:top; }
+    th { color:var(--accent); background:#182532; }
+    .pill {
+      display:inline-block; padding:2px 8px; margin:2px 6px 2px 0; border-radius:999px;
+      background:var(--pill); color:var(--good);
+    }
+    .muted { color:var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Host Identification Review</h1>
+    <div class="meta">Deterministic matcher review across exact, partial, challenge, and temporal audits.</div>
+    <div class="summary">
+      <div class="card"><div class="label">Exact Min Margin</div><div class="value">242.333333</div></div>
+      <div class="card"><div class="label">Partial Min Margin</div><div class="value">94.569048</div></div>
+      <div class="card"><div class="label">Challenge Non-Identified</div><div class="value">6</div></div>
+      <div class="card"><div class="label">Temporal Max Score Drop</div><div class="value">0.0</div></div>
+    </div>
+
+    <section>
+      <h2>Exact Selfcheck</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Scene</th><th>Status</th><th>Reason</th><th>Margin</th><th>Ratio</th><th>Active/Frames</th><th>Best Evidence</th><th>Runner-Up Evidence</th>
+          </tr>
+        </thead>
+        <tbody>
+<tr>
+  <td>FISHING 1</td>
+  <td>identified</td>
+  <td>exact scene signature match</td>
+  <td>242.333333</td>
+  <td>6.192857</td>
+  <td>1/5</td>
+  <td><span class="pill">exact_scene_signature</span><span class="pill">scene_family_match</span><span class="pill">full_active_frame_coverage</span><span class="pill">active_state_alignment</span><span class="pill">active_subject_alignment</span><span class="pill">activity_alignment</span><span class="pill">token_alignment</span><span class="pill">trait_alignment</span></td>
+  <td><span class="pill">activity_alignment</span></td>
+</tr>
+
+<tr>
+  <td>MARY 1</td>
+  <td>identified</td>
+  <td>exact scene signature match</td>
+  <td>300.166667</td>
+  <td>7.549091</td>
+  <td>4/6</td>
+  <td><span class="pill">exact_scene_signature</span><span class="pill">scene_family_match</span><span class="pill">full_active_frame_coverage</span><span class="pill">active_state_alignment</span><span class="pill">active_subject_alignment</span><span class="pill">activity_alignment</span><span class="pill">token_alignment</span><span class="pill">trait_alignment</span></td>
+  <td><span class="pill">activity_alignment</span></td>
+</tr>
+</tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Partial Queries</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Margin</th><th>Ratio</th><th>Frames</th>
+          </tr>
+        </thead>
+        <tbody><tr><td>FISHING 1 [full-redacted]</td><td>identified</td><td>identified</td><td>FISHING 1</td><td>94.569048</td><td>3.3790955471698116</td><td>5</td></tr><tr><td>FISHING 1 [tail-half]</td><td>identified</td><td>identified</td><td>FISHING 1</td><td>115.904762</td><td>31.907936533333334</td><td>2</td></tr><tr><td>FISHING 1 [active-only]</td><td>identified</td><td>identified</td><td>FISHING 1</td><td>111.083333</td><td>30.62222213333333</td><td>1</td></tr><tr><td>FISHING 1 [transition-only]</td><td>identified</td><td>identified</td><td>FISHING 1</td><td>111.083333</td><td>30.62222213333333</td><td>1</td></tr><tr><td>MARY 1 [full-redacted]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>142.712963</td><td>4.667142486791071</td><td>6</td></tr><tr><td>MARY 1 [tail-half]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>149.175926</td><td>40.78024693333334</td><td>3</td></tr><tr><td>MARY 1 [active-only]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>168.152778</td><td>45.840740800000006</td><td>4</td></tr><tr><td>MARY 1 [transition-only]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>130.222222</td><td>35.725925866666664</td><td>2</td></tr></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Challenge Queries</h2>
+      <div class="meta">ambiguous=2 unknown=4</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Margin</th><th>Reason</th>
+          </tr>
+        </thead>
+        <tbody><tr><td>FISHING 1 [background-only]</td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>71.857143</td><td>34.607143</td><td>background-only query lacks actor evidence</td></tr><tr><td>MARY 1 [background-only]</td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>61.75</td><td>18.25</td><td>background-only query lacks actor evidence</td></tr><tr><td>MIXED [active-pair]</td><td>non_identified</td><td>unknown</td><td>FISHING 1</td><td>74.0</td><td>0.0</td><td>unknown-family weak score 74.000 margin 0.000</td></tr><tr><td>MIXED [fishing-bg-plus-mary-active]</td><td>non_identified</td><td>ambiguous</td><td>MARY 1</td><td>97.416667</td><td>44.178572</td><td>unknown-family partial match score 97.417 margin 44.179</td></tr><tr><td>MIXED [mary-bg-plus-fishing-active]</td><td>non_identified</td><td>ambiguous</td><td>FISHING 1</td><td>97.416667</td><td>44.0</td><td>unknown-family partial match score 97.417 margin 44.000</td></tr><tr><td>MIXED [interleaved-contradiction]</td><td>non_identified</td><td>unknown</td><td>MARY 1</td><td>89.75</td><td>11.5</td><td>unknown-family weak score 89.750 margin 11.500</td></tr></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Temporal Prefixes</h2>
+      <div class="meta">max_score_drop=0.0 max_identified_margin_drop=0.0</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Query</th><th>Expected</th><th>Status</th><th>Best</th><th>Score</th><th>Margin</th><th>Ratio</th>
+          </tr>
+        </thead>
+        <tbody><tr><td>FISHING 1 [prefix-1]</td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>69.333333</td><td>9.583333</td><td>1.160390510460251</td></tr><tr><td>FISHING 1 [prefix-2]</td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>74.904762</td><td>27.654762</td><td>1.5852859682539684</td></tr><tr><td>FISHING 1 [prefix-3]</td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>80.095238</td><td>37.011905</td><td>1.859077105292666</td></tr><tr><td>FISHING 1 [prefix-4]</td><td>unknown</td><td>unknown</td><td>FISHING 1</td><td>85.190476</td><td>44.190476</td><td>2.077816487804878</td></tr><tr><td>FISHING 1 [prefix-5]</td><td>identified</td><td>identified</td><td>FISHING 1</td><td>134.319048</td><td>94.569048</td><td>3.3790955471698116</td></tr><tr><td>MARY 1 [prefix-1]</td><td>unknown</td><td>unknown</td><td>MARY 1</td><td>69.333333</td><td>9.583333</td><td>1.160390510460251</td></tr><tr><td>MARY 1 [prefix-2]</td><td>unknown</td><td>unknown</td><td>MARY 1</td><td>75.083333</td><td>27.833333</td><td>1.5890652486772485</td></tr><tr><td>MARY 1 [prefix-3]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>124.333333</td><td>81.25</td><td>2.885880091960387</td></tr><tr><td>MARY 1 [prefix-4]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>143.458333</td><td>102.458333</td><td>3.4989837317073174</td></tr><tr><td>MARY 1 [prefix-5]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>162.533333</td><td>122.783333</td><td>4.088888880503145</td></tr><tr><td>MARY 1 [prefix-6]</td><td>identified</td><td>identified</td><td>MARY 1</td><td>181.62963</td><td>142.712963</td><td>4.667142486791071</td></tr></tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>

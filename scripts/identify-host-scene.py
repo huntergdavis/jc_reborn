@@ -841,7 +841,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score += token_similarity * 0.0
         score += activity_similarity * 0.0
         score += shared_frame_coverage * 0.0
-        score += context_set_similarity * 0.5
+        score += context_set_similarity * 0.25
     else:
         score += exact_state_matches * 3.0
         score += exact_context_matches * 1.0
@@ -855,7 +855,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
     score += exact_active_pose_matches * 6.0
     score += (1.0 if background_only_query else 5.0) if family_match else 0.0
     score += 0.0 if background_only_query else pose_similarity * 12.0
-    score += (2.0 if background_only_query else 8.0) * transition_similarity
+    score += (1.0 if background_only_query else 8.0) * transition_similarity
     score += 0.0 if background_only_query else context_transition_similarity * 6.0
     score += 0.0 if background_only_query or not has_active_alignment else background_provenance_similarity * 8.0
     score += 0.0 if background_only_query or not has_active_alignment else subject_set_similarity * 8.0

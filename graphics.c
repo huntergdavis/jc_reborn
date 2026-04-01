@@ -92,7 +92,7 @@ static struct TSurfaceCaptureLedger grCaptureLedgers[MAX_CAPTURE_SURFACES];
 static int grCaptureLedgerCount = 0;
 
 /* SDL Surface Pool for memory optimization */
-#define MAX_SURFACE_POOL_SIZE 2  /* Reduced to 2 for <500KB target (most scenes use 1-2) */
+#define MAX_SURFACE_POOL_SIZE 4  /* Keep enough pooled headroom for deterministic host capture/repro runs */
 static SDL_Surface *surfacePool[MAX_SURFACE_POOL_SIZE];
 static int surfacePoolInUse[MAX_SURFACE_POOL_SIZE];
 static int surfacePoolInitialized = 0;

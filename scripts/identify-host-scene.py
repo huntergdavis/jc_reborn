@@ -633,6 +633,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= (1.0 - shared_active_frame_coverage) * 16.0
         if len(query_active_frames) == 1 and query_frame_count > 1:
             score -= 20.0
+            score -= (1.0 - context_transition_similarity) * 18.0
         if query_frame_count == len(query_active_frames):
             score -= 8.0
         if len(query_active_states) > 1:
@@ -707,6 +708,8 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
             return "unknown", f"unknown-family query lacks semantic evidence active={active_row_count} changes={state_change_count}"
         if score >= 110.0 and margin >= 60.0 and ratio is not None and ratio >= 3.0:
             return "identified", f"strong unknown-family score {score:.3f} margin {margin:.3f}"
+        if score >= 50.0 and margin >= 80.0:
+            return "ambiguous", f"unknown-family separated low-score match {score:.3f} margin {margin:.3f}"
         if score >= 60.0 and margin >= 20.0:
             return "ambiguous", f"unknown-family partial match score {score:.3f} margin {margin:.3f}"
         return "unknown", f"unknown-family weak score {score:.3f} margin {margin:.3f}"

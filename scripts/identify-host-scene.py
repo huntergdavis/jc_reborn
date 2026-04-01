@@ -252,6 +252,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
         score -= token_similarity * 6.0
         score -= activity_similarity * 4.0
         score -= context_set_similarity * 4.0
+        score -= (1.0 - shared_active_frame_coverage) * 16.0
         if query_frame_count == len(query_active_frames):
             score -= 8.0
         if len(query_active_states) > 1:

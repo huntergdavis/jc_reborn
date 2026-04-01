@@ -25,10 +25,12 @@ assert_clean_tracked_inputs() {
         host-script-review/repro-compare.json \
         host-script-review/identification-regression-floors.json \
         host-script-review/semantic-regression-baseline.json \
+        host-script-review/semantic-regression-report.json \
         host-script-review/verification-summary.json \
         scripts/capture-host-scene.sh \
         scripts/compile-host-semantic-truth.py \
         scripts/compare-host-script-vs-expectations.py \
+        scripts/evaluate-semantic-regression.py \
         scripts/evaluate-host-identification.py \
         scripts/evaluate-host-identification-challenges.py \
         scripts/evaluate-host-identification-partials.py \
@@ -401,46 +403,27 @@ PY
 
 assert_semantic_regression_baseline() {
     local root="$1"
-    python3 - "$root" <<'PY'
+    python3 "$SCRIPT_DIR/evaluate-semantic-regression.py" \
+        --baseline "$root/semantic-regression-baseline.json" \
+        --semantic-truth "$root/semantic-truth.json" \
+        --out-json "$root/semantic-regression-report.json"
+    python3 - "$root/semantic-regression-report.json" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-root = Path(sys.argv[1])
-baseline = json.loads((root / "semantic-regression-baseline.json").read_text(encoding="utf-8"))
-current = json.loads((root / "semantic-truth.json").read_text(encoding="utf-8"))
-
-current_scenes = {scene["scene_label"]: scene for scene in current.get("scenes", [])}
-failures = []
-for label, expected in baseline.get("scenes", {}).items():
-    scene = current_scenes.get(label)
-    if scene is None:
-        failures.append(f"{label} missing from semantic-truth")
-        continue
-    summary = scene.get("scene_summary", {})
-    rows = {row["frame_number"]: row for row in scene.get("rows", [])}
-    if summary.get("scene_signature") != expected.get("scene_signature"):
-        failures.append(f"{label} scene_signature drifted")
-    if summary.get("timeline_signature") != expected.get("timeline_signature"):
-        failures.append(f"{label} timeline_signature drifted")
-    if summary.get("dominant_frame_state") != expected.get("dominant_frame_state"):
-        failures.append(f"{label} dominant_frame_state drifted")
-    if summary.get("dominant_activity") != expected.get("dominant_activity"):
-        failures.append(f"{label} dominant_activity drifted")
-    if summary.get("transition_points") != expected.get("transition_points"):
-        failures.append(f"{label} transition_points drifted")
-    for expected_row in expected.get("frames", []):
-        row = rows.get(expected_row["frame_number"])
-        if row is None:
-            failures.append(f"{label} frame {expected_row['frame_number']} missing")
-            continue
-        for key in ("frame_state", "primary_subject", "primary_activity", "frame_signature"):
-            if row.get(key) != expected_row.get(key):
-                failures.append(f"{label} frame {expected_row['frame_number']} {key} drifted")
-
-if failures:
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+if not report.get("passed", False):
+    failures = []
+    for failure in report.get("failures", []):
+        scene = failure.get("scene_label")
+        frame = failure.get("frame_number")
+        field = failure.get("field")
+        if frame is None:
+            failures.append(f"{scene} {field} drifted")
+        else:
+            failures.append(f"{scene} frame {frame} {field} drifted")
     raise SystemExit("semantic-regression-baseline failed: " + "; ".join(failures))
-
 print("semantic-regression-baseline: ok")
 PY
 }

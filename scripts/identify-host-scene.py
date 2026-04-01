@@ -856,6 +856,7 @@ def compare_scenes(query: dict, candidate: dict) -> dict:
             score -= (1.0 - active_state_set_similarity) * 24.0
         if len(query_pose_set) > 1:
             score -= (1.0 - active_pose_set_similarity) * 12.0
+        score = max(0.0, score)
 
     return {
         "scene_label": candidate.get("scene_label"),

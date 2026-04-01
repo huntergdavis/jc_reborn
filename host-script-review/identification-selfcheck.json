@@ -147,6 +147,7 @@
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 11.6,
+        "fragmented_active_coverage_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -196,6 +197,7 @@
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 11.6,
+        "fragmented_active_coverage_penalty": 0.0,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -246,6 +248,7 @@
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 11.6,
+          "fragmented_active_coverage_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         },
@@ -295,6 +298,7 @@
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 11.6,
+          "fragmented_active_coverage_penalty": 0.0,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         }
@@ -395,7 +399,8 @@
           "partial_state_count_alignment",
           "partial_transition_pair_count_alignment",
           "partial_timed_transition_pair_count_alignment",
-          "partial_subject_activity_count_alignment"
+          "partial_subject_activity_count_alignment",
+          "fragmented_active_coverage"
         ],
         "best_borrowed_background_risk": 0.0,
         "best_borrowed_background_mismatch": 0.0,
@@ -450,6 +455,7 @@
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 0.0,
+        "fragmented_active_coverage_penalty": 0.0,
         "trait_similarity": 1.0,
         "candidate_scene_signature": "c9856615c81a3a8572c6"
       },
@@ -499,6 +505,7 @@
         "borrowed_background_risk": 0.0,
         "borrowed_background_mismatch": 0.0,
         "sparse_active_evidence_penalty": 0.0,
+        "fragmented_active_coverage_penalty": 29.333333,
         "trait_similarity": 0.333333,
         "candidate_scene_signature": "d14b40d3fb855f5c122d"
       },
@@ -549,6 +556,7 @@
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 0.0,
+          "fragmented_active_coverage_penalty": 0.0,
           "trait_similarity": 1.0,
           "candidate_scene_signature": "c9856615c81a3a8572c6"
         },
@@ -598,6 +606,7 @@
           "borrowed_background_risk": 0.0,
           "borrowed_background_mismatch": 0.0,
           "sparse_active_evidence_penalty": 0.0,
+          "fragmented_active_coverage_penalty": 29.333333,
           "trait_similarity": 0.333333,
           "candidate_scene_signature": "d14b40d3fb855f5c122d"
         }

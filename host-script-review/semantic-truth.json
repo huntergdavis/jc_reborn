@@ -268,10 +268,10 @@
             "frame_state=johnny_only"
           ],
           "actor_region": {
-            "x": 347,
-            "y": 256,
-            "width": 32,
-            "height": 75
+            "x": 340,
+            "y": 254,
+            "width": 40,
+            "height": 76
           },
           "region_anchor": "center",
           "frame_signature": "ad90f1db0967e4c5",
@@ -302,19 +302,16 @@
         ],
         "observed_frame_states": [
           "background_only",
-          "johnny_fishing",
           "johnny_in_mary_scene"
         ],
         "observed_pose_labels": [
           "actor_visible",
-          "johnny_fishing_pose",
           "johnny_visible",
           "johnny_walking_pose",
           "mary_scene_johnny_only",
           "no_actor_visible"
         ],
         "observed_activity_labels": [
-          "fishing_activity",
           "idle_background",
           "mary_scene_johnny_presence",
           "raft_context",
@@ -322,13 +319,10 @@
           "walking_activity"
         ],
         "key_frames": [
-          100,
-          150,
-          200,
-          250
+          100
         ],
-        "dominant_frame_state": "johnny_in_mary_scene",
-        "dominant_activity": "walking_activity",
+        "dominant_frame_state": "background_only",
+        "dominant_activity": "idle_background",
         "stable_context_labels": [
           "background_visible",
           "raft_visible"
@@ -340,29 +334,29 @@
             "to": "johnny_in_mary_scene"
           },
           {
-            "frame_number": 250,
+            "frame_number": 150,
             "from": "johnny_in_mary_scene",
-            "to": "johnny_fishing"
+            "to": "background_only"
           }
         ],
-        "timeline_signature": "0:background_only > 50:background_only > 100:johnny_in_mary_scene > 150:johnny_in_mary_scene > 200:johnny_in_mary_scene > 250:johnny_fishing",
+        "timeline_signature": "0:background_only > 50:background_only > 100:johnny_in_mary_scene > 150:background_only > 200:background_only > 250:background_only",
         "unique_frame_signatures": [
           "2ade26fa17ea6ebf",
           "befebd05033e35e8",
-          "d551df5ef128ca11",
-          "32d4a39b5cbfa5a7",
-          "d551df5ef128ca11",
-          "f386c9662b59f103"
+          "df91b2555e0628ff",
+          "1e76666c6b3a69fe",
+          "1e76666c6b3a69fe",
+          "1e76666c6b3a69fe"
         ],
         "identification_traits": [
           "context:background_visible",
           "context:raft_visible",
-          "dominant_activity:walking_activity",
-          "dominant_state:johnny_in_mary_scene",
+          "dominant_activity:idle_background",
+          "dominant_state:background_only",
           "entity:johnny",
           "family:mary"
         ],
-        "scene_signature": "c9856615c81a3a8572c6"
+        "scene_signature": "b76ca5d687eab03cb470"
       },
       "rows": [
         {
@@ -468,6 +462,7 @@
           ],
           "context_labels": [
             "raft_visible",
+            "tree_visible",
             "background_visible"
           ],
           "frame_state": "johnny_in_mary_scene",
@@ -475,6 +470,7 @@
           "activity_labels": [
             "walking_activity",
             "mary_scene_johnny_presence",
+            "tree_context",
             "raft_context"
           ],
           "primary_activity": "walking_activity",
@@ -482,17 +478,17 @@
           "semantic_reasons": [
             "trusted actor BMPs detected: JOHNWALK.BMP",
             "scene_family=mary",
-            "context=raft_visible,background_visible",
+            "context=raft_visible,tree_visible,background_visible",
             "frame_state=johnny_in_mary_scene"
           ],
           "actor_region": {
-            "x": 310,
-            "y": 265,
-            "width": 32,
-            "height": 74
+            "x": 286,
+            "y": 251,
+            "width": 48,
+            "height": 73
           },
           "region_anchor": "center",
-          "frame_signature": "d551df5ef128ca11",
+          "frame_signature": "df91b2555e0628ff",
           "identification_tokens": [
             "family:mary",
             "state:johnny_in_mary_scene",
@@ -501,6 +497,7 @@
             "anchor:center",
             "entity:johnny",
             "ctx:raft_visible",
+            "ctx:tree_visible",
             "ctx:background_visible"
           ],
           "state_changed": true,
@@ -511,181 +508,133 @@
           "frame_number": 150,
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "entities": [
-            "johnny"
-          ],
-          "actor_count": 1,
-          "bmp_names": [
-            "JOHNWALK.BMP"
-          ],
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
           "pose_labels": [
-            "actor_visible",
-            "johnny_visible",
-            "johnny_walking_pose",
-            "mary_scene_johnny_only"
+            "no_actor_visible"
           ],
           "context_labels": [
             "raft_visible",
             "background_visible"
           ],
-          "frame_state": "johnny_in_mary_scene",
-          "primary_subject": "johnny",
+          "frame_state": "background_only",
+          "primary_subject": "none",
           "activity_labels": [
-            "walking_activity",
-            "mary_scene_johnny_presence",
+            "idle_background",
             "raft_context"
           ],
-          "primary_activity": "walking_activity",
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
-            "trusted actor BMPs detected: JOHNWALK.BMP",
+            "no trusted actor BMPs in deduped visible draws",
             "scene_family=mary",
             "context=raft_visible,background_visible",
-            "frame_state=johnny_in_mary_scene"
+            "frame_state=background_only"
           ],
-          "actor_region": {
-            "x": 184,
-            "y": 273,
-            "width": 32,
-            "height": 75
-          },
-          "region_anchor": "left",
-          "frame_signature": "32d4a39b5cbfa5a7",
+          "actor_region": null,
+          "region_anchor": null,
+          "frame_signature": "1e76666c6b3a69fe",
           "identification_tokens": [
             "family:mary",
-            "state:johnny_in_mary_scene",
-            "subject:johnny",
-            "activity:walking_activity",
-            "anchor:left",
-            "entity:johnny",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
             "ctx:raft_visible",
             "ctx:background_visible"
           ],
-          "state_changed": false,
-          "stable_run_length": 2,
+          "state_changed": true,
+          "stable_run_length": 1,
           "previous_frame_state": "johnny_in_mary_scene"
         },
         {
           "frame_number": 200,
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "entities": [
-            "johnny"
-          ],
-          "actor_count": 1,
-          "bmp_names": [
-            "JOHNWALK.BMP"
-          ],
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
           "pose_labels": [
-            "actor_visible",
-            "johnny_visible",
-            "johnny_walking_pose",
-            "mary_scene_johnny_only"
+            "no_actor_visible"
           ],
           "context_labels": [
             "raft_visible",
             "background_visible"
           ],
-          "frame_state": "johnny_in_mary_scene",
-          "primary_subject": "johnny",
+          "frame_state": "background_only",
+          "primary_subject": "none",
           "activity_labels": [
-            "walking_activity",
-            "mary_scene_johnny_presence",
+            "idle_background",
             "raft_context"
           ],
-          "primary_activity": "walking_activity",
+          "primary_activity": "idle_background",
           "semantic_confidence": "high",
           "semantic_reasons": [
-            "trusted actor BMPs detected: JOHNWALK.BMP",
+            "no trusted actor BMPs in deduped visible draws",
             "scene_family=mary",
             "context=raft_visible,background_visible",
-            "frame_state=johnny_in_mary_scene"
+            "frame_state=background_only"
           ],
-          "actor_region": {
-            "x": 387,
-            "y": 270,
-            "width": 32,
-            "height": 75
-          },
-          "region_anchor": "center",
-          "frame_signature": "d551df5ef128ca11",
+          "actor_region": null,
+          "region_anchor": null,
+          "frame_signature": "1e76666c6b3a69fe",
           "identification_tokens": [
             "family:mary",
-            "state:johnny_in_mary_scene",
-            "subject:johnny",
-            "activity:walking_activity",
-            "anchor:center",
-            "entity:johnny",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
             "ctx:raft_visible",
             "ctx:background_visible"
           ],
           "state_changed": false,
-          "stable_run_length": 3,
-          "previous_frame_state": "johnny_in_mary_scene"
+          "stable_run_length": 2,
+          "previous_frame_state": "background_only"
         },
         {
           "frame_number": 250,
           "scene_label": "MARY 1",
           "scene_family": "mary",
-          "entities": [
-            "johnny"
-          ],
-          "actor_count": 3,
-          "bmp_names": [
-            "JOHNWALK.BMP",
-            "MJFISH1.BMP",
-            "MJFISH1.BMP"
-          ],
+          "entities": [],
+          "actor_count": 0,
+          "bmp_names": [],
           "pose_labels": [
-            "actor_visible",
-            "johnny_visible",
-            "johnny_fishing_pose",
-            "johnny_walking_pose",
-            "mary_scene_johnny_only"
+            "no_actor_visible"
           ],
           "context_labels": [
             "raft_visible",
-            "tree_visible",
             "background_visible"
           ],
-          "frame_state": "johnny_fishing",
-          "primary_subject": "johnny",
+          "frame_state": "background_only",
+          "primary_subject": "none",
           "activity_labels": [
-            "fishing_activity",
-            "walking_activity",
-            "tree_context",
+            "idle_background",
             "raft_context"
           ],
-          "primary_activity": "fishing_activity",
-          "semantic_confidence": "medium",
+          "primary_activity": "idle_background",
+          "semantic_confidence": "high",
           "semantic_reasons": [
-            "trusted actor BMPs detected: JOHNWALK.BMP, MJFISH1.BMP, MJFISH1.BMP",
+            "no trusted actor BMPs in deduped visible draws",
             "scene_family=mary",
-            "context=raft_visible,tree_visible,background_visible",
-            "frame_state=johnny_fishing"
+            "context=raft_visible,background_visible",
+            "frame_state=background_only"
           ],
-          "actor_region": {
-            "x": 247,
-            "y": 250,
-            "width": 94,
-            "height": 74
-          },
-          "region_anchor": "center",
-          "frame_signature": "f386c9662b59f103",
+          "actor_region": null,
+          "region_anchor": null,
+          "frame_signature": "1e76666c6b3a69fe",
           "identification_tokens": [
             "family:mary",
-            "state:johnny_fishing",
-            "subject:johnny",
-            "activity:fishing_activity",
-            "anchor:center",
-            "entity:johnny",
+            "state:background_only",
+            "subject:none",
+            "activity:idle_background",
+            "anchor:none",
             "ctx:raft_visible",
-            "ctx:tree_visible",
             "ctx:background_visible"
           ],
-          "state_changed": true,
-          "stable_run_length": 1,
-          "previous_frame_state": "johnny_in_mary_scene"
+          "state_changed": false,
+          "stable_run_length": 3,
+          "previous_frame_state": "background_only"
         }
       ]
     }

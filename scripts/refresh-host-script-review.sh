@@ -28,6 +28,7 @@ assert_clean_tracked_inputs() {
         host-script-review/frame-meta-regression-baseline.json \
         host-script-review/frame-meta-regression-report.json \
         host-script-review/capture-regression-report.json \
+        host-script-review/capture-regression-review.html \
         host-script-review/identification-regression-floors.json \
         host-script-review/semantic-regression-baseline.json \
         host-script-review/semantic-regression-report.json \
@@ -484,7 +485,8 @@ write_capture_regression_report() {
         --frame-image "$root/frame-image-regression-report.json" \
         --frame-meta "$root/frame-meta-regression-report.json" \
         --semantic "$root/semantic-regression-report.json" \
-        --out-json "$root/capture-regression-report.json"
+        --out-json "$root/capture-regression-report.json" \
+        --out-html "$root/capture-regression-review.html"
 }
 
 write_verification_summary() {

@@ -53,6 +53,7 @@ required = [
     "frame-meta-regression-baseline.json",
     "frame-meta-regression-report.json",
     "capture-regression-report.json",
+    "capture-regression-review.html",
     "identification-regression-floors.json",
     "semantic-regression-baseline.json",
     "semantic-regression-report.json",

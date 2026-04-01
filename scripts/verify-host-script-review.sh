@@ -107,7 +107,9 @@ print(
     "identification-challenges: ok "
     f"query_count={identify_challenges.get('query_count')} "
     f"max_best_score={identify_challenges.get('max_best_score')} "
-    f"max_margin={identify_challenges.get('max_margin')}"
+    f"max_margin={identify_challenges.get('max_margin')} "
+    f"ambiguous={identify_challenges.get('ambiguous_count')} "
+    f"unknown={identify_challenges.get('unknown_count')}"
 )
 
 identify_temporal = json.loads((root / "identification-temporal.json").read_text(encoding="utf-8"))
@@ -172,6 +174,10 @@ if challenges_summary.get("max_best_score") != identify_challenges.get("max_best
     raise SystemExit("summary max_best_score mismatch for identification-challenges")
 if challenges_summary.get("max_margin") != identify_challenges.get("max_margin"):
     raise SystemExit("summary max_margin mismatch for identification-challenges")
+if int(challenges_summary.get("ambiguous_count", 0)) != int(identify_challenges.get("ambiguous_count", 0)):
+    raise SystemExit("summary ambiguous_count mismatch for identification-challenges")
+if int(challenges_summary.get("unknown_count", 0)) != int(identify_challenges.get("unknown_count", 0)):
+    raise SystemExit("summary unknown_count mismatch for identification-challenges")
 
 temporal_summary = ((summary.get("checks") or {}).get("identification-temporal") or {})
 if not temporal_summary.get("present") or not temporal_summary.get("passed"):

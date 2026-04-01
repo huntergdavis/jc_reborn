@@ -49,7 +49,7 @@ def build_queries(database: dict) -> list[dict]:
                         "identification_traits": [],
                     },
                     "rows": redact_rows(bg_rows, f"{label} [background-only]"),
-                    "_expected_status": "unknown",
+                    "_expected_status": "non_identified",
                 }
             )
 
@@ -69,7 +69,52 @@ def build_queries(database: dict) -> list[dict]:
                         "identification_traits": [],
                     },
                     "rows": redact_rows(mixed_rows, "MIXED [active-pair]"),
-                    "_expected_status": "unknown",
+                    "_expected_status": "non_identified",
+                }
+            )
+            queries.append(
+                {
+                    "scene_label": "MIXED [fishing-bg-plus-mary-active]",
+                    "scene_family": "unknown",
+                    "scene_summary": {
+                        "scene_signature": None,
+                        "identification_traits": [],
+                    },
+                    "rows": redact_rows(
+                        [fishing.get("rows", [])[0], fishing.get("rows", [])[1], mary_active[0]],
+                        "MIXED [fishing-bg-plus-mary-active]",
+                    ),
+                    "_expected_status": "non_identified",
+                }
+            )
+            queries.append(
+                {
+                    "scene_label": "MIXED [mary-bg-plus-fishing-active]",
+                    "scene_family": "unknown",
+                    "scene_summary": {
+                        "scene_signature": None,
+                        "identification_traits": [],
+                    },
+                    "rows": redact_rows(
+                        [mary.get("rows", [])[0], mary.get("rows", [])[1], fishing_active[-1]],
+                        "MIXED [mary-bg-plus-fishing-active]",
+                    ),
+                    "_expected_status": "non_identified",
+                }
+            )
+            queries.append(
+                {
+                    "scene_label": "MIXED [interleaved-contradiction]",
+                    "scene_family": "unknown",
+                    "scene_summary": {
+                        "scene_signature": None,
+                        "identification_traits": [],
+                    },
+                    "rows": redact_rows(
+                        [fishing.get("rows", [])[0], mary.get("rows", [])[1], fishing_active[-1], mary_active[0]],
+                        "MIXED [interleaved-contradiction]",
+                    ),
+                    "_expected_status": "non_identified",
                 }
             )
 
@@ -84,8 +129,10 @@ def evaluate(database: dict) -> dict:
     failures: list[str] = []
     max_best_score = None
     max_margin = None
+    ambiguous_count = 0
+    unknown_count = 0
 
-    expectations = {scene["scene_label"]: scene.get("_expected_status", "unknown") for scene in query_scenes}
+    expectations = {scene["scene_label"]: scene.get("_expected_status", "non_identified") for scene in query_scenes}
 
     for row in report.get("rows", []):
         query_label = row.get("query_scene_label")
@@ -100,10 +147,17 @@ def evaluate(database: dict) -> dict:
         if max_margin is None or margin > max_margin:
             max_margin = margin
 
-        if status != expected_status:
+        if expected_status == "non_identified":
+            if status == "identified":
+                failures.append(f"{query_label}: challenge query must not identify as {best.get('scene_label')}")
+            elif status == "ambiguous":
+                ambiguous_count += 1
+            elif status == "unknown":
+                unknown_count += 1
+            else:
+                failures.append(f"{query_label}: unexpected status {status}")
+        elif status != expected_status:
             failures.append(f"{query_label}: expected {expected_status}, got {status}")
-        if status == "identified":
-            failures.append(f"{query_label}: challenge query must not identify as {best.get('scene_label')}")
 
         rows.append(
             {
@@ -122,6 +176,8 @@ def evaluate(database: dict) -> dict:
         "query_count": len(rows),
         "max_best_score": max_best_score,
         "max_margin": max_margin,
+        "ambiguous_count": ambiguous_count,
+        "unknown_count": unknown_count,
         "passed": not failures,
         "failures": failures,
     }

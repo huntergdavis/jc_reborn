@@ -288,7 +288,9 @@ print(
     "identification-challenges: ok "
     f"query_count={data.get('query_count')} "
     f"max_best_score={data.get('max_best_score')} "
-    f"max_margin={data.get('max_margin')}"
+    f"max_margin={data.get('max_margin')} "
+    f"ambiguous={data.get('ambiguous_count')} "
+    f"unknown={data.get('unknown_count')}"
 )
 PY
 }
@@ -403,6 +405,8 @@ identify_challenges = {
     "query_count": 0,
     "max_best_score": None,
     "max_margin": None,
+    "ambiguous_count": 0,
+    "unknown_count": 0,
 }
 if identify_challenges_path.is_file():
     payload = json.loads(identify_challenges_path.read_text(encoding="utf-8"))
@@ -410,6 +414,8 @@ if identify_challenges_path.is_file():
     identify_challenges["query_count"] = int(payload.get("query_count", 0))
     identify_challenges["max_best_score"] = payload.get("max_best_score")
     identify_challenges["max_margin"] = payload.get("max_margin")
+    identify_challenges["ambiguous_count"] = int(payload.get("ambiguous_count", 0))
+    identify_challenges["unknown_count"] = int(payload.get("unknown_count", 0))
 checks["identification-challenges"] = identify_challenges
 
 identify_temporal_path = root / "identification-temporal.json"

@@ -129,6 +129,7 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
     if not best:
         return "unknown", "no candidates"
     query_rows = query_scene.get("rows", [])
+    query_family = query_scene.get("scene_family")
     active_row_count = sum(1 for row in query_rows if row.get("frame_state") != "background_only")
     if active_row_count == 0 and not best.get("exact_scene_signature"):
         return "unknown", "background-only query lacks actor evidence"
@@ -138,6 +139,12 @@ def identify_status(query_scene: dict, best: dict | None, second: dict | None) -
     ratio = (score / second_score) if second_score > 0.0 else None
     if best.get("exact_scene_signature"):
         return "identified", "exact scene signature match"
+    if query_family in (None, "", "unknown"):
+        if score >= 110.0 and margin >= 60.0 and ratio is not None and ratio >= 3.0:
+            return "identified", f"strong unknown-family score {score:.3f} margin {margin:.3f}"
+        if score >= 70.0 and margin >= 20.0:
+            return "ambiguous", f"unknown-family partial match score {score:.3f} margin {margin:.3f}"
+        return "unknown", f"unknown-family weak score {score:.3f} margin {margin:.3f}"
     if score >= 40.0 and margin >= 30.0 and (second_score <= 10.0 or (ratio is not None and ratio >= 4.0)):
         return "identified", f"strong separated score {score:.3f} margin {margin:.3f}"
     if score >= 80.0 and margin >= 25.0:

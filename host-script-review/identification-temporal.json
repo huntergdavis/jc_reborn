@@ -51,9 +51,9 @@
       "prefix_len": 5,
       "status": "identified",
       "best_scene_label": "FISHING 1",
-      "best_score": 90.319048,
-      "score_margin": 50.569048,
-      "best_to_second_ratio": 2.2721773081761003
+      "best_score": 134.319048,
+      "score_margin": 94.569048,
+      "best_to_second_ratio": 3.3790955471698116
     },
     {
       "query_scene_label": "MARY 1 [prefix-1]",
@@ -84,9 +84,9 @@
       "prefix_len": 3,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 80.333333,
-      "score_margin": 37.25,
-      "best_to_second_ratio": 1.8646034883141467
+      "best_score": 124.333333,
+      "score_margin": 81.25,
+      "best_to_second_ratio": 2.885880091960387
     },
     {
       "query_scene_label": "MARY 1 [prefix-4]",
@@ -95,9 +95,9 @@
       "prefix_len": 4,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 85.458333,
-      "score_margin": 44.458333,
-      "best_to_second_ratio": 2.0843495853658536
+      "best_score": 143.458333,
+      "score_margin": 102.458333,
+      "best_to_second_ratio": 3.4989837317073174
     },
     {
       "query_scene_label": "MARY 1 [prefix-5]",
@@ -106,9 +106,9 @@
       "prefix_len": 5,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 90.533333,
-      "score_margin": 50.783333,
-      "best_to_second_ratio": 2.2775681257861633
+      "best_score": 162.533333,
+      "score_margin": 122.783333,
+      "best_to_second_ratio": 4.088888880503145
     },
     {
       "query_scene_label": "MARY 1 [prefix-6]",
@@ -117,9 +117,9 @@
       "prefix_len": 6,
       "status": "identified",
       "best_scene_label": "MARY 1",
-      "best_score": 95.62963,
-      "score_margin": 56.712963,
-      "best_to_second_ratio": 2.457292398652742
+      "best_score": 181.62963,
+      "score_margin": 142.712963,
+      "best_to_second_ratio": 4.667142486791071
     }
   ],
   "query_count": 11,
@@ -127,8 +127,8 @@
     "FISHING 1": 1,
     "MARY 1": 1
   },
-  "min_identified_margin": 37.25,
-  "min_identified_ratio": 1.8646034883141467,
+  "min_identified_margin": 81.25,
+  "min_identified_ratio": 2.885880091960387,
   "passed": true,
   "failures": []
 }

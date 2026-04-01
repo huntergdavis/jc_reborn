@@ -23,13 +23,13 @@
       "expected_status": "unknown",
       "status": "unknown",
       "best_scene_label": "FISHING 1",
-      "best_score": 45.0,
+      "best_score": 74.0,
       "score_margin": 0.0,
-      "reason": "weak score 45.000 margin 0.000"
+      "reason": "weak score 74.000 margin 0.000"
     }
   ],
   "query_count": 3,
-  "max_best_score": 71.857143,
+  "max_best_score": 74.0,
   "max_margin": 34.607143,
   "passed": true,
   "failures": []

@@ -11,6 +11,7 @@
         "query_profile": {
           "frame_count": 5,
           "active_frame_count": 1,
+          "state_change_count": 1,
           "frame_states": [
             "background_only",
             "johnny_only"
@@ -35,11 +36,13 @@
           "full_active_frame_coverage",
           "active_state_alignment",
           "active_subject_alignment",
+          "state_transition_evidence",
           "activity_alignment",
           "token_alignment",
           "trait_alignment"
         ],
         "second_evidence": [
+          "state_transition_evidence",
           "activity_alignment"
         ],
         "score_margin": 242.333333,
@@ -139,6 +142,7 @@
         "query_profile": {
           "frame_count": 6,
           "active_frame_count": 4,
+          "state_change_count": 2,
           "frame_states": [
             "background_only",
             "johnny_fishing",
@@ -167,11 +171,13 @@
           "full_active_frame_coverage",
           "active_state_alignment",
           "active_subject_alignment",
+          "state_transition_evidence",
           "activity_alignment",
           "token_alignment",
           "trait_alignment"
         ],
         "second_evidence": [
+          "state_transition_evidence",
           "activity_alignment"
         ],
         "score_margin": 300.166667,

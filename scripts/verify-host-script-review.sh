@@ -161,6 +161,20 @@ print(
         for key in sorted(path_map_file_class_counts)
     )
 )
+path_map_entry_names = {
+    key: sorted(value.keys())
+    for key, value in sorted(summary.items())
+    if key.endswith("_paths") and isinstance(value, dict)
+}
+if summary.get("path_map_entry_names") != path_map_entry_names:
+    raise SystemExit("verification-summary path_map_entry_names mismatch")
+print(
+    "path-map-entry-names: ok "
+    + ",".join(
+        f"{key}:{'|'.join(path_map_entry_names[key])}"
+        for key in sorted(path_map_entry_names)
+    )
+)
 
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
@@ -504,6 +518,7 @@ required_summary_txt_tokens = {
     f"path-map-entry-counts={','.join(f'{key}:{path_map_entry_counts[key]}' for key in sorted(path_map_entry_counts))}",
     f"path-map-type-counts={','.join(f\"{key}:{path_map_type_counts[key]['files']}f/{path_map_type_counts[key]['dirs']}d\" for key in sorted(path_map_type_counts))}",
     f"path-map-file-class-counts={','.join(f\"{key}:{path_map_file_class_counts[key]['json']}j/{path_map_file_class_counts[key]['html']}h/{path_map_file_class_counts[key]['bmp']}b/{path_map_file_class_counts[key]['other']}o\" for key in sorted(path_map_file_class_counts))}",
+    f"path-map-entry-names={','.join(f\"{key}:{'|'.join(path_map_entry_names[key])}\" for key in sorted(path_map_entry_names))}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

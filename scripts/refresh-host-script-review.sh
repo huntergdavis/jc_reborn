@@ -687,6 +687,9 @@ html = (root / "identification-review.html").read_text(encoding="utf-8")
 required = [
     "index.html",
     "capture-regression-review.html",
+    "capture-regression-report.json",
+    "verification-summary.json",
+    "verification-summary.txt",
     "identification-selfcheck.json",
     "identification-eval.json",
     "identification-partials.json",

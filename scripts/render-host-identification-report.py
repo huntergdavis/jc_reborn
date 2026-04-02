@@ -421,6 +421,9 @@ def build_html(
         [
             '<a href="index.html">index.html</a>',
             '<a href="capture-regression-review.html">capture-regression-review.html</a>',
+            '<a href="capture-regression-report.json">capture-regression-report.json</a>',
+            '<a href="verification-summary.json">verification-summary.json</a>',
+            '<a href="verification-summary.txt">verification-summary.txt</a>',
             '<a href="identification-selfcheck.json">identification-selfcheck.json</a>',
             '<a href="identification-eval.json">identification-eval.json</a>',
             '<a href="identification-partials.json">identification-partials.json</a>',

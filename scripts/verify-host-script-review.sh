@@ -172,6 +172,9 @@ identification_html = (root / "identification-review.html").read_text(encoding="
 for href in (
     "index.html",
     "capture-regression-review.html",
+    "capture-regression-report.json",
+    "verification-summary.json",
+    "verification-summary.txt",
     "identification-selfcheck.json",
     "identification-eval.json",
     "identification-partials.json",

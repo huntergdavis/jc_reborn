@@ -766,6 +766,16 @@ artifact_inputs = summary.get("artifact_inputs") or {}
 if not artifact_inputs:
     raise SystemExit("verification-summary.json missing artifact_inputs")
 
+for key, value in summary.items():
+    if not key.endswith("_paths"):
+        continue
+    for path_key, path_value in value.items():
+        if path_key.endswith("_dir"):
+            continue
+        rel = Path(path_value).resolve().relative_to(root.resolve()).as_posix()
+        if rel not in artifact_inputs:
+            raise SystemExit(f"artifact_inputs missing summary file path: {key}.{path_key}")
+
 computed_inputs = {}
 for name in sorted(artifact_inputs):
     path = root / name

@@ -133,6 +133,7 @@ for href in (
     "identification-review.html",
     "verification-summary.json",
     "verification-summary.txt",
+    "semantic-truth.json",
     "frame-image-regression-report.json",
     "frame-meta-regression-report.json",
     "semantic-regression-report.json",

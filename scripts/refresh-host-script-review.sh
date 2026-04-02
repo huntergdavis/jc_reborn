@@ -1114,6 +1114,35 @@ print("verification-summary path entry count: ok")
 PY
 }
 
+assert_verification_summary_path_type_counts() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+
+file_count = 0
+dir_count = 1 if summary.get("review_root") else 0
+for key, value in summary.items():
+    if not key.endswith("_paths") or not isinstance(value, dict):
+        continue
+    for path_key in value:
+        if path_key.endswith("_dir"):
+            dir_count += 1
+        else:
+            file_count += 1
+
+if int(summary.get("path_file_count", -1)) != file_count:
+    raise SystemExit("verification-summary path_file_count mismatch")
+if int(summary.get("path_dir_count", -1)) != dir_count:
+    raise SystemExit("verification-summary path_dir_count mismatch")
+print("verification-summary path type counts: ok")
+PY
+}
+
 print_review_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1339,6 +1368,20 @@ def count_path_entries(summary_obj):
         if key.endswith("_paths") and isinstance(value, dict):
             total += len(value)
     return total
+
+
+def count_path_types(summary_obj):
+    file_count = 0
+    dir_count = 1 if summary_obj.get("review_root") else 0
+    for key, value in summary_obj.items():
+        if not key.endswith("_paths") or not isinstance(value, dict):
+            continue
+        for path_key in value:
+            if path_key.endswith("_dir"):
+                dir_count += 1
+            else:
+                file_count += 1
+    return file_count, dir_count
 
 checks = {}
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
@@ -1680,6 +1723,7 @@ summary = {
     ),
 }
 summary["path_entry_count"] = count_path_entries(summary)
+summary["path_file_count"], summary["path_dir_count"] = count_path_types(summary)
 summary["risk_status"] = (
     "elevated_risk"
     if checks["identification-challenges"]["danger_count"] > 0
@@ -1700,7 +1744,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
-    "review-root={review_root} path-entry-count={path_entry_count} "
+    "review-root={review_root} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
     "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
@@ -1746,6 +1790,8 @@ summary["risk_status"] = (
         capture_first_semantic=checks["capture-regression"]["semantic_first_failed_scene"],
         review_root=summary["review_root"],
         path_entry_count=summary["path_entry_count"],
+        path_file_count=summary["path_file_count"],
+        path_dir_count=summary["path_dir_count"],
         index_html=summary["review_paths"]["index_html"],
         identification_html=summary["review_paths"]["identification_review_html"],
         capture_html=summary["review_paths"]["capture_regression_review_html"],
@@ -1874,6 +1920,7 @@ assert_verification_summary_key_frame_meta_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_verification_summary_artifact_input_coverage "$OUT_DIR"
 assert_verification_summary_path_entry_count "$OUT_DIR"
+assert_verification_summary_path_type_counts "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"
 assert_capture_review_totals "$OUT_DIR"

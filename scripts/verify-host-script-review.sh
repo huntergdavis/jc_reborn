@@ -79,12 +79,24 @@ if review_root != str(root.resolve()):
 print(f"review-root: ok root={review_root}")
 
 path_entry_count = 1 if review_root else 0
+path_file_count = 0
+path_dir_count = 1 if review_root else 0
 for key, value in summary.items():
     if key.endswith("_paths") and isinstance(value, dict):
         path_entry_count += len(value)
+        for path_key in value:
+            if path_key.endswith("_dir"):
+                path_dir_count += 1
+            else:
+                path_file_count += 1
 if int(summary.get("path_entry_count", -1)) != path_entry_count:
     raise SystemExit("verification-summary path_entry_count mismatch")
 print(f"path-entry-count: ok count={path_entry_count}")
+if int(summary.get("path_file_count", -1)) != path_file_count:
+    raise SystemExit("verification-summary path_file_count mismatch")
+if int(summary.get("path_dir_count", -1)) != path_dir_count:
+    raise SystemExit("verification-summary path_dir_count mismatch")
+print(f"path-type-counts: ok files={path_file_count} dirs={path_dir_count}")
 
 for key, value in summary.items():
     if key == "review_root":
@@ -379,6 +391,8 @@ summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
     f"review-root={review_root}",
     f"path-entry-count={path_entry_count}",
+    f"path-file-count={path_file_count}",
+    f"path-dir-count={path_dir_count}",
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",

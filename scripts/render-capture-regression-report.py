@@ -29,6 +29,12 @@ def render_html(payload: dict) -> str:
     def fmt_status(passed: bool) -> str:
         return "pass" if passed else "fail"
 
+    def shorten(value) -> str:
+        text = json.dumps(value, sort_keys=True) if isinstance(value, (dict, list)) else str(value)
+        if len(text) > 120:
+            return text[:117] + "..."
+        return text
+
     report_links = (
         '<div class="links">'
         '<a href="frame-image-regression-report.json">frame-image-regression-report.json</a> '
@@ -57,20 +63,26 @@ def render_html(payload: dict) -> str:
                     )
                     if part not in (None, "")
                 )
+                failure_detail = (
+                    f"expected={shorten(first_failure.get('expected'))} "
+                    f"actual={shorten(first_failure.get('actual'))}"
+                )
             else:
                 failure_preview = ""
+                failure_detail = ""
             body.append(
                 "<tr>"
                 f"<td>{html.escape(str(label))}</td>"
                 f"<td class=\"{status}\">{status.upper()}</td>"
                 f"<td>{failure_count}</td>"
                 f"<td>{html.escape(failure_preview)}</td>"
+                f"<td>{html.escape(failure_detail)}</td>"
                 f"<td><a href=\"{html.escape(frame_href)}\">frames</a> <a href=\"{html.escape(meta_href)}\">frame-meta</a></td>"
                 "</tr>"
             )
         return (
             f"<section><h2>{html.escape(name)}</h2>"
-            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Links</th></tr></thead>"
+            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Detail</th><th>Links</th></tr></thead>"
             f"<tbody>{''.join(body)}</tbody></table></section>"
         )
 

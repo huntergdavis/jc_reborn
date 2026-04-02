@@ -55,5 +55,15 @@
         }
       ]
     }
+  },
+  "totals": {
+    "frame_image_failures": 0,
+    "frame_meta_failures": 0,
+    "semantic_failures": 0
+  },
+  "first_failed_scenes": {
+    "frame-image": null,
+    "frame-meta": null,
+    "semantic": null
   }
 }

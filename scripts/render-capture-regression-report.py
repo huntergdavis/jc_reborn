@@ -25,6 +25,14 @@ def summarize(report: dict, label_key: str) -> list[dict]:
     return rows
 
 
+def first_scene_failure(rows: list[dict], label_key: str) -> str | None:
+    for row in rows:
+        if not row.get("passed", False):
+            value = row.get(label_key)
+            return None if value in (None, "") else str(value)
+    return None
+
+
 def render_html(payload: dict) -> str:
     def fmt_status(passed: bool) -> str:
         return "pass" if passed else "fail"
@@ -211,6 +219,16 @@ def main() -> int:
                 "scenes": summarize(semantic, "scene_label"),
             },
         },
+    }
+    payload["totals"] = {
+        "frame_image_failures": payload["checks"]["frame-image"]["failure_count"],
+        "frame_meta_failures": payload["checks"]["frame-meta"]["failure_count"],
+        "semantic_failures": payload["checks"]["semantic"]["failure_count"],
+    }
+    payload["first_failed_scenes"] = {
+        "frame-image": first_scene_failure(payload["checks"]["frame-image"]["scenes"], "scene"),
+        "frame-meta": first_scene_failure(payload["checks"]["frame-meta"]["scenes"], "scene"),
+        "semantic": first_scene_failure(payload["checks"]["semantic"]["scenes"], "scene_label"),
     }
     for check_name, report in (
         ("frame-image", frame_image),

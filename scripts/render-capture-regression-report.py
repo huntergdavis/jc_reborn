@@ -105,12 +105,22 @@ def render_html(payload: dict) -> str:
     overall = fmt_status(bool(payload.get("passed", False)))
     tightest_html = ""
     if tightest:
+        scene_name = tightest.get("scene") or tightest.get("scene_label") or ""
+        scene_slug = str(scene_name).lower().replace(" ", "")
+        frame_name = tightest.get("frame") or ""
+        drift_links = ""
+        if frame_name and scene_slug:
+            drift_links = (
+                f' <a href="{html.escape(scene_slug)}/frames/{html.escape(frame_name)}.bmp">frame</a>'
+                f' <a href="{html.escape(scene_slug)}/frame-meta/{html.escape(frame_name)}.json">meta</a>'
+            )
         tightest_html = (
             "<div class=\"summary\">"
             "<h2>Tightest Drift</h2>"
             f"<div>{html.escape(str(tightest.get('check', '')))} / "
-            f"{html.escape(str(tightest.get('scene', '')))} / "
-            f"{html.escape(str(tightest.get('field', '')))}</div>"
+            f"{html.escape(str(scene_name))} / "
+            f"{html.escape(str(tightest.get('field', '')))}"
+            f"{drift_links}</div>"
             "</div>"
         )
     return f"""<!doctype html>

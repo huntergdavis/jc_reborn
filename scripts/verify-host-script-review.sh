@@ -567,6 +567,7 @@ required_summary_txt_tokens = {
     f"path-max-depth={path_max_depth}",
     f"path-min-nonroot-depth={path_min_nonroot_depth}",
     f"artifact-input-count={summary.get('artifact_input_count')}",
+    f"artifact-input-names={','.join(summary.get('artifact_input_names', []))}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

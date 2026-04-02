@@ -575,6 +575,7 @@ required_summary_txt_tokens = {
     f"artifact-input-min-nonroot-depth={summary.get('artifact_input_min_nonroot_depth')}",
     f"artifact-input-parent-dirs-sha256={summary.get('artifact_input_parent_dirs_sha256')}",
     f"artifact-input-parent-dir-count={summary.get('artifact_input_parent_dir_count')}",
+    f"artifact-input-parent-dir-depth-counts={','.join(f\"{depth}:{summary.get('artifact_input_parent_dir_depth_counts', {}).get(depth)}\" for depth in sorted(summary.get('artifact_input_parent_dir_depth_counts', {}), key=int))}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
@@ -1028,6 +1029,17 @@ if summary.get("artifact_input_parent_dirs_sha256") != expected_artifact_input_p
 expected_artifact_input_parent_dir_count = len({str(Path(name).parent) for name in artifact_inputs})
 if int(summary.get("artifact_input_parent_dir_count", -1)) != expected_artifact_input_parent_dir_count:
     raise SystemExit("verification-summary artifact_input_parent_dir_count mismatch")
+expected_artifact_input_parent_dir_depth_counts = {}
+for relpath in {str(Path(name).parent) for name in artifact_inputs}:
+    depth = 0 if relpath == "." else relpath.count("/") + 1
+    expected_artifact_input_parent_dir_depth_counts[str(depth)] = (
+        expected_artifact_input_parent_dir_depth_counts.get(str(depth), 0) + 1
+    )
+expected_artifact_input_parent_dir_depth_counts = dict(
+    sorted(expected_artifact_input_parent_dir_depth_counts.items(), key=lambda item: int(item[0]))
+)
+if summary.get("artifact_input_parent_dir_depth_counts") != expected_artifact_input_parent_dir_depth_counts:
+    raise SystemExit("verification-summary artifact_input_parent_dir_depth_counts mismatch")
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

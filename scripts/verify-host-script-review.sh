@@ -568,6 +568,7 @@ required_summary_txt_tokens = {
     f"path-min-nonroot-depth={path_min_nonroot_depth}",
     f"artifact-input-count={summary.get('artifact_input_count')}",
     f"artifact-input-names={','.join(summary.get('artifact_input_names', []))}",
+    f"artifact-input-names-sha256={summary.get('artifact_input_names_sha256')}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
@@ -972,6 +973,14 @@ if not artifact_inputs:
     raise SystemExit("verification-summary.json missing artifact_inputs")
 if int(summary.get("artifact_input_count", -1)) != len(artifact_inputs):
     raise SystemExit("verification-summary artifact_input_count mismatch")
+expected_artifact_input_names = sorted(artifact_inputs)
+if summary.get("artifact_input_names") != expected_artifact_input_names:
+    raise SystemExit("verification-summary artifact_input_names mismatch")
+expected_artifact_input_names_sha256 = hashlib.sha256(
+    "\n".join(expected_artifact_input_names).encode("utf-8")
+).hexdigest()
+if summary.get("artifact_input_names_sha256") != expected_artifact_input_names_sha256:
+    raise SystemExit("verification-summary artifact_input_names_sha256 mismatch")
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

@@ -197,6 +197,17 @@ path_relpaths = sorted(path_relpaths)
 if summary.get("path_relpaths") != path_relpaths:
     raise SystemExit("verification-summary path_relpaths mismatch")
 print("path-relpaths: ok " + ",".join(path_relpaths))
+path_depth_counts = {}
+for relpath in path_relpaths:
+    depth = 0 if relpath == "." else relpath.count("/") + 1
+    path_depth_counts[str(depth)] = path_depth_counts.get(str(depth), 0) + 1
+path_depth_counts = dict(sorted(path_depth_counts.items(), key=lambda item: int(item[0])))
+if summary.get("path_depth_counts") != path_depth_counts:
+    raise SystemExit("verification-summary path_depth_counts mismatch")
+print(
+    "path-depth-counts: ok "
+    + ",".join(f"{depth}:{path_depth_counts[depth]}" for depth in sorted(path_depth_counts, key=int))
+)
 
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
@@ -543,6 +554,7 @@ required_summary_txt_tokens = {
     f"path-map-entry-names={','.join(f\"{key}:{'|'.join(path_map_entry_names[key])}\" for key in sorted(path_map_entry_names))}",
     f"path-basenames={','.join(path_basenames)}",
     f"path-relpaths={','.join(path_relpaths)}",
+    f"path-depth-counts={','.join(f'{depth}:{path_depth_counts[depth]}' for depth in sorted(path_depth_counts, key=int))}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

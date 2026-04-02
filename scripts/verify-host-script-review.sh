@@ -118,6 +118,8 @@ for href in ("identification-review.html", "capture-regression-review.html"):
 
 capture_html = (root / "capture-regression-review.html").read_text(encoding="utf-8")
 for href in (
+    "index.html",
+    "identification-review.html",
     "frame-image-regression-report.json",
     "frame-meta-regression-report.json",
     "semantic-regression-report.json",

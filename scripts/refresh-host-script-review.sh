@@ -649,6 +649,8 @@ for href in required_index_links:
         raise SystemExit(f"index.html missing link: {href}")
 
 required_capture_links = [
+    "index.html",
+    "identification-review.html",
     "frame-image-regression-report.json",
     "frame-meta-regression-report.json",
     "semantic-regression-report.json",

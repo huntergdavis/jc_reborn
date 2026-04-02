@@ -361,7 +361,8 @@ def compile_semantic_truth(root: Path) -> dict:
                 "rows": rows,
             }
         )
-    return {"root": str(root.resolve()), "scenes": scenes}
+    # Keep the semantic corpus stable across repeated builds from different temp roots.
+    return {"root": ".", "scenes": scenes}
 
 
 def main() -> int:

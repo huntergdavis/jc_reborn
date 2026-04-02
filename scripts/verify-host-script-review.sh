@@ -139,6 +139,21 @@ print(
     f"compare={host_truth_paths.get('compare_json')}"
 )
 
+expectation_paths = summary.get("expectation_paths", {})
+required_expectation_paths = {
+    "baseline_json": root / "expectations.json",
+    "report_json": root / "expectation-report.json",
+}
+for key, expected_path in required_expectation_paths.items():
+    actual = expectation_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary expectation_paths.{key} mismatch")
+print(
+    "expectation-paths: ok "
+    f"baseline={expectation_paths.get('baseline_json')} "
+    f"report={expectation_paths.get('report_json')}"
+)
+
 capture_audit_paths = summary.get("capture_audit_paths", {})
 required_capture_audit_paths = {
     "image_report_json": root / "frame-image-regression-report.json",
@@ -245,6 +260,8 @@ required_summary_txt_tokens = {
     f"identify-regression-floors-json={identification_floor_paths.get('regression_floors_json')}",
     f"host-truth-baseline-json={host_truth_paths.get('baseline_json')}",
     f"host-truth-compare-json={host_truth_paths.get('compare_json')}",
+    f"expectations-json={expectation_paths.get('baseline_json')}",
+    f"expectation-report-json={expectation_paths.get('report_json')}",
     f"capture-image-report-json={capture_audit_paths.get('image_report_json')}",
     f"capture-meta-report-json={capture_audit_paths.get('meta_report_json')}",
     f"capture-semantic-report-json={capture_audit_paths.get('semantic_report_json')}",

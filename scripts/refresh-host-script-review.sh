@@ -1093,6 +1093,27 @@ print("verification-summary artifact input coverage: ok")
 PY
 }
 
+assert_verification_summary_path_entry_count() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+
+count = 1 if summary.get("review_root") else 0
+for key, value in summary.items():
+    if key.endswith("_paths") and isinstance(value, dict):
+        count += len(value)
+
+if int(summary.get("path_entry_count", -1)) != count:
+    raise SystemExit("verification-summary path_entry_count mismatch")
+print("verification-summary path entry count: ok")
+PY
+}
+
 print_review_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1310,6 +1331,14 @@ def severity(value):
     if numeric <= 3.0:
         return "warn"
     return "safe"
+
+
+def count_path_entries(summary_obj):
+    total = 1 if summary_obj.get("review_root") else 0
+    for key, value in summary_obj.items():
+        if key.endswith("_paths") and isinstance(value, dict):
+            total += len(value)
+    return total
 
 checks = {}
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
@@ -1650,6 +1679,7 @@ summary = {
         )
     ),
 }
+summary["path_entry_count"] = count_path_entries(summary)
 summary["risk_status"] = (
     "elevated_risk"
     if checks["identification-challenges"]["danger_count"] > 0
@@ -1670,7 +1700,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
-    "review-root={review_root} "
+    "review-root={review_root} path-entry-count={path_entry_count} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
     "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
@@ -1715,6 +1745,7 @@ summary["risk_status"] = (
         capture_first_meta=checks["capture-regression"]["frame_meta_first_failed_scene"],
         capture_first_semantic=checks["capture-regression"]["semantic_first_failed_scene"],
         review_root=summary["review_root"],
+        path_entry_count=summary["path_entry_count"],
         index_html=summary["review_paths"]["index_html"],
         identification_html=summary["review_paths"]["identification_review_html"],
         capture_html=summary["review_paths"]["capture_regression_review_html"],
@@ -1842,6 +1873,7 @@ assert_verification_summary_key_frame_paths "$OUT_DIR"
 assert_verification_summary_key_frame_meta_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_verification_summary_artifact_input_coverage "$OUT_DIR"
+assert_verification_summary_path_entry_count "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"
 assert_capture_review_totals "$OUT_DIR"

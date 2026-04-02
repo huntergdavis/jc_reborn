@@ -132,6 +132,18 @@ for key, value in summary.items():
                 raise SystemExit(f"verification-summary {key}.{path_key} must be a file")
 print("summary-path-types: ok")
 
+seen_paths = {str(review_root_path): "review_root"}
+for key, value in summary.items():
+    if not key.endswith("_paths"):
+        continue
+    for path_key, path_value in value.items():
+        resolved = str(Path(path_value).resolve())
+        prior = seen_paths.get(resolved)
+        if prior is not None:
+            raise SystemExit(f"verification-summary duplicate path: {prior} and {key}.{path_key}")
+        seen_paths[resolved] = f"{key}.{path_key}"
+print("summary-unique-paths: ok")
+
 review_paths = summary.get("review_paths", {})
 required_review_paths = {
     "index_html": root / "index.html",

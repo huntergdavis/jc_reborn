@@ -703,6 +703,35 @@ print("verification-summary path types: ok")
 PY
 }
 
+assert_verification_summary_unique_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+seen = {}
+
+def record(label: str, path_value: str) -> None:
+    path = str(Path(path_value).resolve())
+    prior = seen.get(path)
+    if prior is not None:
+        raise SystemExit(f"verification-summary duplicate path: {prior} and {label}")
+    seen[path] = label
+
+record("review_root", summary["review_root"])
+for block_name, value in summary.items():
+    if not block_name.endswith("_paths"):
+        continue
+    for key, path_value in value.items():
+        record(f"{block_name}.{key}", path_value)
+
+print("verification-summary unique paths: ok")
+PY
+}
+
 assert_verification_summary_core_artifact_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1761,6 +1790,7 @@ assert_verification_summary_absolute_paths "$OUT_DIR"
 assert_verification_summary_existing_paths "$OUT_DIR"
 assert_verification_summary_paths_under_root "$OUT_DIR"
 assert_verification_summary_path_types "$OUT_DIR"
+assert_verification_summary_unique_paths "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_core_artifact_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"

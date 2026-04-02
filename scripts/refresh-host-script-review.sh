@@ -160,7 +160,7 @@ capture_review_set() {
     run_with_timeout 90 \
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "MARY 1" \
-        --mode story-direct \
+        --mode scene-default \
         --frames 250 \
         --interval 50 \
         --output "$root/mary1" \

@@ -111,6 +111,25 @@ print(
     f"temporal={identification_audit_paths.get('temporal_json')}"
 )
 
+capture_audit_paths = summary.get("capture_audit_paths", {})
+required_capture_audit_paths = {
+    "image_report_json": root / "frame-image-regression-report.json",
+    "meta_report_json": root / "frame-meta-regression-report.json",
+    "semantic_report_json": root / "semantic-regression-report.json",
+    "capture_report_json": root / "capture-regression-report.json",
+}
+for key, expected_path in required_capture_audit_paths.items():
+    actual = capture_audit_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary capture_audit_paths.{key} mismatch")
+print(
+    "capture-audit-paths: ok "
+    f"image={capture_audit_paths.get('image_report_json')} "
+    f"meta={capture_audit_paths.get('meta_report_json')} "
+    f"semantic={capture_audit_paths.get('semantic_report_json')} "
+    f"capture={capture_audit_paths.get('capture_report_json')}"
+)
+
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
     f"index={review_paths.get('index_html')}",
@@ -121,6 +140,10 @@ required_summary_txt_tokens = {
     f"identify-partials-json={identification_audit_paths.get('partials_json')}",
     f"identify-challenges-json={identification_audit_paths.get('challenges_json')}",
     f"identify-temporal-json={identification_audit_paths.get('temporal_json')}",
+    f"capture-image-report-json={capture_audit_paths.get('image_report_json')}",
+    f"capture-meta-report-json={capture_audit_paths.get('meta_report_json')}",
+    f"capture-semantic-report-json={capture_audit_paths.get('semantic_report_json')}",
+    f"capture-report-json={capture_audit_paths.get('capture_report_json')}",
 }
 for token in required_summary_txt_tokens:
     if token not in summary_txt:

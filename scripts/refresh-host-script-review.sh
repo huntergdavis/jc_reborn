@@ -591,6 +591,30 @@ print("verification-summary identification_audit_paths: ok")
 PY
 }
 
+assert_verification_summary_capture_audit_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+audit_paths = summary.get("capture_audit_paths", {})
+required = {
+    "image_report_json": root / "frame-image-regression-report.json",
+    "meta_report_json": root / "frame-meta-regression-report.json",
+    "semantic_report_json": root / "semantic-regression-report.json",
+    "capture_report_json": root / "capture-regression-report.json",
+}
+for key, expected in required.items():
+    actual = audit_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary capture_audit_paths.{key} mismatch")
+print("verification-summary capture_audit_paths: ok")
+PY
+}
+
 assert_verification_summary_text_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -611,6 +635,10 @@ required_tokens = {
     f"identify-partials-json={summary['identification_audit_paths']['partials_json']}",
     f"identify-challenges-json={summary['identification_audit_paths']['challenges_json']}",
     f"identify-temporal-json={summary['identification_audit_paths']['temporal_json']}",
+    f"capture-image-report-json={summary['capture_audit_paths']['image_report_json']}",
+    f"capture-meta-report-json={summary['capture_audit_paths']['meta_report_json']}",
+    f"capture-semantic-report-json={summary['capture_audit_paths']['semantic_report_json']}",
+    f"capture-report-json={summary['capture_audit_paths']['capture_report_json']}",
 }
 for token in required_tokens:
     if token not in summary_txt:
@@ -1079,6 +1107,12 @@ summary = {
         "challenges_json": str((root / "identification-challenges.json").resolve()),
         "temporal_json": str((root / "identification-temporal.json").resolve()),
     },
+    "capture_audit_paths": {
+        "image_report_json": str((root / "frame-image-regression-report.json").resolve()),
+        "meta_report_json": str((root / "frame-meta-regression-report.json").resolve()),
+        "semantic_report_json": str((root / "semantic-regression-report.json").resolve()),
+        "capture_report_json": str((root / "capture-regression-report.json").resolve()),
+    },
     "checks": checks,
     "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
     "artifact_inputs": digest_inputs,
@@ -1132,6 +1166,8 @@ summary["risk_status"] = (
     "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
     "identify-partials-json={identify_partials_json} identify-challenges-json={identify_challenges_json} "
     "identify-temporal-json={identify_temporal_json} "
+    "capture-image-report-json={capture_image_report_json} capture-meta-report-json={capture_meta_report_json} "
+    "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -1163,6 +1199,10 @@ summary["risk_status"] = (
         identify_partials_json=summary["identification_audit_paths"]["partials_json"],
         identify_challenges_json=summary["identification_audit_paths"]["challenges_json"],
         identify_temporal_json=summary["identification_audit_paths"]["temporal_json"],
+        capture_image_report_json=summary["capture_audit_paths"]["image_report_json"],
+        capture_meta_report_json=summary["capture_audit_paths"]["meta_report_json"],
+        capture_semantic_report_json=summary["capture_audit_paths"]["semantic_report_json"],
+        capture_report_json=summary["capture_audit_paths"]["capture_report_json"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],
@@ -1231,6 +1271,7 @@ write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"
+assert_verification_summary_capture_audit_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"

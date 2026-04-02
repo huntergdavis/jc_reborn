@@ -92,6 +92,18 @@ for key, value in summary.items():
             raise SystemExit(f"verification-summary {key}.{path_key} must be an absolute path")
 print("summary-absolute-paths: ok")
 
+for key, value in summary.items():
+    if key == "review_root":
+        if not Path(value).exists():
+            raise SystemExit("verification-summary review_root does not exist")
+        continue
+    if not key.endswith("_paths"):
+        continue
+    for path_key, path_value in value.items():
+        if not Path(path_value).exists():
+            raise SystemExit(f"verification-summary {key}.{path_key} does not exist")
+print("summary-existing-paths: ok")
+
 review_paths = summary.get("review_paths", {})
 required_review_paths = {
     "index_html": root / "index.html",

@@ -674,6 +674,38 @@ if identify_temporal_path.is_file():
     identify_temporal["max_identified_margin_drop"] = payload.get("max_identified_margin_drop")
 checks["identification-temporal"] = identify_temporal
 
+capture_regression_path = root / "capture-regression-report.json"
+capture_regression = {
+    "present": capture_regression_path.is_file(),
+    "passed": False,
+    "frame_image_passed": False,
+    "frame_image_failure_count": None,
+    "frame_meta_passed": False,
+    "frame_meta_failure_count": None,
+    "semantic_passed": False,
+    "semantic_failure_count": None,
+    "total_failure_count": None,
+}
+if capture_regression_path.is_file():
+    payload = json.loads(capture_regression_path.read_text(encoding="utf-8"))
+    checks_payload = payload.get("checks", {})
+    frame_image = checks_payload.get("frame-image", {})
+    frame_meta = checks_payload.get("frame-meta", {})
+    semantic = checks_payload.get("semantic", {})
+    capture_regression["passed"] = bool(payload.get("passed"))
+    capture_regression["frame_image_passed"] = bool(frame_image.get("passed"))
+    capture_regression["frame_image_failure_count"] = frame_image.get("failure_count")
+    capture_regression["frame_meta_passed"] = bool(frame_meta.get("passed"))
+    capture_regression["frame_meta_failure_count"] = frame_meta.get("failure_count")
+    capture_regression["semantic_passed"] = bool(semantic.get("passed"))
+    capture_regression["semantic_failure_count"] = semantic.get("failure_count")
+    capture_regression["total_failure_count"] = (
+        int(frame_image.get("failure_count", 0))
+        + int(frame_meta.get("failure_count", 0))
+        + int(semantic.get("failure_count", 0))
+    )
+checks["capture-regression"] = capture_regression
+
 digest_inputs = {}
 for name in (
     "manifest.json",
@@ -683,6 +715,8 @@ for name in (
     "identification-partials.json",
     "identification-challenges.json",
     "identification-temporal.json",
+    "capture-regression-report.json",
+    "capture-regression-review.html",
     "identification-review.html",
     "expectations.json",
     "host-truth-baseline.json",
@@ -724,6 +758,8 @@ summary = {
         and checks["identification-challenges"]["passed"]
         and checks["identification-temporal"]["present"]
         and checks["identification-temporal"]["passed"]
+        and checks["capture-regression"]["present"]
+        and checks["capture-regression"]["passed"]
         and checks["expectation-report"]["present"]
         and checks["expectation-report"]["mismatch_count"] == 0
         and checks["host-truth-compare"]["present"]
@@ -755,6 +791,7 @@ summary["risk_status"] = (
 (root / "verification-summary.txt").write_text(
     "status={status} risk={risk_status} git={git_head_short} digest={digest} "
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
+    "capture-regression={capture_regression} capture-failures={capture_failures} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -773,6 +810,8 @@ summary["risk_status"] = (
         identify_partials="ok" if checks["identification-partials"]["passed"] else "fail",
         identify_challenges="ok" if checks["identification-challenges"]["passed"] else "fail",
         identify_temporal="ok" if checks["identification-temporal"]["passed"] else "fail",
+        capture_regression="ok" if checks["capture-regression"]["passed"] else "fail",
+        capture_failures=checks["capture-regression"]["total_failure_count"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],

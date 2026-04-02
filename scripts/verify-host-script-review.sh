@@ -580,6 +580,7 @@ required_summary_txt_tokens = {
     f"artifact-input-parent-dir-min-nonroot-depth={summary.get('artifact_input_parent_dir_min_nonroot_depth')}",
     f"artifact-input-parent-dir-basenames-sha256={summary.get('artifact_input_parent_dir_basenames_sha256')}",
     f"artifact-input-parent-dir-basename-count={summary.get('artifact_input_parent_dir_basename_count')}",
+    f"artifact-input-contract-version={summary.get('artifact_input_contract_version')}",
     f"artifact-input-contract={summary.get('artifact_input_count')}|{summary.get('artifact_input_names_sha256')}|{summary.get('artifact_input_file_class_counts', {}).get('json', 0)}j/{summary.get('artifact_input_file_class_counts', {}).get('html', 0)}h/{summary.get('artifact_input_file_class_counts', {}).get('bmp', 0)}b/{summary.get('artifact_input_file_class_counts', {}).get('other', 0)}o|{summary.get('artifact_input_max_depth')}|{summary.get('artifact_input_min_nonroot_depth')}|{summary.get('artifact_input_parent_dir_count')}|{summary.get('artifact_input_parent_dir_max_depth')}|{summary.get('artifact_input_parent_dir_min_nonroot_depth')}|{summary.get('artifact_input_parent_dir_basename_count')}",
     f"artifact-input-contract-sha256={summary.get('artifact_input_contract_sha256')}",
     f"path-entry-count={path_entry_count}",
@@ -1072,6 +1073,9 @@ if summary.get("artifact_input_parent_dir_basenames_sha256") != expected_artifac
 expected_artifact_input_parent_dir_basename_count = len({Path(name).parent.name for name in artifact_inputs})
 if int(summary.get("artifact_input_parent_dir_basename_count", -1)) != expected_artifact_input_parent_dir_basename_count:
     raise SystemExit("verification-summary artifact_input_parent_dir_basename_count mismatch")
+expected_artifact_input_contract_version = 1
+if int(summary.get("artifact_input_contract_version", -1)) != expected_artifact_input_contract_version:
+    raise SystemExit("verification-summary artifact_input_contract_version mismatch")
 expected_artifact_input_contract = (
     f"{len(artifact_inputs)}|"
     f"{summary.get('artifact_input_names_sha256')}|"
@@ -1092,6 +1096,7 @@ if summary.get("artifact_input_contract_sha256") != expected_artifact_input_cont
     raise SystemExit("verification-summary artifact_input_contract_sha256 mismatch")
 print(
     "artifact-input-contract: ok "
+    f"version={expected_artifact_input_contract_version} "
     f"count={len(artifact_inputs)} "
     f"contract-sha256={summary.get('artifact_input_contract_sha256')} "
     f"names-sha256={summary.get('artifact_input_names_sha256')} "

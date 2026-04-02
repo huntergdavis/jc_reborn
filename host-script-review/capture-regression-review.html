@@ -15,6 +15,10 @@
     h2 { margin-top: 20px; }
     a { color: #8bd5ff; text-decoration: none; margin-right: 12px; }
     .links { margin-top: 10px; }
+    .cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }
+    .card { padding: 12px 16px; border: 1px solid #223; border-radius: 8px; background: #111826; }
+    .card .label { color: #9fb0c0; margin-bottom: 6px; }
+    .card .value { font-size: 20px; }
   </style>
 </head>
 <body>
@@ -25,6 +29,20 @@
       <div class="links"><a href="frame-image-regression-report.json">frame-image-regression-report.json</a> <a href="frame-meta-regression-report.json">frame-meta-regression-report.json</a> <a href="semantic-regression-report.json">semantic-regression-report.json</a> <a href="capture-regression-report.json">capture-regression-report.json</a></div>
     </div>
     
+    <div class="cards">
+      <div class="card">
+        <div class="label">Frame Image Failures</div>
+        <div class="value pass">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Frame Meta Failures</div>
+        <div class="value pass">0</div>
+      </div>
+      <div class="card">
+        <div class="label">Semantic Failures</div>
+        <div class="value pass">0</div>
+      </div>
+    </div>
     <section><h2>Frame Image</h2><table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Detail</th><th>Drift Assets</th><th>Links</th></tr></thead><tbody><tr><td>fishing1</td><td class="pass">PASS</td><td>0</td><td></td><td></td><td></td><td><a href="fishing1/frames/">frames</a> <a href="fishing1/frame-meta/">frame-meta</a></td></tr><tr><td>mary1</td><td class="pass">PASS</td><td>0</td><td></td><td></td><td></td><td><a href="mary1/frames/">frames</a> <a href="mary1/frame-meta/">frame-meta</a></td></tr></tbody></table></section><section><h2>Frame Meta</h2><table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Detail</th><th>Drift Assets</th><th>Links</th></tr></thead><tbody><tr><td>fishing1</td><td class="pass">PASS</td><td>0</td><td></td><td></td><td></td><td><a href="fishing1/frames/">frames</a> <a href="fishing1/frame-meta/">frame-meta</a></td></tr><tr><td>mary1</td><td class="pass">PASS</td><td>0</td><td></td><td></td><td></td><td><a href="mary1/frames/">frames</a> <a href="mary1/frame-meta/">frame-meta</a></td></tr></tbody></table></section><section><h2>Semantic</h2><table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Detail</th><th>Drift Assets</th><th>Links</th></tr></thead><tbody><tr><td>FISHING 1</td><td class="pass">PASS</td><td>0</td><td></td><td></td><td></td><td><a href="fishing1/frames/">frames</a> <a href="fishing1/frame-meta/">frame-meta</a></td></tr><tr><td>MARY 1</td><td class="pass">PASS</td><td>0</td><td></td><td></td><td></td><td><a href="mary1/frames/">frames</a> <a href="mary1/frame-meta/">frame-meta</a></td></tr></tbody></table></section>
   </main>
 </body>

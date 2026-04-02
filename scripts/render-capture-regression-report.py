@@ -45,6 +45,7 @@ def render_html(payload: dict) -> str:
     )
 
     tightest = payload.get("tightest_drift") or {}
+    checks = payload.get("checks", {})
 
     def render_rows(name: str, label_key: str, rows: list[dict]) -> str:
         body = []
@@ -140,6 +141,10 @@ def render_html(payload: dict) -> str:
     h2 {{ margin-top: 20px; }}
     a {{ color: #8bd5ff; text-decoration: none; margin-right: 12px; }}
     .links {{ margin-top: 10px; }}
+    .cards {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }}
+    .card {{ padding: 12px 16px; border: 1px solid #223; border-radius: 8px; background: #111826; }}
+    .card .label {{ color: #9fb0c0; margin-bottom: 6px; }}
+    .card .value {{ font-size: 20px; }}
   </style>
 </head>
 <body>
@@ -150,6 +155,20 @@ def render_html(payload: dict) -> str:
       {report_links}
     </div>
     {tightest_html}
+    <div class="cards">
+      <div class="card">
+        <div class="label">Frame Image Failures</div>
+        <div class="value {'pass' if checks.get('frame-image', {}).get('failure_count', 0) == 0 else 'fail'}">{checks.get('frame-image', {}).get('failure_count', 0)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Frame Meta Failures</div>
+        <div class="value {'pass' if checks.get('frame-meta', {}).get('failure_count', 0) == 0 else 'fail'}">{checks.get('frame-meta', {}).get('failure_count', 0)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Semantic Failures</div>
+        <div class="value {'pass' if checks.get('semantic', {}).get('failure_count', 0) == 0 else 'fail'}">{checks.get('semantic', {}).get('failure_count', 0)}</div>
+      </div>
+    </div>
     {''.join(sections)}
   </main>
 </body>

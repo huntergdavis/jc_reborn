@@ -186,11 +186,11 @@ capture_review_set() {
 
     run_with_timeout 60 \
         "$SCRIPT_DIR/capture-host-scene.sh" \
-        --scene "MARY 3" \
+        --scene "MARY 5" \
         --mode scene-exact \
         --frames 240 \
         --interval 60 \
-        --output "$root/mary3" \
+        --output "$root/mary5" \
         --no-stamp
 
     printf '{}\n' > "$root/capture-regression-report.json"

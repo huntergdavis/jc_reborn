@@ -566,6 +566,31 @@ print("verification-summary review_paths: ok")
 PY
 }
 
+assert_verification_summary_identification_audit_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+audit_paths = summary.get("identification_audit_paths", {})
+required = {
+    "selfcheck_json": root / "identification-selfcheck.json",
+    "eval_json": root / "identification-eval.json",
+    "partials_json": root / "identification-partials.json",
+    "challenges_json": root / "identification-challenges.json",
+    "temporal_json": root / "identification-temporal.json",
+}
+for key, expected in required.items():
+    actual = audit_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary identification_audit_paths.{key} mismatch")
+print("verification-summary identification_audit_paths: ok")
+PY
+}
+
 assert_verification_summary_text_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -581,6 +606,11 @@ required_tokens = {
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",
+    f"identify-selfcheck-json={summary['identification_audit_paths']['selfcheck_json']}",
+    f"identify-eval-json={summary['identification_audit_paths']['eval_json']}",
+    f"identify-partials-json={summary['identification_audit_paths']['partials_json']}",
+    f"identify-challenges-json={summary['identification_audit_paths']['challenges_json']}",
+    f"identify-temporal-json={summary['identification_audit_paths']['temporal_json']}",
 }
 for token in required_tokens:
     if token not in summary_txt:
@@ -1042,6 +1072,13 @@ summary = {
         "identification_review_html": str((root / "identification-review.html").resolve()),
         "capture_regression_review_html": str((root / "capture-regression-review.html").resolve()),
     },
+    "identification_audit_paths": {
+        "selfcheck_json": str((root / "identification-selfcheck.json").resolve()),
+        "eval_json": str((root / "identification-eval.json").resolve()),
+        "partials_json": str((root / "identification-partials.json").resolve()),
+        "challenges_json": str((root / "identification-challenges.json").resolve()),
+        "temporal_json": str((root / "identification-temporal.json").resolve()),
+    },
     "checks": checks,
     "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
     "artifact_inputs": digest_inputs,
@@ -1092,6 +1129,9 @@ summary["risk_status"] = (
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
     "index={index_html} identification={identification_html} capture={capture_html} "
+    "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
+    "identify-partials-json={identify_partials_json} identify-challenges-json={identify_challenges_json} "
+    "identify-temporal-json={identify_temporal_json} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -1118,6 +1158,11 @@ summary["risk_status"] = (
         index_html=summary["review_paths"]["index_html"],
         identification_html=summary["review_paths"]["identification_review_html"],
         capture_html=summary["review_paths"]["capture_regression_review_html"],
+        identify_selfcheck_json=summary["identification_audit_paths"]["selfcheck_json"],
+        identify_eval_json=summary["identification_audit_paths"]["eval_json"],
+        identify_partials_json=summary["identification_audit_paths"]["partials_json"],
+        identify_challenges_json=summary["identification_audit_paths"]["challenges_json"],
+        identify_temporal_json=summary["identification_audit_paths"]["temporal_json"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],
@@ -1185,6 +1230,7 @@ fi
 write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
+assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"

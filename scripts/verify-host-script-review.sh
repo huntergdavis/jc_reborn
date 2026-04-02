@@ -90,11 +90,37 @@ print(
     f"capture={review_paths.get('capture_regression_review_html')}"
 )
 
+identification_audit_paths = summary.get("identification_audit_paths", {})
+required_identification_audit_paths = {
+    "selfcheck_json": root / "identification-selfcheck.json",
+    "eval_json": root / "identification-eval.json",
+    "partials_json": root / "identification-partials.json",
+    "challenges_json": root / "identification-challenges.json",
+    "temporal_json": root / "identification-temporal.json",
+}
+for key, expected_path in required_identification_audit_paths.items():
+    actual = identification_audit_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary identification_audit_paths.{key} mismatch")
+print(
+    "identification-audit-paths: ok "
+    f"selfcheck={identification_audit_paths.get('selfcheck_json')} "
+    f"eval={identification_audit_paths.get('eval_json')} "
+    f"partials={identification_audit_paths.get('partials_json')} "
+    f"challenges={identification_audit_paths.get('challenges_json')} "
+    f"temporal={identification_audit_paths.get('temporal_json')}"
+)
+
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",
+    f"identify-selfcheck-json={identification_audit_paths.get('selfcheck_json')}",
+    f"identify-eval-json={identification_audit_paths.get('eval_json')}",
+    f"identify-partials-json={identification_audit_paths.get('partials_json')}",
+    f"identify-challenges-json={identification_audit_paths.get('challenges_json')}",
+    f"identify-temporal-json={identification_audit_paths.get('temporal_json')}",
 }
 for token in required_summary_txt_tokens:
     if token not in summary_txt:

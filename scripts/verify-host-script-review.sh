@@ -157,6 +157,12 @@ if tightest:
 
 identification_html = (root / "identification-review.html").read_text(encoding="utf-8")
 for href in (
+    "identification-selfcheck.json",
+    "identification-eval.json",
+    "identification-partials.json",
+    "identification-challenges.json",
+    "identification-temporal.json",
+    "semantic-truth.json",
     "fishing1/frames/frame_00000.bmp",
     "mary1/frames/frame_00000.bmp",
     "fishing1/frames/frame_00080.bmp",

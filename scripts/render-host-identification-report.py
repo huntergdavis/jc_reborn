@@ -417,6 +417,16 @@ def build_html(
     scene_index = build_scene_index(manifest)
     semantic_index = build_semantic_index(semantic_truth)
     challenge_risk_label, challenge_risk_class = challenge_risk_status(challenges)
+    top_links = " ".join(
+        [
+            '<a href="identification-selfcheck.json">identification-selfcheck.json</a>',
+            '<a href="identification-eval.json">identification-eval.json</a>',
+            '<a href="identification-partials.json">identification-partials.json</a>',
+            '<a href="identification-challenges.json">identification-challenges.json</a>',
+            '<a href="identification-temporal.json">identification-temporal.json</a>',
+            '<a href="semantic-truth.json">semantic-truth.json</a>',
+        ]
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -485,12 +495,15 @@ def build_html(
     .semantic-summary div {{
       margin-top:3px;
     }}
+    .top-links {{ margin:0 0 18px 0; display:flex; gap:16px; flex-wrap:wrap; }}
+    a {{ color:#8bd5ff; text-decoration:none; }}
   </style>
 </head>
 <body>
   <main>
     <h1>{esc(title)}</h1>
     <div class="meta">Deterministic matcher review across exact, partial, challenge, and temporal audits.</div>
+    <div class="top-links">{top_links}</div>
     <div class="risk-banner {esc(challenge_risk_class)}"><span class="label">Challenge Risk</span><div class="value">{esc(challenge_risk_label)}</div></div>
     <div class="summary">
       {render_metric_card("Exact Min Margin", selfcheck.get('min_identified_margin', 'n/a'))}

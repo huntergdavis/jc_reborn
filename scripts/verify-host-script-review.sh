@@ -94,6 +94,17 @@ path_map_names = sorted(
 if summary.get("path_map_names") != path_map_names:
     raise SystemExit("verification-summary path_map_names mismatch")
 print(f"path-map-names: ok names={','.join(path_map_names)}")
+path_map_entry_counts = {
+    key: len(value)
+    for key, value in sorted(summary.items())
+    if key.endswith("_paths") and isinstance(value, dict)
+}
+if summary.get("path_map_entry_counts") != path_map_entry_counts:
+    raise SystemExit("verification-summary path_map_entry_counts mismatch")
+print(
+    "path-map-entry-counts: ok "
+    + ",".join(f"{key}:{path_map_entry_counts[key]}" for key in sorted(path_map_entry_counts))
+)
 
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
@@ -434,6 +445,7 @@ required_summary_txt_tokens = {
     f"review-root={review_root}",
     f"path-map-count={path_map_count}",
     f"path-map-names={','.join(path_map_names)}",
+    f"path-map-entry-counts={','.join(f'{key}:{path_map_entry_counts[key]}' for key in sorted(path_map_entry_counts))}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

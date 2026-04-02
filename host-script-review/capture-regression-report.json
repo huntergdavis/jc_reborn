@@ -8,12 +8,14 @@
         {
           "scene": "fishing1",
           "passed": true,
-          "failure_count": 0
+          "failure_count": 0,
+          "first_failure": null
         },
         {
           "scene": "mary1",
           "passed": true,
-          "failure_count": 0
+          "failure_count": 0,
+          "first_failure": null
         }
       ]
     },
@@ -24,12 +26,14 @@
         {
           "scene": "fishing1",
           "passed": true,
-          "failure_count": 0
+          "failure_count": 0,
+          "first_failure": null
         },
         {
           "scene": "mary1",
           "passed": true,
-          "failure_count": 0
+          "failure_count": 0,
+          "first_failure": null
         }
       ]
     },
@@ -40,12 +44,14 @@
         {
           "scene_label": "FISHING 1",
           "passed": true,
-          "failure_count": 0
+          "failure_count": 0,
+          "first_failure": null
         },
         {
           "scene_label": "MARY 1",
           "passed": true,
-          "failure_count": 0
+          "failure_count": 0,
+          "first_failure": null
         }
       ]
     }

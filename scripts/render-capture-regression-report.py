@@ -12,11 +12,14 @@ def load(path: Path) -> dict:
 def summarize(report: dict, label_key: str) -> list[dict]:
     rows = []
     for scene in report.get("scenes", []):
+        failures = scene.get("failures", [])
+        first_failure = failures[0] if failures else None
         rows.append(
             {
                 label_key: scene.get(label_key),
                 "passed": scene.get("passed", False),
                 "failure_count": scene.get("failure_count", 0),
+                "first_failure": first_failure,
             }
         )
     return rows
@@ -41,20 +44,33 @@ def render_html(payload: dict) -> str:
             label = row.get(label_key, "")
             status = fmt_status(bool(row.get("passed", False)))
             failure_count = row.get("failure_count", 0)
+            first_failure = row.get("first_failure") or {}
             scene_slug = label if label_key == "scene" else label.lower().replace(" ", "")
             frame_href = f"{scene_slug}/frames/"
             meta_href = f"{scene_slug}/frame-meta/"
+            if failure_count:
+                failure_preview = " ".join(
+                    str(part)
+                    for part in (
+                        first_failure.get("frame"),
+                        first_failure.get("field"),
+                    )
+                    if part not in (None, "")
+                )
+            else:
+                failure_preview = ""
             body.append(
                 "<tr>"
                 f"<td>{html.escape(str(label))}</td>"
                 f"<td class=\"{status}\">{status.upper()}</td>"
                 f"<td>{failure_count}</td>"
+                f"<td>{html.escape(failure_preview)}</td>"
                 f"<td><a href=\"{html.escape(frame_href)}\">frames</a> <a href=\"{html.escape(meta_href)}\">frame-meta</a></td>"
                 "</tr>"
             )
         return (
             f"<section><h2>{html.escape(name)}</h2>"
-            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>Links</th></tr></thead>"
+            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Links</th></tr></thead>"
             f"<tbody>{''.join(body)}</tbody></table></section>"
         )
 

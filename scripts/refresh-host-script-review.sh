@@ -712,6 +712,43 @@ print("capture-regression review totals: ok")
 PY
 }
 
+assert_capture_review_tightest_drift() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+report = json.loads((root / "capture-regression-report.json").read_text(encoding="utf-8"))
+html = (root / "capture-regression-review.html").read_text(encoding="utf-8")
+tightest = report.get("tightest_drift")
+if not tightest:
+    print("capture-regression review tightest drift: ok")
+    raise SystemExit(0)
+
+scene = tightest.get("scene") or tightest.get("scene_label") or ""
+field = tightest.get("field") or ""
+check = tightest.get("check") or ""
+summary_pattern = rf"Tightest Drift</h2>\s*<div>{re.escape(str(check))} / {re.escape(str(scene))} / {re.escape(str(field))}"
+if not re.search(summary_pattern, html):
+    raise SystemExit("capture-regression-review.html tightest drift summary mismatch")
+
+frame = tightest.get("frame")
+if frame:
+    scene_slug = str(scene).lower().replace(" ", "")
+    for href in (
+        f'{scene_slug}/frames/{frame}.bmp',
+        f'{scene_slug}/frame-meta/{frame}.json',
+    ):
+        if href not in html:
+            raise SystemExit(f"capture-regression-review.html tightest drift asset missing: {href}")
+
+print("capture-regression review tightest drift: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -1125,6 +1162,7 @@ assert_verification_summary_text_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"
 assert_capture_review_totals "$OUT_DIR"
+assert_capture_review_tightest_drift "$OUT_DIR"
 print_review_paths "$OUT_DIR"
 
 rm -rf "$TMP_DIR"

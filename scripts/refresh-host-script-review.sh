@@ -615,6 +615,30 @@ print("verification-summary capture_audit_paths: ok")
 PY
 }
 
+assert_verification_summary_scene_asset_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+asset_paths = summary.get("scene_asset_paths", {})
+required = {
+    "fishing_frames_dir": root / "fishing1" / "frames",
+    "fishing_meta_dir": root / "fishing1" / "frame-meta",
+    "mary_frames_dir": root / "mary1" / "frames",
+    "mary_meta_dir": root / "mary1" / "frame-meta",
+}
+for key, expected in required.items():
+    actual = asset_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary scene_asset_paths.{key} mismatch")
+print("verification-summary scene_asset_paths: ok")
+PY
+}
+
 assert_verification_summary_text_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -639,6 +663,10 @@ required_tokens = {
     f"capture-meta-report-json={summary['capture_audit_paths']['meta_report_json']}",
     f"capture-semantic-report-json={summary['capture_audit_paths']['semantic_report_json']}",
     f"capture-report-json={summary['capture_audit_paths']['capture_report_json']}",
+    f"fishing-frames-dir={summary['scene_asset_paths']['fishing_frames_dir']}",
+    f"fishing-meta-dir={summary['scene_asset_paths']['fishing_meta_dir']}",
+    f"mary-frames-dir={summary['scene_asset_paths']['mary_frames_dir']}",
+    f"mary-meta-dir={summary['scene_asset_paths']['mary_meta_dir']}",
 }
 for token in required_tokens:
     if token not in summary_txt:
@@ -1113,6 +1141,12 @@ summary = {
         "semantic_report_json": str((root / "semantic-regression-report.json").resolve()),
         "capture_report_json": str((root / "capture-regression-report.json").resolve()),
     },
+    "scene_asset_paths": {
+        "fishing_frames_dir": str((root / "fishing1" / "frames").resolve()),
+        "fishing_meta_dir": str((root / "fishing1" / "frame-meta").resolve()),
+        "mary_frames_dir": str((root / "mary1" / "frames").resolve()),
+        "mary_meta_dir": str((root / "mary1" / "frame-meta").resolve()),
+    },
     "checks": checks,
     "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
     "artifact_inputs": digest_inputs,
@@ -1168,6 +1202,8 @@ summary["risk_status"] = (
     "identify-temporal-json={identify_temporal_json} "
     "capture-image-report-json={capture_image_report_json} capture-meta-report-json={capture_meta_report_json} "
     "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
+    "fishing-frames-dir={fishing_frames_dir} fishing-meta-dir={fishing_meta_dir} "
+    "mary-frames-dir={mary_frames_dir} mary-meta-dir={mary_meta_dir} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -1203,6 +1239,10 @@ summary["risk_status"] = (
         capture_meta_report_json=summary["capture_audit_paths"]["meta_report_json"],
         capture_semantic_report_json=summary["capture_audit_paths"]["semantic_report_json"],
         capture_report_json=summary["capture_audit_paths"]["capture_report_json"],
+        fishing_frames_dir=summary["scene_asset_paths"]["fishing_frames_dir"],
+        fishing_meta_dir=summary["scene_asset_paths"]["fishing_meta_dir"],
+        mary_frames_dir=summary["scene_asset_paths"]["mary_frames_dir"],
+        mary_meta_dir=summary["scene_asset_paths"]["mary_meta_dir"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],
@@ -1272,6 +1312,7 @@ assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
+assert_verification_summary_scene_asset_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"

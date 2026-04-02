@@ -130,6 +130,25 @@ print(
     f"capture={capture_audit_paths.get('capture_report_json')}"
 )
 
+scene_asset_paths = summary.get("scene_asset_paths", {})
+required_scene_asset_paths = {
+    "fishing_frames_dir": root / "fishing1" / "frames",
+    "fishing_meta_dir": root / "fishing1" / "frame-meta",
+    "mary_frames_dir": root / "mary1" / "frames",
+    "mary_meta_dir": root / "mary1" / "frame-meta",
+}
+for key, expected_path in required_scene_asset_paths.items():
+    actual = scene_asset_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary scene_asset_paths.{key} mismatch")
+print(
+    "scene-asset-paths: ok "
+    f"fishing-frames={scene_asset_paths.get('fishing_frames_dir')} "
+    f"fishing-meta={scene_asset_paths.get('fishing_meta_dir')} "
+    f"mary-frames={scene_asset_paths.get('mary_frames_dir')} "
+    f"mary-meta={scene_asset_paths.get('mary_meta_dir')}"
+)
+
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
     f"index={review_paths.get('index_html')}",
@@ -144,6 +163,10 @@ required_summary_txt_tokens = {
     f"capture-meta-report-json={capture_audit_paths.get('meta_report_json')}",
     f"capture-semantic-report-json={capture_audit_paths.get('semantic_report_json')}",
     f"capture-report-json={capture_audit_paths.get('capture_report_json')}",
+    f"fishing-frames-dir={scene_asset_paths.get('fishing_frames_dir')}",
+    f"fishing-meta-dir={scene_asset_paths.get('fishing_meta_dir')}",
+    f"mary-frames-dir={scene_asset_paths.get('mary_frames_dir')}",
+    f"mary-meta-dir={scene_asset_paths.get('mary_meta_dir')}",
 }
 for token in required_summary_txt_tokens:
     if token not in summary_txt:

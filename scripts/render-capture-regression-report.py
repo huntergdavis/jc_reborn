@@ -44,6 +44,8 @@ def render_html(payload: dict) -> str:
         "</div>"
     )
 
+    tightest = payload.get("tightest_drift") or {}
+
     def render_rows(name: str, label_key: str, rows: list[dict]) -> str:
         body = []
         for row in rows:
@@ -101,6 +103,16 @@ def render_html(payload: dict) -> str:
         render_rows("Semantic", "scene_label", checks["semantic"]["scenes"]),
     ]
     overall = fmt_status(bool(payload.get("passed", False)))
+    tightest_html = ""
+    if tightest:
+        tightest_html = (
+            "<div class=\"summary\">"
+            "<h2>Tightest Drift</h2>"
+            f"<div>{html.escape(str(tightest.get('check', '')))} / "
+            f"{html.escape(str(tightest.get('scene', '')))} / "
+            f"{html.escape(str(tightest.get('field', '')))}</div>"
+            "</div>"
+        )
     return f"""<!doctype html>
 <html>
 <head>
@@ -127,6 +139,7 @@ def render_html(payload: dict) -> str:
       <div class="{overall}">Overall: {overall.upper()}</div>
       {report_links}
     </div>
+    {tightest_html}
     {''.join(sections)}
   </main>
 </body>
@@ -170,6 +183,17 @@ def main() -> int:
             },
         },
     }
+    for check_name, report in (
+        ("frame-image", frame_image),
+        ("frame-meta", frame_meta),
+        ("semantic", semantic),
+    ):
+        failures = report.get("failures", [])
+        if failures:
+            first = dict(failures[0])
+            first["check"] = check_name
+            payload["tightest_drift"] = first
+            break
     Path(args.out_json).write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     if args.out_html:
         Path(args.out_html).write_text(render_html(payload), encoding="utf-8")

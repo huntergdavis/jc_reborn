@@ -89,6 +89,16 @@ print(
     f"capture={review_paths.get('capture_regression_review_html')}"
 )
 
+summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
+required_summary_txt_tokens = {
+    f"index={review_paths.get('index_html')}",
+    f"identification={review_paths.get('identification_review_html')}",
+    f"capture={review_paths.get('capture_regression_review_html')}",
+}
+for token in required_summary_txt_tokens:
+    if token not in summary_txt:
+        raise SystemExit(f"verification-summary.txt missing token: {token}")
+
 manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
 manifest_extras = manifest.get("extras", {})
 required_manifest_extras = {

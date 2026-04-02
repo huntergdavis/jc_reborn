@@ -979,6 +979,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
+    "index={index_html} identification={identification_html} capture={capture_html} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -1002,6 +1003,9 @@ summary["risk_status"] = (
         capture_first_image=checks["capture-regression"]["frame_image_first_failed_scene"],
         capture_first_meta=checks["capture-regression"]["frame_meta_first_failed_scene"],
         capture_first_semantic=checks["capture-regression"]["semantic_first_failed_scene"],
+        index_html=summary["review_paths"]["index_html"],
+        identification_html=summary["review_paths"]["identification_review_html"],
+        capture_html=summary["review_paths"]["capture_regression_review_html"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],

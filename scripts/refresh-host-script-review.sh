@@ -675,6 +675,8 @@ from pathlib import Path
 root = Path(sys.argv[1])
 html = (root / "identification-review.html").read_text(encoding="utf-8")
 required = [
+    "index.html",
+    "capture-regression-review.html",
     "identification-selfcheck.json",
     "identification-eval.json",
     "identification-partials.json",

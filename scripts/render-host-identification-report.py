@@ -419,6 +419,8 @@ def build_html(
     challenge_risk_label, challenge_risk_class = challenge_risk_status(challenges)
     top_links = " ".join(
         [
+            '<a href="index.html">index.html</a>',
+            '<a href="capture-regression-review.html">capture-regression-review.html</a>',
             '<a href="identification-selfcheck.json">identification-selfcheck.json</a>',
             '<a href="identification-eval.json">identification-eval.json</a>',
             '<a href="identification-partials.json">identification-partials.json</a>',

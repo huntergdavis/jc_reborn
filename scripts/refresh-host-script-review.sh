@@ -804,6 +804,11 @@ summary = {
     "git_head": git_head,
     "git_head_short": git_head_short,
     "verify_repro": verify_repro,
+    "review_paths": {
+        "index_html": str((root / "index.html").resolve()),
+        "identification_review_html": str((root / "identification-review.html").resolve()),
+        "capture_regression_review_html": str((root / "capture-regression-review.html").resolve()),
+    },
     "checks": checks,
     "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
     "artifact_inputs": digest_inputs,

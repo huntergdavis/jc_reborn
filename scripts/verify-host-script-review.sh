@@ -115,6 +115,23 @@ for key, value in summary.items():
             raise SystemExit(f"verification-summary {key}.{path_key} escapes review_root") from exc
 print("summary-paths-under-root: ok")
 
+if not review_root_path.is_dir():
+    raise SystemExit("verification-summary review_root must be a directory")
+for key, value in summary.items():
+    if key == "review_root":
+        continue
+    if not key.endswith("_paths"):
+        continue
+    for path_key, path_value in value.items():
+        path = Path(path_value)
+        if path_key.endswith("_dir"):
+            if not path.is_dir():
+                raise SystemExit(f"verification-summary {key}.{path_key} must be a directory")
+        else:
+            if not path.is_file():
+                raise SystemExit(f"verification-summary {key}.{path_key} must be a file")
+print("summary-path-types: ok")
+
 review_paths = summary.get("review_paths", {})
 required_review_paths = {
     "index_html": root / "index.html",

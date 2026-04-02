@@ -670,6 +670,39 @@ print("verification-summary paths under root: ok")
 PY
 }
 
+assert_verification_summary_path_types() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+
+def check_path(label: str, key: str, path_value: str) -> None:
+    path = Path(path_value)
+    if key.endswith("_dir"):
+        if not path.is_dir():
+            raise SystemExit(f"verification-summary {label} must be a directory")
+    else:
+        if not path.is_file():
+            raise SystemExit(f"verification-summary {label} must be a file")
+
+for block_name, value in summary.items():
+    if block_name == "review_root":
+        if not Path(value).is_dir():
+            raise SystemExit("verification-summary review_root must be a directory")
+        continue
+    if not block_name.endswith("_paths"):
+        continue
+    for key, path_value in value.items():
+        check_path(f"{block_name}.{key}", key, path_value)
+
+print("verification-summary path types: ok")
+PY
+}
+
 assert_verification_summary_core_artifact_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1727,6 +1760,7 @@ assert_verification_summary_review_root "$OUT_DIR"
 assert_verification_summary_absolute_paths "$OUT_DIR"
 assert_verification_summary_existing_paths "$OUT_DIR"
 assert_verification_summary_paths_under_root "$OUT_DIR"
+assert_verification_summary_path_types "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_core_artifact_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"

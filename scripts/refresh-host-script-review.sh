@@ -125,13 +125,25 @@ run_with_timeout() {
 capture_review_set() {
     local root="$1"
     local floors_path="$root/identification-regression-floors.json"
+    local image_baseline_path="$root/frame-image-regression-baseline.json"
+    local meta_baseline_path="$root/frame-meta-regression-baseline.json"
     local semantic_baseline_path="$root/semantic-regression-baseline.json"
     local floors_tmp=""
+    local image_baseline_tmp=""
+    local meta_baseline_tmp=""
     local semantic_baseline_tmp=""
 
     if [ -f "$floors_path" ]; then
         floors_tmp="$(mktemp)"
         cp "$floors_path" "$floors_tmp"
+    fi
+    if [ -f "$image_baseline_path" ]; then
+        image_baseline_tmp="$(mktemp)"
+        cp "$image_baseline_path" "$image_baseline_tmp"
+    fi
+    if [ -f "$meta_baseline_path" ]; then
+        meta_baseline_tmp="$(mktemp)"
+        cp "$meta_baseline_path" "$meta_baseline_tmp"
     fi
     if [ -f "$semantic_baseline_path" ]; then
         semantic_baseline_tmp="$(mktemp)"
@@ -143,6 +155,12 @@ capture_review_set() {
 
     if [ -n "$floors_tmp" ]; then
         mv "$floors_tmp" "$floors_path"
+    fi
+    if [ -n "$image_baseline_tmp" ]; then
+        mv "$image_baseline_tmp" "$image_baseline_path"
+    fi
+    if [ -n "$meta_baseline_tmp" ]; then
+        mv "$meta_baseline_tmp" "$meta_baseline_path"
     fi
     if [ -n "$semantic_baseline_tmp" ]; then
         mv "$semantic_baseline_tmp" "$semantic_baseline_path"

@@ -229,6 +229,21 @@ print(
     f"semantic={regression_baseline_paths.get('semantic_baseline_json')}"
 )
 
+scene_root_paths = summary.get("scene_root_paths", {})
+required_scene_root_paths = {
+    "fishing_scene_dir": root / "fishing1",
+    "mary_scene_dir": root / "mary1",
+}
+for key, expected_path in required_scene_root_paths.items():
+    actual = scene_root_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary scene_root_paths.{key} mismatch")
+print(
+    "scene-root-paths: ok "
+    f"fishing={scene_root_paths.get('fishing_scene_dir')} "
+    f"mary={scene_root_paths.get('mary_scene_dir')}"
+)
+
 scene_asset_paths = summary.get("scene_asset_paths", {})
 required_scene_asset_paths = {
     "fishing_frames_dir": root / "fishing1" / "frames",
@@ -315,6 +330,8 @@ required_summary_txt_tokens = {
     f"image-baseline-json={regression_baseline_paths.get('image_baseline_json')}",
     f"meta-baseline-json={regression_baseline_paths.get('meta_baseline_json')}",
     f"semantic-baseline-json={regression_baseline_paths.get('semantic_baseline_json')}",
+    f"fishing-scene-dir={scene_root_paths.get('fishing_scene_dir')}",
+    f"mary-scene-dir={scene_root_paths.get('mary_scene_dir')}",
     f"fishing-frames-dir={scene_asset_paths.get('fishing_frames_dir')}",
     f"fishing-meta-dir={scene_asset_paths.get('fishing_meta_dir')}",
     f"mary-frames-dir={scene_asset_paths.get('mary_frames_dir')}",

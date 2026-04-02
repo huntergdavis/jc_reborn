@@ -765,6 +765,28 @@ print("verification-summary regression_baseline_paths: ok")
 PY
 }
 
+assert_verification_summary_scene_root_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+scene_root_paths = summary.get("scene_root_paths", {})
+required = {
+    "fishing_scene_dir": root / "fishing1",
+    "mary_scene_dir": root / "mary1",
+}
+for key, expected in required.items():
+    actual = scene_root_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary scene_root_paths.{key} mismatch")
+print("verification-summary scene_root_paths: ok")
+PY
+}
+
 assert_verification_summary_scene_asset_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -876,6 +898,8 @@ required_tokens = {
     f"image-baseline-json={summary['regression_baseline_paths']['image_baseline_json']}",
     f"meta-baseline-json={summary['regression_baseline_paths']['meta_baseline_json']}",
     f"semantic-baseline-json={summary['regression_baseline_paths']['semantic_baseline_json']}",
+    f"fishing-scene-dir={summary['scene_root_paths']['fishing_scene_dir']}",
+    f"mary-scene-dir={summary['scene_root_paths']['mary_scene_dir']}",
     f"fishing-frames-dir={summary['scene_asset_paths']['fishing_frames_dir']}",
     f"fishing-meta-dir={summary['scene_asset_paths']['fishing_meta_dir']}",
     f"mary-frames-dir={summary['scene_asset_paths']['mary_frames_dir']}",
@@ -1389,6 +1413,10 @@ summary = {
         "meta_baseline_json": str((root / "frame-meta-regression-baseline.json").resolve()),
         "semantic_baseline_json": str((root / "semantic-regression-baseline.json").resolve()),
     },
+    "scene_root_paths": {
+        "fishing_scene_dir": str((root / "fishing1").resolve()),
+        "mary_scene_dir": str((root / "mary1").resolve()),
+    },
     "scene_asset_paths": {
         "fishing_frames_dir": str((root / "fishing1" / "frames").resolve()),
         "fishing_meta_dir": str((root / "fishing1" / "frame-meta").resolve()),
@@ -1470,6 +1498,7 @@ summary["risk_status"] = (
     "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
     "image-baseline-json={image_baseline_json} meta-baseline-json={meta_baseline_json} "
     "semantic-baseline-json={semantic_baseline_json} "
+    "fishing-scene-dir={fishing_scene_dir} mary-scene-dir={mary_scene_dir} "
     "fishing-frames-dir={fishing_frames_dir} fishing-meta-dir={fishing_meta_dir} "
     "mary-frames-dir={mary_frames_dir} mary-meta-dir={mary_meta_dir} "
     "fishing-start-bmp={fishing_start_bmp} fishing-late-bmp={fishing_late_bmp} "
@@ -1526,6 +1555,8 @@ summary["risk_status"] = (
         image_baseline_json=summary["regression_baseline_paths"]["image_baseline_json"],
         meta_baseline_json=summary["regression_baseline_paths"]["meta_baseline_json"],
         semantic_baseline_json=summary["regression_baseline_paths"]["semantic_baseline_json"],
+        fishing_scene_dir=summary["scene_root_paths"]["fishing_scene_dir"],
+        mary_scene_dir=summary["scene_root_paths"]["mary_scene_dir"],
         fishing_frames_dir=summary["scene_asset_paths"]["fishing_frames_dir"],
         fishing_meta_dir=summary["scene_asset_paths"]["fishing_meta_dir"],
         mary_frames_dir=summary["scene_asset_paths"]["mary_frames_dir"],
@@ -1614,6 +1645,7 @@ assert_verification_summary_expectation_paths "$OUT_DIR"
 assert_verification_summary_repro_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
 assert_verification_summary_regression_baseline_paths "$OUT_DIR"
+assert_verification_summary_scene_root_paths "$OUT_DIR"
 assert_verification_summary_scene_asset_paths "$OUT_DIR"
 assert_verification_summary_key_frame_paths "$OUT_DIR"
 assert_verification_summary_key_frame_meta_paths "$OUT_DIR"

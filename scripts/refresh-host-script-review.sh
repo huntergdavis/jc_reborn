@@ -566,6 +566,25 @@ print("verification-summary review_paths: ok")
 PY
 }
 
+print_review_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_paths = summary.get("review_paths", {})
+print(
+    "review-paths: ok "
+    f"index={review_paths.get('index_html')} "
+    f"identification={review_paths.get('identification_review_html')} "
+    f"capture={review_paths.get('capture_regression_review_html')}"
+)
+PY
+}
+
 assert_manifest_dashboard_links() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1052,6 +1071,7 @@ assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"
+print_review_paths "$OUT_DIR"
 
 rm -rf "$TMP_DIR"
 

@@ -157,7 +157,7 @@ if [ -z "$BOOT" ]; then
                 exit 1
             fi
             if [ -n "$SCENE_INDEX" ] && [[ "$SCENE_BOOT_TOKENS" =~ ^story[[:space:]]+(scene|index)[[:space:]]+[0-9]+$ ]]; then
-                BOOT="window nosound story single ${SCENE_INDEX}"
+                BOOT="window nosound story direct ${SCENE_INDEX}"
             else
                 BOOT="window nosound ${SCENE_BOOT_TOKENS}"
             fi

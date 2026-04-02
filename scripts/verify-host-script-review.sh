@@ -580,6 +580,7 @@ required_summary_txt_tokens = {
     f"artifact-input-parent-dir-min-nonroot-depth={summary.get('artifact_input_parent_dir_min_nonroot_depth')}",
     f"artifact-input-parent-dir-basenames-sha256={summary.get('artifact_input_parent_dir_basenames_sha256')}",
     f"artifact-input-parent-dir-basename-count={summary.get('artifact_input_parent_dir_basename_count')}",
+    f"artifact-input-contract={summary.get('artifact_input_count')}|{summary.get('artifact_input_names_sha256')}|{summary.get('artifact_input_file_class_counts', {}).get('json', 0)}j/{summary.get('artifact_input_file_class_counts', {}).get('html', 0)}h/{summary.get('artifact_input_file_class_counts', {}).get('bmp', 0)}b/{summary.get('artifact_input_file_class_counts', {}).get('other', 0)}o|{summary.get('artifact_input_max_depth')}|{summary.get('artifact_input_min_nonroot_depth')}|{summary.get('artifact_input_parent_dir_count')}|{summary.get('artifact_input_parent_dir_max_depth')}|{summary.get('artifact_input_parent_dir_min_nonroot_depth')}|{summary.get('artifact_input_parent_dir_basename_count')}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

@@ -53,6 +53,7 @@ static int storyCurrentDay = 1;
 static char storyBootAdsName[13] = "";
 static int storyBootAdsTag = -1;
 static int storyBootSceneIndex = -1;
+static int storyForcedCurrentDay = -1;
 static int storyForcedIslandPosValid = 0;
 static int storyForcedIslandX = 0;
 static int storyForcedIslandY = 0;
@@ -170,6 +171,16 @@ void storySetBootSingleSceneIndex(int sceneIndex)
     storyBootAdsTag = -1;
 }
 
+void storySetForcedCurrentDay(int day)
+{
+    if (day < 1 || day > 11) {
+        storyForcedCurrentDay = -1;
+        return;
+    }
+
+    storyForcedCurrentDay = day;
+}
+
 void storySetIslandOverrides(int hasPosition, int xPos, int yPos, int hasLowTide, int lowTide)
 {
     storyForcedIslandPosValid = hasPosition;
@@ -232,6 +243,12 @@ static struct TStoryScene *storyPickScene(
 
 static void storyUpdateCurrentDay()
 {
+    if (storyForcedCurrentDay >= 1 && storyForcedCurrentDay <= 11) {
+        storyCurrentDay = storyForcedCurrentDay;
+        debugMsg("The day of the story is forced to: %d", storyCurrentDay);
+        return;
+    }
+
     struct TConfig config;
     int today;
     int hasChanged = 0;

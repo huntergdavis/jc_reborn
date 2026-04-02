@@ -108,6 +108,7 @@ static int  numArgs  = 0;
 
 #ifndef PS1_BUILD
 static int hostForcedSeed = -1;
+static int hostForcedStoryDay = -1;
 static int hostForcedIslandPosValid = 0;
 static int hostForcedIslandX = 0;
 static int hostForcedIslandY = 0;
@@ -383,6 +384,7 @@ static void usage()
         printf("         capture-overlay - embed a machine-readable debug overlay in captures\n");
         printf("         capture-scene-label TEXT - annotate metadata with the scene label\n");
         printf("         seed N          - force deterministic RNG seed for host runs\n");
+        printf("         story-day N     - force story day 1..11 for host story runs\n");
         printf("         island-pos X Y  - force island position for host story/island runs\n");
         printf("         lowtide 0|1     - force low tide state for host story/island runs\n");
         printf("\n");
@@ -530,6 +532,18 @@ static void parseArgs(int argc, char **argv)
                     usage();
                 }
             }
+            else if (!strcmp(argv[i], "story-day")) {
+                if (i + 1 < argc) {
+                    hostForcedStoryDay = atoi(argv[++i]);
+                    if (hostForcedStoryDay < 1 || hostForcedStoryDay > 11) {
+                        fprintf(stderr, "Error: story-day must be in range 1..11\n");
+                        usage();
+                    }
+                } else {
+                    fprintf(stderr, "Error: story-day requires a value\n");
+                    usage();
+                }
+            }
             else if (!strcmp(argv[i], "island-pos")) {
                 if (i + 2 < argc) {
                     hostForcedIslandX = atoi(argv[++i]);
@@ -601,6 +615,7 @@ int main(int argc, char **argv)
 
     parseResourceFiles("RESOURCE.MAP");
 
+    storySetForcedCurrentDay(hostForcedStoryDay);
     storySetIslandOverrides(
         hostForcedIslandPosValid,
         hostForcedIslandX,

@@ -24,6 +24,7 @@ INTERVAL=60
 DURATION_TABLE=""
 SEED="1"
 MODE="scene-default"
+STORY_DAY=""
 ISLAND_X=""
 ISLAND_Y=""
 LOWTIDE=""
@@ -46,6 +47,7 @@ Options:
   --duration-table P   JSON from estimate-scene-durations.py; used when --frames auto
   --interval N         Capture every Nth frame (default: 60)
   --seed N             Force deterministic RNG seed (default: 1)
+  --story-day N        Force story day 1..11 for host story runs
   --island-x N         Force island X position
   --island-y N         Force island Y position
   --lowtide 0|1        Force low tide state
@@ -71,6 +73,7 @@ while [ $# -gt 0 ]; do
         --duration-table) DURATION_TABLE="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --seed) SEED="$2"; shift 2 ;;
+        --story-day) STORY_DAY="$2"; shift 2 ;;
         --island-x) ISLAND_X="$2"; shift 2 ;;
         --island-y) ISLAND_Y="$2"; shift 2 ;;
         --lowtide) LOWTIDE="$2"; shift 2 ;;
@@ -194,6 +197,9 @@ if [ -z "$BOOT" ]; then
 fi
 if [ -n "$SEED" ]; then
     BOOT="$BOOT seed $SEED"
+fi
+if [ -n "$STORY_DAY" ]; then
+    BOOT="$BOOT story-day $STORY_DAY"
 fi
 if [ -n "$ISLAND_X" ] || [ -n "$ISLAND_Y" ]; then
     if [ -z "$ISLAND_X" ] || [ -z "$ISLAND_Y" ]; then

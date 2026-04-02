@@ -175,6 +175,18 @@ print(
         for key in sorted(path_map_entry_names)
     )
 )
+path_basenames = []
+if review_root:
+    path_basenames.append(Path(review_root).name)
+for key, value in sorted(summary.items()):
+    if not key.endswith("_paths") or not isinstance(value, dict):
+        continue
+    for path_value in value.values():
+        path_basenames.append(Path(path_value).name)
+path_basenames = sorted(path_basenames)
+if summary.get("path_basenames") != path_basenames:
+    raise SystemExit("verification-summary path_basenames mismatch")
+print("path-basenames: ok " + ",".join(path_basenames))
 
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
@@ -519,6 +531,7 @@ required_summary_txt_tokens = {
     f"path-map-type-counts={','.join(f\"{key}:{path_map_type_counts[key]['files']}f/{path_map_type_counts[key]['dirs']}d\" for key in sorted(path_map_type_counts))}",
     f"path-map-file-class-counts={','.join(f\"{key}:{path_map_file_class_counts[key]['json']}j/{path_map_file_class_counts[key]['html']}h/{path_map_file_class_counts[key]['bmp']}b/{path_map_file_class_counts[key]['other']}o\" for key in sorted(path_map_file_class_counts))}",
     f"path-map-entry-names={','.join(f\"{key}:{'|'.join(path_map_entry_names[key])}\" for key in sorted(path_map_entry_names))}",
+    f"path-basenames={','.join(path_basenames)}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

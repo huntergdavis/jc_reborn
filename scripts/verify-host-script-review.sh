@@ -197,6 +197,56 @@ print("semantic-regression-baseline: ok")
 capture_regression = json.loads((root / "capture-regression-report.json").read_text(encoding="utf-8"))
 if not capture_regression.get("passed", False):
     raise SystemExit("capture-regression-report failed")
+
+capture_checks = capture_regression.get("checks", {})
+capture_totals = capture_regression.get("totals", {})
+capture_first_failed = capture_regression.get("first_failed_scenes", {})
+
+frame_image_expected = {
+    "passed": frame_image_regression.get("passed", False),
+    "failure_count": frame_image_regression.get("failure_count", 0),
+}
+frame_meta_expected = {
+    "passed": frame_meta_regression.get("passed", False),
+    "failure_count": frame_meta_regression.get("failure_count", 0),
+}
+semantic_expected = {
+    "passed": semantic_report.get("passed", False),
+    "failure_count": semantic_report.get("failure_count", 0),
+}
+
+for key, expected in (
+    ("frame-image", frame_image_expected),
+    ("frame-meta", frame_meta_expected),
+    ("semantic", semantic_expected),
+):
+    actual = capture_checks.get(key, {})
+    if bool(actual.get("passed", False)) != bool(expected["passed"]):
+        raise SystemExit(f"capture-regression-report {key} passed mismatch")
+    if int(actual.get("failure_count", 0)) != int(expected["failure_count"]):
+        raise SystemExit(f"capture-regression-report {key} failure_count mismatch")
+
+def first_failed_scene(report, label_key):
+    for scene in report.get("scenes", []):
+        if not scene.get("passed", False):
+            value = scene.get(label_key)
+            return None if value in (None, "") else str(value)
+    return None
+
+if capture_first_failed.get("frame-image") != first_failed_scene(frame_image_regression, "scene"):
+    raise SystemExit("capture-regression-report frame-image first_failed_scene mismatch")
+if capture_first_failed.get("frame-meta") != first_failed_scene(frame_meta_regression, "scene"):
+    raise SystemExit("capture-regression-report frame-meta first_failed_scene mismatch")
+if capture_first_failed.get("semantic") != first_failed_scene(semantic_report, "scene_label"):
+    raise SystemExit("capture-regression-report semantic first_failed_scene mismatch")
+
+if int(capture_totals.get("frame_image_failures", 0)) != int(frame_image_regression.get("failure_count", 0)):
+    raise SystemExit("capture-regression-report frame_image_failures mismatch")
+if int(capture_totals.get("frame_meta_failures", 0)) != int(frame_meta_regression.get("failure_count", 0)):
+    raise SystemExit("capture-regression-report frame_meta_failures mismatch")
+if int(capture_totals.get("semantic_failures", 0)) != int(semantic_report.get("failure_count", 0)):
+    raise SystemExit("capture-regression-report semantic_failures mismatch")
+
 print("capture-regression-report: ok")
 
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):

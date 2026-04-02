@@ -82,6 +82,12 @@ for key, expected_path in required_review_paths.items():
     actual = review_paths.get(key)
     if actual != str(expected_path.resolve()):
         raise SystemExit(f"verification-summary review_paths.{key} mismatch")
+print(
+    "review-paths: ok "
+    f"index={review_paths.get('index_html')} "
+    f"identification={review_paths.get('identification_review_html')} "
+    f"capture={review_paths.get('capture_regression_review_html')}"
+)
 
 manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
 manifest_extras = manifest.get("extras", {})

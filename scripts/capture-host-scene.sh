@@ -156,8 +156,8 @@ if [ -z "$BOOT" ]; then
                 echo "ERROR: scene-exact requires boot tokens in $SCENE_LIST_FILE" >&2
                 exit 1
             fi
-            if [ -n "$SCENE_INDEX" ] && [[ "$SCENE_BOOT_TOKENS" =~ ^story[[:space:]]+(scene|index)[[:space:]]+[0-9]+$ ]]; then
-                BOOT="window nosound story direct ${SCENE_INDEX}"
+            if [[ "$SCENE_BOOT_TOKENS" =~ ^story[[:space:]]+(scene|index)[[:space:]]+[0-9]+$ ]]; then
+                BOOT="window nosound island ads ${ADS_FILE} ${TAG}"
             else
                 BOOT="window nosound ${SCENE_BOOT_TOKENS}"
             fi

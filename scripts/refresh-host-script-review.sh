@@ -543,6 +543,29 @@ print("capture-regression-report: ok")
 PY
 }
 
+assert_verification_summary_review_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_paths = summary.get("review_paths", {})
+required = {
+    "index_html": root / "index.html",
+    "identification_review_html": root / "identification-review.html",
+    "capture_regression_review_html": root / "capture-regression-review.html",
+}
+for key, expected in required.items():
+    actual = review_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary review_paths.{key} mismatch")
+print("verification-summary review_paths: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -946,6 +969,7 @@ if [ "$VERIFY_REPRO" -eq 1 ]; then
 fi
 
 write_verification_summary "$OUT_DIR"
+assert_verification_summary_review_paths "$OUT_DIR"
 
 rm -rf "$TMP_DIR"
 

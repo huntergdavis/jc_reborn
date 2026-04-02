@@ -109,6 +109,16 @@ for href in (
     if href not in capture_html:
         raise SystemExit(f"capture-regression-review.html missing link: {href}")
 
+identification_html = (root / "identification-review.html").read_text(encoding="utf-8")
+for href in (
+    "fishing1/frames/frame_00000.bmp",
+    "mary1/frames/frame_00000.bmp",
+    "fishing1/frames/frame_00080.bmp",
+    "mary1/frames/frame_00100.bmp",
+):
+    if href not in identification_html:
+        raise SystemExit(f"identification-review.html missing link: {href}")
+
 identify = json.loads((root / "identification-selfcheck.json").read_text(encoding="utf-8"))
 for row in identify.get("rows", []):
     best = row.get("best_match") or {}

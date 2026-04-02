@@ -620,6 +620,27 @@ print("dashboard html links: ok")
 PY
 }
 
+assert_identification_review_links() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+html = (root / "identification-review.html").read_text(encoding="utf-8")
+required = [
+    "fishing1/frames/frame_00000.bmp",
+    "mary1/frames/frame_00000.bmp",
+    "fishing1/frames/frame_00080.bmp",
+    "mary1/frames/frame_00100.bmp",
+]
+for href in required:
+    if href not in html:
+        raise SystemExit(f"identification-review.html missing link: {href}")
+print("identification-review html links: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -1026,6 +1047,7 @@ write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
+assert_identification_review_links "$OUT_DIR"
 
 rm -rf "$TMP_DIR"
 

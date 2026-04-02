@@ -143,6 +143,8 @@
     "identification-review.html": "/home/hunter/workspace/jc_reborn/host-script-review/identification-review.html",
     "capture-regression-review.html": "/home/hunter/workspace/jc_reborn/host-script-review/capture-regression-review.html",
     "capture-regression-report.json": "/home/hunter/workspace/jc_reborn/host-script-review/capture-regression-report.json",
-    "verification-summary.json": "/home/hunter/workspace/jc_reborn/host-script-review/verification-summary.json"
+    "verification-summary.json": "/home/hunter/workspace/jc_reborn/host-script-review/verification-summary.json",
+    "verification-summary.txt": "/home/hunter/workspace/jc_reborn/host-script-review/verification-summary.txt",
+    "semantic-truth.json": "/home/hunter/workspace/jc_reborn/host-script-review/semantic-truth.json"
   }
 }

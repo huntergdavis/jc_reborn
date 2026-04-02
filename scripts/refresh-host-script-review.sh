@@ -623,6 +623,8 @@ required = {
     "capture-regression-review.html": root / "capture-regression-review.html",
     "capture-regression-report.json": root / "capture-regression-report.json",
     "verification-summary.json": root / "verification-summary.json",
+    "verification-summary.txt": root / "verification-summary.txt",
+    "semantic-truth.json": root / "semantic-truth.json",
 }
 for key, expected in required.items():
     actual = extras.get(key)
@@ -647,6 +649,8 @@ required_index_links = [
     "capture-regression-review.html",
     "capture-regression-report.json",
     "verification-summary.json",
+    "verification-summary.txt",
+    "semantic-truth.json",
 ]
 for href in required_index_links:
     if href not in index_html:

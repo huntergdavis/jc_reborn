@@ -107,6 +107,8 @@ required_manifest_extras = {
     "capture-regression-review.html": root / "capture-regression-review.html",
     "capture-regression-report.json": root / "capture-regression-report.json",
     "verification-summary.json": root / "verification-summary.json",
+    "verification-summary.txt": root / "verification-summary.txt",
+    "semantic-truth.json": root / "semantic-truth.json",
 }
 for key, expected_path in required_manifest_extras.items():
     actual = manifest_extras.get(key)
@@ -119,6 +121,8 @@ for href in (
     "capture-regression-review.html",
     "capture-regression-report.json",
     "verification-summary.json",
+    "verification-summary.txt",
+    "semantic-truth.json",
 ):
     if href not in index_html:
         raise SystemExit(f"index.html missing link: {href}")

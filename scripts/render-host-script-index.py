@@ -70,6 +70,8 @@ def build_manifest(root: Path) -> dict:
         "capture-regression-review.html",
         "capture-regression-report.json",
         "verification-summary.json",
+        "verification-summary.txt",
+        "semantic-truth.json",
     ):
         path = root / name
         if not path.is_file():
@@ -90,6 +92,8 @@ def build_html(manifest: dict, output_path: Path, title: str) -> str:
         ("capture-regression-review.html", "Capture Regression Review"),
         ("capture-regression-report.json", "Capture Regression Report"),
         ("verification-summary.json", "Verification Summary"),
+        ("verification-summary.txt", "Verification Summary TXT"),
+        ("semantic-truth.json", "Semantic Truth"),
     ):
         path = extras.get(name)
         if path:

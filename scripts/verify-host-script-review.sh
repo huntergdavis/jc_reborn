@@ -143,6 +143,7 @@ expectation_paths = summary.get("expectation_paths", {})
 required_expectation_paths = {
     "baseline_json": root / "expectations.json",
     "report_json": root / "expectation-report.json",
+    "report_html": root / "expectation-report.html",
 }
 for key, expected_path in required_expectation_paths.items():
     actual = expectation_paths.get(key)
@@ -151,12 +152,14 @@ for key, expected_path in required_expectation_paths.items():
 print(
     "expectation-paths: ok "
     f"baseline={expectation_paths.get('baseline_json')} "
-    f"report={expectation_paths.get('report_json')}"
+    f"report={expectation_paths.get('report_json')} "
+    f"html={expectation_paths.get('report_html')}"
 )
 
 repro_paths = summary.get("repro_paths", {})
 required_repro_paths = {
     "compare_json": root / "repro-compare.json",
+    "compare_html": root / "repro-compare.html",
 }
 for key, expected_path in required_repro_paths.items():
     actual = repro_paths.get(key)
@@ -164,7 +167,8 @@ for key, expected_path in required_repro_paths.items():
         raise SystemExit(f"verification-summary repro_paths.{key} mismatch")
 print(
     "repro-paths: ok "
-    f"compare={repro_paths.get('compare_json')}"
+    f"compare={repro_paths.get('compare_json')} "
+    f"html={repro_paths.get('compare_html')}"
 )
 
 capture_audit_paths = summary.get("capture_audit_paths", {})
@@ -275,7 +279,9 @@ required_summary_txt_tokens = {
     f"host-truth-compare-json={host_truth_paths.get('compare_json')}",
     f"expectations-json={expectation_paths.get('baseline_json')}",
     f"expectation-report-json={expectation_paths.get('report_json')}",
+    f"expectation-report-html={expectation_paths.get('report_html')}",
     f"repro-compare-json={repro_paths.get('compare_json')}",
+    f"repro-compare-html={repro_paths.get('compare_html')}",
     f"capture-image-report-json={capture_audit_paths.get('image_report_json')}",
     f"capture-meta-report-json={capture_audit_paths.get('meta_report_json')}",
     f"capture-semantic-report-json={capture_audit_paths.get('semantic_report_json')}",

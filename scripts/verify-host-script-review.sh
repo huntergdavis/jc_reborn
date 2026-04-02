@@ -578,6 +578,7 @@ required_summary_txt_tokens = {
     f"artifact-input-parent-dir-depth-counts={','.join(f\"{depth}:{summary.get('artifact_input_parent_dir_depth_counts', {}).get(depth)}\" for depth in sorted(summary.get('artifact_input_parent_dir_depth_counts', {}), key=int))}",
     f"artifact-input-parent-dir-max-depth={summary.get('artifact_input_parent_dir_max_depth')}",
     f"artifact-input-parent-dir-min-nonroot-depth={summary.get('artifact_input_parent_dir_min_nonroot_depth')}",
+    f"artifact-input-parent-dir-basenames-sha256={summary.get('artifact_input_parent_dir_basenames_sha256')}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
@@ -1060,6 +1061,11 @@ expected_artifact_input_parent_dir_min_nonroot_depth = (
 )
 if int(summary.get("artifact_input_parent_dir_min_nonroot_depth", -1)) != expected_artifact_input_parent_dir_min_nonroot_depth:
     raise SystemExit("verification-summary artifact_input_parent_dir_min_nonroot_depth mismatch")
+expected_artifact_input_parent_dir_basenames_sha256 = hashlib.sha256(
+    "\n".join(sorted({Path(name).parent.name for name in artifact_inputs})).encode("utf-8")
+).hexdigest()
+if summary.get("artifact_input_parent_dir_basenames_sha256") != expected_artifact_input_parent_dir_basenames_sha256:
+    raise SystemExit("verification-summary artifact_input_parent_dir_basenames_sha256 mismatch")
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

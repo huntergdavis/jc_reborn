@@ -64,7 +64,12 @@ def build_manifest(root: Path) -> dict:
     for scene_dir in sorted(p for p in root.iterdir() if p.is_dir()):
         info, _ = scene_rows(scene_dir)
         scenes.append(info)
-    return {"root": str(root.resolve()), "scenes": scenes}
+    extras = {}
+    for name in ("identification-review.html", "capture-regression-review.html"):
+        path = root / name
+        if path.is_file():
+            extras[name] = str(path.resolve())
+    return {"root": str(root.resolve()), "scenes": scenes, "extras": extras}
 
 
 def write_manifest(manifest: dict, path: Path) -> None:
@@ -72,6 +77,16 @@ def write_manifest(manifest: dict, path: Path) -> None:
 
 
 def build_html(manifest: dict, output_path: Path, title: str) -> str:
+    extras = manifest.get("extras", {})
+    top_links = []
+    for name, label in (
+        ("identification-review.html", "Identification Review"),
+        ("capture-regression-review.html", "Capture Regression Review"),
+    ):
+        path = extras.get(name)
+        if path:
+            top_links.append(f'<a href="{esc(rel(Path(path), output_path.parent))}">{esc(label)}</a>')
+
     cards = []
     for scene in manifest["scenes"]:
         review_path = Path(scene["review_html"])
@@ -144,6 +159,7 @@ def build_html(manifest: dict, output_path: Path, title: str) -> str:
     }}
     main {{ max-width: 1280px; margin: 0 auto; }}
     .intro {{ color: var(--muted); margin-bottom: 18px; }}
+    .top-links {{ margin: 0 0 18px 0; display: flex; gap: 16px; flex-wrap: wrap; }}
     .card {{
       background: var(--panel);
       border: 1px solid var(--line);
@@ -174,6 +190,7 @@ def build_html(manifest: dict, output_path: Path, title: str) -> str:
   <main>
     <h1>{esc(title)}</h1>
     <div class="intro">Cross-scene host script manifest built from frame metadata summaries.</div>
+    <div class="top-links">{''.join(top_links)}</div>
     {''.join(cards)}
   </main>
 </body>

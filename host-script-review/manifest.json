@@ -138,5 +138,9 @@
         }
       ]
     }
-  ]
+  ],
+  "extras": {
+    "identification-review.html": "/home/hunter/workspace/jc_reborn/host-script-review/identification-review.html",
+    "capture-regression-review.html": "/home/hunter/workspace/jc_reborn/host-script-review/capture-regression-review.html"
+  }
 }

@@ -131,6 +131,8 @@ capture_html = (root / "capture-regression-review.html").read_text(encoding="utf
 for href in (
     "index.html",
     "identification-review.html",
+    "verification-summary.json",
+    "verification-summary.txt",
     "frame-image-regression-report.json",
     "frame-meta-regression-report.json",
     "semantic-regression-report.json",

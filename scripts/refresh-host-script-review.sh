@@ -659,6 +659,8 @@ for href in required_index_links:
 required_capture_links = [
     "index.html",
     "identification-review.html",
+    "verification-summary.json",
+    "verification-summary.txt",
     "frame-image-regression-report.json",
     "frame-meta-regression-report.json",
     "semantic-regression-report.json",

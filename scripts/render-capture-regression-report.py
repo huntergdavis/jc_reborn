@@ -47,6 +47,8 @@ def render_html(payload: dict) -> str:
         '<div class="links">'
         '<a href="index.html">index.html</a> '
         '<a href="identification-review.html">identification-review.html</a> '
+        '<a href="verification-summary.json">verification-summary.json</a> '
+        '<a href="verification-summary.txt">verification-summary.txt</a> '
         '<a href="frame-image-regression-report.json">frame-image-regression-report.json</a> '
         '<a href="frame-meta-regression-report.json">frame-meta-regression-report.json</a> '
         '<a href="semantic-regression-report.json">semantic-regression-report.json</a> '

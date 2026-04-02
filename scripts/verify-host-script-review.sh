@@ -566,6 +566,7 @@ required_summary_txt_tokens = {
     f"path-depth-counts={','.join(f'{depth}:{path_depth_counts[depth]}' for depth in sorted(path_depth_counts, key=int))}",
     f"path-max-depth={path_max_depth}",
     f"path-min-nonroot-depth={path_min_nonroot_depth}",
+    f"artifact-input-count={summary.get('artifact_input_count')}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
@@ -968,6 +969,8 @@ if temporal_summary.get("max_identified_margin_drop") != identify_temporal.get("
 artifact_inputs = summary.get("artifact_inputs") or {}
 if not artifact_inputs:
     raise SystemExit("verification-summary.json missing artifact_inputs")
+if int(summary.get("artifact_input_count", -1)) != len(artifact_inputs):
+    raise SystemExit("verification-summary artifact_input_count mismatch")
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

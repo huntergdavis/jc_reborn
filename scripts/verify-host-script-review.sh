@@ -94,6 +94,21 @@ for key, expected_path in required_manifest_extras.items():
     if actual != str(expected_path.resolve()):
         raise SystemExit(f"manifest extras.{key} mismatch")
 
+index_html = (root / "index.html").read_text(encoding="utf-8")
+for href in ("identification-review.html", "capture-regression-review.html"):
+    if href not in index_html:
+        raise SystemExit(f"index.html missing link: {href}")
+
+capture_html = (root / "capture-regression-review.html").read_text(encoding="utf-8")
+for href in (
+    "frame-image-regression-report.json",
+    "frame-meta-regression-report.json",
+    "semantic-regression-report.json",
+    "capture-regression-report.json",
+):
+    if href not in capture_html:
+        raise SystemExit(f"capture-regression-review.html missing link: {href}")
+
 identify = json.loads((root / "identification-selfcheck.json").read_text(encoding="utf-8"))
 for row in identify.get("rows", []):
     best = row.get("best_match") or {}

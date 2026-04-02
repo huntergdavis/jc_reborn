@@ -588,6 +588,38 @@ print("manifest dashboard links: ok")
 PY
 }
 
+assert_dashboard_html_links() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+index_html = (root / "index.html").read_text(encoding="utf-8")
+capture_html = (root / "capture-regression-review.html").read_text(encoding="utf-8")
+
+required_index_links = [
+    "identification-review.html",
+    "capture-regression-review.html",
+]
+for href in required_index_links:
+    if href not in index_html:
+        raise SystemExit(f"index.html missing link: {href}")
+
+required_capture_links = [
+    "frame-image-regression-report.json",
+    "frame-meta-regression-report.json",
+    "semantic-regression-report.json",
+    "capture-regression-report.json",
+]
+for href in required_capture_links:
+    if href not in capture_html:
+        raise SystemExit(f"capture-regression-review.html missing link: {href}")
+
+print("dashboard html links: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -993,6 +1025,7 @@ fi
 write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
+assert_dashboard_html_links "$OUT_DIR"
 
 rm -rf "$TMP_DIR"
 

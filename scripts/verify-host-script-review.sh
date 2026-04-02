@@ -83,6 +83,17 @@ for key, expected_path in required_review_paths.items():
     if actual != str(expected_path.resolve()):
         raise SystemExit(f"verification-summary review_paths.{key} mismatch")
 
+manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+manifest_extras = manifest.get("extras", {})
+required_manifest_extras = {
+    "identification-review.html": root / "identification-review.html",
+    "capture-regression-review.html": root / "capture-regression-review.html",
+}
+for key, expected_path in required_manifest_extras.items():
+    actual = manifest_extras.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"manifest extras.{key} mismatch")
+
 identify = json.loads((root / "identification-selfcheck.json").read_text(encoding="utf-8"))
 for row in identify.get("rows", []):
     best = row.get("best_match") or {}

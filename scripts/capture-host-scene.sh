@@ -19,6 +19,7 @@ SCENE=""
 BOOT=""
 OUTPUT_DIR="$PROJECT_ROOT/host-results/scene"
 FRAMES=600
+START_FRAME=0
 INTERVAL=60
 DURATION_TABLE=""
 SEED="1"
@@ -40,6 +41,7 @@ Options:
   --scene "ADS TAG"    Scene label, e.g. "BUILDING 1"
   --boot STRING        Explicit host boot string
   --frames N           Capture through frame N (default: 600)
+  --start-frame N     Start sampling at frame N instead of 0 (default: 0)
   --until-exit         Capture every requested frame until the executable returns
   --duration-table P   JSON from estimate-scene-durations.py; used when --frames auto
   --interval N         Capture every Nth frame (default: 60)
@@ -64,6 +66,7 @@ while [ $# -gt 0 ]; do
         --scene) SCENE="$2"; shift 2 ;;
         --boot) BOOT="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; shift 2 ;;
         --until-exit) UNTIL_EXIT=1; shift ;;
         --duration-table) DURATION_TABLE="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
@@ -219,6 +222,15 @@ PY
 )"
 fi
 
+if [ "$START_FRAME" -lt 0 ]; then
+    echo "ERROR: --start-frame must be >= 0" >&2
+    exit 1
+fi
+if [ "$UNTIL_EXIT" -eq 0 ] && [ "$FRAMES" -lt "$START_FRAME" ]; then
+    echo "ERROR: --frames must be >= --start-frame" >&2
+    exit 1
+fi
+
 if [ -z "$TIMEOUT_SECONDS" ]; then
     if [ "$UNTIL_EXIT" -eq 1 ]; then
         TIMEOUT_SECONDS=0
@@ -244,9 +256,9 @@ if [ "$CAPTURE_OVERLAY" -eq 1 ]; then
     capture_args+=(capture-overlay)
 fi
 if [ "$UNTIL_EXIT" -eq 1 ]; then
-    capture_args+=(capture-range 0 -1)
+    capture_args+=(capture-range "$START_FRAME" -1)
 else
-    capture_args+=(capture-range 0 "$FRAMES")
+    capture_args+=(capture-range "$START_FRAME" "$FRAMES")
 fi
 
 set +e
@@ -265,7 +277,7 @@ set -e
 popd >/dev/null
 
 python3 - "$PROJECT_ROOT" "$OUTPUT_DIR" "$SCENE_LIST_FILE" "$ADS_NAME" "$TAG" \
-           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" "$TIMEOUT_SECONDS" <<'PY'
+           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$START_FRAME" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" "$TIMEOUT_SECONDS" <<'PY'
 import hashlib
 import json
 import os
@@ -284,16 +296,17 @@ boot_string = sys.argv[6]
 forced_seed = int(sys.argv[7]) if sys.argv[7] else None
 capture_ts = sys.argv[8]
 requested_frames = int(sys.argv[9])
-requested_interval = int(sys.argv[10])
-mode = sys.argv[11]
-forced_island_x = int(sys.argv[12]) if sys.argv[12] else None
-forced_island_y = int(sys.argv[13]) if sys.argv[13] else None
-forced_low_tide = int(sys.argv[14]) if sys.argv[14] else None
-skip_visual_detect = int(sys.argv[15]) != 0
-until_exit = int(sys.argv[16]) != 0
-host_exit_code = int(sys.argv[17])
-capture_overlay = int(sys.argv[18]) != 0
-timeout_seconds = int(sys.argv[19]) if sys.argv[19] else 0
+requested_start_frame = int(sys.argv[10])
+requested_interval = int(sys.argv[11])
+mode = sys.argv[12]
+forced_island_x = int(sys.argv[13]) if sys.argv[13] else None
+forced_island_y = int(sys.argv[14]) if sys.argv[14] else None
+forced_low_tide = int(sys.argv[15]) if sys.argv[15] else None
+skip_visual_detect = int(sys.argv[16]) != 0
+until_exit = int(sys.argv[17]) != 0
+host_exit_code = int(sys.argv[18])
+capture_overlay = int(sys.argv[19]) != 0
+timeout_seconds = int(sys.argv[20]) if sys.argv[20] else 0
 frames_dir = output_dir / "frames"
 frame_meta_dir = output_dir / "frame-meta"
 
@@ -480,7 +493,7 @@ if frame_files:
 
 expected_frame_numbers = []
 if not until_exit and requested_interval > 0:
-    expected_frame_numbers = list(range(0, requested_frames + 1, requested_interval))
+    expected_frame_numbers = list(range(requested_start_frame, requested_frames + 1, requested_interval))
 expected_frame_names = {f"frame_{frame_no:05d}.bmp" for frame_no in expected_frame_numbers}
 actual_frame_names = {path.name for path in frame_files}
 missing_frames = sorted(expected_frame_names - actual_frame_names)
@@ -542,6 +555,7 @@ result = {
         "mode": mode,
     },
     "config": {
+        "start_frame": requested_start_frame,
         "frames": requested_frames,
         "interval": requested_interval,
         "until_exit": until_exit,
@@ -574,6 +588,7 @@ result = {
     "boot_string": boot_string,
     "mode": mode,
     "forced_seed": forced_seed,
+    "start_frame": requested_start_frame,
     "forced_island_position": (
         {"x": forced_island_x, "y": forced_island_y}
         if forced_island_x is not None and forced_island_y is not None else None
@@ -631,7 +646,7 @@ review_html = f"""<!doctype html>
     <div class="top">
       <h1>{ads_name} {tag} Host Capture Review</h1>
       <div>Boot: <code>{boot_string}</code></div>
-      <div>Frames: {len(png_files)} at {requested_interval}-frame interval through {requested_frames}</div>
+      <div>Frames: {len(png_files)} at {requested_interval}-frame interval from {requested_start_frame} through {requested_frames}</div>
       <div>Frame metadata: <code>frame-meta/</code> overlay={str(capture_overlay).lower()}</div>
     </div>
     {''.join(cards)}

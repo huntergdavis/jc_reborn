@@ -188,7 +188,8 @@ capture_review_set() {
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "JOHNNY 1" \
         --mode scene-default \
-        --frames 120 \
+        --start-frame 180 \
+        --frames 300 \
         --interval 30 \
         --output "$root/johnny1" \
         --no-stamp

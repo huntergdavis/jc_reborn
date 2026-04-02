@@ -78,6 +78,20 @@ if review_root != str(root.resolve()):
     raise SystemExit("verification-summary review_root mismatch")
 print(f"review-root: ok root={review_root}")
 
+for key, value in summary.items():
+    if key == "review_root":
+        if not isinstance(value, str) or not Path(value).is_absolute():
+            raise SystemExit("verification-summary review_root must be an absolute path")
+        continue
+    if not key.endswith("_paths"):
+        continue
+    if not isinstance(value, dict):
+        raise SystemExit(f"verification-summary {key} must be a path map")
+    for path_key, path_value in value.items():
+        if not isinstance(path_value, str) or not Path(path_value).is_absolute():
+            raise SystemExit(f"verification-summary {key}.{path_key} must be an absolute path")
+print("summary-absolute-paths: ok")
+
 review_paths = summary.get("review_paths", {})
 required_review_paths = {
     "index_html": root / "index.html",

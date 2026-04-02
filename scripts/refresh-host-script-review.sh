@@ -582,6 +582,36 @@ print("verification-summary review_root: ok")
 PY
 }
 
+assert_verification_summary_absolute_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+
+def check_block(name: str, value) -> None:
+    if name == "review_root":
+        if not isinstance(value, str) or not Path(value).is_absolute():
+            raise SystemExit(f"verification-summary {name} must be an absolute path")
+        return
+    if not name.endswith("_paths"):
+        return
+    if not isinstance(value, dict):
+        raise SystemExit(f"verification-summary {name} must be a path map")
+    for key, path_value in value.items():
+        if not isinstance(path_value, str) or not Path(path_value).is_absolute():
+            raise SystemExit(f"verification-summary {name}.{key} must be an absolute path")
+
+for key, value in summary.items():
+    check_block(key, value)
+
+print("verification-summary absolute paths: ok")
+PY
+}
+
 assert_verification_summary_core_artifact_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1636,6 +1666,7 @@ fi
 write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_root "$OUT_DIR"
+assert_verification_summary_absolute_paths "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_core_artifact_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"

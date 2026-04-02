@@ -169,7 +169,7 @@ capture_review_set() {
     run_with_timeout 60 \
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "FISHING 1" \
-        --mode story-direct \
+        --mode scene-default \
         --frames 80 \
         --interval 20 \
         --output "$root/fishing1" \

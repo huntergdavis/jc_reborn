@@ -1338,6 +1338,25 @@ print("verification-summary path depth counts: ok")
 PY
 }
 
+assert_verification_summary_path_max_depth() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+actual = max(
+    0 if relpath == "." else relpath.count("/") + 1
+    for relpath in summary.get("path_relpaths", [])
+)
+if int(summary.get("path_max_depth", -1)) != actual:
+    raise SystemExit("verification-summary path_max_depth mismatch")
+print("verification-summary path max depth: ok")
+PY
+}
+
 assert_verification_summary_path_type_counts() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1745,6 +1764,13 @@ def path_depth_counts(summary_obj):
     return dict(sorted(counts.items(), key=lambda item: int(item[0])))
 
 
+def max_path_depth(summary_obj):
+    return max(
+        0 if relpath == "." else relpath.count("/") + 1
+        for relpath in path_relpaths(summary_obj)
+    )
+
+
 def count_path_types(summary_obj):
     file_count = 0
     dir_count = 1 if summary_obj.get("review_root") else 0
@@ -2132,6 +2158,7 @@ summary["path_map_entry_names"] = path_map_entry_names(summary)
 summary["path_basenames"] = path_basenames(summary)
 summary["path_relpaths"] = path_relpaths(summary)
 summary["path_depth_counts"] = path_depth_counts(summary)
+summary["path_max_depth"] = max_path_depth(summary)
 summary["path_file_count"], summary["path_dir_count"] = count_path_types(summary)
 (
     summary["path_json_count"],
@@ -2160,7 +2187,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
-    "review-root={review_root} path-map-count={path_map_count} path-map-names={path_map_names} path-map-entry-counts={path_map_entry_counts} path-map-type-counts={path_map_type_counts} path-map-file-class-counts={path_map_file_class_counts} path-map-entry-names={path_map_entry_names} path-basenames={path_basenames} path-relpaths={path_relpaths} path-depth-counts={path_depth_counts} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} "
+    "review-root={review_root} path-map-count={path_map_count} path-map-names={path_map_names} path-map-entry-counts={path_map_entry_counts} path-map-type-counts={path_map_type_counts} path-map-file-class-counts={path_map_file_class_counts} path-map-entry-names={path_map_entry_names} path-basenames={path_basenames} path-relpaths={path_relpaths} path-depth-counts={path_depth_counts} path-max-depth={path_max_depth} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} "
     "path-json-count={path_json_count} path-html-count={path_html_count} path-bmp-count={path_bmp_count} path-other-file-count={path_other_file_count} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
@@ -2230,6 +2257,7 @@ summary["risk_status"] = (
             f"{depth}:{summary['path_depth_counts'][depth]}"
             for depth in sorted(summary["path_depth_counts"], key=int)
         ),
+        path_max_depth=summary["path_max_depth"],
         path_entry_count=summary["path_entry_count"],
         path_file_count=summary["path_file_count"],
         path_dir_count=summary["path_dir_count"],
@@ -2373,6 +2401,7 @@ assert_verification_summary_path_map_entry_names "$OUT_DIR"
 assert_verification_summary_path_basenames "$OUT_DIR"
 assert_verification_summary_path_relpaths "$OUT_DIR"
 assert_verification_summary_path_depth_counts "$OUT_DIR"
+assert_verification_summary_path_max_depth "$OUT_DIR"
 assert_verification_summary_path_entry_count "$OUT_DIR"
 assert_verification_summary_path_type_counts "$OUT_DIR"
 assert_verification_summary_path_class_counts "$OUT_DIR"

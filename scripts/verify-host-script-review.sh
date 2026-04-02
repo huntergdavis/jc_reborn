@@ -208,6 +208,10 @@ print(
     "path-depth-counts: ok "
     + ",".join(f"{depth}:{path_depth_counts[depth]}" for depth in sorted(path_depth_counts, key=int))
 )
+path_max_depth = max(0 if relpath == "." else relpath.count("/") + 1 for relpath in path_relpaths)
+if int(summary.get("path_max_depth", -1)) != path_max_depth:
+    raise SystemExit("verification-summary path_max_depth mismatch")
+print(f"path-max-depth: ok depth={path_max_depth}")
 
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
@@ -555,6 +559,7 @@ required_summary_txt_tokens = {
     f"path-basenames={','.join(path_basenames)}",
     f"path-relpaths={','.join(path_relpaths)}",
     f"path-depth-counts={','.join(f'{depth}:{path_depth_counts[depth]}' for depth in sorted(path_depth_counts, key=int))}",
+    f"path-max-depth={path_max_depth}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

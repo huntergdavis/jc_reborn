@@ -90,6 +90,21 @@ print(
     f"capture={review_paths.get('capture_regression_review_html')}"
 )
 
+core_artifact_paths = summary.get("core_artifact_paths", {})
+required_core_artifact_paths = {
+    "manifest_json": root / "manifest.json",
+    "semantic_truth_json": root / "semantic-truth.json",
+}
+for key, expected_path in required_core_artifact_paths.items():
+    actual = core_artifact_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary core_artifact_paths.{key} mismatch")
+print(
+    "core-artifact-paths: ok "
+    f"manifest={core_artifact_paths.get('manifest_json')} "
+    f"semantic={core_artifact_paths.get('semantic_truth_json')}"
+)
+
 identification_audit_paths = summary.get("identification_audit_paths", {})
 required_identification_audit_paths = {
     "selfcheck_json": root / "identification-selfcheck.json",
@@ -271,6 +286,8 @@ required_summary_txt_tokens = {
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",
+    f"manifest-json={core_artifact_paths.get('manifest_json')}",
+    f"semantic-truth-json={core_artifact_paths.get('semantic_truth_json')}",
     f"identify-selfcheck-json={identification_audit_paths.get('selfcheck_json')}",
     f"identify-eval-json={identification_audit_paths.get('eval_json')}",
     f"identify-partials-json={identification_audit_paths.get('partials_json')}",

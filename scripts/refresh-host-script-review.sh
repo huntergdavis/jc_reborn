@@ -566,6 +566,28 @@ print("verification-summary review_paths: ok")
 PY
 }
 
+assert_verification_summary_core_artifact_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+core_paths = summary.get("core_artifact_paths", {})
+required = {
+    "manifest_json": root / "manifest.json",
+    "semantic_truth_json": root / "semantic-truth.json",
+}
+for key, expected in required.items():
+    actual = core_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary core_artifact_paths.{key} mismatch")
+print("verification-summary core_artifact_paths: ok")
+PY
+}
+
 assert_verification_summary_identification_audit_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -814,6 +836,8 @@ required_tokens = {
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",
+    f"manifest-json={summary['core_artifact_paths']['manifest_json']}",
+    f"semantic-truth-json={summary['core_artifact_paths']['semantic_truth_json']}",
     f"identify-selfcheck-json={summary['identification_audit_paths']['selfcheck_json']}",
     f"identify-eval-json={summary['identification_audit_paths']['eval_json']}",
     f"identify-partials-json={summary['identification_audit_paths']['partials_json']}",
@@ -1308,6 +1332,10 @@ summary = {
         "identification_review_html": str((root / "identification-review.html").resolve()),
         "capture_regression_review_html": str((root / "capture-regression-review.html").resolve()),
     },
+    "core_artifact_paths": {
+        "manifest_json": str((root / "manifest.json").resolve()),
+        "semantic_truth_json": str((root / "semantic-truth.json").resolve()),
+    },
     "identification_audit_paths": {
         "selfcheck_json": str((root / "identification-selfcheck.json").resolve()),
         "eval_json": str((root / "identification-eval.json").resolve()),
@@ -1411,6 +1439,7 @@ summary["risk_status"] = (
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
     "index={index_html} identification={identification_html} capture={capture_html} "
+    "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
     "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
     "identify-partials-json={identify_partials_json} identify-challenges-json={identify_challenges_json} "
     "identify-temporal-json={identify_temporal_json} "
@@ -1454,6 +1483,8 @@ summary["risk_status"] = (
         index_html=summary["review_paths"]["index_html"],
         identification_html=summary["review_paths"]["identification_review_html"],
         capture_html=summary["review_paths"]["capture_regression_review_html"],
+        manifest_json=summary["core_artifact_paths"]["manifest_json"],
+        semantic_truth_json=summary["core_artifact_paths"]["semantic_truth_json"],
         identify_selfcheck_json=summary["identification_audit_paths"]["selfcheck_json"],
         identify_eval_json=summary["identification_audit_paths"]["eval_json"],
         identify_partials_json=summary["identification_audit_paths"]["partials_json"],
@@ -1554,6 +1585,7 @@ fi
 write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
+assert_verification_summary_core_artifact_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_identification_floor_paths "$OUT_DIR"
 assert_verification_summary_host_truth_paths "$OUT_DIR"

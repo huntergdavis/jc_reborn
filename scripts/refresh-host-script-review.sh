@@ -566,6 +566,22 @@ print("verification-summary review_paths: ok")
 PY
 }
 
+assert_verification_summary_review_root() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+actual = summary.get("review_root")
+if actual != str(root):
+    raise SystemExit("verification-summary review_root mismatch")
+print("verification-summary review_root: ok")
+PY
+}
+
 assert_verification_summary_core_artifact_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -833,6 +849,7 @@ summary = json.loads((root / "verification-summary.json").read_text(encoding="ut
 review_paths = summary.get("review_paths", {})
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_tokens = {
+    f"review-root={summary['review_root']}",
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",
@@ -1327,6 +1344,7 @@ summary = {
     "git_head": git_head,
     "git_head_short": git_head_short,
     "verify_repro": verify_repro,
+    "review_root": str(root.resolve()),
     "review_paths": {
         "index_html": str((root / "index.html").resolve()),
         "identification_review_html": str((root / "identification-review.html").resolve()),
@@ -1438,6 +1456,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
+    "review-root={review_root} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
     "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
@@ -1480,6 +1499,7 @@ summary["risk_status"] = (
         capture_first_image=checks["capture-regression"]["frame_image_first_failed_scene"],
         capture_first_meta=checks["capture-regression"]["frame_meta_first_failed_scene"],
         capture_first_semantic=checks["capture-regression"]["semantic_first_failed_scene"],
+        review_root=summary["review_root"],
         index_html=summary["review_paths"]["index_html"],
         identification_html=summary["review_paths"]["identification_review_html"],
         capture_html=summary["review_paths"]["capture_regression_review_html"],
@@ -1584,6 +1604,7 @@ fi
 
 write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
+assert_verification_summary_review_root "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_core_artifact_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"

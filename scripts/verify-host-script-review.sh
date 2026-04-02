@@ -73,6 +73,11 @@ if missing:
 
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
 
+review_root = summary.get("review_root")
+if review_root != str(root.resolve()):
+    raise SystemExit("verification-summary review_root mismatch")
+print(f"review-root: ok root={review_root}")
+
 review_paths = summary.get("review_paths", {})
 required_review_paths = {
     "index_html": root / "index.html",
@@ -283,6 +288,7 @@ print(
 
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
+    f"review-root={review_root}",
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",

@@ -105,6 +105,8 @@ manifest_extras = manifest.get("extras", {})
 required_manifest_extras = {
     "identification-review.html": root / "identification-review.html",
     "capture-regression-review.html": root / "capture-regression-review.html",
+    "capture-regression-report.json": root / "capture-regression-report.json",
+    "verification-summary.json": root / "verification-summary.json",
 }
 for key, expected_path in required_manifest_extras.items():
     actual = manifest_extras.get(key)
@@ -112,7 +114,12 @@ for key, expected_path in required_manifest_extras.items():
         raise SystemExit(f"manifest extras.{key} mismatch")
 
 index_html = (root / "index.html").read_text(encoding="utf-8")
-for href in ("identification-review.html", "capture-regression-review.html"):
+for href in (
+    "identification-review.html",
+    "capture-regression-review.html",
+    "capture-regression-report.json",
+    "verification-summary.json",
+):
     if href not in index_html:
         raise SystemExit(f"index.html missing link: {href}")
 

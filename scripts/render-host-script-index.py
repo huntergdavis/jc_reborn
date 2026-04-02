@@ -65,7 +65,12 @@ def build_manifest(root: Path) -> dict:
         info, _ = scene_rows(scene_dir)
         scenes.append(info)
     extras = {}
-    for name in ("identification-review.html", "capture-regression-review.html"):
+    for name in (
+        "identification-review.html",
+        "capture-regression-review.html",
+        "capture-regression-report.json",
+        "verification-summary.json",
+    ):
         path = root / name
         if not path.is_file():
             raise FileNotFoundError(f"required dashboard missing: {path}")
@@ -83,6 +88,8 @@ def build_html(manifest: dict, output_path: Path, title: str) -> str:
     for name, label in (
         ("identification-review.html", "Identification Review"),
         ("capture-regression-review.html", "Capture Regression Review"),
+        ("capture-regression-report.json", "Capture Regression Report"),
+        ("verification-summary.json", "Verification Summary"),
     ):
         path = extras.get(name)
         if path:

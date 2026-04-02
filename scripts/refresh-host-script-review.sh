@@ -621,6 +621,8 @@ extras = manifest.get("extras", {})
 required = {
     "identification-review.html": root / "identification-review.html",
     "capture-regression-review.html": root / "capture-regression-review.html",
+    "capture-regression-report.json": root / "capture-regression-report.json",
+    "verification-summary.json": root / "verification-summary.json",
 }
 for key, expected in required.items():
     actual = extras.get(key)
@@ -643,6 +645,8 @@ capture_html = (root / "capture-regression-review.html").read_text(encoding="utf
 required_index_links = [
     "identification-review.html",
     "capture-regression-review.html",
+    "capture-regression-report.json",
+    "verification-summary.json",
 ]
 for href in required_index_links:
     if href not in index_html:

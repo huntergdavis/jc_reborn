@@ -297,6 +297,10 @@ timeout_seconds = int(sys.argv[19]) if sys.argv[19] else 0
 frames_dir = output_dir / "frames"
 frame_meta_dir = output_dir / "frame-meta"
 
+
+def rel_to_output(path: Path) -> str:
+    return path.resolve().relative_to(output_dir.resolve()).as_posix()
+
 frame_files = sorted(frames_dir.glob("frame_*.bmp"))
 png_dir = output_dir / "frames-png"
 png_dir.mkdir(exist_ok=True)
@@ -326,6 +330,16 @@ for frame_path in frame_files:
             img.save(png_path)
     png_files.append(png_path)
 
+for meta_path in sorted(frame_meta_dir.glob("frame_*.json")):
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    image_path = meta.get("image_path")
+    if image_path:
+        resolved = Path(image_path)
+        if not resolved.is_absolute():
+            resolved = (meta_path.parent / image_path).resolve()
+        meta["image_path"] = rel_to_output(resolved)
+        meta_path.write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+
 def file_hash(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -351,7 +365,7 @@ def scene_pixel_hash(path: Path) -> str:
 def annotate_frame(entry: dict, file_path: Path) -> dict:
     out = dict(entry)
     out["frame"] = file_path.name
-    out["frame_path"] = str(file_path)
+    out["frame_path"] = rel_to_output(file_path)
     out["frame_sha256"] = file_hash(file_path)
     px = pixel_hash(file_path)
     out["frame_pixel_sha256"] = px
@@ -542,11 +556,11 @@ result = {
     },
     "outcome": outcome,
     "paths": {
-        "output_dir": str(output_dir.resolve()),
-        "frames_dir": str(frames_dir.resolve()),
-        "frame_meta_dir": str(frame_meta_dir.resolve()),
-        "visual": str((output_dir / "visual.json").resolve()),
-        "visual_batch": str((output_dir / "visual-batch.json").resolve()),
+        "output_dir": ".",
+        "frames_dir": "frames",
+        "frame_meta_dir": "frame-meta",
+        "visual": "visual.json",
+        "visual_batch": "visual-batch.json",
     },
     "capture_date": capture_ts,
 }

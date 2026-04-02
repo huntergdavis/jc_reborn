@@ -30,17 +30,27 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
+def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
+
+
 def scene_rows(scene_dir: Path) -> tuple[dict, list[dict]]:
     rows = []
     scene_label = scene_dir.name
     for meta_path in sorted((scene_dir / "frame-meta").glob("frame_*.json")):
         summary = summarize(meta_path)
-        image_path = Path(json.loads(meta_path.read_text(encoding="utf-8"))["image_path"])
+        image_path = resolve_capture_path(
+            json.loads(meta_path.read_text(encoding="utf-8"))["image_path"],
+            scene_dir,
+        )
         rows.append(
             {
                 "frame_number": summary["frame_number"],
                 "frame_name": image_path.name,
-                "image_path": str(image_path.resolve()),
+                "image_path": str(image_path),
                 "actor_summary": summary["actor_summary"],
                 "actor_candidate_draw_count": summary["actor_candidate_draw_count"],
                 "visible_unique_draw_count": summary["visible_unique_draw_count"],

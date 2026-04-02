@@ -48,6 +48,13 @@ def resolve_result(path: Path) -> Path:
     return path
 
 
+def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
+
+
 def load_capture(path: Path) -> tuple[Path, dict]:
     resolved = resolve_result(path)
     if resolved.is_dir():
@@ -88,7 +95,7 @@ def load_frame_map(result: dict, result_path: Path) -> dict[str, Path]:
     frame_map: dict[str, Path] = {}
 
     if frames_dir:
-        candidate_dirs.append(Path(frames_dir))
+        candidate_dirs.append(resolve_capture_path(frames_dir, result_path.parent))
 
     parent = result_path.parent
     candidate_dirs.extend([parent / "frames", parent / "frames-png", result_path / "frames", result_path / "frames-png"])

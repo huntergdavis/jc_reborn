@@ -15,6 +15,13 @@ def relpath(target: Path, start: Path) -> str:
     )
 
 
+def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
+
+
 def fmt_int(value):
     if value is None:
         return "n/a"
@@ -34,7 +41,7 @@ def load_run_frames(result_json_path: Path) -> list[Path]:
         return []
     frames_dir = data.get("paths", {}).get("frames_dir")
     if frames_dir:
-        return sorted(Path(frames_dir).glob("frame_*.*"))
+        return sorted(resolve_capture_path(frames_dir, result_json_path.parent).glob("frame_*.*"))
 
     fallback_dir = find_best_frame_dir(result_json_path.parent)
     if fallback_dir.is_dir():

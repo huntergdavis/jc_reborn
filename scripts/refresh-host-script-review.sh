@@ -1402,6 +1402,7 @@ if summary.get("artifact_input_contract_sha256") != expected_sha256:
 print(
     "artifact-input-contract: ok "
     f"count={len(artifact_inputs)} "
+    f"contract-sha256={summary.get('artifact_input_contract_sha256')} "
     f"names-sha256={summary.get('artifact_input_names_sha256')} "
     f"classes={classes.get('json', 0)}j/{classes.get('html', 0)}h/{classes.get('bmp', 0)}b/{classes.get('other', 0)}o "
     f"depth-max={summary.get('artifact_input_max_depth')} "

@@ -680,10 +680,13 @@ capture_regression = {
     "passed": False,
     "frame_image_passed": False,
     "frame_image_failure_count": None,
+    "frame_image_first_failed_scene": None,
     "frame_meta_passed": False,
     "frame_meta_failure_count": None,
+    "frame_meta_first_failed_scene": None,
     "semantic_passed": False,
     "semantic_failure_count": None,
+    "semantic_first_failed_scene": None,
     "total_failure_count": None,
 }
 if capture_regression_path.is_file():
@@ -695,10 +698,13 @@ if capture_regression_path.is_file():
     capture_regression["passed"] = bool(payload.get("passed"))
     capture_regression["frame_image_passed"] = bool(frame_image.get("passed"))
     capture_regression["frame_image_failure_count"] = frame_image.get("failure_count")
+    capture_regression["frame_image_first_failed_scene"] = (payload.get("first_failed_scenes") or {}).get("frame-image")
     capture_regression["frame_meta_passed"] = bool(frame_meta.get("passed"))
     capture_regression["frame_meta_failure_count"] = frame_meta.get("failure_count")
+    capture_regression["frame_meta_first_failed_scene"] = (payload.get("first_failed_scenes") or {}).get("frame-meta")
     capture_regression["semantic_passed"] = bool(semantic.get("passed"))
     capture_regression["semantic_failure_count"] = semantic.get("failure_count")
+    capture_regression["semantic_first_failed_scene"] = (payload.get("first_failed_scenes") or {}).get("semantic")
     capture_regression["total_failure_count"] = (
         int(frame_image.get("failure_count", 0))
         + int(frame_meta.get("failure_count", 0))
@@ -792,6 +798,7 @@ summary["risk_status"] = (
     "status={status} risk={risk_status} git={git_head_short} digest={digest} "
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
+    "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -812,6 +819,9 @@ summary["risk_status"] = (
         identify_temporal="ok" if checks["identification-temporal"]["passed"] else "fail",
         capture_regression="ok" if checks["capture-regression"]["passed"] else "fail",
         capture_failures=checks["capture-regression"]["total_failure_count"],
+        capture_first_image=checks["capture-regression"]["frame_image_first_failed_scene"],
+        capture_first_meta=checks["capture-regression"]["frame_meta_first_failed_scene"],
+        capture_first_semantic=checks["capture-regression"]["semantic_first_failed_scene"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],

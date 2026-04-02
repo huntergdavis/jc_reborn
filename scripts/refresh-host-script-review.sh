@@ -1372,6 +1372,30 @@ print(f"verification-summary artifact input parent dir basename count: ok count=
 PY
 }
 
+print_verification_summary_artifact_input_contract() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+
+root = __import__("pathlib").Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+classes = summary.get("artifact_input_file_class_counts", {})
+print(
+    "artifact-input-contract: ok "
+    f"count={summary.get('artifact_input_count')} "
+    f"names-sha256={summary.get('artifact_input_names_sha256')} "
+    f"classes={classes.get('json', 0)}j/{classes.get('html', 0)}h/{classes.get('bmp', 0)}b/{classes.get('other', 0)}o "
+    f"depth-max={summary.get('artifact_input_max_depth')} "
+    f"depth-min-nonroot={summary.get('artifact_input_min_nonroot_depth')} "
+    f"parent-dirs={summary.get('artifact_input_parent_dir_count')} "
+    f"parent-dir-max={summary.get('artifact_input_parent_dir_max_depth')} "
+    f"parent-dir-min-nonroot={summary.get('artifact_input_parent_dir_min_nonroot_depth')} "
+    f"parent-dir-basenames={summary.get('artifact_input_parent_dir_basename_count')}"
+)
+PY
+}
+
 assert_verification_summary_path_entry_count() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -2796,6 +2820,7 @@ assert_verification_summary_artifact_input_parent_dir_max_depth "$OUT_DIR"
 assert_verification_summary_artifact_input_parent_dir_min_nonroot_depth "$OUT_DIR"
 assert_verification_summary_artifact_input_parent_dir_basenames_sha256 "$OUT_DIR"
 assert_verification_summary_artifact_input_parent_dir_basename_count "$OUT_DIR"
+print_verification_summary_artifact_input_contract "$OUT_DIR"
 assert_verification_summary_path_map_count "$OUT_DIR"
 assert_verification_summary_path_map_names "$OUT_DIR"
 assert_verification_summary_path_map_entry_counts "$OUT_DIR"

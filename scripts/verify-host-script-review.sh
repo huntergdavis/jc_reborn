@@ -1071,6 +1071,19 @@ if summary.get("artifact_input_parent_dir_basenames_sha256") != expected_artifac
 expected_artifact_input_parent_dir_basename_count = len({Path(name).parent.name for name in artifact_inputs})
 if int(summary.get("artifact_input_parent_dir_basename_count", -1)) != expected_artifact_input_parent_dir_basename_count:
     raise SystemExit("verification-summary artifact_input_parent_dir_basename_count mismatch")
+expected_artifact_input_contract = (
+    f"{len(artifact_inputs)}|"
+    f"{summary.get('artifact_input_names_sha256')}|"
+    f"{expected_artifact_input_file_class_counts['json']}j/{expected_artifact_input_file_class_counts['html']}h/{expected_artifact_input_file_class_counts['bmp']}b/{expected_artifact_input_file_class_counts['other']}o|"
+    f"{expected_artifact_input_max_depth}|"
+    f"{expected_artifact_input_min_nonroot_depth}|"
+    f"{expected_artifact_input_parent_dir_count}|"
+    f"{expected_artifact_input_parent_dir_max_depth}|"
+    f"{expected_artifact_input_parent_dir_min_nonroot_depth}|"
+    f"{expected_artifact_input_parent_dir_basename_count}"
+)
+if summary.get("artifact_input_contract") != expected_artifact_input_contract:
+    raise SystemExit("verification-summary artifact_input_contract mismatch")
 print(
     "artifact-input-contract: ok "
     f"count={len(artifact_inputs)} "

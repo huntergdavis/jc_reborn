@@ -2548,6 +2548,17 @@ summary["artifact_input_parent_dir_basenames_sha256"] = hashlib.sha256(
     "\n".join(sorted({Path(name).parent.name for name in digest_inputs})).encode("utf-8")
 ).hexdigest()
 summary["artifact_input_parent_dir_basename_count"] = len({Path(name).parent.name for name in digest_inputs})
+summary["artifact_input_contract"] = (
+    f"{summary['artifact_input_count']}|"
+    f"{summary['artifact_input_names_sha256']}|"
+    f"{summary['artifact_input_file_class_counts']['json']}j/{summary['artifact_input_file_class_counts']['html']}h/{summary['artifact_input_file_class_counts']['bmp']}b/{summary['artifact_input_file_class_counts']['other']}o|"
+    f"{summary['artifact_input_max_depth']}|"
+    f"{summary['artifact_input_min_nonroot_depth']}|"
+    f"{summary['artifact_input_parent_dir_count']}|"
+    f"{summary['artifact_input_parent_dir_max_depth']}|"
+    f"{summary['artifact_input_parent_dir_min_nonroot_depth']}|"
+    f"{summary['artifact_input_parent_dir_basename_count']}"
+)
 (
     summary["path_json_count"],
     summary["path_html_count"],
@@ -2675,17 +2686,7 @@ summary["risk_status"] = (
         artifact_input_parent_dir_min_nonroot_depth=summary["artifact_input_parent_dir_min_nonroot_depth"],
         artifact_input_parent_dir_basenames_sha256=summary["artifact_input_parent_dir_basenames_sha256"],
         artifact_input_parent_dir_basename_count=summary["artifact_input_parent_dir_basename_count"],
-        artifact_input_contract=(
-            f"{summary['artifact_input_count']}|"
-            f"{summary['artifact_input_names_sha256']}|"
-            f"{summary['artifact_input_file_class_counts']['json']}j/{summary['artifact_input_file_class_counts']['html']}h/{summary['artifact_input_file_class_counts']['bmp']}b/{summary['artifact_input_file_class_counts']['other']}o|"
-            f"{summary['artifact_input_max_depth']}|"
-            f"{summary['artifact_input_min_nonroot_depth']}|"
-            f"{summary['artifact_input_parent_dir_count']}|"
-            f"{summary['artifact_input_parent_dir_max_depth']}|"
-            f"{summary['artifact_input_parent_dir_min_nonroot_depth']}|"
-            f"{summary['artifact_input_parent_dir_basename_count']}"
-        ),
+        artifact_input_contract=summary["artifact_input_contract"],
         path_json_count=summary["path_json_count"],
         path_html_count=summary["path_html_count"],
         path_bmp_count=summary["path_bmp_count"],

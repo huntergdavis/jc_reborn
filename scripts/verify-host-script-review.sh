@@ -1070,6 +1070,18 @@ if summary.get("artifact_input_parent_dir_basenames_sha256") != expected_artifac
 expected_artifact_input_parent_dir_basename_count = len({Path(name).parent.name for name in artifact_inputs})
 if int(summary.get("artifact_input_parent_dir_basename_count", -1)) != expected_artifact_input_parent_dir_basename_count:
     raise SystemExit("verification-summary artifact_input_parent_dir_basename_count mismatch")
+print(
+    "artifact-input-contract: ok "
+    f"count={len(artifact_inputs)} "
+    f"names-sha256={summary.get('artifact_input_names_sha256')} "
+    f"classes={expected_artifact_input_file_class_counts['json']}j/{expected_artifact_input_file_class_counts['html']}h/{expected_artifact_input_file_class_counts['bmp']}b/{expected_artifact_input_file_class_counts['other']}o "
+    f"depth-max={expected_artifact_input_max_depth} "
+    f"depth-min-nonroot={expected_artifact_input_min_nonroot_depth} "
+    f"parent-dirs={expected_artifact_input_parent_dir_count} "
+    f"parent-dir-max={expected_artifact_input_parent_dir_max_depth} "
+    f"parent-dir-min-nonroot={expected_artifact_input_parent_dir_min_nonroot_depth} "
+    f"parent-dir-basenames={expected_artifact_input_parent_dir_basename_count}"
+)
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

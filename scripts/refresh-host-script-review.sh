@@ -640,6 +640,36 @@ print("verification-summary existing paths: ok")
 PY
 }
 
+assert_verification_summary_paths_under_root() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def check_path(label: str, path_value: str) -> None:
+    path = Path(path_value).resolve()
+    try:
+        path.relative_to(review_root)
+    except ValueError as exc:
+        raise SystemExit(f"verification-summary {label} escapes review_root") from exc
+
+for key, value in summary.items():
+    if key == "review_root":
+        continue
+    if not key.endswith("_paths"):
+        continue
+    for path_key, path_value in value.items():
+        check_path(f"{key}.{path_key}", path_value)
+
+print("verification-summary paths under root: ok")
+PY
+}
+
 assert_verification_summary_core_artifact_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1696,6 +1726,7 @@ assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_root "$OUT_DIR"
 assert_verification_summary_absolute_paths "$OUT_DIR"
 assert_verification_summary_existing_paths "$OUT_DIR"
+assert_verification_summary_paths_under_root "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_core_artifact_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"

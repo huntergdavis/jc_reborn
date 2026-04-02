@@ -104,6 +104,17 @@ for key, value in summary.items():
             raise SystemExit(f"verification-summary {key}.{path_key} does not exist")
 print("summary-existing-paths: ok")
 
+review_root_path = Path(review_root).resolve()
+for key, value in summary.items():
+    if key == "review_root" or not key.endswith("_paths"):
+        continue
+    for path_key, path_value in value.items():
+        try:
+            Path(path_value).resolve().relative_to(review_root_path)
+        except ValueError as exc:
+            raise SystemExit(f"verification-summary {key}.{path_key} escapes review_root") from exc
+print("summary-paths-under-root: ok")
+
 review_paths = summary.get("review_paths", {})
 required_review_paths = {
     "index_html": root / "index.html",

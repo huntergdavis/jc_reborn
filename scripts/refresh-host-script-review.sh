@@ -166,6 +166,13 @@ capture_review_set() {
         --output "$root/mary1" \
         --no-stamp
 
+    printf '{}\n' > "$root/capture-regression-report.json"
+    printf '{}\n' > "$root/verification-summary.json"
+    printf '{}\n' > "$root/semantic-truth.json"
+    : > "$root/identification-review.html"
+    : > "$root/capture-regression-review.html"
+    : > "$root/verification-summary.txt"
+
     python3 "$SCRIPT_DIR/render-host-script-index.py" \
         --root "$root" \
         --out-json "$root/manifest.json" \

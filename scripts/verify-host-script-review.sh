@@ -78,6 +78,15 @@ if review_root != str(root.resolve()):
     raise SystemExit("verification-summary review_root mismatch")
 print(f"review-root: ok root={review_root}")
 
+path_map_count = sum(
+    1
+    for key, value in summary.items()
+    if key.endswith("_paths") and isinstance(value, dict)
+)
+if int(summary.get("path_map_count", -1)) != path_map_count:
+    raise SystemExit("verification-summary path_map_count mismatch")
+print(f"path-map-count: ok count={path_map_count}")
+
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
 path_dir_count = 1 if review_root else 0
@@ -415,6 +424,7 @@ print(
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
     f"review-root={review_root}",
+    f"path-map-count={path_map_count}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

@@ -1114,6 +1114,28 @@ print("verification-summary path entry count: ok")
 PY
 }
 
+assert_verification_summary_path_map_count() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+
+count = sum(
+    1
+    for key, value in summary.items()
+    if key.endswith("_paths") and isinstance(value, dict)
+)
+
+if int(summary.get("path_map_count", -1)) != count:
+    raise SystemExit("verification-summary path_map_count mismatch")
+print("verification-summary path map count: ok")
+PY
+}
+
 assert_verification_summary_path_type_counts() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1410,6 +1432,14 @@ def count_path_entries(summary_obj):
         if key.endswith("_paths") and isinstance(value, dict):
             total += len(value)
     return total
+
+
+def count_path_maps(summary_obj):
+    return sum(
+        1
+        for key, value in summary_obj.items()
+        if key.endswith("_paths") and isinstance(value, dict)
+    )
 
 
 def count_path_types(summary_obj):
@@ -1790,6 +1820,7 @@ summary = {
     ),
 }
 summary["path_entry_count"] = count_path_entries(summary)
+summary["path_map_count"] = count_path_maps(summary)
 summary["path_file_count"], summary["path_dir_count"] = count_path_types(summary)
 (
     summary["path_json_count"],
@@ -1818,7 +1849,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
-    "review-root={review_root} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} "
+    "review-root={review_root} path-map-count={path_map_count} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} "
     "path-json-count={path_json_count} path-html-count={path_html_count} path-bmp-count={path_bmp_count} path-other-file-count={path_other_file_count} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
@@ -1864,6 +1895,7 @@ summary["risk_status"] = (
         capture_first_meta=checks["capture-regression"]["frame_meta_first_failed_scene"],
         capture_first_semantic=checks["capture-regression"]["semantic_first_failed_scene"],
         review_root=summary["review_root"],
+        path_map_count=summary["path_map_count"],
         path_entry_count=summary["path_entry_count"],
         path_file_count=summary["path_file_count"],
         path_dir_count=summary["path_dir_count"],
@@ -1998,6 +2030,7 @@ assert_verification_summary_key_frame_paths "$OUT_DIR"
 assert_verification_summary_key_frame_meta_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_verification_summary_artifact_input_coverage "$OUT_DIR"
+assert_verification_summary_path_map_count "$OUT_DIR"
 assert_verification_summary_path_entry_count "$OUT_DIR"
 assert_verification_summary_path_type_counts "$OUT_DIR"
 assert_verification_summary_path_class_counts "$OUT_DIR"

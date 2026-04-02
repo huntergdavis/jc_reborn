@@ -111,6 +111,19 @@ print(
     f"temporal={identification_audit_paths.get('temporal_json')}"
 )
 
+identification_floor_paths = summary.get("identification_floor_paths", {})
+required_identification_floor_paths = {
+    "regression_floors_json": root / "identification-regression-floors.json",
+}
+for key, expected_path in required_identification_floor_paths.items():
+    actual = identification_floor_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary identification_floor_paths.{key} mismatch")
+print(
+    "identification-floor-paths: ok "
+    f"floors={identification_floor_paths.get('regression_floors_json')}"
+)
+
 capture_audit_paths = summary.get("capture_audit_paths", {})
 required_capture_audit_paths = {
     "image_report_json": root / "frame-image-regression-report.json",
@@ -214,6 +227,7 @@ required_summary_txt_tokens = {
     f"identify-partials-json={identification_audit_paths.get('partials_json')}",
     f"identify-challenges-json={identification_audit_paths.get('challenges_json')}",
     f"identify-temporal-json={identification_audit_paths.get('temporal_json')}",
+    f"identify-regression-floors-json={identification_floor_paths.get('regression_floors_json')}",
     f"capture-image-report-json={capture_audit_paths.get('image_report_json')}",
     f"capture-meta-report-json={capture_audit_paths.get('meta_report_json')}",
     f"capture-semantic-report-json={capture_audit_paths.get('semantic_report_json')}",

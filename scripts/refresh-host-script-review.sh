@@ -591,6 +591,27 @@ print("verification-summary identification_audit_paths: ok")
 PY
 }
 
+assert_verification_summary_identification_floor_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+floor_paths = summary.get("identification_floor_paths", {})
+required = {
+    "regression_floors_json": root / "identification-regression-floors.json",
+}
+for key, expected in required.items():
+    actual = floor_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary identification_floor_paths.{key} mismatch")
+print("verification-summary identification_floor_paths: ok")
+PY
+}
+
 assert_verification_summary_capture_audit_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -730,6 +751,7 @@ required_tokens = {
     f"identify-partials-json={summary['identification_audit_paths']['partials_json']}",
     f"identify-challenges-json={summary['identification_audit_paths']['challenges_json']}",
     f"identify-temporal-json={summary['identification_audit_paths']['temporal_json']}",
+    f"identify-regression-floors-json={summary['identification_floor_paths']['regression_floors_json']}",
     f"capture-image-report-json={summary['capture_audit_paths']['image_report_json']}",
     f"capture-meta-report-json={summary['capture_audit_paths']['meta_report_json']}",
     f"capture-semantic-report-json={summary['capture_audit_paths']['semantic_report_json']}",
@@ -1217,6 +1239,9 @@ summary = {
         "challenges_json": str((root / "identification-challenges.json").resolve()),
         "temporal_json": str((root / "identification-temporal.json").resolve()),
     },
+    "identification_floor_paths": {
+        "regression_floors_json": str((root / "identification-regression-floors.json").resolve()),
+    },
     "capture_audit_paths": {
         "image_report_json": str((root / "frame-image-regression-report.json").resolve()),
         "meta_report_json": str((root / "frame-meta-regression-report.json").resolve()),
@@ -1299,6 +1324,7 @@ summary["risk_status"] = (
     "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
     "identify-partials-json={identify_partials_json} identify-challenges-json={identify_challenges_json} "
     "identify-temporal-json={identify_temporal_json} "
+    "identify-regression-floors-json={identify_regression_floors_json} "
     "capture-image-report-json={capture_image_report_json} capture-meta-report-json={capture_meta_report_json} "
     "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
     "image-baseline-json={image_baseline_json} meta-baseline-json={meta_baseline_json} "
@@ -1340,6 +1366,7 @@ summary["risk_status"] = (
         identify_partials_json=summary["identification_audit_paths"]["partials_json"],
         identify_challenges_json=summary["identification_audit_paths"]["challenges_json"],
         identify_temporal_json=summary["identification_audit_paths"]["temporal_json"],
+        identify_regression_floors_json=summary["identification_floor_paths"]["regression_floors_json"],
         capture_image_report_json=summary["capture_audit_paths"]["image_report_json"],
         capture_meta_report_json=summary["capture_audit_paths"]["meta_report_json"],
         capture_semantic_report_json=summary["capture_audit_paths"]["semantic_report_json"],
@@ -1427,6 +1454,7 @@ write_verification_summary "$OUT_DIR"
 assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"
+assert_verification_summary_identification_floor_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
 assert_verification_summary_regression_baseline_paths "$OUT_DIR"
 assert_verification_summary_scene_asset_paths "$OUT_DIR"

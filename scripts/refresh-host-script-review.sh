@@ -663,6 +663,30 @@ print("verification-summary key_frame_paths: ok")
 PY
 }
 
+assert_verification_summary_key_frame_meta_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+key_frame_meta_paths = summary.get("key_frame_meta_paths", {})
+required = {
+    "fishing_start_json": root / "fishing1" / "frame-meta" / "frame_00000.json",
+    "fishing_late_json": root / "fishing1" / "frame-meta" / "frame_00080.json",
+    "mary_start_json": root / "mary1" / "frame-meta" / "frame_00000.json",
+    "mary_late_json": root / "mary1" / "frame-meta" / "frame_00100.json",
+}
+for key, expected in required.items():
+    actual = key_frame_meta_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary key_frame_meta_paths.{key} mismatch")
+print("verification-summary key_frame_meta_paths: ok")
+PY
+}
+
 assert_verification_summary_text_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -695,6 +719,10 @@ required_tokens = {
     f"fishing-late-bmp={summary['key_frame_paths']['fishing_late_bmp']}",
     f"mary-start-bmp={summary['key_frame_paths']['mary_start_bmp']}",
     f"mary-late-bmp={summary['key_frame_paths']['mary_late_bmp']}",
+    f"fishing-start-json={summary['key_frame_meta_paths']['fishing_start_json']}",
+    f"fishing-late-json={summary['key_frame_meta_paths']['fishing_late_json']}",
+    f"mary-start-json={summary['key_frame_meta_paths']['mary_start_json']}",
+    f"mary-late-json={summary['key_frame_meta_paths']['mary_late_json']}",
 }
 for token in required_tokens:
     if token not in summary_txt:
@@ -1181,6 +1209,12 @@ summary = {
         "mary_start_bmp": str((root / "mary1" / "frames" / "frame_00000.bmp").resolve()),
         "mary_late_bmp": str((root / "mary1" / "frames" / "frame_00100.bmp").resolve()),
     },
+    "key_frame_meta_paths": {
+        "fishing_start_json": str((root / "fishing1" / "frame-meta" / "frame_00000.json").resolve()),
+        "fishing_late_json": str((root / "fishing1" / "frame-meta" / "frame_00080.json").resolve()),
+        "mary_start_json": str((root / "mary1" / "frame-meta" / "frame_00000.json").resolve()),
+        "mary_late_json": str((root / "mary1" / "frame-meta" / "frame_00100.json").resolve()),
+    },
     "checks": checks,
     "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
     "artifact_inputs": digest_inputs,
@@ -1240,6 +1274,8 @@ summary["risk_status"] = (
     "mary-frames-dir={mary_frames_dir} mary-meta-dir={mary_meta_dir} "
     "fishing-start-bmp={fishing_start_bmp} fishing-late-bmp={fishing_late_bmp} "
     "mary-start-bmp={mary_start_bmp} mary-late-bmp={mary_late_bmp} "
+    "fishing-start-json={fishing_start_json} fishing-late-json={fishing_late_json} "
+    "mary-start-json={mary_start_json} mary-late-json={mary_late_json} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -1283,6 +1319,10 @@ summary["risk_status"] = (
         fishing_late_bmp=summary["key_frame_paths"]["fishing_late_bmp"],
         mary_start_bmp=summary["key_frame_paths"]["mary_start_bmp"],
         mary_late_bmp=summary["key_frame_paths"]["mary_late_bmp"],
+        fishing_start_json=summary["key_frame_meta_paths"]["fishing_start_json"],
+        fishing_late_json=summary["key_frame_meta_paths"]["fishing_late_json"],
+        mary_start_json=summary["key_frame_meta_paths"]["mary_start_json"],
+        mary_late_json=summary["key_frame_meta_paths"]["mary_late_json"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],
@@ -1354,6 +1394,7 @@ assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
 assert_verification_summary_scene_asset_paths "$OUT_DIR"
 assert_verification_summary_key_frame_paths "$OUT_DIR"
+assert_verification_summary_key_frame_meta_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"

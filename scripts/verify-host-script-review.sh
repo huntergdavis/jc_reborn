@@ -168,6 +168,25 @@ print(
     f"mary-late={key_frame_paths.get('mary_late_bmp')}"
 )
 
+key_frame_meta_paths = summary.get("key_frame_meta_paths", {})
+required_key_frame_meta_paths = {
+    "fishing_start_json": root / "fishing1" / "frame-meta" / "frame_00000.json",
+    "fishing_late_json": root / "fishing1" / "frame-meta" / "frame_00080.json",
+    "mary_start_json": root / "mary1" / "frame-meta" / "frame_00000.json",
+    "mary_late_json": root / "mary1" / "frame-meta" / "frame_00100.json",
+}
+for key, expected_path in required_key_frame_meta_paths.items():
+    actual = key_frame_meta_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary key_frame_meta_paths.{key} mismatch")
+print(
+    "key-frame-meta-paths: ok "
+    f"fishing-start={key_frame_meta_paths.get('fishing_start_json')} "
+    f"fishing-late={key_frame_meta_paths.get('fishing_late_json')} "
+    f"mary-start={key_frame_meta_paths.get('mary_start_json')} "
+    f"mary-late={key_frame_meta_paths.get('mary_late_json')}"
+)
+
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
     f"index={review_paths.get('index_html')}",
@@ -190,6 +209,10 @@ required_summary_txt_tokens = {
     f"fishing-late-bmp={key_frame_paths.get('fishing_late_bmp')}",
     f"mary-start-bmp={key_frame_paths.get('mary_start_bmp')}",
     f"mary-late-bmp={key_frame_paths.get('mary_late_bmp')}",
+    f"fishing-start-json={key_frame_meta_paths.get('fishing_start_json')}",
+    f"fishing-late-json={key_frame_meta_paths.get('fishing_late_json')}",
+    f"mary-start-json={key_frame_meta_paths.get('mary_start_json')}",
+    f"mary-late-json={key_frame_meta_paths.get('mary_late_json')}",
 }
 for token in required_summary_txt_tokens:
     if token not in summary_txt:

@@ -639,6 +639,30 @@ print("verification-summary scene_asset_paths: ok")
 PY
 }
 
+assert_verification_summary_key_frame_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+key_frame_paths = summary.get("key_frame_paths", {})
+required = {
+    "fishing_start_bmp": root / "fishing1" / "frames" / "frame_00000.bmp",
+    "fishing_late_bmp": root / "fishing1" / "frames" / "frame_00080.bmp",
+    "mary_start_bmp": root / "mary1" / "frames" / "frame_00000.bmp",
+    "mary_late_bmp": root / "mary1" / "frames" / "frame_00100.bmp",
+}
+for key, expected in required.items():
+    actual = key_frame_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary key_frame_paths.{key} mismatch")
+print("verification-summary key_frame_paths: ok")
+PY
+}
+
 assert_verification_summary_text_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -667,6 +691,10 @@ required_tokens = {
     f"fishing-meta-dir={summary['scene_asset_paths']['fishing_meta_dir']}",
     f"mary-frames-dir={summary['scene_asset_paths']['mary_frames_dir']}",
     f"mary-meta-dir={summary['scene_asset_paths']['mary_meta_dir']}",
+    f"fishing-start-bmp={summary['key_frame_paths']['fishing_start_bmp']}",
+    f"fishing-late-bmp={summary['key_frame_paths']['fishing_late_bmp']}",
+    f"mary-start-bmp={summary['key_frame_paths']['mary_start_bmp']}",
+    f"mary-late-bmp={summary['key_frame_paths']['mary_late_bmp']}",
 }
 for token in required_tokens:
     if token not in summary_txt:
@@ -1147,6 +1175,12 @@ summary = {
         "mary_frames_dir": str((root / "mary1" / "frames").resolve()),
         "mary_meta_dir": str((root / "mary1" / "frame-meta").resolve()),
     },
+    "key_frame_paths": {
+        "fishing_start_bmp": str((root / "fishing1" / "frames" / "frame_00000.bmp").resolve()),
+        "fishing_late_bmp": str((root / "fishing1" / "frames" / "frame_00080.bmp").resolve()),
+        "mary_start_bmp": str((root / "mary1" / "frames" / "frame_00000.bmp").resolve()),
+        "mary_late_bmp": str((root / "mary1" / "frames" / "frame_00100.bmp").resolve()),
+    },
     "checks": checks,
     "artifact_sha256": hashlib.sha256(digest_payload).hexdigest(),
     "artifact_inputs": digest_inputs,
@@ -1204,6 +1238,8 @@ summary["risk_status"] = (
     "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
     "fishing-frames-dir={fishing_frames_dir} fishing-meta-dir={fishing_meta_dir} "
     "mary-frames-dir={mary_frames_dir} mary-meta-dir={mary_meta_dir} "
+    "fishing-start-bmp={fishing_start_bmp} fishing-late-bmp={fishing_late_bmp} "
+    "mary-start-bmp={mary_start_bmp} mary-late-bmp={mary_late_bmp} "
     "identify-ratio={identify_ratio} "
     "challenge-unknown-score={challenge_unknown_score} challenge-unknown-margin={challenge_unknown_margin} "
     "challenge-ambiguous-score={challenge_ambiguous_score} challenge-ambiguous-margin={challenge_ambiguous_margin} "
@@ -1243,6 +1279,10 @@ summary["risk_status"] = (
         fishing_meta_dir=summary["scene_asset_paths"]["fishing_meta_dir"],
         mary_frames_dir=summary["scene_asset_paths"]["mary_frames_dir"],
         mary_meta_dir=summary["scene_asset_paths"]["mary_meta_dir"],
+        fishing_start_bmp=summary["key_frame_paths"]["fishing_start_bmp"],
+        fishing_late_bmp=summary["key_frame_paths"]["fishing_late_bmp"],
+        mary_start_bmp=summary["key_frame_paths"]["mary_start_bmp"],
+        mary_late_bmp=summary["key_frame_paths"]["mary_late_bmp"],
         identify_ratio=checks["identification-eval"]["min_best_to_second_ratio"],
         challenge_unknown_score=checks["identification-challenges"]["max_unknown_best_score"],
         challenge_unknown_margin=checks["identification-challenges"]["max_unknown_margin"],
@@ -1313,6 +1353,7 @@ assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
 assert_verification_summary_scene_asset_paths "$OUT_DIR"
+assert_verification_summary_key_frame_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"

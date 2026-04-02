@@ -149,6 +149,25 @@ print(
     f"mary-meta={scene_asset_paths.get('mary_meta_dir')}"
 )
 
+key_frame_paths = summary.get("key_frame_paths", {})
+required_key_frame_paths = {
+    "fishing_start_bmp": root / "fishing1" / "frames" / "frame_00000.bmp",
+    "fishing_late_bmp": root / "fishing1" / "frames" / "frame_00080.bmp",
+    "mary_start_bmp": root / "mary1" / "frames" / "frame_00000.bmp",
+    "mary_late_bmp": root / "mary1" / "frames" / "frame_00100.bmp",
+}
+for key, expected_path in required_key_frame_paths.items():
+    actual = key_frame_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary key_frame_paths.{key} mismatch")
+print(
+    "key-frame-paths: ok "
+    f"fishing-start={key_frame_paths.get('fishing_start_bmp')} "
+    f"fishing-late={key_frame_paths.get('fishing_late_bmp')} "
+    f"mary-start={key_frame_paths.get('mary_start_bmp')} "
+    f"mary-late={key_frame_paths.get('mary_late_bmp')}"
+)
+
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
 required_summary_txt_tokens = {
     f"index={review_paths.get('index_html')}",
@@ -167,6 +186,10 @@ required_summary_txt_tokens = {
     f"fishing-meta-dir={scene_asset_paths.get('fishing_meta_dir')}",
     f"mary-frames-dir={scene_asset_paths.get('mary_frames_dir')}",
     f"mary-meta-dir={scene_asset_paths.get('mary_meta_dir')}",
+    f"fishing-start-bmp={key_frame_paths.get('fishing_start_bmp')}",
+    f"fishing-late-bmp={key_frame_paths.get('fishing_late_bmp')}",
+    f"mary-start-bmp={key_frame_paths.get('mary_start_bmp')}",
+    f"mary-late-bmp={key_frame_paths.get('mary_late_bmp')}",
 }
 for token in required_summary_txt_tokens:
     if token not in summary_txt:

@@ -67,8 +67,9 @@ def build_manifest(root: Path) -> dict:
     extras = {}
     for name in ("identification-review.html", "capture-regression-review.html"):
         path = root / name
-        if path.is_file():
-            extras[name] = str(path.resolve())
+        if not path.is_file():
+            raise FileNotFoundError(f"required dashboard missing: {path}")
+        extras[name] = str(path.resolve())
     return {"root": str(root.resolve()), "scenes": scenes, "extras": extras}
 
 

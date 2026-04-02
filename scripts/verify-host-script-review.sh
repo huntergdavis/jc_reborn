@@ -105,6 +105,10 @@ for href in (
     "frame-meta-regression-report.json",
     "semantic-regression-report.json",
     "capture-regression-report.json",
+    "fishing1/frames/",
+    "mary1/frames/",
+    "fishing1/frame-meta/",
+    "mary1/frame-meta/",
 ):
     if href not in capture_html:
         raise SystemExit(f"capture-regression-review.html missing link: {href}")

@@ -247,7 +247,15 @@ if int(capture_totals.get("frame_meta_failures", 0)) != int(frame_meta_regressio
 if int(capture_totals.get("semantic_failures", 0)) != int(semantic_report.get("failure_count", 0)):
     raise SystemExit("capture-regression-report semantic_failures mismatch")
 
-print("capture-regression-report: ok")
+print(
+    "capture-regression-report: ok "
+    f"frame_image_failures={capture_totals.get('frame_image_failures')} "
+    f"frame_meta_failures={capture_totals.get('frame_meta_failures')} "
+    f"semantic_failures={capture_totals.get('semantic_failures')} "
+    f"first_image_scene={capture_first_failed.get('frame-image')} "
+    f"first_meta_scene={capture_first_failed.get('frame-meta')} "
+    f"first_semantic_scene={capture_first_failed.get('semantic')}"
+)
 
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
     path = root / f"{name}.json"

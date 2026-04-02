@@ -53,6 +53,11 @@ static int storyCurrentDay = 1;
 static char storyBootAdsName[13] = "";
 static int storyBootAdsTag = -1;
 static int storyBootSceneIndex = -1;
+static int storyForcedIslandPosValid = 0;
+static int storyForcedIslandX = 0;
+static int storyForcedIslandY = 0;
+static int storyForcedLowTideValid = 0;
+static int storyForcedLowTide = 0;
 
 #ifdef PS1_BUILD
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
@@ -163,6 +168,15 @@ void storySetBootSingleSceneIndex(int sceneIndex)
     storyBootSceneIndex = -1;
     storyBootAdsName[0] = '\0';
     storyBootAdsTag = -1;
+}
+
+void storySetIslandOverrides(int hasPosition, int xPos, int yPos, int hasLowTide, int lowTide)
+{
+    storyForcedIslandPosValid = hasPosition;
+    storyForcedIslandX = xPos;
+    storyForcedIslandY = yPos;
+    storyForcedLowTideValid = hasLowTide;
+    storyForcedLowTide = lowTide;
 }
 
 int storyHasBootOverridePending(void)
@@ -307,6 +321,14 @@ static void storyCalculateIslandFromScene(struct TStoryScene *scene)
             islandState.xPos    = 0;
             islandState.yPos    = 0;
         }
+    }
+
+    if (storyForcedLowTideValid)
+        islandState.lowTide = storyForcedLowTide ? 1 : 0;
+
+    if (storyForcedIslandPosValid) {
+        islandState.xPos = storyForcedIslandX;
+        islandState.yPos = storyForcedIslandY;
     }
 
 

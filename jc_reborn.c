@@ -71,6 +71,7 @@ int fclose(FILE *stream);
 
 #include "ttm.h"
 #include "ads.h"
+#include "island.h"
 #include "story.h"
 
 /* Root counters are exposed by PSn00bSDK on PS1 builds. */
@@ -107,6 +108,10 @@ static int  numArgs  = 0;
 
 #ifndef PS1_BUILD
 static int hostForcedSeed = -1;
+static int hostForcedIslandPosValid = 0;
+static int hostForcedIslandX = 0;
+static int hostForcedIslandY = 0;
+static int hostForcedLowTide = -1;
 #endif
 
 #ifdef PS1_BUILD
@@ -378,6 +383,8 @@ static void usage()
         printf("         capture-overlay - embed a machine-readable debug overlay in captures\n");
         printf("         capture-scene-label TEXT - annotate metadata with the scene label\n");
         printf("         seed N          - force deterministic RNG seed for host runs\n");
+        printf("         island-pos X Y  - force island position for host story/island runs\n");
+        printf("         lowtide 0|1     - force low tide state for host story/island runs\n");
         printf("\n");
         printf(" While-playing hot-keys (if enabled):\n");
         printf("         Esc        - Terminate immediately\n");
@@ -523,6 +530,24 @@ static void parseArgs(int argc, char **argv)
                     usage();
                 }
             }
+            else if (!strcmp(argv[i], "island-pos")) {
+                if (i + 2 < argc) {
+                    hostForcedIslandX = atoi(argv[++i]);
+                    hostForcedIslandY = atoi(argv[++i]);
+                    hostForcedIslandPosValid = 1;
+                } else {
+                    fprintf(stderr, "Error: island-pos requires X and Y\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "lowtide")) {
+                if (i + 1 < argc) {
+                    hostForcedLowTide = atoi(argv[++i]) ? 1 : 0;
+                } else {
+                    fprintf(stderr, "Error: lowtide requires 0 or 1\n");
+                    usage();
+                }
+            }
         }
     }
 
@@ -575,6 +600,14 @@ int main(int argc, char **argv)
         debugMode = 1;
 
     parseResourceFiles("RESOURCE.MAP");
+
+    storySetIslandOverrides(
+        hostForcedIslandPosValid,
+        hostForcedIslandX,
+        hostForcedIslandY,
+        hostForcedLowTide >= 0,
+        hostForcedLowTide
+    );
 
     if (hostForcedSeed >= 0)
         srand((unsigned int)hostForcedSeed);
@@ -706,6 +739,13 @@ int main(int argc, char **argv)
         graphicsInit();
         soundInit();
         adsInit();
+
+        if (hostForcedLowTide >= 0)
+            islandState.lowTide = hostForcedLowTide;
+        if (hostForcedIslandPosValid) {
+            islandState.xPos = hostForcedIslandX;
+            islandState.yPos = hostForcedIslandY;
+        }
 
         if (argIsland)
             adsInitIsland();

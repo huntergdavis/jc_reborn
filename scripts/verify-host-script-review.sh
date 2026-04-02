@@ -569,6 +569,7 @@ required_summary_txt_tokens = {
     f"artifact-input-count={summary.get('artifact_input_count')}",
     f"artifact-input-names={','.join(summary.get('artifact_input_names', []))}",
     f"artifact-input-names-sha256={summary.get('artifact_input_names_sha256')}",
+    f"artifact-input-file-class-counts={summary.get('artifact_input_file_class_counts', {}).get('json', 0)}j/{summary.get('artifact_input_file_class_counts', {}).get('html', 0)}h/{summary.get('artifact_input_file_class_counts', {}).get('bmp', 0)}b/{summary.get('artifact_input_file_class_counts', {}).get('other', 0)}o",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
@@ -981,6 +982,19 @@ expected_artifact_input_names_sha256 = hashlib.sha256(
 ).hexdigest()
 if summary.get("artifact_input_names_sha256") != expected_artifact_input_names_sha256:
     raise SystemExit("verification-summary artifact_input_names_sha256 mismatch")
+expected_artifact_input_file_class_counts = {"json": 0, "html": 0, "bmp": 0, "other": 0}
+for name in artifact_inputs:
+    suffix = Path(name).suffix.lower()
+    if suffix == ".json":
+        expected_artifact_input_file_class_counts["json"] += 1
+    elif suffix == ".html":
+        expected_artifact_input_file_class_counts["html"] += 1
+    elif suffix == ".bmp":
+        expected_artifact_input_file_class_counts["bmp"] += 1
+    else:
+        expected_artifact_input_file_class_counts["other"] += 1
+if summary.get("artifact_input_file_class_counts") != expected_artifact_input_file_class_counts:
+    raise SystemExit("verification-summary artifact_input_file_class_counts mismatch")
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

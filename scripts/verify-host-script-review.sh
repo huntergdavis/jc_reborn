@@ -577,6 +577,7 @@ required_summary_txt_tokens = {
     f"artifact-input-parent-dir-count={summary.get('artifact_input_parent_dir_count')}",
     f"artifact-input-parent-dir-depth-counts={','.join(f\"{depth}:{summary.get('artifact_input_parent_dir_depth_counts', {}).get(depth)}\" for depth in sorted(summary.get('artifact_input_parent_dir_depth_counts', {}), key=int))}",
     f"artifact-input-parent-dir-max-depth={summary.get('artifact_input_parent_dir_max_depth')}",
+    f"artifact-input-parent-dir-min-nonroot-depth={summary.get('artifact_input_parent_dir_min_nonroot_depth')}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
@@ -1047,6 +1048,18 @@ expected_artifact_input_parent_dir_max_depth = max(
 ) if artifact_inputs else 0
 if int(summary.get("artifact_input_parent_dir_max_depth", -1)) != expected_artifact_input_parent_dir_max_depth:
     raise SystemExit("verification-summary artifact_input_parent_dir_max_depth mismatch")
+expected_artifact_input_parent_dir_nonroot_depths = [
+    relpath.count("/") + 1
+    for relpath in {str(Path(name).parent) for name in artifact_inputs}
+    if relpath != "."
+]
+expected_artifact_input_parent_dir_min_nonroot_depth = (
+    min(expected_artifact_input_parent_dir_nonroot_depths)
+    if expected_artifact_input_parent_dir_nonroot_depths
+    else 0
+)
+if int(summary.get("artifact_input_parent_dir_min_nonroot_depth", -1)) != expected_artifact_input_parent_dir_min_nonroot_depth:
+    raise SystemExit("verification-summary artifact_input_parent_dir_min_nonroot_depth mismatch")
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

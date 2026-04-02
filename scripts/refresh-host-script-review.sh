@@ -1400,6 +1400,7 @@ PY
 assert_verification_summary_artifact_input_contract() {
     local root="$1"
     python3 - "$root" <<'PY'
+import hashlib
 import json
 import sys
 from pathlib import Path

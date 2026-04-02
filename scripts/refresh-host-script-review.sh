@@ -1143,6 +1143,48 @@ print("verification-summary path type counts: ok")
 PY
 }
 
+assert_verification_summary_path_class_counts() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+
+json_count = 0
+html_count = 0
+bmp_count = 0
+other_file_count = 0
+for key, value in summary.items():
+    if not key.endswith("_paths") or not isinstance(value, dict):
+        continue
+    for path_key, path_value in value.items():
+        if path_key.endswith("_dir"):
+            continue
+        suffix = Path(path_value).suffix.lower()
+        if suffix == ".json":
+            json_count += 1
+        elif suffix == ".html":
+            html_count += 1
+        elif suffix == ".bmp":
+            bmp_count += 1
+        else:
+            other_file_count += 1
+
+if int(summary.get("path_json_count", -1)) != json_count:
+    raise SystemExit("verification-summary path_json_count mismatch")
+if int(summary.get("path_html_count", -1)) != html_count:
+    raise SystemExit("verification-summary path_html_count mismatch")
+if int(summary.get("path_bmp_count", -1)) != bmp_count:
+    raise SystemExit("verification-summary path_bmp_count mismatch")
+if int(summary.get("path_other_file_count", -1)) != other_file_count:
+    raise SystemExit("verification-summary path_other_file_count mismatch")
+print("verification-summary path class counts: ok")
+PY
+}
+
 print_review_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -1382,6 +1424,31 @@ def count_path_types(summary_obj):
             else:
                 file_count += 1
     return file_count, dir_count
+
+
+def count_path_classes(summary_obj):
+    json_count = 0
+    html_count = 0
+    bmp_count = 0
+    dir_count = 1 if summary_obj.get("review_root") else 0
+    other_file_count = 0
+    for key, value in summary_obj.items():
+        if not key.endswith("_paths") or not isinstance(value, dict):
+            continue
+        for path_key, path_value in value.items():
+            if path_key.endswith("_dir"):
+                dir_count += 1
+                continue
+            suffix = Path(path_value).suffix.lower()
+            if suffix == ".json":
+                json_count += 1
+            elif suffix == ".html":
+                html_count += 1
+            elif suffix == ".bmp":
+                bmp_count += 1
+            else:
+                other_file_count += 1
+    return json_count, html_count, bmp_count, dir_count, other_file_count
 
 checks = {}
 for name in ("expectation-report", "host-truth-compare", "repro-compare"):
@@ -1724,6 +1791,13 @@ summary = {
 }
 summary["path_entry_count"] = count_path_entries(summary)
 summary["path_file_count"], summary["path_dir_count"] = count_path_types(summary)
+(
+    summary["path_json_count"],
+    summary["path_html_count"],
+    summary["path_bmp_count"],
+    _summary_dir_count,
+    summary["path_other_file_count"],
+) = count_path_classes(summary)
 summary["risk_status"] = (
     "elevated_risk"
     if checks["identification-challenges"]["danger_count"] > 0
@@ -1745,6 +1819,7 @@ summary["risk_status"] = (
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
     "review-root={review_root} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} "
+    "path-json-count={path_json_count} path-html-count={path_html_count} path-bmp-count={path_bmp_count} path-other-file-count={path_other_file_count} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
     "identify-selfcheck-json={identify_selfcheck_json} identify-eval-json={identify_eval_json} "
@@ -1792,6 +1867,10 @@ summary["risk_status"] = (
         path_entry_count=summary["path_entry_count"],
         path_file_count=summary["path_file_count"],
         path_dir_count=summary["path_dir_count"],
+        path_json_count=summary["path_json_count"],
+        path_html_count=summary["path_html_count"],
+        path_bmp_count=summary["path_bmp_count"],
+        path_other_file_count=summary["path_other_file_count"],
         index_html=summary["review_paths"]["index_html"],
         identification_html=summary["review_paths"]["identification_review_html"],
         capture_html=summary["review_paths"]["capture_regression_review_html"],
@@ -1921,6 +2000,7 @@ assert_verification_summary_text_paths "$OUT_DIR"
 assert_verification_summary_artifact_input_coverage "$OUT_DIR"
 assert_verification_summary_path_entry_count "$OUT_DIR"
 assert_verification_summary_path_type_counts "$OUT_DIR"
+assert_verification_summary_path_class_counts "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"
 assert_capture_review_totals "$OUT_DIR"

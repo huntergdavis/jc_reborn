@@ -81,14 +81,27 @@ print(f"review-root: ok root={review_root}")
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
 path_dir_count = 1 if review_root else 0
+path_json_count = 0
+path_html_count = 0
+path_bmp_count = 0
+path_other_file_count = 0
 for key, value in summary.items():
     if key.endswith("_paths") and isinstance(value, dict):
         path_entry_count += len(value)
-        for path_key in value:
+        for path_key, path_value in value.items():
             if path_key.endswith("_dir"):
                 path_dir_count += 1
             else:
                 path_file_count += 1
+                suffix = Path(path_value).suffix.lower()
+                if suffix == ".json":
+                    path_json_count += 1
+                elif suffix == ".html":
+                    path_html_count += 1
+                elif suffix == ".bmp":
+                    path_bmp_count += 1
+                else:
+                    path_other_file_count += 1
 if int(summary.get("path_entry_count", -1)) != path_entry_count:
     raise SystemExit("verification-summary path_entry_count mismatch")
 print(f"path-entry-count: ok count={path_entry_count}")
@@ -97,6 +110,18 @@ if int(summary.get("path_file_count", -1)) != path_file_count:
 if int(summary.get("path_dir_count", -1)) != path_dir_count:
     raise SystemExit("verification-summary path_dir_count mismatch")
 print(f"path-type-counts: ok files={path_file_count} dirs={path_dir_count}")
+if int(summary.get("path_json_count", -1)) != path_json_count:
+    raise SystemExit("verification-summary path_json_count mismatch")
+if int(summary.get("path_html_count", -1)) != path_html_count:
+    raise SystemExit("verification-summary path_html_count mismatch")
+if int(summary.get("path_bmp_count", -1)) != path_bmp_count:
+    raise SystemExit("verification-summary path_bmp_count mismatch")
+if int(summary.get("path_other_file_count", -1)) != path_other_file_count:
+    raise SystemExit("verification-summary path_other_file_count mismatch")
+print(
+    "path-class-counts: ok "
+    f"json={path_json_count} html={path_html_count} bmp={path_bmp_count} other={path_other_file_count}"
+)
 
 for key, value in summary.items():
     if key == "review_root":
@@ -393,6 +418,10 @@ required_summary_txt_tokens = {
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
+    f"path-json-count={path_json_count}",
+    f"path-html-count={path_html_count}",
+    f"path-bmp-count={path_bmp_count}",
+    f"path-other-file-count={path_other_file_count}",
     f"index={review_paths.get('index_html')}",
     f"identification={review_paths.get('identification_review_html')}",
     f"capture={review_paths.get('capture_regression_review_html')}",

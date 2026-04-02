@@ -1298,6 +1298,24 @@ print(
 PY
 }
 
+assert_verification_summary_artifact_input_parent_dir_max_depth() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1]).resolve()
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+artifact_inputs = summary.get("artifact_inputs") or {}
+parent_dirs = {str(Path(name).parent) for name in artifact_inputs}
+actual = max((0 if relpath == "." else relpath.count("/") + 1) for relpath in parent_dirs) if parent_dirs else 0
+if int(summary.get("artifact_input_parent_dir_max_depth", -1)) != actual:
+    raise SystemExit("verification-summary artifact_input_parent_dir_max_depth mismatch")
+print(f"verification-summary artifact input parent dir max depth: ok depth={actual}")
+PY
+}
+
 assert_verification_summary_path_entry_count() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -2438,6 +2456,10 @@ for relpath in {str(Path(name).parent) for name in digest_inputs}:
 summary["artifact_input_parent_dir_depth_counts"] = dict(
     sorted(artifact_input_parent_dir_depth_counts.items(), key=lambda item: int(item[0]))
 )
+parent_dir_relpaths = {str(Path(name).parent) for name in digest_inputs}
+summary["artifact_input_parent_dir_max_depth"] = max(
+    (0 if relpath == "." else relpath.count("/") + 1) for relpath in parent_dir_relpaths
+) if parent_dir_relpaths else 0
 (
     summary["path_json_count"],
     summary["path_html_count"],
@@ -2465,7 +2487,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
-    "review-root={review_root} path-map-count={path_map_count} path-map-names={path_map_names} path-map-entry-counts={path_map_entry_counts} path-map-type-counts={path_map_type_counts} path-map-file-class-counts={path_map_file_class_counts} path-map-entry-names={path_map_entry_names} path-basenames={path_basenames} path-relpaths={path_relpaths} path-depth-counts={path_depth_counts} path-max-depth={path_max_depth} path-min-nonroot-depth={path_min_nonroot_depth} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} artifact-input-count={artifact_input_count} artifact-input-names={artifact_input_names} artifact-input-names-sha256={artifact_input_names_sha256} artifact-input-file-class-counts={artifact_input_file_class_counts} artifact-input-depth-counts={artifact_input_depth_counts} artifact-input-max-depth={artifact_input_max_depth} artifact-input-min-nonroot-depth={artifact_input_min_nonroot_depth} artifact-input-parent-dirs-sha256={artifact_input_parent_dirs_sha256} artifact-input-parent-dir-count={artifact_input_parent_dir_count} artifact-input-parent-dir-depth-counts={artifact_input_parent_dir_depth_counts} "
+    "review-root={review_root} path-map-count={path_map_count} path-map-names={path_map_names} path-map-entry-counts={path_map_entry_counts} path-map-type-counts={path_map_type_counts} path-map-file-class-counts={path_map_file_class_counts} path-map-entry-names={path_map_entry_names} path-basenames={path_basenames} path-relpaths={path_relpaths} path-depth-counts={path_depth_counts} path-max-depth={path_max_depth} path-min-nonroot-depth={path_min_nonroot_depth} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} artifact-input-count={artifact_input_count} artifact-input-names={artifact_input_names} artifact-input-names-sha256={artifact_input_names_sha256} artifact-input-file-class-counts={artifact_input_file_class_counts} artifact-input-depth-counts={artifact_input_depth_counts} artifact-input-max-depth={artifact_input_max_depth} artifact-input-min-nonroot-depth={artifact_input_min_nonroot_depth} artifact-input-parent-dirs-sha256={artifact_input_parent_dirs_sha256} artifact-input-parent-dir-count={artifact_input_parent_dir_count} artifact-input-parent-dir-depth-counts={artifact_input_parent_dir_depth_counts} artifact-input-parent-dir-max-depth={artifact_input_parent_dir_max_depth} "
     "path-json-count={path_json_count} path-html-count={path_html_count} path-bmp-count={path_bmp_count} path-other-file-count={path_other_file_count} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
@@ -2561,6 +2583,7 @@ summary["risk_status"] = (
             f"{depth}:{summary['artifact_input_parent_dir_depth_counts'][depth]}"
             for depth in sorted(summary["artifact_input_parent_dir_depth_counts"], key=int)
         ),
+        artifact_input_parent_dir_max_depth=summary["artifact_input_parent_dir_max_depth"],
         path_json_count=summary["path_json_count"],
         path_html_count=summary["path_html_count"],
         path_bmp_count=summary["path_bmp_count"],
@@ -2702,6 +2725,7 @@ assert_verification_summary_artifact_input_min_nonroot_depth "$OUT_DIR"
 assert_verification_summary_artifact_input_parent_dirs_sha256 "$OUT_DIR"
 assert_verification_summary_artifact_input_parent_dir_count "$OUT_DIR"
 assert_verification_summary_artifact_input_parent_dir_depth_counts "$OUT_DIR"
+assert_verification_summary_artifact_input_parent_dir_max_depth "$OUT_DIR"
 assert_verification_summary_path_map_count "$OUT_DIR"
 assert_verification_summary_path_map_names "$OUT_DIR"
 assert_verification_summary_path_map_entry_counts "$OUT_DIR"

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-02T16:45:11Z",
-  "git_head": "82e874f1c88fd43dc99f29ce5cecb3a072f6c8e4",
-  "git_head_short": "82e874f1",
+  "generated_at": "2026-04-02T17:16:32Z",
+  "git_head": "70944b3d3547967ea696281a2cf2e31acbb66c75",
+  "git_head_short": "70944b3d",
   "verify_repro": true,
   "review_root": "/home/hunter/workspace/jc_reborn/host-script-review",
   "review_paths": {
@@ -158,7 +158,7 @@
       "total_failure_count": 0
     }
   },
-  "artifact_sha256": "e138251c48d3e9f84daf24408c55b09eace6840d3c6eb47759cb891617f0e36d",
+  "artifact_sha256": "9e27bb8278ea91872f779b4a84804c7b06a0e43fde55644f5f5b359667bd03b6",
   "artifact_inputs": {
     "index.html": "baf003bddbf60dc1013230241366faf9b2a44cc7d68d91ca86c184996a5f2ee4",
     "identification-review.html": "2d286ae26b80c1f130dd7de4d21592c7de1b3952af706b2a3babaff1ac953e73",

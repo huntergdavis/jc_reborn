@@ -126,6 +126,41 @@ print(
         for key in sorted(path_map_type_counts)
     )
 )
+path_map_file_class_counts = {}
+for key, value in sorted(summary.items()):
+    if not key.endswith("_paths") or not isinstance(value, dict):
+        continue
+    json_count = 0
+    html_count = 0
+    bmp_count = 0
+    other_count = 0
+    for path_key, path_value in value.items():
+        if path_key.endswith("_dir"):
+            continue
+        suffix = Path(path_value).suffix.lower()
+        if suffix == ".json":
+            json_count += 1
+        elif suffix == ".html":
+            html_count += 1
+        elif suffix == ".bmp":
+            bmp_count += 1
+        else:
+            other_count += 1
+    path_map_file_class_counts[key] = {
+        "json": json_count,
+        "html": html_count,
+        "bmp": bmp_count,
+        "other": other_count,
+    }
+if summary.get("path_map_file_class_counts") != path_map_file_class_counts:
+    raise SystemExit("verification-summary path_map_file_class_counts mismatch")
+print(
+    "path-map-file-class-counts: ok "
+    + ",".join(
+        f"{key}:{path_map_file_class_counts[key]['json']}j/{path_map_file_class_counts[key]['html']}h/{path_map_file_class_counts[key]['bmp']}b/{path_map_file_class_counts[key]['other']}o"
+        for key in sorted(path_map_file_class_counts)
+    )
+)
 
 path_entry_count = 1 if review_root else 0
 path_file_count = 0
@@ -468,6 +503,7 @@ required_summary_txt_tokens = {
     f"path-map-names={','.join(path_map_names)}",
     f"path-map-entry-counts={','.join(f'{key}:{path_map_entry_counts[key]}' for key in sorted(path_map_entry_counts))}",
     f"path-map-type-counts={','.join(f\"{key}:{path_map_type_counts[key]['files']}f/{path_map_type_counts[key]['dirs']}d\" for key in sorted(path_map_type_counts))}",
+    f"path-map-file-class-counts={','.join(f\"{key}:{path_map_file_class_counts[key]['json']}j/{path_map_file_class_counts[key]['html']}h/{path_map_file_class_counts[key]['bmp']}b/{path_map_file_class_counts[key]['other']}o\" for key in sorted(path_map_file_class_counts))}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",

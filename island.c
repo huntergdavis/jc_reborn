@@ -95,7 +95,11 @@ void islandInit(struct TTtmThread *ttmThread)
 
     grDx = grDy = 0;
 
-    if (rand() % 2)
+    if (grCaptureDir != NULL && grCaptureDir[0] != '\0') {
+        /* Decorative cloud randomness adds non-scene drift to scripted captures. */
+        numClouds = 0;
+    }
+    else if (rand() % 2)
          numClouds = 1;
     else if (rand() % 2)
         numClouds = 0;
@@ -265,4 +269,3 @@ void islandInitHoliday(struct TTtmThread *ttmThread)
         ttmThread->isRunning = 0;
     }
 }
-

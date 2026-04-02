@@ -615,6 +615,29 @@ print("verification-summary capture_audit_paths: ok")
 PY
 }
 
+assert_verification_summary_regression_baseline_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+baseline_paths = summary.get("regression_baseline_paths", {})
+required = {
+    "image_baseline_json": root / "frame-image-regression-baseline.json",
+    "meta_baseline_json": root / "frame-meta-regression-baseline.json",
+    "semantic_baseline_json": root / "semantic-regression-baseline.json",
+}
+for key, expected in required.items():
+    actual = baseline_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary regression_baseline_paths.{key} mismatch")
+print("verification-summary regression_baseline_paths: ok")
+PY
+}
+
 assert_verification_summary_scene_asset_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -711,6 +734,9 @@ required_tokens = {
     f"capture-meta-report-json={summary['capture_audit_paths']['meta_report_json']}",
     f"capture-semantic-report-json={summary['capture_audit_paths']['semantic_report_json']}",
     f"capture-report-json={summary['capture_audit_paths']['capture_report_json']}",
+    f"image-baseline-json={summary['regression_baseline_paths']['image_baseline_json']}",
+    f"meta-baseline-json={summary['regression_baseline_paths']['meta_baseline_json']}",
+    f"semantic-baseline-json={summary['regression_baseline_paths']['semantic_baseline_json']}",
     f"fishing-frames-dir={summary['scene_asset_paths']['fishing_frames_dir']}",
     f"fishing-meta-dir={summary['scene_asset_paths']['fishing_meta_dir']}",
     f"mary-frames-dir={summary['scene_asset_paths']['mary_frames_dir']}",
@@ -1197,6 +1223,11 @@ summary = {
         "semantic_report_json": str((root / "semantic-regression-report.json").resolve()),
         "capture_report_json": str((root / "capture-regression-report.json").resolve()),
     },
+    "regression_baseline_paths": {
+        "image_baseline_json": str((root / "frame-image-regression-baseline.json").resolve()),
+        "meta_baseline_json": str((root / "frame-meta-regression-baseline.json").resolve()),
+        "semantic_baseline_json": str((root / "semantic-regression-baseline.json").resolve()),
+    },
     "scene_asset_paths": {
         "fishing_frames_dir": str((root / "fishing1" / "frames").resolve()),
         "fishing_meta_dir": str((root / "fishing1" / "frame-meta").resolve()),
@@ -1270,6 +1301,8 @@ summary["risk_status"] = (
     "identify-temporal-json={identify_temporal_json} "
     "capture-image-report-json={capture_image_report_json} capture-meta-report-json={capture_meta_report_json} "
     "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
+    "image-baseline-json={image_baseline_json} meta-baseline-json={meta_baseline_json} "
+    "semantic-baseline-json={semantic_baseline_json} "
     "fishing-frames-dir={fishing_frames_dir} fishing-meta-dir={fishing_meta_dir} "
     "mary-frames-dir={mary_frames_dir} mary-meta-dir={mary_meta_dir} "
     "fishing-start-bmp={fishing_start_bmp} fishing-late-bmp={fishing_late_bmp} "
@@ -1311,6 +1344,9 @@ summary["risk_status"] = (
         capture_meta_report_json=summary["capture_audit_paths"]["meta_report_json"],
         capture_semantic_report_json=summary["capture_audit_paths"]["semantic_report_json"],
         capture_report_json=summary["capture_audit_paths"]["capture_report_json"],
+        image_baseline_json=summary["regression_baseline_paths"]["image_baseline_json"],
+        meta_baseline_json=summary["regression_baseline_paths"]["meta_baseline_json"],
+        semantic_baseline_json=summary["regression_baseline_paths"]["semantic_baseline_json"],
         fishing_frames_dir=summary["scene_asset_paths"]["fishing_frames_dir"],
         fishing_meta_dir=summary["scene_asset_paths"]["fishing_meta_dir"],
         mary_frames_dir=summary["scene_asset_paths"]["mary_frames_dir"],
@@ -1392,6 +1428,7 @@ assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
+assert_verification_summary_regression_baseline_paths "$OUT_DIR"
 assert_verification_summary_scene_asset_paths "$OUT_DIR"
 assert_verification_summary_key_frame_paths "$OUT_DIR"
 assert_verification_summary_key_frame_meta_paths "$OUT_DIR"

@@ -130,6 +130,23 @@ print(
     f"capture={capture_audit_paths.get('capture_report_json')}"
 )
 
+regression_baseline_paths = summary.get("regression_baseline_paths", {})
+required_regression_baseline_paths = {
+    "image_baseline_json": root / "frame-image-regression-baseline.json",
+    "meta_baseline_json": root / "frame-meta-regression-baseline.json",
+    "semantic_baseline_json": root / "semantic-regression-baseline.json",
+}
+for key, expected_path in required_regression_baseline_paths.items():
+    actual = regression_baseline_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary regression_baseline_paths.{key} mismatch")
+print(
+    "regression-baseline-paths: ok "
+    f"image={regression_baseline_paths.get('image_baseline_json')} "
+    f"meta={regression_baseline_paths.get('meta_baseline_json')} "
+    f"semantic={regression_baseline_paths.get('semantic_baseline_json')}"
+)
+
 scene_asset_paths = summary.get("scene_asset_paths", {})
 required_scene_asset_paths = {
     "fishing_frames_dir": root / "fishing1" / "frames",
@@ -201,6 +218,9 @@ required_summary_txt_tokens = {
     f"capture-meta-report-json={capture_audit_paths.get('meta_report_json')}",
     f"capture-semantic-report-json={capture_audit_paths.get('semantic_report_json')}",
     f"capture-report-json={capture_audit_paths.get('capture_report_json')}",
+    f"image-baseline-json={regression_baseline_paths.get('image_baseline_json')}",
+    f"meta-baseline-json={regression_baseline_paths.get('meta_baseline_json')}",
+    f"semantic-baseline-json={regression_baseline_paths.get('semantic_baseline_json')}",
     f"fishing-frames-dir={scene_asset_paths.get('fishing_frames_dir')}",
     f"fishing-meta-dir={scene_asset_paths.get('fishing_meta_dir')}",
     f"mary-frames-dir={scene_asset_paths.get('mary_frames_dir')}",

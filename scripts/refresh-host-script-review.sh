@@ -566,6 +566,28 @@ print("verification-summary review_paths: ok")
 PY
 }
 
+assert_manifest_dashboard_links() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+extras = manifest.get("extras", {})
+required = {
+    "identification-review.html": root / "identification-review.html",
+    "capture-regression-review.html": root / "capture-regression-review.html",
+}
+for key, expected in required.items():
+    actual = extras.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"manifest extras.{key} mismatch")
+print("manifest dashboard links: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -969,6 +991,7 @@ if [ "$VERIFY_REPRO" -eq 1 ]; then
 fi
 
 write_verification_summary "$OUT_DIR"
+assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 
 rm -rf "$TMP_DIR"

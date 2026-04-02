@@ -186,12 +186,11 @@ capture_review_set() {
 
     run_with_timeout 60 \
         "$SCRIPT_DIR/capture-host-scene.sh" \
-        --scene "JOHNNY 1" \
-        --mode scene-default \
-        --start-frame 180 \
-        --frames 300 \
-        --interval 30 \
-        --output "$root/johnny1" \
+        --scene "MARY 3" \
+        --mode scene-exact \
+        --frames 240 \
+        --interval 60 \
+        --output "$root/mary3" \
         --no-stamp
 
     printf '{}\n' > "$root/capture-regression-report.json"

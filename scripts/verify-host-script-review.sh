@@ -571,6 +571,7 @@ required_summary_txt_tokens = {
     f"artifact-input-names-sha256={summary.get('artifact_input_names_sha256')}",
     f"artifact-input-file-class-counts={summary.get('artifact_input_file_class_counts', {}).get('json', 0)}j/{summary.get('artifact_input_file_class_counts', {}).get('html', 0)}h/{summary.get('artifact_input_file_class_counts', {}).get('bmp', 0)}b/{summary.get('artifact_input_file_class_counts', {}).get('other', 0)}o",
     f"artifact-input-depth-counts={','.join(f\"{depth}:{summary.get('artifact_input_depth_counts', {}).get(depth)}\" for depth in sorted(summary.get('artifact_input_depth_counts', {}), key=int))}",
+    f"artifact-input-max-depth={summary.get('artifact_input_max_depth')}",
     f"path-entry-count={path_entry_count}",
     f"path-file-count={path_file_count}",
     f"path-dir-count={path_dir_count}",
@@ -1005,6 +1006,11 @@ expected_artifact_input_depth_counts = dict(
 )
 if summary.get("artifact_input_depth_counts") != expected_artifact_input_depth_counts:
     raise SystemExit("verification-summary artifact_input_depth_counts mismatch")
+expected_artifact_input_max_depth = max(
+    (0 if name == "." else name.count("/") + 1) for name in artifact_inputs
+) if artifact_inputs else 0
+if int(summary.get("artifact_input_max_depth", -1)) != expected_artifact_input_max_depth:
+    raise SystemExit("verification-summary artifact_input_max_depth mismatch")
 
 for key, value in summary.items():
     if not key.endswith("_paths"):

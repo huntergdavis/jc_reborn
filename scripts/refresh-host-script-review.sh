@@ -489,6 +489,60 @@ write_capture_regression_report() {
         --out-html "$root/capture-regression-review.html"
 }
 
+assert_capture_regression_report_consistency() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+capture_regression = json.loads((root / "capture-regression-report.json").read_text(encoding="utf-8"))
+frame_image_regression = json.loads((root / "frame-image-regression-report.json").read_text(encoding="utf-8"))
+frame_meta_regression = json.loads((root / "frame-meta-regression-report.json").read_text(encoding="utf-8"))
+semantic_report = json.loads((root / "semantic-regression-report.json").read_text(encoding="utf-8"))
+
+checks = capture_regression.get("checks", {})
+totals = capture_regression.get("totals", {})
+first_failed = capture_regression.get("first_failed_scenes", {})
+
+def first_failed_scene(report, label_key):
+    for scene in report.get("scenes", []):
+        if not scene.get("passed", False):
+            value = scene.get(label_key)
+            return None if value in (None, "") else str(value)
+    return None
+
+expected = {
+    "frame-image": frame_image_regression,
+    "frame-meta": frame_meta_regression,
+    "semantic": semantic_report,
+}
+for key, report in expected.items():
+    actual = checks.get(key, {})
+    if bool(actual.get("passed", False)) != bool(report.get("passed", False)):
+        raise SystemExit(f"capture-regression-report {key} passed mismatch")
+    if int(actual.get("failure_count", 0)) != int(report.get("failure_count", 0)):
+        raise SystemExit(f"capture-regression-report {key} failure_count mismatch")
+
+if first_failed.get("frame-image") != first_failed_scene(frame_image_regression, "scene"):
+    raise SystemExit("capture-regression-report frame-image first_failed_scene mismatch")
+if first_failed.get("frame-meta") != first_failed_scene(frame_meta_regression, "scene"):
+    raise SystemExit("capture-regression-report frame-meta first_failed_scene mismatch")
+if first_failed.get("semantic") != first_failed_scene(semantic_report, "scene_label"):
+    raise SystemExit("capture-regression-report semantic first_failed_scene mismatch")
+
+if int(totals.get("frame_image_failures", 0)) != int(frame_image_regression.get("failure_count", 0)):
+    raise SystemExit("capture-regression-report frame_image_failures mismatch")
+if int(totals.get("frame_meta_failures", 0)) != int(frame_meta_regression.get("failure_count", 0)):
+    raise SystemExit("capture-regression-report frame_meta_failures mismatch")
+if int(totals.get("semantic_failures", 0)) != int(semantic_report.get("failure_count", 0)):
+    raise SystemExit("capture-regression-report semantic_failures mismatch")
+
+print("capture-regression-report: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -865,6 +919,7 @@ assert_frame_meta_regression_baseline "$OUT_DIR"
 assert_identification_regression_floors "$OUT_DIR"
 assert_semantic_regression_baseline "$OUT_DIR"
 write_capture_regression_report "$OUT_DIR"
+assert_capture_regression_report_consistency "$OUT_DIR"
 
 if [ "$VERIFY_REPRO" -eq 1 ]; then
     rm -rf "$TMP_DIR"

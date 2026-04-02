@@ -54,6 +54,7 @@ def render_html(payload: dict) -> str:
             scene_slug = label if label_key == "scene" else label.lower().replace(" ", "")
             frame_href = f"{scene_slug}/frames/"
             meta_href = f"{scene_slug}/frame-meta/"
+            drift_links = ""
             if failure_count:
                 failure_preview = " ".join(
                     str(part)
@@ -67,6 +68,12 @@ def render_html(payload: dict) -> str:
                     f"expected={shorten(first_failure.get('expected'))} "
                     f"actual={shorten(first_failure.get('actual'))}"
                 )
+                frame_name = first_failure.get("frame")
+                if frame_name:
+                    links = []
+                    links.append(f'<a href="{html.escape(scene_slug)}/frames/{html.escape(frame_name)}.bmp">frame</a>')
+                    links.append(f'<a href="{html.escape(scene_slug)}/frame-meta/{html.escape(frame_name)}.json">meta</a>')
+                    drift_links = " ".join(links)
             else:
                 failure_preview = ""
                 failure_detail = ""
@@ -77,12 +84,13 @@ def render_html(payload: dict) -> str:
                 f"<td>{failure_count}</td>"
                 f"<td>{html.escape(failure_preview)}</td>"
                 f"<td>{html.escape(failure_detail)}</td>"
+                f"<td>{drift_links}</td>"
                 f"<td><a href=\"{html.escape(frame_href)}\">frames</a> <a href=\"{html.escape(meta_href)}\">frame-meta</a></td>"
                 "</tr>"
             )
         return (
             f"<section><h2>{html.escape(name)}</h2>"
-            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Detail</th><th>Links</th></tr></thead>"
+            "<table><thead><tr><th>Scene</th><th>Status</th><th>Failures</th><th>First Drift</th><th>Detail</th><th>Drift Assets</th><th>Links</th></tr></thead>"
             f"<tbody>{''.join(body)}</tbody></table></section>"
         )
 

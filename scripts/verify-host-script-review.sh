@@ -72,6 +72,17 @@ if missing:
 
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
 
+review_paths = summary.get("review_paths", {})
+required_review_paths = {
+    "index_html": root / "index.html",
+    "identification_review_html": root / "identification-review.html",
+    "capture_regression_review_html": root / "capture-regression-review.html",
+}
+for key, expected_path in required_review_paths.items():
+    actual = review_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary review_paths.{key} mismatch")
+
 identify = json.loads((root / "identification-selfcheck.json").read_text(encoding="utf-8"))
 for row in identify.get("rows", []):
     best = row.get("best_match") or {}

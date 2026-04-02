@@ -705,6 +705,7 @@ int main(int argc, char **argv)
 
         graphicsInit();
         soundInit();
+        adsInit();
 
         if (argIsland)
             adsInitIsland();

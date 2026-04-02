@@ -25,6 +25,8 @@ def scene_family(scene_label: str) -> str:
     upper = (scene_label or "").upper()
     if upper.startswith("FISHING"):
         return "fishing"
+    if upper.startswith("JOHNNY"):
+        return "johnny"
     if upper.startswith("MARY"):
         return "mary"
     return "unknown"

@@ -184,6 +184,15 @@ capture_review_set() {
         --output "$root/mary1" \
         --no-stamp
 
+    run_with_timeout 60 \
+        "$SCRIPT_DIR/capture-host-scene.sh" \
+        --scene "JOHNNY 1" \
+        --mode scene-default \
+        --frames 120 \
+        --interval 30 \
+        --output "$root/johnny1" \
+        --no-stamp
+
     printf '{}\n' > "$root/capture-regression-report.json"
     printf '{}\n' > "$root/verification-summary.json"
     printf '{}\n' > "$root/semantic-truth.json"

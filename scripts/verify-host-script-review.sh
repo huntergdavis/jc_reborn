@@ -128,6 +128,7 @@ host_truth_paths = summary.get("host_truth_paths", {})
 required_host_truth_paths = {
     "baseline_json": root / "host-truth-baseline.json",
     "compare_json": root / "host-truth-compare.json",
+    "compare_html": root / "host-truth-compare.html",
 }
 for key, expected_path in required_host_truth_paths.items():
     actual = host_truth_paths.get(key)
@@ -136,7 +137,8 @@ for key, expected_path in required_host_truth_paths.items():
 print(
     "host-truth-paths: ok "
     f"baseline={host_truth_paths.get('baseline_json')} "
-    f"compare={host_truth_paths.get('compare_json')}"
+    f"compare={host_truth_paths.get('compare_json')} "
+    f"html={host_truth_paths.get('compare_html')}"
 )
 
 expectation_paths = summary.get("expectation_paths", {})
@@ -277,6 +279,7 @@ required_summary_txt_tokens = {
     f"identify-regression-floors-json={identification_floor_paths.get('regression_floors_json')}",
     f"host-truth-baseline-json={host_truth_paths.get('baseline_json')}",
     f"host-truth-compare-json={host_truth_paths.get('compare_json')}",
+    f"host-truth-compare-html={host_truth_paths.get('compare_html')}",
     f"expectations-json={expectation_paths.get('baseline_json')}",
     f"expectation-report-json={expectation_paths.get('report_json')}",
     f"expectation-report-html={expectation_paths.get('report_html')}",

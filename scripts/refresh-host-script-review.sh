@@ -625,6 +625,7 @@ host_truth_paths = summary.get("host_truth_paths", {})
 required = {
     "baseline_json": root / "host-truth-baseline.json",
     "compare_json": root / "host-truth-compare.json",
+    "compare_html": root / "host-truth-compare.html",
 }
 for key, expected in required.items():
     actual = host_truth_paths.get(key)
@@ -821,6 +822,7 @@ required_tokens = {
     f"identify-regression-floors-json={summary['identification_floor_paths']['regression_floors_json']}",
     f"host-truth-baseline-json={summary['host_truth_paths']['baseline_json']}",
     f"host-truth-compare-json={summary['host_truth_paths']['compare_json']}",
+    f"host-truth-compare-html={summary['host_truth_paths']['compare_html']}",
     f"expectations-json={summary['expectation_paths']['baseline_json']}",
     f"expectation-report-json={summary['expectation_paths']['report_json']}",
     f"expectation-report-html={summary['expectation_paths']['report_html']}",
@@ -1319,6 +1321,7 @@ summary = {
     "host_truth_paths": {
         "baseline_json": str((root / "host-truth-baseline.json").resolve()),
         "compare_json": str((root / "host-truth-compare.json").resolve()),
+        "compare_html": str((root / "host-truth-compare.html").resolve()),
     },
     "expectation_paths": {
         "baseline_json": str((root / "expectations.json").resolve()),
@@ -1412,7 +1415,7 @@ summary["risk_status"] = (
     "identify-partials-json={identify_partials_json} identify-challenges-json={identify_challenges_json} "
     "identify-temporal-json={identify_temporal_json} "
     "identify-regression-floors-json={identify_regression_floors_json} "
-    "host-truth-baseline-json={host_truth_baseline_json} host-truth-compare-json={host_truth_compare_json} "
+    "host-truth-baseline-json={host_truth_baseline_json} host-truth-compare-json={host_truth_compare_json} host-truth-compare-html={host_truth_compare_html} "
     "expectations-json={expectations_json} expectation-report-json={expectation_report_json} expectation-report-html={expectation_report_html} "
     "repro-compare-json={repro_compare_json} repro-compare-html={repro_compare_html} "
     "capture-image-report-json={capture_image_report_json} capture-meta-report-json={capture_meta_report_json} "
@@ -1459,6 +1462,7 @@ summary["risk_status"] = (
         identify_regression_floors_json=summary["identification_floor_paths"]["regression_floors_json"],
         host_truth_baseline_json=summary["host_truth_paths"]["baseline_json"],
         host_truth_compare_json=summary["host_truth_paths"]["compare_json"],
+        host_truth_compare_html=summary["host_truth_paths"]["compare_html"],
         expectations_json=summary["expectation_paths"]["baseline_json"],
         expectation_report_json=summary["expectation_paths"]["report_json"],
         expectation_report_html=summary["expectation_paths"]["report_html"],

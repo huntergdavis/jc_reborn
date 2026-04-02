@@ -656,6 +656,27 @@ print("verification-summary expectation_paths: ok")
 PY
 }
 
+assert_verification_summary_repro_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+repro_paths = summary.get("repro_paths", {})
+required = {
+    "compare_json": root / "repro-compare.json",
+}
+for key, expected in required.items():
+    actual = repro_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary repro_paths.{key} mismatch")
+print("verification-summary repro_paths: ok")
+PY
+}
+
 assert_verification_summary_capture_audit_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -800,6 +821,7 @@ required_tokens = {
     f"host-truth-compare-json={summary['host_truth_paths']['compare_json']}",
     f"expectations-json={summary['expectation_paths']['baseline_json']}",
     f"expectation-report-json={summary['expectation_paths']['report_json']}",
+    f"repro-compare-json={summary['repro_paths']['compare_json']}",
     f"capture-image-report-json={summary['capture_audit_paths']['image_report_json']}",
     f"capture-meta-report-json={summary['capture_audit_paths']['meta_report_json']}",
     f"capture-semantic-report-json={summary['capture_audit_paths']['semantic_report_json']}",
@@ -1298,6 +1320,9 @@ summary = {
         "baseline_json": str((root / "expectations.json").resolve()),
         "report_json": str((root / "expectation-report.json").resolve()),
     },
+    "repro_paths": {
+        "compare_json": str((root / "repro-compare.json").resolve()),
+    },
     "capture_audit_paths": {
         "image_report_json": str((root / "frame-image-regression-report.json").resolve()),
         "meta_report_json": str((root / "frame-meta-regression-report.json").resolve()),
@@ -1383,6 +1408,7 @@ summary["risk_status"] = (
     "identify-regression-floors-json={identify_regression_floors_json} "
     "host-truth-baseline-json={host_truth_baseline_json} host-truth-compare-json={host_truth_compare_json} "
     "expectations-json={expectations_json} expectation-report-json={expectation_report_json} "
+    "repro-compare-json={repro_compare_json} "
     "capture-image-report-json={capture_image_report_json} capture-meta-report-json={capture_meta_report_json} "
     "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
     "image-baseline-json={image_baseline_json} meta-baseline-json={meta_baseline_json} "
@@ -1429,6 +1455,7 @@ summary["risk_status"] = (
         host_truth_compare_json=summary["host_truth_paths"]["compare_json"],
         expectations_json=summary["expectation_paths"]["baseline_json"],
         expectation_report_json=summary["expectation_paths"]["report_json"],
+        repro_compare_json=summary["repro_paths"]["compare_json"],
         capture_image_report_json=summary["capture_audit_paths"]["image_report_json"],
         capture_meta_report_json=summary["capture_audit_paths"]["meta_report_json"],
         capture_semantic_report_json=summary["capture_audit_paths"]["semantic_report_json"],
@@ -1519,6 +1546,7 @@ assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_identification_floor_paths "$OUT_DIR"
 assert_verification_summary_host_truth_paths "$OUT_DIR"
 assert_verification_summary_expectation_paths "$OUT_DIR"
+assert_verification_summary_repro_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
 assert_verification_summary_regression_baseline_paths "$OUT_DIR"
 assert_verification_summary_scene_asset_paths "$OUT_DIR"

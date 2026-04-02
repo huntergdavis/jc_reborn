@@ -124,6 +124,21 @@ print(
     f"floors={identification_floor_paths.get('regression_floors_json')}"
 )
 
+host_truth_paths = summary.get("host_truth_paths", {})
+required_host_truth_paths = {
+    "baseline_json": root / "host-truth-baseline.json",
+    "compare_json": root / "host-truth-compare.json",
+}
+for key, expected_path in required_host_truth_paths.items():
+    actual = host_truth_paths.get(key)
+    if actual != str(expected_path.resolve()):
+        raise SystemExit(f"verification-summary host_truth_paths.{key} mismatch")
+print(
+    "host-truth-paths: ok "
+    f"baseline={host_truth_paths.get('baseline_json')} "
+    f"compare={host_truth_paths.get('compare_json')}"
+)
+
 capture_audit_paths = summary.get("capture_audit_paths", {})
 required_capture_audit_paths = {
     "image_report_json": root / "frame-image-regression-report.json",
@@ -228,6 +243,8 @@ required_summary_txt_tokens = {
     f"identify-challenges-json={identification_audit_paths.get('challenges_json')}",
     f"identify-temporal-json={identification_audit_paths.get('temporal_json')}",
     f"identify-regression-floors-json={identification_floor_paths.get('regression_floors_json')}",
+    f"host-truth-baseline-json={host_truth_paths.get('baseline_json')}",
+    f"host-truth-compare-json={host_truth_paths.get('compare_json')}",
     f"capture-image-report-json={capture_audit_paths.get('image_report_json')}",
     f"capture-meta-report-json={capture_audit_paths.get('meta_report_json')}",
     f"capture-semantic-report-json={capture_audit_paths.get('semantic_report_json')}",

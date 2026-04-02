@@ -612,6 +612,28 @@ print("verification-summary identification_floor_paths: ok")
 PY
 }
 
+assert_verification_summary_host_truth_paths() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+host_truth_paths = summary.get("host_truth_paths", {})
+required = {
+    "baseline_json": root / "host-truth-baseline.json",
+    "compare_json": root / "host-truth-compare.json",
+}
+for key, expected in required.items():
+    actual = host_truth_paths.get(key)
+    if actual != str(expected.resolve()):
+        raise SystemExit(f"verification-summary host_truth_paths.{key} mismatch")
+print("verification-summary host_truth_paths: ok")
+PY
+}
+
 assert_verification_summary_capture_audit_paths() {
     local root="$1"
     python3 - "$root" <<'PY'
@@ -752,6 +774,8 @@ required_tokens = {
     f"identify-challenges-json={summary['identification_audit_paths']['challenges_json']}",
     f"identify-temporal-json={summary['identification_audit_paths']['temporal_json']}",
     f"identify-regression-floors-json={summary['identification_floor_paths']['regression_floors_json']}",
+    f"host-truth-baseline-json={summary['host_truth_paths']['baseline_json']}",
+    f"host-truth-compare-json={summary['host_truth_paths']['compare_json']}",
     f"capture-image-report-json={summary['capture_audit_paths']['image_report_json']}",
     f"capture-meta-report-json={summary['capture_audit_paths']['meta_report_json']}",
     f"capture-semantic-report-json={summary['capture_audit_paths']['semantic_report_json']}",
@@ -1242,6 +1266,10 @@ summary = {
     "identification_floor_paths": {
         "regression_floors_json": str((root / "identification-regression-floors.json").resolve()),
     },
+    "host_truth_paths": {
+        "baseline_json": str((root / "host-truth-baseline.json").resolve()),
+        "compare_json": str((root / "host-truth-compare.json").resolve()),
+    },
     "capture_audit_paths": {
         "image_report_json": str((root / "frame-image-regression-report.json").resolve()),
         "meta_report_json": str((root / "frame-meta-regression-report.json").resolve()),
@@ -1325,6 +1353,7 @@ summary["risk_status"] = (
     "identify-partials-json={identify_partials_json} identify-challenges-json={identify_challenges_json} "
     "identify-temporal-json={identify_temporal_json} "
     "identify-regression-floors-json={identify_regression_floors_json} "
+    "host-truth-baseline-json={host_truth_baseline_json} host-truth-compare-json={host_truth_compare_json} "
     "capture-image-report-json={capture_image_report_json} capture-meta-report-json={capture_meta_report_json} "
     "capture-semantic-report-json={capture_semantic_report_json} capture-report-json={capture_report_json} "
     "image-baseline-json={image_baseline_json} meta-baseline-json={meta_baseline_json} "
@@ -1367,6 +1396,8 @@ summary["risk_status"] = (
         identify_challenges_json=summary["identification_audit_paths"]["challenges_json"],
         identify_temporal_json=summary["identification_audit_paths"]["temporal_json"],
         identify_regression_floors_json=summary["identification_floor_paths"]["regression_floors_json"],
+        host_truth_baseline_json=summary["host_truth_paths"]["baseline_json"],
+        host_truth_compare_json=summary["host_truth_paths"]["compare_json"],
         capture_image_report_json=summary["capture_audit_paths"]["image_report_json"],
         capture_meta_report_json=summary["capture_audit_paths"]["meta_report_json"],
         capture_semantic_report_json=summary["capture_audit_paths"]["semantic_report_json"],
@@ -1455,6 +1486,7 @@ assert_manifest_dashboard_links "$OUT_DIR"
 assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_identification_audit_paths "$OUT_DIR"
 assert_verification_summary_identification_floor_paths "$OUT_DIR"
+assert_verification_summary_host_truth_paths "$OUT_DIR"
 assert_verification_summary_capture_audit_paths "$OUT_DIR"
 assert_verification_summary_regression_baseline_paths "$OUT_DIR"
 assert_verification_summary_scene_asset_paths "$OUT_DIR"

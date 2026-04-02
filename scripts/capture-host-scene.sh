@@ -49,7 +49,7 @@ Options:
   --island-x N         Force island X position
   --island-y N         Force island Y position
   --lowtide 0|1        Force low tide state
-  --mode NAME          Boot mode: scene-default, story-direct, story-hold, story-single, ads (default: scene-default)
+  --mode NAME          Boot mode: scene-default, scene-exact, story-direct, story-hold, story-single, ads (default: scene-default)
   --output DIR         Output directory (default: host-results/scene)
   --timeout N          Kill host run after N seconds; 0 disables timeout (default: auto)
   --visual-detect      Run expensive visual_detect.py postprocess
@@ -150,6 +150,17 @@ if [ -z "$BOOT" ]; then
                 exit 1
             fi
             BOOT="window nosound ${SCENE_BOOT_TOKENS}"
+            ;;
+        scene-exact)
+            if [ -z "$SCENE_BOOT_TOKENS" ]; then
+                echo "ERROR: scene-exact requires boot tokens in $SCENE_LIST_FILE" >&2
+                exit 1
+            fi
+            if [ -n "$SCENE_INDEX" ] && [[ "$SCENE_BOOT_TOKENS" =~ ^story[[:space:]]+(scene|index)[[:space:]]+[0-9]+$ ]]; then
+                BOOT="window nosound story single ${SCENE_INDEX}"
+            else
+                BOOT="window nosound ${SCENE_BOOT_TOKENS}"
+            fi
             ;;
         story-direct)
             if [ -z "$SCENE_INDEX" ]; then

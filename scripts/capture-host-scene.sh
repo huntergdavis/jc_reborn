@@ -562,7 +562,6 @@ result = {
         "visual": "visual.json",
         "visual_batch": "visual-batch.json",
     },
-    "capture_date": capture_ts,
 }
 
 (output_dir / "result.json").write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
@@ -580,7 +579,6 @@ result = {
         if forced_island_x is not None and forced_island_y is not None else None
     ),
     "forced_low_tide": forced_low_tide,
-    "capture_date": capture_ts,
     "capture_overlay": capture_overlay,
     "frame_count": len(frame_files),
     "frames": [p.name for p in frame_files],
@@ -608,7 +606,7 @@ for png_path in png_files:
         f'<figure class="card" id="{png_path.stem}">'
         f'<figcaption><a href="#{png_path.stem}">{png_path.name}</a></figcaption>'
         f'<img src="frames-png/{png_path.name}" alt="{png_path.name}">'
-        f'<div class="path">{png_path.resolve()}</div>'
+        f'<div class="path">frames-png/{png_path.name}</div>'
         f'</figure>'
     )
 
@@ -634,7 +632,7 @@ review_html = f"""<!doctype html>
       <h1>{ads_name} {tag} Host Capture Review</h1>
       <div>Boot: <code>{boot_string}</code></div>
       <div>Frames: {len(png_files)} at {requested_interval}-frame interval through {requested_frames}</div>
-      <div>Frame metadata: <code>{frame_meta_dir.resolve()}</code> overlay={str(capture_overlay).lower()}</div>
+      <div>Frame metadata: <code>frame-meta/</code> overlay={str(capture_overlay).lower()}</div>
     </div>
     {''.join(cards)}
   </main>

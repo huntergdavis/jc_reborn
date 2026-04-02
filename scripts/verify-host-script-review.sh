@@ -32,6 +32,7 @@ done
 python3 - "$ROOT_DIR" "$PROJECT_ROOT" "$REQUIRE_HEAD_MATCH" <<'PY'
 import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -128,6 +129,14 @@ for href in (
 ):
     if href not in capture_html:
         raise SystemExit(f"capture-regression-review.html missing link: {href}")
+for label, value in (
+    ("Frame Image Failures", capture_regression.get("totals", {}).get("frame_image_failures", 0)),
+    ("Frame Meta Failures", capture_regression.get("totals", {}).get("frame_meta_failures", 0)),
+    ("Semantic Failures", capture_regression.get("totals", {}).get("semantic_failures", 0)),
+):
+    pattern = rf"{re.escape(label)}</div>\s*<div class=\"value [^\"]+\">{re.escape(str(value))}</div>"
+    if not re.search(pattern, capture_html):
+        raise SystemExit(f"capture-regression-review.html totals mismatch: {label}={value}")
 
 identification_html = (root / "identification-review.html").read_text(encoding="utf-8")
 for href in (

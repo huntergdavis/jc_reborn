@@ -687,6 +687,31 @@ print("identification-review html links: ok")
 PY
 }
 
+assert_capture_review_totals() {
+    local root="$1"
+    python3 - "$root" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+report = json.loads((root / "capture-regression-report.json").read_text(encoding="utf-8"))
+html = (root / "capture-regression-review.html").read_text(encoding="utf-8")
+totals = report.get("totals", {})
+required = [
+    ("Frame Image Failures", totals.get("frame_image_failures", 0)),
+    ("Frame Meta Failures", totals.get("frame_meta_failures", 0)),
+    ("Semantic Failures", totals.get("semantic_failures", 0)),
+]
+for label, value in required:
+    pattern = rf"{re.escape(label)}</div>\s*<div class=\"value [^\"]+\">{re.escape(str(value))}</div>"
+    if not re.search(pattern, html):
+        raise SystemExit(f"capture-regression-review.html totals mismatch: {label}={value}")
+print("capture-regression review totals: ok")
+PY
+}
+
 write_verification_summary() {
     local root="$1"
     local git_head git_head_short
@@ -1099,6 +1124,7 @@ assert_verification_summary_review_paths "$OUT_DIR"
 assert_verification_summary_text_paths "$OUT_DIR"
 assert_dashboard_html_links "$OUT_DIR"
 assert_identification_review_links "$OUT_DIR"
+assert_capture_review_totals "$OUT_DIR"
 print_review_paths "$OUT_DIR"
 
 rm -rf "$TMP_DIR"

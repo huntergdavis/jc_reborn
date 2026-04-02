@@ -1384,6 +1384,9 @@ summary = json.loads((root / "verification-summary.json").read_text(encoding="ut
 expected_version = 1
 if int(summary.get("artifact_input_contract_version", -1)) != expected_version:
     raise SystemExit("verification-summary artifact_input_contract_version mismatch")
+expected_field_count = 9
+if int(summary.get("artifact_input_contract_field_count", -1)) != expected_field_count:
+    raise SystemExit("verification-summary artifact_input_contract_field_count mismatch")
 classes = summary.get("artifact_input_file_class_counts", {})
 artifact_inputs = summary.get("artifact_inputs") or {}
 expected = (
@@ -1405,6 +1408,7 @@ if summary.get("artifact_input_contract_sha256") != expected_sha256:
 print(
     "artifact-input-contract: ok "
     f"version={expected_version} "
+    f"fields={expected_field_count} "
     f"count={len(artifact_inputs)} "
     f"contract-sha256={summary.get('artifact_input_contract_sha256')} "
     f"names-sha256={summary.get('artifact_input_names_sha256')} "
@@ -2572,6 +2576,7 @@ summary["artifact_input_parent_dir_basenames_sha256"] = hashlib.sha256(
 ).hexdigest()
 summary["artifact_input_parent_dir_basename_count"] = len({Path(name).parent.name for name in digest_inputs})
 summary["artifact_input_contract_version"] = 1
+summary["artifact_input_contract_field_count"] = 9
 summary["artifact_input_contract"] = (
     f"{summary['artifact_input_count']}|"
     f"{summary['artifact_input_names_sha256']}|"
@@ -2613,7 +2618,7 @@ summary["risk_status"] = (
     "identify-selfcheck={identify_selfcheck} identify-eval={identify_eval} identify-partials={identify_partials} identify-challenges={identify_challenges} identify-temporal={identify_temporal} "
     "capture-regression={capture_regression} capture-failures={capture_failures} "
     "capture-first-image={capture_first_image} capture-first-meta={capture_first_meta} capture-first-semantic={capture_first_semantic} "
-    "review-root={review_root} path-map-count={path_map_count} path-map-names={path_map_names} path-map-entry-counts={path_map_entry_counts} path-map-type-counts={path_map_type_counts} path-map-file-class-counts={path_map_file_class_counts} path-map-entry-names={path_map_entry_names} path-basenames={path_basenames} path-relpaths={path_relpaths} path-depth-counts={path_depth_counts} path-max-depth={path_max_depth} path-min-nonroot-depth={path_min_nonroot_depth} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} artifact-input-count={artifact_input_count} artifact-input-names={artifact_input_names} artifact-input-names-sha256={artifact_input_names_sha256} artifact-input-file-class-counts={artifact_input_file_class_counts} artifact-input-depth-counts={artifact_input_depth_counts} artifact-input-max-depth={artifact_input_max_depth} artifact-input-min-nonroot-depth={artifact_input_min_nonroot_depth} artifact-input-parent-dirs-sha256={artifact_input_parent_dirs_sha256} artifact-input-parent-dir-count={artifact_input_parent_dir_count} artifact-input-parent-dir-depth-counts={artifact_input_parent_dir_depth_counts} artifact-input-parent-dir-max-depth={artifact_input_parent_dir_max_depth} artifact-input-parent-dir-min-nonroot-depth={artifact_input_parent_dir_min_nonroot_depth} artifact-input-parent-dir-basenames-sha256={artifact_input_parent_dir_basenames_sha256} artifact-input-parent-dir-basename-count={artifact_input_parent_dir_basename_count} artifact-input-contract-version={artifact_input_contract_version} artifact-input-contract={artifact_input_contract} artifact-input-contract-sha256={artifact_input_contract_sha256} "
+    "review-root={review_root} path-map-count={path_map_count} path-map-names={path_map_names} path-map-entry-counts={path_map_entry_counts} path-map-type-counts={path_map_type_counts} path-map-file-class-counts={path_map_file_class_counts} path-map-entry-names={path_map_entry_names} path-basenames={path_basenames} path-relpaths={path_relpaths} path-depth-counts={path_depth_counts} path-max-depth={path_max_depth} path-min-nonroot-depth={path_min_nonroot_depth} path-entry-count={path_entry_count} path-file-count={path_file_count} path-dir-count={path_dir_count} artifact-input-count={artifact_input_count} artifact-input-names={artifact_input_names} artifact-input-names-sha256={artifact_input_names_sha256} artifact-input-file-class-counts={artifact_input_file_class_counts} artifact-input-depth-counts={artifact_input_depth_counts} artifact-input-max-depth={artifact_input_max_depth} artifact-input-min-nonroot-depth={artifact_input_min_nonroot_depth} artifact-input-parent-dirs-sha256={artifact_input_parent_dirs_sha256} artifact-input-parent-dir-count={artifact_input_parent_dir_count} artifact-input-parent-dir-depth-counts={artifact_input_parent_dir_depth_counts} artifact-input-parent-dir-max-depth={artifact_input_parent_dir_max_depth} artifact-input-parent-dir-min-nonroot-depth={artifact_input_parent_dir_min_nonroot_depth} artifact-input-parent-dir-basenames-sha256={artifact_input_parent_dir_basenames_sha256} artifact-input-parent-dir-basename-count={artifact_input_parent_dir_basename_count} artifact-input-contract-version={artifact_input_contract_version} artifact-input-contract-field-count={artifact_input_contract_field_count} artifact-input-contract={artifact_input_contract} artifact-input-contract-sha256={artifact_input_contract_sha256} "
     "path-json-count={path_json_count} path-html-count={path_html_count} path-bmp-count={path_bmp_count} path-other-file-count={path_other_file_count} "
     "index={index_html} identification={identification_html} capture={capture_html} "
     "manifest-json={manifest_json} semantic-truth-json={semantic_truth_json} "
@@ -2714,6 +2719,7 @@ summary["risk_status"] = (
         artifact_input_parent_dir_basenames_sha256=summary["artifact_input_parent_dir_basenames_sha256"],
         artifact_input_parent_dir_basename_count=summary["artifact_input_parent_dir_basename_count"],
         artifact_input_contract_version=summary["artifact_input_contract_version"],
+        artifact_input_contract_field_count=summary["artifact_input_contract_field_count"],
         artifact_input_contract=summary["artifact_input_contract"],
         artifact_input_contract_sha256=summary["artifact_input_contract_sha256"],
         path_json_count=summary["path_json_count"],

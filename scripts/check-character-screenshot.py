@@ -157,7 +157,12 @@ def main() -> int:
         description="Decode an overlay screenshot into character truth, compare it against expected truth, and render a small HTML report."
     )
     parser.add_argument("--image", type=Path, required=True, help="Overlay-bearing host or DuckStation screenshot")
-    parser.add_argument("--expected-truth-json", type=Path, required=True)
+    parser.add_argument("--expected-truth-json", type=Path)
+    parser.add_argument(
+        "--expected-root",
+        type=Path,
+        help="Capture/reference root containing scene/frame-meta directories; expected truth will be built automatically",
+    )
     parser.add_argument("--scene-label", required=True)
     parser.add_argument("--frame-number", type=int, help="Expected frame number; defaults to digits from image name")
     parser.add_argument("--lookup-root", type=Path, default=Path("host-script-review"), help="Root used to resolve overlay bmp_name_hash values")
@@ -165,7 +170,14 @@ def main() -> int:
     parser.add_argument("--out-dir", type=Path, required=True)
     args = parser.parse_args()
 
-    expected_truth = json.loads(args.expected_truth_json.read_text(encoding="utf-8"))
+    if bool(args.expected_truth_json) == bool(args.expected_root):
+        raise SystemExit("pass exactly one of --expected-truth-json or --expected-root")
+
+    if args.expected_truth_json is not None:
+        expected_truth = json.loads(args.expected_truth_json.read_text(encoding="utf-8"))
+    else:
+        expected_truth = build_character_truth.build_truth(args.expected_root)
+
     hash_lookup, collisions = build_hash_lookup(args.lookup_root)
 
     with args.image.open("rb"):

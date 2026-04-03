@@ -152,6 +152,16 @@ def filter_expected_truth(expected_truth: dict, scene_label: str, frame_number: 
     raise SystemExit(f"expected truth missing scene={scene_label!r} frame={frame_number}")
 
 
+def infer_scene_label(expected_truth: dict) -> str:
+    scenes = expected_truth.get("scenes", [])
+    if len(scenes) != 1:
+        raise SystemExit("pass --scene-label when expected truth contains more than one scene")
+    scene_label = scenes[0].get("scene_label")
+    if not scene_label:
+        raise SystemExit("could not infer scene label from expected truth; pass --scene-label")
+    return str(scene_label)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Decode an overlay screenshot into character truth, compare it against expected truth, and render a small HTML report."
@@ -163,7 +173,7 @@ def main() -> int:
         type=Path,
         help="Capture/reference root containing scene/frame-meta directories; expected truth will be built automatically",
     )
-    parser.add_argument("--scene-label", required=True)
+    parser.add_argument("--scene-label", help="Defaults to the only scene in expected truth when unambiguous")
     parser.add_argument("--frame-number", type=int, help="Expected frame number; defaults to digits from image name")
     parser.add_argument("--lookup-root", type=Path, default=Path("host-script-review"), help="Root used to resolve overlay bmp_name_hash values")
     parser.add_argument("--position-tolerance", type=float, default=12.0)
@@ -178,6 +188,7 @@ def main() -> int:
     else:
         expected_truth = build_character_truth.build_truth(args.expected_root)
 
+    scene_label = args.scene_label if args.scene_label is not None else infer_scene_label(expected_truth)
     hash_lookup, collisions = build_hash_lookup(args.lookup_root)
 
     with args.image.open("rb"):
@@ -196,19 +207,19 @@ def main() -> int:
 
     actual_root = args.out_dir / "actual-root"
     frame_name = f"frame_{frame_number:05d}{args.image.suffix.lower()}"
-    frame_dir = actual_root / scene_slug(args.scene_label) / "frames"
+    frame_dir = actual_root / scene_slug(scene_label) / "frames"
     frame_dir.mkdir(parents=True, exist_ok=True)
     frame_copy = frame_dir / frame_name
     shutil.copy2(args.image, frame_copy)
 
     actual_truth = build_single_frame_truth(
         args.image,
-        args.scene_label,
+        scene_label,
         frame_number,
         actor_candidates,
         actual_root,
     )
-    expected_subset = filter_expected_truth(expected_truth, args.scene_label, frame_number)
+    expected_subset = filter_expected_truth(expected_truth, scene_label, frame_number)
     report = compare_character_truth.compare(expected_subset, actual_truth, args.position_tolerance)
     report["overlay_debug"] = {
         "draw_count": int(decoded.get("draw_count", 0)),
@@ -232,7 +243,7 @@ def main() -> int:
         render_character_truth_report.build_html(
             report,
             report_html,
-            f"Character Screenshot Check: {args.scene_label} frame {frame_number}",
+            f"Character Screenshot Check: {scene_label} frame {frame_number}",
         ),
         encoding="utf-8",
     )

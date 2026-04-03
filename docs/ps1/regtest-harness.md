@@ -304,11 +304,11 @@ Single-screenshot check:
 ```bash
 python3 scripts/check-character-screenshot.py \
   --image ~/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots/<shot>.png \
-  --expected-root host-script-review \
-  --scene-label "FISHING 1" \
+  --expected-root host-script-review/fishing1 \
   --out-dir /tmp/ps1-character-check
 ```
 
 Notes:
 - `check-character-screenshot.py` now prefers the frame number embedded in the overlay packet, so DuckStation timestamped filenames do not need manual frame numbering.
+- If `--expected-root` contains only one scene, `--scene-label` is optional and will be inferred automatically.
 - This path is intended for controlled test captures we generate ourselves. Arbitrary screenshots without the overlay still need a separate image-matching path.

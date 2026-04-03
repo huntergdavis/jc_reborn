@@ -227,8 +227,7 @@ Then compare a captured screenshot against expected character truth:
 ```bash
 python3 scripts/check-character-screenshot.py \
   --image ~/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots/<shot>.png \
-  --expected-root host-script-review \
-  --scene-label "FISHING 1" \
+  --expected-root host-script-review/fishing1 \
   --out-dir /tmp/ps1-character-check
 ```
 

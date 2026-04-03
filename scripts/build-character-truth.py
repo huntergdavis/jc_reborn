@@ -102,23 +102,44 @@ def build_frame_truth(meta_path: Path) -> dict:
     )
 
 
+def build_scene_truth(scene_dir: Path, meta_paths: list[Path]) -> dict | None:
+    frames = [build_frame_truth(meta_path) for meta_path in meta_paths]
+    if not frames:
+        return None
+    return {
+        "scene_label": frames[0].get("scene_label") or scene_dir.name,
+        "scene_dir": scene_dir.name,
+        "frame_count": len(frames),
+        "frames": frames,
+    }
+
+
 def build_truth(root: Path) -> dict:
     scenes = []
-    for scene_dir in sorted(path for path in root.iterdir() if path.is_dir()):
-        meta_dir = scene_dir / "frame-meta"
-        if not meta_dir.is_dir():
-            continue
-        frames = [build_frame_truth(meta_path) for meta_path in sorted(meta_dir.glob("frame_*.json"))]
-        if not frames:
-            continue
-        scenes.append(
-            {
-                "scene_label": frames[0].get("scene_label") or scene_dir.name,
-                "scene_dir": scene_dir.name,
-                "frame_count": len(frames),
-                "frames": frames,
-            }
-        )
+    direct_meta_dir = root / "frame-meta"
+    direct_meta_paths = sorted(direct_meta_dir.glob("frame_*.json")) if direct_meta_dir.is_dir() else []
+    if direct_meta_paths:
+        scene = build_scene_truth(root, direct_meta_paths)
+        if scene is not None:
+            scenes.append(scene)
+    else:
+        direct_meta_paths = sorted(root.glob("frame_*.json"))
+        if direct_meta_paths:
+            scene = build_scene_truth(root, direct_meta_paths)
+            if scene is not None:
+                scenes.append(scene)
+        else:
+            for scene_dir in sorted(path for path in root.iterdir() if path.is_dir()):
+                meta_dir = scene_dir / "frame-meta"
+                if meta_dir.is_dir():
+                    meta_paths = sorted(meta_dir.glob("frame_*.json"))
+                else:
+                    meta_paths = sorted(scene_dir.glob("frame_*.json"))
+                if not meta_paths:
+                    continue
+                scene = build_scene_truth(scene_dir, meta_paths)
+                if scene is not None:
+                    scenes.append(scene)
     return {
         "root": str(root.resolve()),
         "scene_count": len(scenes),

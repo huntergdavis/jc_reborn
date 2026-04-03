@@ -23,6 +23,7 @@ MODE="headless"
 WAIT_TIME=35
 FRAMES="${REGTEST_FRAMES:-9000}"
 INTERVAL="${REGTEST_INTERVAL:-60}"
+USE_BASELINE_MASK=1
 EXPECTED_ROOT=""
 LOOKUP_ROOT=""
 OUT_DIR="/tmp/ps1-bug-check"
@@ -46,6 +47,7 @@ Options:
   --frames N            Headless regtest frame budget (default: REGTEST_FRAMES or 9000)
   --interval N          Headless regtest dump interval (default: REGTEST_INTERVAL or 60)
   --actual-frame N      Use frame_NNNNN.png from the headless run instead of the last dumped frame
+  --no-baseline-mask    Skip the paired headless overlay-mask baseline capture
   --live                Use the older live DuckStation path instead of headless regtest
   --wait N              Seconds before first screenshot (default: 35)
   --out-dir PATH        Output directory for diff artifacts (default: /tmp/ps1-bug-check)
@@ -71,6 +73,7 @@ while [ $# -gt 0 ]; do
         --frames) FRAMES="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --actual-frame) ACTUAL_FRAME="$2"; shift 2 ;;
+        --no-baseline-mask) USE_BASELINE_MASK=0; shift ;;
         --live) MODE="live"; shift ;;
         --wait) WAIT_TIME="$2"; shift 2 ;;
         --out-dir) OUT_DIR="$2"; shift 2 ;;
@@ -101,6 +104,7 @@ trap 'rm -f "$LOG_FILE"' EXIT
 
 if [ -n "$IMAGE_PATH" ]; then
     SCREENSHOT_PATH="$IMAGE_PATH"
+    BASELINE_IMAGE_PATH=""
 else
     if [ "$MODE" = "headless" ]; then
         if [ -z "$SCENE_SPEC" ]; then
@@ -109,16 +113,60 @@ else
         fi
 
         REGTEST_OUT_DIR="$OUT_DIR/regtest"
-        REGTEST_CMD=(./scripts/regtest-scene.sh
+        BASELINE_OUT_DIR="$OUT_DIR/regtest-mask"
+        REGTEST_CMD_BASE=(./scripts/regtest-scene.sh
             --scene "$SCENE_SPEC"
             --frames "$FRAMES"
-            --interval "$INTERVAL"
-            --output "$REGTEST_OUT_DIR"
-            --overlay)
+            --interval "$INTERVAL")
         if [ "${#BOOT_ARGS[@]}" -gt 0 ]; then
             REGTEST_BOOT="${BOOT_ARGS[*]}"
-            REGTEST_CMD+=(--boot "$REGTEST_BOOT")
+            REGTEST_CMD_BASE+=(--boot "$REGTEST_BOOT")
         fi
+
+        BASELINE_IMAGE_PATH=""
+        if [ "$USE_BASELINE_MASK" -eq 1 ]; then
+            REGTEST_MASK_CMD=("${REGTEST_CMD_BASE[@]}"
+                --output "$BASELINE_OUT_DIR"
+                --overlay-mask)
+
+            echo "=== PS1 headless baseline capture ==="
+            printf 'Running:'
+            printf ' %q' "${REGTEST_MASK_CMD[@]}"
+            printf '\n'
+
+            "${REGTEST_MASK_CMD[@]}" | tee "$LOG_FILE"
+
+            if [ ! -f "$BASELINE_OUT_DIR/result.json" ]; then
+                echo "ERROR: headless baseline regtest did not produce result.json." >&2
+                exit 1
+            fi
+
+            BASELINE_FRAMES_DIR="$(python3 - <<'PY' "$BASELINE_OUT_DIR/result.json"
+import json, sys
+from pathlib import Path
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print((payload.get("paths") or {}).get("frames_dir") or "")
+PY
+)"
+            if [ -z "$BASELINE_FRAMES_DIR" ] || [ ! -d "$BASELINE_FRAMES_DIR" ]; then
+                echo "ERROR: headless baseline regtest did not produce a frames directory." >&2
+                exit 1
+            fi
+
+            if [ -n "$ACTUAL_FRAME" ]; then
+                BASELINE_IMAGE_PATH="$BASELINE_FRAMES_DIR/frame_$(printf '%05d' "$ACTUAL_FRAME").png"
+            else
+                BASELINE_IMAGE_PATH="$(find "$BASELINE_FRAMES_DIR" -maxdepth 1 -type f -name 'frame_*.png' | sort | tail -1)"
+            fi
+            if [ -z "$BASELINE_IMAGE_PATH" ] || [ ! -f "$BASELINE_IMAGE_PATH" ]; then
+                echo "ERROR: headless baseline regtest did not produce a usable frame PNG." >&2
+                exit 1
+            fi
+        fi
+
+        REGTEST_CMD=("${REGTEST_CMD_BASE[@]}"
+            --output "$REGTEST_OUT_DIR"
+            --overlay)
 
         echo "=== PS1 headless capture ==="
         printf 'Running:'
@@ -179,11 +227,15 @@ if [ ! -f "$SCREENSHOT_PATH" ]; then
     exit 1
 fi
 
-CHECK_CMD=(python3 ./scripts/check-character-screenshot.py
-    --image "$SCREENSHOT_PATH"
-    --expected-root "$EXPECTED_ROOT"
-    --lookup-root "$LOOKUP_ROOT"
-    --out-dir "$OUT_DIR")
+    CHECK_CMD=(python3 ./scripts/check-character-screenshot.py
+        --image "$SCREENSHOT_PATH"
+        --expected-root "$EXPECTED_ROOT"
+        --lookup-root "$LOOKUP_ROOT"
+        --out-dir "$OUT_DIR")
+
+    if [ -n "${BASELINE_IMAGE_PATH:-}" ]; then
+        CHECK_CMD+=(--baseline-image "$BASELINE_IMAGE_PATH")
+    fi
 
 if [ -n "$SCENE_LABEL" ]; then
     CHECK_CMD+=(--scene-label "$SCENE_LABEL")

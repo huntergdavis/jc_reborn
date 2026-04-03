@@ -213,6 +213,7 @@ Screenshots are saved to:
 
 For controlled PS1 bug runs, prefer the headless regtest harness with overlay-backed screenshots over manual visual comparison.
 The PS1 build can now draw the same machine-readable capture overlay into captured frames when you launch with `capture-overlay`.
+The headless wrapper also supports a paired `capture-overlay-mask` baseline run so checks can diff overlay against a clean mask frame from the same scene/frame.
 
 Fastest workflow:
 

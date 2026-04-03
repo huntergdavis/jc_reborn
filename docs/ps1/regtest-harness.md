@@ -315,6 +315,7 @@ Headless manual capture:
 ./scripts/regtest-scene.sh \
   --scene "FISHING 1" \
   --overlay
+  --overlay-mask
 ```
 
 Single-screenshot check:

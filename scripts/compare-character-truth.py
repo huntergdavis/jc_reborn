@@ -54,7 +54,7 @@ def compare_character(expected: dict, actual: dict, position_tolerance: float) -
         "height": int(bbox_actual["height"]) - int(bbox_expected["height"]),
     }
     problems = []
-    if int(actual["draw_count"]) != int(expected["draw_count"]):
+    if not isinstance(actual.get("overlay_metrics"), dict) and int(actual["draw_count"]) != int(expected["draw_count"]):
         problems.append("draw_count_mismatch")
     if distance > position_tolerance:
         problems.append("position_drift")

@@ -42,7 +42,7 @@ ACTOR_PANEL_BUCKET_W = 10
 ACTOR_PANEL_ENTITIES = ("johnny", "mary", "suzy", "other_actor")
 
 ACTOR_PANEL_MARKER_FAMILIES = {
-    "johnny": "blue",
+    "johnny": "red",
     "mary": "green",
     "suzy": "red",
     "other_actor": "white",
@@ -597,7 +597,7 @@ def _scaled_actor_marker_strength(
     abs_x0 = max(0, int(round(ACTOR_PANEL_MARKER_X * scale_x)))
     abs_width = max(1, int(round(ACTOR_PANEL_MARKER_W * scale_x)))
     best = 0
-    for y_off in (0, 1):
+    for y_off in range(0, 6):
         yy = int(round((base_y + y_off) * scale_y))
         yy = max(0, min(rgb_img.height - 1, yy))
         best = max(best, count_family_row(rgb_img, yy, abs_x0, abs_width, family))
@@ -717,31 +717,36 @@ def decode_actor_panel(
         )
 
     if marker_active:
+        if "other_actor" in marker_active and any(name != "other_actor" for name in marker_active):
+            marker_active = [name for name in marker_active if name != "other_actor"]
+
         characters = [item for item in characters if item["character"] in marker_active]
-        if not characters:
-            for entity_name in marker_active:
-                characters.append(
-                    {
-                        "character": entity_name,
-                        "draw_count": 1,
-                        "bbox": {
-                            "left": 0,
-                            "top": 0,
-                            "right": 0,
-                            "bottom": 0,
-                            "width": 0,
-                            "height": 0,
-                        },
-                        "centroid": {
-                            "x": 0.0,
-                            "y": 0.0,
-                        },
-                        "sprite_sources": [],
-                        "overlay_metrics": {
-                            "marker_only": True,
-                        },
-                    }
-                )
+        present = {item["character"] for item in characters}
+        for entity_name in marker_active:
+            if entity_name in present:
+                continue
+            characters.append(
+                {
+                    "character": entity_name,
+                    "draw_count": 1,
+                    "bbox": {
+                        "left": 0,
+                        "top": 0,
+                        "right": 0,
+                        "bottom": 0,
+                        "width": 0,
+                        "height": 0,
+                    },
+                    "centroid": {
+                        "x": 0.0,
+                        "y": 0.0,
+                    },
+                    "sprite_sources": [],
+                    "overlay_metrics": {
+                        "marker_only": True,
+                    },
+                }
+            )
 
     return {
         "character_count": len(characters),

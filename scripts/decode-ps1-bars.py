@@ -27,8 +27,8 @@ NATIVE_W = 640
 NATIVE_H = 480
 HEADLESS_NATIVE_H = 448
 
-ACTOR_PANEL_X = 2
-ACTOR_PANEL_Y = 250
+ACTOR_PANEL_X = 560
+ACTOR_PANEL_Y = 140
 ACTOR_PANEL_DATA_X = ACTOR_PANEL_X + 8
 ACTOR_PANEL_SCAN_W = 63
 ACTOR_PANEL_ENTITY_STRIDE = 12
@@ -503,11 +503,15 @@ def _scaled_actor_row_value(
     sample_y: int,
     family: str,
     scale_x: float,
+    panel_x: int,
+    scan_width: int,
 ) -> int:
     best = 0
+    abs_x0 = max(0, int(round(panel_x * scale_x)))
+    abs_width = max(1, int(round(scan_width * scale_x)))
     for y_off in (-1, 0, 1):
         yy = max(0, min(rgb_img.height - 1, sample_y + y_off))
-        best = max(best, count_family_row(rgb_img, yy, 0, rgb_img.width, family))
+        best = max(best, count_family_row(rgb_img, yy, abs_x0, abs_width, family))
     if scale_x > 0 and scale_x != 1.0:
         best = int(round(best / scale_x))
     return max(0, min(ACTOR_PANEL_SCAN_W, best))
@@ -533,6 +537,8 @@ def decode_actor_panel(image: Image.Image | str | Path) -> Dict[str, object]:
                 sample_y,
                 ACTOR_PANEL_FAMILIES[key],
                 scale_x,
+                ACTOR_PANEL_DATA_X,
+                ACTOR_PANEL_SCAN_W,
             )
 
         if values["bbox_width"] <= 0 or values["bbox_height"] <= 0:

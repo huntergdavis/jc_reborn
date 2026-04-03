@@ -274,16 +274,7 @@ void grPs1StatBmpShortLoad(uint16 requested, uint16 loaded)
 
 static void grDrawCounterBar(int x, int y, int w, int h, uint16 color)
 {
-    if (!bgTile0 || !bgTile0->pixels) return;
-    if (x < 0 || y < 0 || x >= (int)bgTile0->width || y >= (int)bgTile0->height) return;
-    if (w <= 0 || h <= 0) return;
-    if (x + w > (int)bgTile0->width) w = (int)bgTile0->width - x;
-    if (y + h > (int)bgTile0->height) h = (int)bgTile0->height - y;
-
-    for (int yy = 0; yy < h; yy++) {
-        uint16 *row = bgTile0->pixels + (y + yy) * (int)bgTile0->width + x;
-        for (int xx = 0; xx < w; xx++) row[xx] = color;
-    }
+    grDrawRectColor15((sint16)x, (sint16)y, (uint16)w, (uint16)h, color);
 }
 
 static int grCaptureStartsWith(const char *text, const char *prefix);
@@ -593,7 +584,7 @@ static void grDrawCaptureOverlay(void)
     const int heightCells = 6;
     const int cellSize = 8;
     const int originX = SCREEN_WIDTH - (widthCells * cellSize);
-    const int originY = 0;
+    const int originY = 140;
     size_t symbolIndex = 0;
 
     payloadLen = grCaptureBuildOverlayPayload(payload, sizeof(payload));
@@ -644,8 +635,8 @@ static void grDrawCaptureOverlay(void)
 static void grDrawCaptureActorPanel(void)
 {
     struct TPs1CaptureEntitySummary entities[GR_CAPTURE_ENTITY_COUNT];
-    const int panelX = 2;
-    const int panelY = 250;
+    const int panelX = 560;
+    const int panelY = 140;
     const int panelW = 74;
     const int rowH = 2;
     const int entityStride = 12;
@@ -1341,6 +1332,15 @@ static int grUploadAndDrawGpuSprite(const uint8 *indexedPixels, uint16 w, uint16
 void grReplaySprite(struct TDrawnSprite *ds)
 {
     if (!ds || !ds->indexedPixels) return;
+
+    grCaptureRecordSpriteDraw(ds->bmpName,
+                              ds->x,
+                              ds->y,
+                              ds->spriteNo,
+                              ds->imageNo,
+                              ds->width,
+                              ds->height,
+                              ds->flip);
 
     PS1Surface tmpSfc = {0};
     tmpSfc.indexedPixels = ds->indexedPixels;
@@ -2569,6 +2569,7 @@ static void grRecordReplaySprite(struct TTtmThread *thread,
                 ds->width = sprite->width;
                 ds->height = sprite->height;
                 ds->psbNibbles = sprite->psbNibbles;
+                ds->bmpName = thread->ttmSlot ? thread->ttmSlot->loadedBmpNames[imageNo] : NULL;
                 return;
             }
         }
@@ -2597,6 +2598,7 @@ static void grRecordReplaySprite(struct TTtmThread *thread,
     ds->sceneEpoch = thread->sceneEpoch;
     ds->flip = flip;
     ds->psbNibbles = sprite->psbNibbles;
+    ds->bmpName = thread->ttmSlot ? thread->ttmSlot->loadedBmpNames[imageNo] : NULL;
 }
 
 void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
@@ -3143,6 +3145,7 @@ void grRestoreBgTiles(void)
         uint32 copyBytes = (uint32)(maxY - minY + 1) * w * sizeof(uint16);
         memcpy(dst, src, copyBytes);
     }
+
 }
 
 static void grRestoreTileRect(PS1Surface *dstTile,

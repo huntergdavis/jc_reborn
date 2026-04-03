@@ -25,6 +25,7 @@
 
 /* Forward declaration for LRU cache */
 struct TTtmResource;
+struct TBmpResource;
 
 #define SCREEN_WIDTH        640
 #define SCREEN_HEIGHT       480
@@ -33,6 +34,7 @@ struct TTtmResource;
 #define MAX_SPRITES_PER_BMP 120
 #define MAX_TTM_SLOTS       10
 #define MAX_TTM_THREADS     20
+typedef SDL_Surface PS1Surface;
 
 
 struct TAdsScene {
@@ -48,13 +50,31 @@ struct TTtmSlot {
     struct      TTtmTag *tags;
     int         numTags;
     int         numSprites[MAX_BMP_SLOTS];
+    uint16      spriteGen[MAX_BMP_SLOTS];
+    struct TBmpResource *loadedBmp[MAX_BMP_SLOTS];
+    uint8       *psbData[MAX_BMP_SLOTS];
     SDL_Surface *sprites[MAX_BMP_SLOTS][MAX_SPRITES_PER_BMP];
+    const char  *loadedBmpNames[MAX_BMP_SLOTS];
     struct TTtmResource *ttmResource;  /* For LRU cache unpinning */
 };
 
 struct TTtmTag {  // TODO : rename, used for ADS too
     uint16 id;
     uint32 offset;
+};
+
+#define MAX_DRAWN_SPRITES 255
+
+struct TDrawnSprite {
+    uint8  *indexedPixels;
+    uint16 width, height;
+    sint16 x, y;
+    uint16 spriteNo;
+    uint16 imageNo;
+    uint16 sceneEpoch;
+    uint8  flip;
+    uint8  psbNibbles;
+    const char *bmpName;
 };
 
 struct TTtmThread {
@@ -73,6 +93,12 @@ struct TTtmThread {
     uint8  bgColor;
     uint16 currentRegionId;
     SDL_Surface *ttmLayer;
+    uint16 sceneEpoch;
+    struct TDrawnSprite drawnSprites[MAX_DRAWN_SPRITES];
+    uint8  numDrawnSprites;
+    uint8  replayWriteCursor;
+    struct TDrawnSprite lastActorReplay;
+    uint8  lastActorReplayValid;
 };
 
 extern SDL_Surface *grBackgroundSfc;
@@ -85,6 +111,12 @@ extern int grUpdateDelay;
 /* Frame capture for visual regression testing */
 extern int grCaptureFrameNumber;
 extern char *grCaptureFilename;
+extern char *grCaptureDir;
+extern char *grCaptureMetaDir;
+extern int grCaptureInterval;
+extern int grCaptureStartFrame;
+extern int grCaptureEndFrame;
+extern int grCaptureOverlay;
 
 
 void graphicsInit();
@@ -101,6 +133,10 @@ void grFreeLayer(SDL_Surface *sfc);
 
 void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg);
 void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo);
+void grBlitToFramebuffer(SDL_Surface *sprite, sint16 screenX, sint16 screenY);
+void grCompositeToBackground(SDL_Surface *sprite, sint16 screenX, sint16 screenY);
+void grCompositeToBackgroundFlip(SDL_Surface *sprite, sint16 screenX, sint16 screenY);
+void grSaveCleanBgTiles(void);
 
 void grSetClipZone(SDL_Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2);
 void grCopyZoneToBg(SDL_Surface *sfc, uint16 arg0, uint16 arg1, uint16 arg2, uint16 arg3);
@@ -122,3 +158,4 @@ void grLoadScreen(char *strArg);
 
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
+void grCaptureSetSceneLabel(const char *sceneLabel);

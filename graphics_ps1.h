@@ -94,6 +94,7 @@ struct TDrawnSprite {
     uint16 sceneEpoch;     /* Dedup key (iteration boundary) */
     uint8  flip;
     uint8  psbNibbles;  /* 1 if indexedPixels are PS1 nibble order (pre-swapped PSB) */
+    const char *bmpName; /* Source BMP name for capture overlay/replay diagnostics */
 };
 
 struct TTtmThread {

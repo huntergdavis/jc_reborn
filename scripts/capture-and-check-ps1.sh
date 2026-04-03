@@ -34,6 +34,7 @@ OPEN_REPORT=1
 IMAGE_PATH=""
 SCENE_SPEC=""
 BOOT_ARGS=()
+BOOT_STRING=""
 
 usage() {
     cat <<'USAGE'
@@ -44,6 +45,7 @@ Options:
   --lookup-root PATH    Root used to resolve overlay sprite hashes (default: expected root)
   --image PATH          Reuse an existing overlay screenshot instead of launching DuckStation
   --scene SPEC          Scene spec for headless regtest capture, e.g. "FISHING 1"
+  --boot STRING         Explicit BOOTMODE string for the headless regtest path
   --frames N            Headless regtest frame budget (default: REGTEST_FRAMES or 9000)
   --interval N          Headless regtest dump interval (default: REGTEST_INTERVAL or 60)
   --actual-frame N      Use frame_NNNNN.png from the headless run instead of the last dumped frame
@@ -70,6 +72,7 @@ while [ $# -gt 0 ]; do
         --lookup-root) LOOKUP_ROOT="$2"; shift 2 ;;
         --image) IMAGE_PATH="$2"; shift 2 ;;
         --scene) SCENE_SPEC="$2"; shift 2 ;;
+        --boot) BOOT_STRING="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --actual-frame) ACTUAL_FRAME="$2"; shift 2 ;;
@@ -123,7 +126,10 @@ else
             --scene "$SCENE_SPEC"
             --frames "$FRAMES"
             --interval "$INTERVAL")
-        if [ "${#BOOT_ARGS[@]}" -gt 0 ]; then
+        if [ -n "$BOOT_STRING" ]; then
+            REGTEST_BOOT="$BOOT_STRING"
+            REGTEST_CMD_BASE+=(--boot "$REGTEST_BOOT")
+        elif [ "${#BOOT_ARGS[@]}" -gt 0 ]; then
             REGTEST_BOOT="${BOOT_ARGS[*]}"
             REGTEST_CMD_BASE+=(--boot "$REGTEST_BOOT")
         fi

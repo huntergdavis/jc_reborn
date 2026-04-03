@@ -180,12 +180,12 @@ static int ps1CopyBootArg(int index, const char *src)
 
 static void ps1ApplyBootOverride(char *buffer)
 {
-    char *tokens[8];
+    char *tokens[32];
     int tokenCount = 0;
     char *cursor = buffer;
     int tokenBase = 0;
 
-    while (*cursor && tokenCount < 8) {
+    while (*cursor && tokenCount < (int)(sizeof(tokens) / sizeof(tokens[0]))) {
         while (*cursor && ps1IsSpace(*cursor)) {
             cursor++;
         }
@@ -231,6 +231,19 @@ static void ps1ApplyBootOverride(char *buffer)
             grCaptureOverlayMaskOnly = 1;
         } else if (!strcmp(tokens[i], "capture-overlay")) {
             grCaptureOverlay = 1;
+        } else if (!strcmp(tokens[i], "capture-meta-dir") && (i + 1) < tokenCount) {
+            grCaptureMetaDir = tokens[i + 1];
+            i++;
+        } else if (!strcmp(tokens[i], "capture-range") && (i + 2) < tokenCount) {
+            grCaptureStartFrame = atoi(tokens[i + 1]);
+            grCaptureEndFrame = atoi(tokens[i + 2]);
+            i += 2;
+        } else if (!strcmp(tokens[i], "capture-interval") && (i + 1) < tokenCount) {
+            grCaptureInterval = atoi(tokens[i + 1]);
+            i++;
+        } else if (!strcmp(tokens[i], "capture-scene-label") && (i + 1) < tokenCount) {
+            grCaptureSetSceneLabel(tokens[i + 1]);
+            i++;
         }
     }
 
@@ -296,7 +309,7 @@ static void ps1ApplyBootOverride(char *buffer)
 static void ps1LoadBootOverride(void)
 {
     PS1File *file;
-    char buffer[128];
+    char buffer[512];
     size_t readCount = 0;
     uint32 rawSize = 0;
     uint8 *rawData;

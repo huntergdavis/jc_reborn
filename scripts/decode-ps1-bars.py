@@ -42,7 +42,7 @@ ACTOR_PANEL_BUCKET_W = 10
 ACTOR_PANEL_ENTITIES = ("johnny", "mary", "suzy", "other_actor")
 
 ACTOR_PANEL_MARKER_FAMILIES = {
-    "johnny": "green",
+    "johnny": "blue",
     "mary": "green",
     "suzy": "red",
     "other_actor": "white",

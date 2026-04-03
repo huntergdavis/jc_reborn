@@ -44,7 +44,7 @@ JOHNNY 5 29 verified story scene 29
 JOHNNY 6 30 verified story scene 30
 
 # --- MARY.ADS (verified=2, untested=3) ---
-MARY 1 31 untested story scene 31
+MARY 1 31 untested story scene 61 island-pos -124 37 raft-stage 5
 MARY 2 33 untested story scene 33
 MARY 3 32 verified story scene 32
 MARY 4 34 untested story scene 34

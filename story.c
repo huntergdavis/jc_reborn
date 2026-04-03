@@ -203,6 +203,11 @@ void storyPlayBootSceneDirect(int sceneIndex)
 
     struct TStoryScene *scene = &storyScenes[sceneIndex];
 
+    storyUpdateCurrentDay();
+    storyCalculateIslandFromDateAndTime();
+    if (scene->flags & ISLAND)
+        storyCalculateIslandFromScene(scene);
+
     adsInit();
 
     if (scene->flags & ISLAND)

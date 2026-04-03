@@ -27,6 +27,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 REGTEST_SCENE_LIST="$PROJECT_ROOT/config/ps1/regtest-scenes.txt"
+EMBEDDED_BOOTMODE_HEADER="$PROJECT_ROOT/config/ps1/bootmode_embedded.h"
 
 # Load shared config
 # shellcheck source=../config/ps1/regtest-config.sh
@@ -116,6 +117,16 @@ lookup_scene_manifest() {
     printf '%s\n' "$line"
 }
 
+read_embedded_bootmode() {
+    [ -f "$EMBEDDED_BOOTMODE_HEADER" ] || return 1
+    awk -F'"' '
+        /^#define[[:space:]]+PS1_EMBEDDED_BOOT_OVERRIDE[[:space:]]+"/ {
+            print $2
+            exit
+        }
+    ' "$EMBEDDED_BOOTMODE_HEADER"
+}
+
 # Build the BOOTMODE override string
 if [ -z "$BOOT_STRING" ]; then
     if [ -n "$SCENE_INDEX" ]; then
@@ -140,6 +151,21 @@ elif [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]
 fi
 if [[ "$BOOT_STRING" != *"capture-meta-dir"* ]]; then
     BOOT_STRING="${BOOT_STRING} capture-meta-dir ps1-meta capture-range 0 ${FRAMES} capture-interval ${INTERVAL} capture-scene-label ${SCENE_LABEL}"
+fi
+
+if [ "$SKIP_BUILD" -eq 1 ]; then
+    EMBEDDED_BOOTMODE="$(read_embedded_bootmode || true)"
+    if [ -z "$EMBEDDED_BOOTMODE" ]; then
+        echo "ERROR: --skip-build requires an existing embedded PS1 boot override in $EMBEDDED_BOOTMODE_HEADER." >&2
+        exit 1
+    fi
+    if [ "$EMBEDDED_BOOTMODE" != "$BOOT_STRING" ]; then
+        echo "ERROR: --skip-build cannot change the PS1 BOOTMODE." >&2
+        echo "       embedded:  $EMBEDDED_BOOTMODE" >&2
+        echo "       requested: $BOOT_STRING" >&2
+        echo "       Re-run without --skip-build so the executable/CD image are rebuilt." >&2
+        exit 1
+    fi
 fi
 
 # Output directory

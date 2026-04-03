@@ -27,7 +27,7 @@ NATIVE_W = 640
 NATIVE_H = 480
 HEADLESS_NATIVE_H = 448
 
-ACTOR_PANEL_X = 560
+ACTOR_PANEL_X = 8
 ACTOR_PANEL_Y = 140
 ACTOR_PANEL_DATA_X = ACTOR_PANEL_X + 8
 ACTOR_PANEL_SCAN_W = 63
@@ -40,10 +40,10 @@ ACTOR_PANEL_ROW_OFFSETS = {
 }
 ACTOR_PANEL_ENTITIES = ("johnny", "mary", "suzy", "other_actor")
 ACTOR_PANEL_FAMILIES = {
-    "centroid_x": "cyan",
-    "centroid_y": "green",
-    "bbox_width": "magenta",
-    "bbox_height": "yellow",
+    "centroid_x": "white",
+    "centroid_y": "white",
+    "bbox_width": "white",
+    "bbox_height": "white",
 }
 
 

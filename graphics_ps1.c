@@ -27,9 +27,6 @@
 
 #include "mytypes.h"
 
-/* Forward declare FILE to avoid utils.h compilation errors with -ffreestanding */
-typedef struct _FILE FILE;
-
 #include "utils.h"
 #include "graphics_ps1.h"
 #include "ads.h"
@@ -115,6 +112,11 @@ static uint32 palLutSierra[256];
 static uint32 palLutPsb[256];
 
 static void grDrawRectColor15(sint16 x, sint16 y, uint16 width, uint16 height, uint16 bgColor);
+static void grCapturePrintJsonString(const char *value);
+static int grCaptureIsMetadataFrame(void);
+static void grCaptureEmitFrameMetadataLine(void);
+static void grDrawCapturePatternCell(sint16 x, sint16 y, int symbol);
+static void grCommitRectToCleanBg(int x, int y, int width, int height);
 
 static inline void markTileDirty(int idx, int minY, int maxY)
 {
@@ -281,6 +283,7 @@ static void grDrawCounterBar(int x, int y, int w, int h, uint16 color)
 static int grCaptureStartsWith(const char *text, const char *prefix);
 static int grCaptureEquals(const char *lhs, const char *rhs);
 static int grCaptureIsActorCandidate(const char *bmpName);
+static const char *grCaptureSceneLabel = "";
 
 enum
 {
@@ -386,6 +389,38 @@ static void grCaptureResetFrameDraws(void)
     grCapturedDrawCount = 0;
 }
 
+static void grCapturePrintJsonString(const char *value)
+{
+    const unsigned char *p = (const unsigned char *)(value ? value : "");
+
+    printf("\"");
+    while (*p) {
+        switch (*p) {
+            case '\\':
+            case '"':
+                printf("\\%c", *p);
+                break;
+            case '\n':
+                printf("\\n");
+                break;
+            case '\r':
+                printf("\\r");
+                break;
+            case '\t':
+                printf("\\t");
+                break;
+            default:
+                if (*p < 0x20)
+                    printf("\\u%04x", *p);
+                else
+                    printf("%c", *p);
+                break;
+        }
+        p++;
+    }
+    printf("\"");
+}
+
 static void grCaptureRecordSpriteDraw(const char *bmpName,
                                       sint16 x,
                                       sint16 y,
@@ -411,6 +446,60 @@ static void grCaptureRecordSpriteDraw(const char *bmpName,
     draw->imageNo = imageNo;
     draw->flipped = (flipped ? 1 : 0);
     draw->bmpName = bmpName;
+}
+
+static int grCaptureIsMetadataFrame(void)
+{
+    if (grCaptureMetaDir == NULL || grCaptureMetaDir[0] == '\0')
+        return 0;
+    if (grCaptureInterval <= 0)
+        return 0;
+    if (grCurrentFrame < grCaptureStartFrame)
+        return 0;
+    if (grCaptureEndFrame >= 0 && grCurrentFrame > grCaptureEndFrame)
+        return 0;
+    if (((grCurrentFrame - grCaptureStartFrame) % grCaptureInterval) != 0)
+        return 0;
+    return 1;
+}
+
+static void grCaptureEmitFrameMetadataLine(void)
+{
+    int emitted = 0;
+    int i;
+
+    if (!grCaptureIsMetadataFrame())
+        return;
+
+    printf("PS1_CAPTURE_META ");
+    printf("{\"frame_number\":%d,", grCurrentFrame);
+    printf("\"scene_label\":");
+    grCapturePrintJsonString(grCaptureSceneLabel);
+    printf(",\"draw_count\":%d,", grCapturedDrawCount);
+    printf("\"visible_draw_count\":%d,", grCapturedDrawCount);
+    printf("\"overlay_enabled\":%s,", grCaptureOverlay ? "true" : "false");
+    printf("\"visible_draws\":[");
+
+    for (i = 0; i < grCapturedDrawCount; i++) {
+        const struct TPs1CapturedSpriteDraw *draw = &grCapturedDraws[i];
+        if (!grCaptureIsActorCandidate(draw->bmpName))
+            continue;
+        if (emitted > 0)
+            printf(",");
+        printf("{\"index\":%d,\"surface_role\":\"replay_layer\",\"bmp_name\":", emitted);
+        grCapturePrintJsonString(draw->bmpName);
+        printf(",\"image_no\":%u,\"sprite_no\":%u,\"x\":%d,\"y\":%d,\"width\":%u,\"height\":%u,\"flipped\":%s}",
+               draw->imageNo,
+               draw->spriteNo,
+               draw->x,
+               draw->y,
+               draw->width,
+               draw->height,
+               draw->flipped ? "true" : "false");
+        emitted++;
+    }
+
+    printf("]}\n");
 }
 
 static uint32 grCaptureCrc32(const uint8 *data, size_t length)
@@ -609,7 +698,6 @@ static void grDrawCaptureOverlay(void)
     for (int cellY = 0; cellY < heightCells; cellY++) {
         for (int cellX = 0; cellX < widthCells; cellX++) {
             int value = 0;
-            uint8 color = 0;
 
             if (symbolIndex < packetLen * 4) {
                 size_t byteIndex = symbolIndex / 4;
@@ -618,29 +706,39 @@ static void grDrawCaptureOverlay(void)
                 symbolIndex++;
             }
 
-            switch (value) {
-                case 1: color = 1; break;
-                case 2: color = 2; break;
-                case 3: color = 3; break;
-                default: color = 0; break;
-            }
-
-            grDrawRectColor15((sint16)(originX + (cellX * cellSize)),
-                              (sint16)(originY + (cellY * cellSize)),
-                              (uint16)cellSize,
-                              (uint16)cellSize,
-                              (color == 1) ? 0x001F :
-                              (color == 2) ? 0x03E0 :
-                              (color == 3) ? 0x7C00 :
-                                             0x0000);
+            grDrawCapturePatternCell((sint16)(originX + (cellX * cellSize)),
+                                     (sint16)(originY + (cellY * cellSize)),
+                                     value);
         }
+    }
+}
+
+static void grDrawCapturePatternCell(sint16 x, sint16 y, int symbol)
+{
+    /* Use a solid blue background plus a single white quadrant. This keeps the
+     * strip machine-readable in headless captures without depending on black
+     * dither behavior surviving PNG output. */
+    grDrawRectColor15(x, y, 8, 8, 0x001F);
+
+    switch (symbol & 0x3) {
+        case 1:
+            grDrawRectColor15(x, y, 4, 4, 0x7FFF);
+            break;
+        case 2:
+            grDrawRectColor15(x + 4, y, 4, 4, 0x7FFF);
+            break;
+        case 3:
+            grDrawRectColor15(x, y + 4, 4, 4, 0x7FFF);
+            break;
+        default:
+            break;
     }
 }
 
 static void grDrawCaptureActorPanel(void)
 {
     struct TPs1CaptureEntitySummary entities[GR_CAPTURE_ENTITY_COUNT];
-    const int panelX = 560;
+    const int panelX = 8;
     const int panelY = 140;
     const int panelW = 74;
     const int rowH = 2;
@@ -663,16 +761,7 @@ static void grDrawCaptureActorPanel(void)
         int yW = 0;
         int widthW = 0;
         int heightW = 0;
-        uint16 markerColor = 0x7FFF;
-
-        switch (entity) {
-            case GR_CAPTURE_ENTITY_JOHNNY: markerColor = 0x001F; break;
-            case GR_CAPTURE_ENTITY_MARY: markerColor = 0x03E0; break;
-            case GR_CAPTURE_ENTITY_SUZY: markerColor = 0x7C00; break;
-            case GR_CAPTURE_ENTITY_OTHER: markerColor = 0x7FFF; break;
-        }
-
-        grDrawCounterBar(panelX + 2, baseY, 3, rowH, markerColor);
+        grDrawCounterBar(panelX + 2, baseY, 3, rowH, 0x7FFF);
 
         if (summary->present) {
             centerX = (summary->left + summary->right) / 2;
@@ -687,10 +776,10 @@ static void grDrawCaptureActorPanel(void)
             heightW = (height > 63) ? 63 : height;
         }
 
-        if (xW > 0) grDrawCounterBar(panelX + 8, baseY + 0, xW, rowH, 0x03FF);
-        if (yW > 0) grDrawCounterBar(panelX + 8, baseY + 3, yW, rowH, 0x03E0);
-        if (widthW > 0) grDrawCounterBar(panelX + 8, baseY + 6, widthW, rowH, 0x7C1F);
-        if (heightW > 0) grDrawCounterBar(panelX + 8, baseY + 9, heightW, rowH, 0x7FE0);
+        if (xW > 0) grDrawCounterBar(panelX + 8, baseY + 0, xW, rowH, 0x7FFF);
+        if (yW > 0) grDrawCounterBar(panelX + 8, baseY + 3, yW, rowH, 0x7FFF);
+        if (widthW > 0) grDrawCounterBar(panelX + 8, baseY + 6, widthW, rowH, 0x7FFF);
+        if (heightW > 0) grDrawCounterBar(panelX + 8, baseY + 9, heightW, rowH, 0x7FFF);
     }
 }
 
@@ -1383,10 +1472,7 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
         grDrawPilotPackDiagnostics();
         grDrawAdsFreezeDiagnostics();
     }
-    if (grCaptureOverlay) {
-        grDrawCaptureOverlay();
-        grDrawCaptureActorPanel();
-    }
+    grCaptureEmitFrameMetadataLine();
 
     /* Wait for VSync BEFORE uploading to framebuffer.
      * This ensures we write during vertical blank when display isn't scanning. */
@@ -1394,6 +1480,14 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
 
     /* Upload background tiles (with sprites composited in software) to framebuffer */
     grDrawBackground();
+
+    /* Draw capture overlay into the final visible frame. Do not merge it back
+     * into clean background state, or it will perturb later frames while still
+     * being overwritten by the background upload on the current one. */
+    if (grCaptureOverlay) {
+        grDrawCaptureOverlay();
+        grDrawCaptureActorPanel();
+    }
 
     /* Handle frame timing */
     eventsWaitTick(grUpdateDelay);
@@ -3845,5 +3939,5 @@ int grCaptureSequenceComplete(void)
 
 void grCaptureSetSceneLabel(const char *sceneLabel)
 {
-    (void)sceneLabel;
+    grCaptureSceneLabel = sceneLabel ? sceneLabel : "";
 }

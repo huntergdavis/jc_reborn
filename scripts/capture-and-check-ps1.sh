@@ -79,11 +79,15 @@ while [ $# -gt 0 ]; do
         --no-baseline-mask) USE_BASELINE_MASK=0; shift ;;
         --live) MODE="live"; shift ;;
         --wait) WAIT_TIME="$2"; shift 2 ;;
-        --out-dir) OUT_DIR="$2"; shift 2 ;;
+        --out-dir|--output) OUT_DIR="$2"; shift 2 ;;
         --scene-label) SCENE_LABEL="$2"; shift 2 ;;
         --frame-number) FRAME_NUMBER="$2"; shift 2 ;;
         --no-open) OPEN_REPORT=0; shift ;;
         -h|--help) usage ;;
+        --*)
+            echo "ERROR: unknown option: $1" >&2
+            exit 1
+            ;;
         *) BOOT_ARGS+=("$1"); shift ;;
     esac
 done

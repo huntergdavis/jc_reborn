@@ -237,7 +237,12 @@ def main() -> int:
 
     with args.image.open("rb"):
         pass
-    decoded = load_decoded_overlay(args.image)
+    overlay_decode_error = None
+    try:
+        decoded = load_decoded_overlay(args.image)
+    except Exception as exc:
+        decoded = {}
+        overlay_decode_error = str(exc)
     if args.frame_number is not None:
         frame_number = args.frame_number
     elif decoded.get("frame_number") is not None:
@@ -294,6 +299,7 @@ def main() -> int:
         "hash_lookup_size": len(hash_lookup),
         "hash_collision_count": len(collisions),
         "unresolved_draws": unresolved_draws,
+        "overlay_decode_error": overlay_decode_error,
         "actor_panel": actor_panel,
     }
 

@@ -208,6 +208,15 @@ void storyPlayBootSceneDirect(int sceneIndex)
     if (scene->flags & ISLAND)
         storyCalculateIslandFromScene(scene);
 
+    if (scene->flags & ISLAND) {
+        ttmDx = islandState.xPos + (scene->flags & LEFT_ISLAND ? 272 : 0);
+        ttmDy = islandState.yPos;
+    }
+    else {
+        ttmDx = 0;
+        ttmDy = 0;
+    }
+
     adsInit();
 
     if (scene->flags & ISLAND)
@@ -219,6 +228,9 @@ void storyPlayBootSceneDirect(int sceneIndex)
     extern void ps1_pilotPrearmPackForAds(const char *adsName);
     ps1_pilotPrearmPackForAds(scene->adsName);
 #endif
+
+    if (scene->dayNo)
+        soundPlay(0);
 
     adsPlay(scene->adsName, scene->adsTagNo);
 }

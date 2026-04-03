@@ -34,7 +34,7 @@ ACTOR_PANEL_SCAN_W = 56
 ACTOR_PANEL_MARKER_X = ACTOR_PANEL_X + 2
 ACTOR_PANEL_MARKER_W = 4
 ACTOR_PANEL_ENTITY_STRIDE = 12
-ACTOR_PANEL_X_ROW_OFFSET = 0
+ACTOR_PANEL_X_ROW_OFFSET = 4
 ACTOR_PANEL_Y_ROW_OFFSET = 5
 ACTOR_PANEL_BUCKET_COUNT = 4
 ACTOR_PANEL_BUCKET_STEP = 14
@@ -546,6 +546,15 @@ def _scaled_actor_bucket(
     sorted_scores = sorted(scores, reverse=True)
     second_best = sorted_scores[1] if len(sorted_scores) > 1 else 0
     if scores.count(best_score) > 1:
+        # In headless PS1 captures the left-edge identity marker can smear into
+        # bucket 0, so ambiguous rows often still carry usable coarse position
+        # in buckets 1..N. Recover a stable coarse bucket from the weighted
+        # non-marker signal instead of falling back all the way to marker-only.
+        usable = [(bucket, score) for bucket, score in enumerate(scores) if bucket > 0 and score > 0]
+        weight_total = sum(score for _, score in usable)
+        if weight_total > 0:
+            weighted_bucket = sum(bucket * score for bucket, score in usable) / float(weight_total)
+            return max(0, min(ACTOR_PANEL_BUCKET_COUNT - 1, int(round(weighted_bucket))))
         return None
     if best_score < second_best + 2:
         return None

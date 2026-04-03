@@ -215,7 +215,23 @@ For controlled PS1 bug runs, prefer overlay-backed screenshots over manual visua
 The PS1 build can now draw the same machine-readable capture overlay into the live DuckStation frame
 when you launch with `capture-overlay`.
 
-Example:
+Fastest workflow:
+
+```bash
+./scripts/capture-and-check-ps1.sh \
+  --expected-root host-script-review/fishing1 \
+  "story scene 17"
+```
+
+Reuse an existing overlay screenshot:
+
+```bash
+./scripts/capture-and-check-ps1.sh \
+  --expected-root host-references-test4/FISHING-1 \
+  --image host-references-test4/FISHING-1/frame_00081.bmp
+```
+
+Equivalent manual steps:
 
 ```bash
 ./scripts/auto-test-ps1.sh 35 --overlay "story scene 17"

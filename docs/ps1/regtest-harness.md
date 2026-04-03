@@ -292,6 +292,22 @@ For PS1 bug fixing, the preferred screenshot harness is now:
 4. compare against expected truth
 5. open the generated HTML diff report
 
+One-command path:
+
+```bash
+./scripts/capture-and-check-ps1.sh \
+  --expected-root host-script-review/fishing1 \
+  "story scene 17"
+```
+
+Or reuse an existing overlay screenshot:
+
+```bash
+./scripts/capture-and-check-ps1.sh \
+  --expected-root host-references-test4/FISHING-1 \
+  --image host-references-test4/FISHING-1/frame_00081.bmp
+```
+
 Examples:
 
 ```bash

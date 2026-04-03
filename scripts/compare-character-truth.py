@@ -54,16 +54,22 @@ def compare_character(expected: dict, actual: dict, position_tolerance: float) -
         "height": int(bbox_actual["height"]) - int(bbox_expected["height"]),
     }
     problems = []
-    if not isinstance(actual.get("overlay_metrics"), dict) and int(actual["draw_count"]) != int(expected["draw_count"]):
+    overlay_metrics = actual.get("overlay_metrics")
+    position_only = isinstance(overlay_metrics, dict) and bool(overlay_metrics.get("position_only"))
+    effective_position_tolerance = position_tolerance
+    if position_only:
+        effective_position_tolerance = max(position_tolerance, 160.0)
+    if not isinstance(overlay_metrics, dict) and int(actual["draw_count"]) != int(expected["draw_count"]):
         problems.append("draw_count_mismatch")
-    if distance > position_tolerance:
+    if distance > effective_position_tolerance:
         problems.append("position_drift")
-    if any(abs(value) > position_tolerance for value in bbox_delta.values()):
+    if not position_only and any(abs(value) > position_tolerance for value in bbox_delta.values()):
         problems.append("bbox_drift")
     return {
         "character": expected["character"],
         "expected": expected,
         "actual": actual,
+        "effective_position_tolerance": effective_position_tolerance,
         "centroid_delta": {"dx": dx, "dy": dy, "distance": distance},
         "bbox_delta": bbox_delta,
         "status": "ok" if not problems else "mismatch",

@@ -715,24 +715,18 @@ static void grDrawCaptureOverlay(void)
 
 static void grDrawCapturePatternCell(sint16 x, sint16 y, int symbol)
 {
-    /* Use a solid blue background plus a single white quadrant. This keeps the
-     * strip machine-readable in headless captures without depending on black
-     * dither behavior surviving PNG output. */
-    grDrawRectColor15(x, y, 8, 8, 0x001F);
+    uint16 color = 0x0000;
 
     switch (symbol & 0x3) {
-        case 1:
-            grDrawRectColor15(x, y, 4, 4, 0x7FFF);
-            break;
-        case 2:
-            grDrawRectColor15(x + 4, y, 4, 4, 0x7FFF);
-            break;
-        case 3:
-            grDrawRectColor15(x, y + 4, 4, 4, 0x7FFF);
-            break;
-        default:
-            break;
+        case 1: color = 0x7FFF; break;
+        case 2: color = 0x03E0; break;
+        case 3: color = 0x7C00; break;
+        default: color = 0x0000; break;
     }
+
+    grDrawRectColor15(x, y, 8, 8, 0x0000);
+    if (color != 0x0000)
+        grDrawRectColor15(x, y + 3, 8, 2, color);
 }
 
 static void grDrawCaptureActorPanel(void)
@@ -741,8 +735,12 @@ static void grDrawCaptureActorPanel(void)
     const int panelX = 8;
     const int panelY = 140;
     const int panelW = 74;
-    const int rowH = 2;
     const int entityStride = 12;
+    const int dataX = panelX + 8;
+    const int bucketCount = 4;
+    const int bucketStep = 14;
+    const int bucketW = 10;
+    const int rowH = 3;
     int entity;
 
     grCaptureSummarizeEntities(entities);
@@ -755,12 +753,8 @@ static void grDrawCaptureActorPanel(void)
         int baseY = panelY + 2 + (entity * entityStride);
         int centerX = 0;
         int centerY = 0;
-        int width = 0;
-        int height = 0;
-        int xW = 0;
-        int yW = 0;
-        int widthW = 0;
-        int heightW = 0;
+        int xPos = 0;
+        int yPos = 0;
         uint16 markerColor = 0x7FFF;
 
         switch (entity) {
@@ -770,25 +764,27 @@ static void grDrawCaptureActorPanel(void)
             case GR_CAPTURE_ENTITY_OTHER: markerColor = 0x7FFF; break;
         }
 
-        grDrawCounterBar(panelX + 2, baseY, 3, rowH, markerColor);
+        grDrawCounterBar(panelX + 2, baseY, 3, 2, markerColor);
 
         if (summary->present) {
             centerX = (summary->left + summary->right) / 2;
             centerY = (summary->top + summary->bottom) / 2;
-            width = summary->right - summary->left;
-            height = summary->bottom - summary->top;
-            if (width < 0) width = 0;
-            if (height < 0) height = 0;
-            xW = grCaptureQuantize63(centerX, 639);
-            yW = grCaptureQuantize63(centerY, 479);
-            widthW = (width > 63) ? 63 : width;
-            heightW = (height > 63) ? 63 : height;
+            if (centerX < 0) centerX = 0;
+            if (centerX > 639) centerX = 639;
+            if (centerY < 0) centerY = 0;
+            if (centerY > 479) centerY = 479;
+            xPos = (int)(((uint32)centerX * (uint32)bucketCount) / 640U);
+            yPos = (int)(((uint32)centerY * (uint32)bucketCount) / 480U);
+            if (xPos < 0) xPos = 0;
+            if (xPos >= bucketCount) xPos = bucketCount - 1;
+            if (yPos < 0) yPos = 0;
+            if (yPos >= bucketCount) yPos = bucketCount - 1;
         }
 
-        if (xW > 0) grDrawCounterBar(panelX + 8, baseY + 0, xW, rowH, 0x03FF);
-        if (yW > 0) grDrawCounterBar(panelX + 8, baseY + 3, yW, rowH, 0x03E0);
-        if (widthW > 0) grDrawCounterBar(panelX + 8, baseY + 6, widthW, rowH, 0x7C1F);
-        if (heightW > 0) grDrawCounterBar(panelX + 8, baseY + 9, heightW, rowH, 0x7FE0);
+        if (summary->present) {
+            grDrawCounterBar(dataX + (xPos * bucketStep), baseY + 0, bucketW, rowH, 0x7FFF);
+            grDrawCounterBar(dataX + (yPos * bucketStep), baseY + 5, bucketW, rowH, 0x03E0);
+        }
     }
 }
 

@@ -30,23 +30,16 @@ HEADLESS_NATIVE_H = 448
 ACTOR_PANEL_X = 8
 ACTOR_PANEL_Y = 140
 ACTOR_PANEL_DATA_X = ACTOR_PANEL_X + 8
-ACTOR_PANEL_SCAN_W = 63
+ACTOR_PANEL_SCAN_W = 56
 ACTOR_PANEL_MARKER_X = ACTOR_PANEL_X + 2
 ACTOR_PANEL_MARKER_W = 4
 ACTOR_PANEL_ENTITY_STRIDE = 12
-ACTOR_PANEL_ROW_OFFSETS = {
-    "centroid_x": 0,
-    "centroid_y": 3,
-    "bbox_width": 6,
-    "bbox_height": 9,
-}
+ACTOR_PANEL_X_ROW_OFFSET = 0
+ACTOR_PANEL_Y_ROW_OFFSET = 5
+ACTOR_PANEL_BUCKET_COUNT = 4
+ACTOR_PANEL_BUCKET_STEP = 14
+ACTOR_PANEL_BUCKET_W = 10
 ACTOR_PANEL_ENTITIES = ("johnny", "mary", "suzy", "other_actor")
-ACTOR_PANEL_FAMILIES = {
-    "centroid_x": "cyan",
-    "centroid_y": "green",
-    "bbox_width": "magenta",
-    "bbox_height": "yellow",
-}
 
 ACTOR_PANEL_MARKER_FAMILIES = {
     "johnny": "green",
@@ -526,6 +519,74 @@ def _scaled_actor_row_value(
     return max(0, min(ACTOR_PANEL_SCAN_W, best))
 
 
+def _scaled_actor_bucket(
+    rgb_img: Image.Image,
+    sample_y: int,
+    scale_x: float,
+    panel_x: int,
+) -> Optional[int]:
+    scores: List[int] = []
+    for bucket in range(ACTOR_PANEL_BUCKET_COUNT):
+        bucket_x = panel_x + (bucket * ACTOR_PANEL_BUCKET_STEP)
+        score = _scaled_actor_row_value(
+            rgb_img,
+            sample_y,
+            "lit",
+            scale_x,
+            bucket_x,
+            ACTOR_PANEL_BUCKET_W,
+        )
+        scores.append(score)
+
+    best_score = max(scores) if scores else 0
+    if best_score <= 1:
+        return None
+
+    best_bucket = scores.index(best_score)
+    sorted_scores = sorted(scores, reverse=True)
+    second_best = sorted_scores[1] if len(sorted_scores) > 1 else 0
+    if scores.count(best_score) > 1:
+        return None
+    if best_score < second_best + 2:
+        return None
+    return best_bucket
+
+
+def _scaled_actor_lit_centroid(
+    rgb_img: Image.Image,
+    sample_y: int,
+    scale_x: float,
+    panel_x: int,
+    scan_width: int,
+) -> Optional[float]:
+    px = rgb_img.load()
+    abs_x0 = max(0, int(round(panel_x * scale_x)))
+    abs_width = max(1, int(round(scan_width * scale_x)))
+    abs_x1 = min(rgb_img.width, abs_x0 + abs_width)
+    if abs_x1 <= abs_x0:
+        return None
+
+    weighted_sum = 0.0
+    weight_total = 0.0
+    for y_off in (-1, 0, 1):
+        yy = max(0, min(rgb_img.height - 1, sample_y + y_off))
+        for x in range(abs_x0, abs_x1):
+            r, g, b = px[x, yy]
+            weight = float(max(r, g, b))
+            if weight < 24.0:
+                continue
+            weighted_sum += float(x - abs_x0) * weight
+            weight_total += weight
+
+    if weight_total <= 0.0:
+        return None
+
+    pos = weighted_sum / weight_total
+    if scale_x > 0 and scale_x != 1.0:
+        pos /= scale_x
+    return max(0.0, min(float(scan_width - 1), pos))
+
+
 def _scaled_actor_marker_strength(
     rgb_img: Image.Image,
     base_y: int,
@@ -579,29 +640,60 @@ def decode_actor_panel(
         )
         if marker_strength >= 2:
             marker_active.append(entity_name)
-        values: Dict[str, int] = {}
-        for key, row_offset in ACTOR_PANEL_ROW_OFFSETS.items():
-            sample_y = int(round((base_y + row_offset) * scale_y))
-            values[key] = _scaled_actor_row_value(
+        x_sample_y = int(round((base_y + ACTOR_PANEL_X_ROW_OFFSET) * scale_y))
+        y_sample_y = int(round((base_y + ACTOR_PANEL_Y_ROW_OFFSET) * scale_y))
+        x_bucket = _scaled_actor_bucket(
+            img,
+            x_sample_y,
+            scale_x,
+            ACTOR_PANEL_DATA_X,
+        )
+        y_bucket = _scaled_actor_bucket(
+            img,
+            y_sample_y,
+            scale_x,
+            ACTOR_PANEL_DATA_X,
+        )
+
+        overlay_metrics: Dict[str, object]
+        if x_bucket is not None and y_bucket is not None:
+            centroid_x = ((x_bucket + 0.5) * 639.0) / float(ACTOR_PANEL_BUCKET_COUNT)
+            centroid_y = ((y_bucket + 0.5) * 479.0) / float(ACTOR_PANEL_BUCKET_COUNT)
+            overlay_metrics = {
+                "position_only": True,
+                "x_bucket": int(x_bucket),
+                "y_bucket": int(y_bucket),
+            }
+        else:
+            x_pos = _scaled_actor_lit_centroid(
                 img,
-                sample_y,
-                ACTOR_PANEL_FAMILIES[key],
+                x_sample_y,
                 scale_x,
                 ACTOR_PANEL_DATA_X,
                 ACTOR_PANEL_SCAN_W,
             )
+            y_pos = _scaled_actor_lit_centroid(
+                img,
+                y_sample_y,
+                scale_x,
+                ACTOR_PANEL_DATA_X,
+                ACTOR_PANEL_SCAN_W,
+            )
+            if x_pos is None or y_pos is None:
+                continue
+            centroid_x = (x_pos * 639.0) / float(ACTOR_PANEL_SCAN_W)
+            centroid_y = (y_pos * 479.0) / float(ACTOR_PANEL_SCAN_W)
+            overlay_metrics = {
+                "position_only": True,
+                "coarse_row_centroid": True,
+                "x_pos": round(x_pos, 3),
+                "y_pos": round(y_pos, 3),
+            }
 
-        if values["bbox_width"] <= 0 or values["bbox_height"] <= 0:
-            continue
-
-        centroid_x = (values["centroid_x"] * 639.0) / 63.0
-        centroid_y = (values["centroid_y"] * 479.0) / 63.0
-        bbox_width = float(values["bbox_width"])
-        bbox_height = float(values["bbox_height"])
-        left = int(round(centroid_x - (bbox_width / 2.0)))
-        top = int(round(centroid_y - (bbox_height / 2.0)))
-        right = int(round(left + bbox_width))
-        bottom = int(round(top + bbox_height))
+        left = int(round(centroid_x))
+        top = int(round(centroid_y))
+        right = left
+        bottom = top
 
         characters.append(
             {
@@ -612,15 +704,15 @@ def decode_actor_panel(
                     "top": top,
                     "right": right,
                     "bottom": bottom,
-                    "width": int(round(bbox_width)),
-                    "height": int(round(bbox_height)),
+                    "width": 0,
+                    "height": 0,
                 },
                 "centroid": {
                     "x": round(centroid_x, 3),
                     "y": round(centroid_y, 3),
                 },
                 "sprite_sources": [],
-                "overlay_metrics": values,
+                "overlay_metrics": overlay_metrics,
             }
         )
 

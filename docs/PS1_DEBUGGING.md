@@ -221,7 +221,8 @@ Fastest workflow:
 ./scripts/capture-and-check-ps1.sh \
   --expected-root host-script-review/fishing1 \
   --scene "FISHING 1" \
-  --frame-number 80
+  --frame-number 80 \
+  --actual-frame 1200
 ```
 
 Reuse an existing overlay screenshot:
@@ -263,6 +264,8 @@ This reports:
 - rough positions and bounding boxes
 - diff vs expected truth
 - an HTML report under `/tmp/ps1-character-check/character-truth-report.html`
+
+For headless runs, `--frame-number` selects the expected truth checkpoint and `--actual-frame` selects the dumped `frame_NNNNN.png` to compare against it. Pass both so the harness does not silently compare the wrong scene phase.
 
 When a scene exists in [regtest-scenes.txt](/home/hunter/workspace/jc_reborn/config/ps1/regtest-scenes.txt), `regtest-scene.sh` now reuses that canonical boot route automatically instead of defaulting to raw `island ads`.
 

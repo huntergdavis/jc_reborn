@@ -57,8 +57,8 @@ Options:
   -h, --help            Show this help
 
 Examples:
-  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/fishing1 --scene "FISHING 1" --frame-number 80
-  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/mary1 --scene "MARY 1" --frame-number 50
+  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/fishing1 --scene "FISHING 1" --frame-number 80 --actual-frame 1200
+  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/mary1 --scene "MARY 1" --frame-number 50 --actual-frame 3600
   ./scripts/capture-and-check-ps1.sh --expected-root host-references-test4/FISHING-1 --image host-references-test4/FISHING-1/frame_00081.bmp
 USAGE
     exit 0
@@ -97,6 +97,11 @@ fi
 
 if [ -z "$LOOKUP_ROOT" ]; then
     LOOKUP_ROOT="$EXPECTED_ROOT"
+fi
+
+if [ "$MODE" = "headless" ] && [ -n "$FRAME_NUMBER" ] && [ -z "$ACTUAL_FRAME" ] && [ -z "$IMAGE_PATH" ]; then
+    echo "ERROR: headless checks with --frame-number require --actual-frame so the captured PNG matches the expected truth checkpoint." >&2
+    exit 1
 fi
 
 LOG_FILE="$(mktemp /tmp/ps1-capture-check-log-XXXXXX.txt)"

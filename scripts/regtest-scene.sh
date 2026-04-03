@@ -181,8 +181,10 @@ trap cleanup EXIT
 # ---------------------------------------------------------------------------
 if [ "$SKIP_BUILD" -eq 0 ]; then
     stage_bootmode
+    log "Rebuilding PS1 executable..."
+    "$PROJECT_ROOT/scripts/build-ps1.sh" >> "$OUTPUT_DIR/build.log" 2>&1
     log "Rebuilding CD image..."
-    "$PROJECT_ROOT/scripts/make-cd-image.sh" > "$OUTPUT_DIR/build.log" 2>&1
+    "$PROJECT_ROOT/scripts/make-cd-image.sh" >> "$OUTPUT_DIR/build.log" 2>&1
     log "CD image built."
 else
     stage_bootmode

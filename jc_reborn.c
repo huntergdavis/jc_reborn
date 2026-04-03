@@ -63,6 +63,7 @@ int fclose(FILE *stream);
 #include "sound_ps1.h"
 #include "cdrom_ps1.h"
 #include "ps1_debug.h"
+#include "config/ps1/bootmode_embedded.h"
 #else
 #include "graphics.h"
 #include "events.h"
@@ -290,12 +291,29 @@ static void ps1ApplyBootOverride(char *buffer)
 
 static void ps1LoadBootOverride(void)
 {
-    uint32 rawSize = 0;
-    uint8 *rawData;
+    PS1File *file;
     char buffer[128];
     size_t readCount = 0;
+    uint32 rawSize = 0;
+    uint8 *rawData;
 
     ps1ResetBootArgs();
+
+    if (PS1_EMBEDDED_BOOT_OVERRIDE[0] != '\0') {
+        strncpy(buffer, PS1_EMBEDDED_BOOT_OVERRIDE, sizeof(buffer) - 1);
+        buffer[sizeof(buffer) - 1] = '\0';
+        ps1ApplyBootOverride(buffer);
+        return;
+    }
+
+    file = ps1_fopen(PS1_BOOT_OVERRIDE_FILE, "rb");
+    if (file != NULL) {
+        readCount = ps1_fread(buffer, 1, sizeof(buffer) - 1, file);
+        ps1_fclose(file);
+        buffer[readCount] = '\0';
+        ps1ApplyBootOverride(buffer);
+        return;
+    }
 
     rawData = ps1_loadRawFile("\\BOOTMODE.TXT;1", &rawSize);
     if (rawData != NULL) {

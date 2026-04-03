@@ -22,6 +22,7 @@ def load_module(script_name: str, module_name: str):
 build_character_truth = load_module("build-character-truth.py", "build_character_truth")
 compare_character_truth = load_module("compare-character-truth.py", "compare_character_truth")
 decode_capture_overlay = load_module("decode-capture-overlay.py", "decode_capture_overlay")
+decode_ps1_bars = load_module("decode-ps1-bars.py", "decode_ps1_bars")
 render_character_truth_report = load_module("render-character-truth-report.py", "render_character_truth_report")
 summarize_frame_meta = load_module("summarize-frame-meta.py", "summarize_frame_meta")
 
@@ -42,6 +43,16 @@ def infer_frame_number_from_name(image_path: Path) -> int:
     if not match:
         raise ValueError("could not infer frame number from image name")
     return int(match.group(1))
+
+
+def load_decoded_overlay(image_path: Path) -> dict:
+    sidecar_path = image_path.with_name(f"{image_path.stem}.overlay.json")
+    if sidecar_path.is_file():
+        return json.loads(sidecar_path.read_text(encoding="utf-8"))
+
+    from PIL import Image
+    with Image.open(image_path) as image:
+        return decode_capture_overlay.decode_image(image)
 
 
 def build_hash_lookup(lookup_root: Path) -> tuple[dict[int, str], dict[int, list[str]]]:
@@ -107,7 +118,7 @@ def build_single_frame_truth(
     frame_number: int,
     actor_candidates: list[dict],
     actual_root: Path,
-) -> dict:
+    ) -> dict:
     frame_name = f"frame_{frame_number:05d}"
     return {
         "root": str(actual_root.resolve()),
@@ -124,6 +135,37 @@ def build_single_frame_truth(
                         frame_name,
                         scene_label,
                     )
+                ],
+            }
+        ],
+    }
+
+
+def build_single_frame_truth_from_characters(
+    scene_label: str,
+    frame_number: int,
+    image_suffix: str,
+    characters: list[dict],
+    actual_root: Path,
+) -> dict:
+    frame_name = f"frame_{frame_number:05d}{image_suffix.lower()}"
+    return {
+        "root": str(actual_root.resolve()),
+        "scene_count": 1,
+        "scenes": [
+            {
+                "scene_label": scene_label,
+                "scene_dir": scene_slug(scene_label),
+                "frame_count": 1,
+                "frames": [
+                    {
+                        "frame_number": int(frame_number),
+                        "frame_name": frame_name,
+                        "scene_label": scene_label,
+                        "character_count": len(characters),
+                        "visible_characters": [item["character"] for item in characters],
+                        "characters": characters,
+                    }
                 ],
             }
         ],
@@ -193,9 +235,7 @@ def main() -> int:
 
     with args.image.open("rb"):
         pass
-    from PIL import Image
-    with Image.open(args.image) as image:
-        decoded = decode_capture_overlay.decode_packet_from_cells(decode_capture_overlay.read_overlay_cells(image))
+    decoded = load_decoded_overlay(args.image)
     if args.frame_number is not None:
         frame_number = args.frame_number
     elif decoded.get("frame_number") is not None:
@@ -212,16 +252,39 @@ def main() -> int:
     frame_copy = frame_dir / frame_name
     shutil.copy2(args.image, frame_copy)
 
-    actual_truth = build_single_frame_truth(
-        args.image,
-        scene_label,
-        frame_number,
-        actor_candidates,
-        actual_root,
-    )
+    decode_method = "capture-overlay"
+    actor_panel = None
+    if actor_candidates:
+        actual_truth = build_single_frame_truth(
+            args.image,
+            scene_label,
+            frame_number,
+            actor_candidates,
+            actual_root,
+        )
+    else:
+        actor_panel = decode_ps1_bars.decode_actor_panel(args.image)
+        if actor_panel.get("character_count", 0) > 0:
+            decode_method = "ps1-actor-bars"
+            actual_truth = build_single_frame_truth_from_characters(
+                scene_label,
+                frame_number,
+                args.image.suffix,
+                actor_panel.get("characters", []),
+                actual_root,
+            )
+        else:
+            actual_truth = build_single_frame_truth(
+                args.image,
+                scene_label,
+                frame_number,
+                actor_candidates,
+                actual_root,
+            )
     expected_subset = filter_expected_truth(expected_truth, scene_label, frame_number)
     report = compare_character_truth.compare(expected_subset, actual_truth, args.position_tolerance)
     report["overlay_debug"] = {
+        "decode_method": decode_method,
         "draw_count": int(decoded.get("draw_count", 0)),
         "embedded_draw_count": int(decoded.get("embedded_draw_count", 0)),
         "resolved_draw_count": len(actor_candidates),
@@ -229,6 +292,7 @@ def main() -> int:
         "hash_lookup_size": len(hash_lookup),
         "hash_collision_count": len(collisions),
         "unresolved_draws": unresolved_draws,
+        "actor_panel": actor_panel,
     }
 
     args.out_dir.mkdir(parents=True, exist_ok=True)

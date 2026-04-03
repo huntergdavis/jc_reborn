@@ -12,6 +12,7 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 from statistics import median
 from typing import Dict, List, Optional, Tuple
 
@@ -24,6 +25,26 @@ except Exception:
 # Native PS1 framebuffer dimensions (640x480 interlaced)
 NATIVE_W = 640
 NATIVE_H = 480
+HEADLESS_NATIVE_H = 448
+
+ACTOR_PANEL_X = 2
+ACTOR_PANEL_Y = 250
+ACTOR_PANEL_DATA_X = ACTOR_PANEL_X + 8
+ACTOR_PANEL_SCAN_W = 63
+ACTOR_PANEL_ENTITY_STRIDE = 12
+ACTOR_PANEL_ROW_OFFSETS = {
+    "centroid_x": 0,
+    "centroid_y": 3,
+    "bbox_width": 6,
+    "bbox_height": 9,
+}
+ACTOR_PANEL_ENTITIES = ("johnny", "mary", "suzy", "other_actor")
+ACTOR_PANEL_FAMILIES = {
+    "centroid_x": "cyan",
+    "centroid_y": "green",
+    "bbox_width": "magenta",
+    "bbox_height": "yellow",
+}
 
 
 @dataclass(frozen=True)
@@ -474,6 +495,88 @@ def decode_file(path: str, x0: int, scan_width: int, include_zero: bool) -> Dict
         "scan": {"x0": x0, "width": scan_width},
         "rows": rows,
         "interpreted": interpreted,
+    }
+
+
+def _scaled_actor_row_value(
+    rgb_img: Image.Image,
+    sample_y: int,
+    family: str,
+    scale_x: float,
+) -> int:
+    best = 0
+    for y_off in (-1, 0, 1):
+        yy = max(0, min(rgb_img.height - 1, sample_y + y_off))
+        best = max(best, count_family_row(rgb_img, yy, 0, rgb_img.width, family))
+    if scale_x > 0 and scale_x != 1.0:
+        best = int(round(best / scale_x))
+    return max(0, min(ACTOR_PANEL_SCAN_W, best))
+
+
+def decode_actor_panel(image: Image.Image | str | Path) -> Dict[str, object]:
+    if not isinstance(image, Image.Image):
+        img = Image.open(image).convert("RGB")
+    else:
+        img = image.convert("RGB")
+
+    scale_x = img.width / float(NATIVE_W)
+    scale_y = img.height / float(HEADLESS_NATIVE_H)
+
+    characters: List[Dict[str, object]] = []
+    for entity_index, entity_name in enumerate(ACTOR_PANEL_ENTITIES):
+        base_y = ACTOR_PANEL_Y + 2 + (entity_index * ACTOR_PANEL_ENTITY_STRIDE)
+        values: Dict[str, int] = {}
+        for key, row_offset in ACTOR_PANEL_ROW_OFFSETS.items():
+            sample_y = int(round((base_y + row_offset) * scale_y))
+            values[key] = _scaled_actor_row_value(
+                img,
+                sample_y,
+                ACTOR_PANEL_FAMILIES[key],
+                scale_x,
+            )
+
+        if values["bbox_width"] <= 0 or values["bbox_height"] <= 0:
+            continue
+
+        centroid_x = (values["centroid_x"] * 639.0) / 63.0
+        centroid_y = (values["centroid_y"] * 479.0) / 63.0
+        bbox_width = float(values["bbox_width"])
+        bbox_height = float(values["bbox_height"])
+        left = int(round(centroid_x - (bbox_width / 2.0)))
+        top = int(round(centroid_y - (bbox_height / 2.0)))
+        right = int(round(left + bbox_width))
+        bottom = int(round(top + bbox_height))
+
+        characters.append(
+            {
+                "character": entity_name,
+                "draw_count": 1,
+                "bbox": {
+                    "left": left,
+                    "top": top,
+                    "right": right,
+                    "bottom": bottom,
+                    "width": int(round(bbox_width)),
+                    "height": int(round(bbox_height)),
+                },
+                "centroid": {
+                    "x": round(centroid_x, 3),
+                    "y": round(centroid_y, 3),
+                },
+                "sprite_sources": [],
+                "overlay_metrics": values,
+            }
+        )
+
+    return {
+        "character_count": len(characters),
+        "characters": characters,
+        "panel": {
+            "x": ACTOR_PANEL_X,
+            "y": ACTOR_PANEL_Y,
+            "data_x": ACTOR_PANEL_DATA_X,
+            "scan_width": ACTOR_PANEL_SCAN_W,
+        },
     }
 
 

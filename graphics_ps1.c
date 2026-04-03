@@ -114,6 +114,8 @@ static int prevDirtyMaxY[4] = {-1, -1, -1, -1};
 static uint32 palLutSierra[256];
 static uint32 palLutPsb[256];
 
+static void grDrawRectColor15(sint16 x, sint16 y, uint16 width, uint16 height, uint16 bgColor);
+
 static inline void markTileDirty(int idx, int minY, int maxY)
 {
     if (currDirtyMinY[idx] < 0) {
@@ -284,6 +286,109 @@ static void grDrawCounterBar(int x, int y, int w, int h, uint16 color)
     }
 }
 
+static int grCaptureStartsWith(const char *text, const char *prefix);
+static int grCaptureEquals(const char *lhs, const char *rhs);
+static int grCaptureIsActorCandidate(const char *bmpName);
+
+enum
+{
+    GR_CAPTURE_ENTITY_JOHNNY = 0,
+    GR_CAPTURE_ENTITY_MARY = 1,
+    GR_CAPTURE_ENTITY_SUZY = 2,
+    GR_CAPTURE_ENTITY_OTHER = 3,
+    GR_CAPTURE_ENTITY_COUNT = 4
+};
+
+struct TPs1CaptureEntitySummary
+{
+    int present;
+    int left;
+    int top;
+    int right;
+    int bottom;
+};
+
+static int grCaptureClassifyEntity(const char *bmpName)
+{
+    if (!grCaptureIsActorCandidate(bmpName))
+        return -1;
+
+    if (bmpName == NULL)
+        return -1;
+
+    if (grCaptureEquals(bmpName, "FISHMAN.BMP"))
+        return GR_CAPTURE_ENTITY_OTHER;
+
+    if (grCaptureStartsWith(bmpName, "SJMSUZY") ||
+        grCaptureStartsWith(bmpName, "SSUZY") ||
+        grCaptureStartsWith(bmpName, "SUZY")) {
+        return GR_CAPTURE_ENTITY_SUZY;
+    }
+
+    if (grCaptureStartsWith(bmpName, "SM") ||
+        grCaptureStartsWith(bmpName, "MARY") ||
+        grCaptureStartsWith(bmpName, "SLEVEJM") ||
+        grCaptureEquals(bmpName, "SASKDATE.BMP") ||
+        grCaptureEquals(bmpName, "SBREAKUP.BMP") ||
+        grCaptureEquals(bmpName, "SJBRAKUP.BMP")) {
+        return GR_CAPTURE_ENTITY_MARY;
+    }
+
+    return GR_CAPTURE_ENTITY_JOHNNY;
+}
+
+static uint8 grCaptureQuantize63(int value, int maxValue)
+{
+    if (value < 0)
+        value = 0;
+    if (value > maxValue)
+        value = maxValue;
+    return (uint8)(((uint32)value * 63U + (uint32)(maxValue / 2)) / (uint32)maxValue);
+}
+
+static void grCaptureSummarizeEntities(struct TPs1CaptureEntitySummary *entities)
+{
+    int i;
+
+    for (i = 0; i < GR_CAPTURE_ENTITY_COUNT; i++) {
+        entities[i].present = 0;
+        entities[i].left = 0;
+        entities[i].top = 0;
+        entities[i].right = 0;
+        entities[i].bottom = 0;
+    }
+
+    for (i = 0; i < grCapturedDrawCount; i++) {
+        const struct TPs1CapturedSpriteDraw *draw = &grCapturedDraws[i];
+        int entity = grCaptureClassifyEntity(draw->bmpName);
+        int left;
+        int top;
+        int right;
+        int bottom;
+
+        if (entity < 0)
+            continue;
+
+        left = draw->x;
+        top = draw->y;
+        right = draw->x + (int)draw->width;
+        bottom = draw->y + (int)draw->height;
+
+        if (!entities[entity].present) {
+            entities[entity].present = 1;
+            entities[entity].left = left;
+            entities[entity].top = top;
+            entities[entity].right = right;
+            entities[entity].bottom = bottom;
+        } else {
+            if (left < entities[entity].left) entities[entity].left = left;
+            if (top < entities[entity].top) entities[entity].top = top;
+            if (right > entities[entity].right) entities[entity].right = right;
+            if (bottom > entities[entity].bottom) entities[entity].bottom = bottom;
+        }
+    }
+}
+
 static void grCaptureResetFrameDraws(void)
 {
     grCapturedDrawCount = 0;
@@ -335,56 +440,144 @@ static uint32 grCaptureCrc32(const uint8 *data, size_t length)
     return crc ^ 0xffffffffu;
 }
 
+static int grCaptureStartsWith(const char *text, const char *prefix)
+{
+    while (*prefix) {
+        if (*text++ != *prefix++)
+            return 0;
+    }
+    return 1;
+}
+
+static int grCaptureEquals(const char *lhs, const char *rhs)
+{
+    while (*lhs && *rhs) {
+        if (*lhs != *rhs)
+            return 0;
+        lhs++;
+        rhs++;
+    }
+    return (*lhs == '\0' && *rhs == '\0');
+}
+
+static int grCaptureIsActorCandidate(const char *bmpName)
+{
+    if (bmpName == NULL || *bmpName == '\0')
+        return 0;
+
+    if (grCaptureEquals(bmpName, "BACKGRND.BMP") ||
+        grCaptureEquals(bmpName, "MRAFT.BMP") ||
+        grCaptureEquals(bmpName, "MJRAFT.BMP") ||
+        grCaptureEquals(bmpName, "MJRAFT2.BMP") ||
+        grCaptureEquals(bmpName, "MJSAND.BMP") ||
+        grCaptureEquals(bmpName, "MJSANDC.BMP") ||
+        grCaptureEquals(bmpName, "SPLASH.BMP") ||
+        grCaptureEquals(bmpName, "LILFISH.BMP") ||
+        grCaptureEquals(bmpName, "COCONUTS.BMP") ||
+        grCaptureEquals(bmpName, "COCOHEAD.BMP") ||
+        grCaptureEquals(bmpName, "MJCOCO.BMP") ||
+        grCaptureEquals(bmpName, "MJCOCO1.BMP") ||
+        grCaptureEquals(bmpName, "MJBOTTLE.BMP") ||
+        grCaptureEquals(bmpName, "SJGFTASK.BMP") ||
+        grCaptureEquals(bmpName, "SJGFTJMP.BMP") ||
+        grCaptureEquals(bmpName, "SJGFTSHY.BMP") ||
+        grCaptureEquals(bmpName, "SJGFTXCH.BMP") ||
+        grCaptureEquals(bmpName, "SJWORK.BMP")) {
+        return 0;
+    }
+
+    if (grCaptureStartsWith(bmpName, "BACKGRND") ||
+        grCaptureStartsWith(bmpName, "MJSAND") ||
+        grCaptureStartsWith(bmpName, "MRAFT") ||
+        grCaptureStartsWith(bmpName, "MJRAFT") ||
+        grCaptureStartsWith(bmpName, "GJGULL") ||
+        grCaptureStartsWith(bmpName, "GJVIS") ||
+        grCaptureStartsWith(bmpName, "GJNAT") ||
+        grCaptureStartsWith(bmpName, "SHARK") ||
+        grCaptureStartsWith(bmpName, "COCO") ||
+        grCaptureStartsWith(bmpName, "LITE") ||
+        grCaptureStartsWith(bmpName, "TRUNK") ||
+        grCaptureStartsWith(bmpName, "SRAFT")) {
+        return 0;
+    }
+
+    return grCaptureStartsWith(bmpName, "MJ") ||
+           grCaptureStartsWith(bmpName, "SJ") ||
+           grCaptureStartsWith(bmpName, "SM") ||
+           grCaptureStartsWith(bmpName, "GJ") ||
+           grCaptureStartsWith(bmpName, "JOHN") ||
+           grCaptureStartsWith(bmpName, "MARY") ||
+           grCaptureStartsWith(bmpName, "SUZY");
+}
+
 static size_t grCaptureBuildOverlayPayload(uint8 *buffer, size_t capacity)
 {
     size_t offset = 0;
-    int limit = grCapturedDrawCount;
+    int totalActors = 0;
+    int embeddedActors = 0;
     int i;
 
-    if (capacity < 11)
+    if (capacity < 10)
         return 0;
-
-    if (limit > 16)
-        limit = 16;
 
     buffer[offset++] = 'J';
     buffer[offset++] = 'C';
-    buffer[offset++] = 'D';
+    buffer[offset++] = 'S';
     buffer[offset++] = '1';
     buffer[offset++] = (uint8)(grCurrentFrame & 0xff);
     buffer[offset++] = (uint8)((grCurrentFrame >> 8) & 0xff);
     buffer[offset++] = (uint8)((grCurrentFrame >> 16) & 0xff);
     buffer[offset++] = (uint8)((grCurrentFrame >> 24) & 0xff);
-    buffer[offset++] = (uint8)(grCapturedDrawCount & 0xff);
-    buffer[offset++] = (uint8)((grCapturedDrawCount >> 8) & 0xff);
-    buffer[offset++] = (uint8)limit;
+    buffer[offset++] = 0;
+    buffer[offset++] = 0;
 
-    for (i = 0; i < limit; i++) {
+    for (i = 0; i < grCapturedDrawCount; i++) {
         const struct TPs1CapturedSpriteDraw *draw = &grCapturedDraws[i];
+        int xClamped;
+        int yClamped;
+        uint8 xQuantized;
+        uint8 yQuantized;
         unsigned int nameHash = 0;
         const unsigned char *p = (const unsigned char *)(draw->bmpName ? draw->bmpName : "");
+
+        if (!grCaptureIsActorCandidate(draw->bmpName))
+            continue;
+
+        totalActors++;
+
+        if (embeddedActors >= 5)
+            continue;
 
         while (*p) {
             nameHash = ((nameHash << 5) - nameHash) + *p;
             p++;
         }
 
-        if (offset + 12 > capacity)
+        if (offset + 7 > capacity)
             break;
 
-        buffer[offset++] = (uint8)((uint16)draw->x & 0xff);
-        buffer[offset++] = (uint8)(((uint16)draw->x >> 8) & 0xff);
-        buffer[offset++] = (uint8)((uint16)draw->y & 0xff);
-        buffer[offset++] = (uint8)(((uint16)draw->y >> 8) & 0xff);
-        buffer[offset++] = (uint8)(draw->width & 0xff);
-        buffer[offset++] = (uint8)(draw->height & 0xff);
-        buffer[offset++] = (uint8)(draw->spriteNo & 0xff);
-        buffer[offset++] = (uint8)(draw->imageNo & 0xff);
-        buffer[offset++] = draw->flipped;
+        xClamped = draw->x;
+        yClamped = draw->y;
+        if (xClamped < 0) xClamped = 0;
+        if (yClamped < 0) yClamped = 0;
+        if (xClamped > 639) xClamped = 639;
+        if (yClamped > 479) yClamped = 479;
+
+        xQuantized = (uint8)(((uint32)xClamped * 255U + 319U) / 639U);
+        yQuantized = (uint8)(((uint32)yClamped * 255U + 239U) / 479U);
+
+        buffer[offset++] = xQuantized;
+        buffer[offset++] = yQuantized;
+        buffer[offset++] = (uint8)((draw->width > 255) ? 255 : draw->width);
+        buffer[offset++] = (uint8)((draw->height > 255) ? 255 : draw->height);
         buffer[offset++] = (uint8)(nameHash & 0xff);
         buffer[offset++] = (uint8)((nameHash >> 8) & 0xff);
         buffer[offset++] = (uint8)((nameHash >> 16) & 0xff);
+        embeddedActors++;
     }
+
+    buffer[8] = (uint8)totalActors;
+    buffer[9] = (uint8)embeddedActors;
 
     return offset;
 }
@@ -396,11 +589,11 @@ static void grDrawCaptureOverlay(void)
     size_t payloadLen;
     size_t packetLen;
     uint32 crc;
-    const int widthCells = 32;
-    const int heightCells = 32;
-    const int cellSize = 4;
+    const int widthCells = 40;
+    const int heightCells = 6;
+    const int cellSize = 8;
     const int originX = SCREEN_WIDTH - (widthCells * cellSize);
-    const int originY = SCREEN_HEIGHT - (heightCells * cellSize);
+    const int originY = 0;
     size_t symbolIndex = 0;
 
     payloadLen = grCaptureBuildOverlayPayload(payload, sizeof(payload));
@@ -422,13 +615,7 @@ static void grDrawCaptureOverlay(void)
             int value = 0;
             uint8 color = 0;
 
-            if ((cellX < 2 && cellY < 2) ||
-                (cellX >= widthCells - 2 && cellY < 2) ||
-                (cellX < 2 && cellY >= heightCells - 2) ||
-                (cellX >= widthCells - 2 && cellY >= heightCells - 2)) {
-                value = 3;
-            }
-            else if (symbolIndex < packetLen * 4) {
+            if (symbolIndex < packetLen * 4) {
                 size_t byteIndex = symbolIndex / 4;
                 int shift = (int)((symbolIndex % 4) * 2);
                 value = (packet[byteIndex] >> shift) & 0x3;
@@ -436,19 +623,76 @@ static void grDrawCaptureOverlay(void)
             }
 
             switch (value) {
-                case 1: color = 3; break;
+                case 1: color = 1; break;
                 case 2: color = 2; break;
-                case 3: color = 4; break;
+                case 3: color = 3; break;
                 default: color = 0; break;
             }
 
-            grDrawRect(NULL,
-                       (sint16)(originX + (cellX * cellSize)),
-                       (sint16)(originY + (cellY * cellSize)),
-                       (uint16)cellSize,
-                       (uint16)cellSize,
-                       color);
+            grDrawRectColor15((sint16)(originX + (cellX * cellSize)),
+                              (sint16)(originY + (cellY * cellSize)),
+                              (uint16)cellSize,
+                              (uint16)cellSize,
+                              (color == 1) ? 0x001F :
+                              (color == 2) ? 0x03E0 :
+                              (color == 3) ? 0x7C00 :
+                                             0x0000);
         }
+    }
+}
+
+static void grDrawCaptureActorPanel(void)
+{
+    struct TPs1CaptureEntitySummary entities[GR_CAPTURE_ENTITY_COUNT];
+    const int panelX = 2;
+    const int panelY = 250;
+    const int panelW = 74;
+    const int rowH = 2;
+    const int entityStride = 12;
+    int entity;
+
+    grCaptureSummarizeEntities(entities);
+    grDrawCounterBar(panelX, panelY, panelW, 50, 0x0000);
+
+    for (entity = 0; entity < GR_CAPTURE_ENTITY_COUNT; entity++) {
+        const struct TPs1CaptureEntitySummary *summary = &entities[entity];
+        int baseY = panelY + 2 + (entity * entityStride);
+        int centerX = 0;
+        int centerY = 0;
+        int width = 0;
+        int height = 0;
+        int xW = 0;
+        int yW = 0;
+        int widthW = 0;
+        int heightW = 0;
+        uint16 markerColor = 0x7FFF;
+
+        switch (entity) {
+            case GR_CAPTURE_ENTITY_JOHNNY: markerColor = 0x001F; break;
+            case GR_CAPTURE_ENTITY_MARY: markerColor = 0x03E0; break;
+            case GR_CAPTURE_ENTITY_SUZY: markerColor = 0x7C00; break;
+            case GR_CAPTURE_ENTITY_OTHER: markerColor = 0x7FFF; break;
+        }
+
+        grDrawCounterBar(panelX + 2, baseY, 3, rowH, markerColor);
+
+        if (summary->present) {
+            centerX = (summary->left + summary->right) / 2;
+            centerY = (summary->top + summary->bottom) / 2;
+            width = summary->right - summary->left;
+            height = summary->bottom - summary->top;
+            if (width < 0) width = 0;
+            if (height < 0) height = 0;
+            xW = grCaptureQuantize63(centerX, 639);
+            yW = grCaptureQuantize63(centerY, 479);
+            widthW = (width > 63) ? 63 : width;
+            heightW = (height > 63) ? 63 : height;
+        }
+
+        if (xW > 0) grDrawCounterBar(panelX + 8, baseY + 0, xW, rowH, 0x03FF);
+        if (yW > 0) grDrawCounterBar(panelX + 8, baseY + 3, yW, rowH, 0x03E0);
+        if (widthW > 0) grDrawCounterBar(panelX + 8, baseY + 6, widthW, rowH, 0x7C1F);
+        if (heightW > 0) grDrawCounterBar(panelX + 8, baseY + 9, heightW, rowH, 0x7FE0);
     }
 }
 
@@ -1134,6 +1378,7 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     }
     if (grCaptureOverlay) {
         grDrawCaptureOverlay();
+        grDrawCaptureActorPanel();
     }
 
     /* Wait for VSync BEFORE uploading to framebuffer.
@@ -2215,11 +2460,10 @@ void grDrawLine(PS1Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2, uin
  * Draw filled rectangle — software composite to background tiles.
  * Used by TTM DRAW_RECT opcode for screen clears and overlays.
  */
-void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height, uint8 color)
+static void grDrawRectColor15(sint16 x, sint16 y, uint16 width, uint16 height, uint16 bgColor)
 {
     /* Software fill directly into bgTile buffers (matching composite approach).
      * This replaces the GPU POLY_F3 path that was never rendered before. */
-    uint16 bgColor = ttmPalette[color & 0xF];
     sint16 x2 = x + (sint16)width;
     sint16 y2 = y + (sint16)height;
     if (x < 0) x = 0;
@@ -2280,6 +2524,12 @@ void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height
             }
         }
     }
+}
+
+void grDrawRect(PS1Surface *sfc, sint16 x, sint16 y, uint16 width, uint16 height, uint8 color)
+{
+    (void)sfc;
+    grDrawRectColor15(x, y, width, height, ttmPalette[color & 0xF]);
 }
 
 /*

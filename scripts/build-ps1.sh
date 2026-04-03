@@ -11,6 +11,26 @@ fi
 
 cd "$(dirname "$0")/.."  # Change to project root
 
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+root = Path.cwd()
+bootmode_path = root / "config/ps1/BOOTMODE.TXT"
+header_path = root / "config/ps1/bootmode_embedded.h"
+bootmode = ""
+if bootmode_path.is_file():
+    bootmode = bootmode_path.read_text(encoding="utf-8").strip()
+
+header = (
+    "#ifndef PS1_BOOTMODE_EMBEDDED_H\n"
+    "#define PS1_BOOTMODE_EMBEDDED_H\n\n"
+    f"#define PS1_EMBEDDED_BOOT_OVERRIDE {json.dumps(bootmode)}\n\n"
+    "#endif\n"
+)
+header_path.write_text(header, encoding="utf-8")
+PY
+
 if [ "$1" = "clean" ]; then
     echo "=== Cleaning build directory ==="
     docker run --rm --platform linux/amd64 \

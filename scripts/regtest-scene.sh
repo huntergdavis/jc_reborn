@@ -45,6 +45,7 @@ OUTPUT_DIR=""
 SKIP_BUILD=0
 QUIET=0
 CAPTURE_OVERLAY=0
+CAPTURE_OVERLAY_MASK=0
 
 usage() {
     cat <<'USAGE'
@@ -59,6 +60,7 @@ Options:
   --interval N     Capture a frame every N frames (default: 60 = 1/sec)
   --output DIR     Output directory for results (default: auto-generated)
   --overlay        Append capture-overlay to the boot string
+  --overlay-mask   Append capture-overlay-mask to the boot string
   --skip-build     Skip CD image rebuild (use existing jcreborn.cue)
   --quiet          Suppress progress messages on stderr
   -h, --help       Show this help
@@ -76,6 +78,7 @@ while [ $# -gt 0 ]; do
         --interval)  INTERVAL="$2"; shift 2 ;;
         --output)    OUTPUT_DIR="$2"; shift 2 ;;
         --overlay)   CAPTURE_OVERLAY=1; shift ;;
+        --overlay-mask) CAPTURE_OVERLAY_MASK=1; shift ;;
         --skip-build) SKIP_BUILD=1; shift ;;
         --quiet)     QUIET=1; shift ;;
         -h|--help)   usage ;;
@@ -127,7 +130,9 @@ if [ -z "$BOOT_STRING" ]; then
     fi
 fi
 
-if [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]; then
+if [ "$CAPTURE_OVERLAY_MASK" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay-mask"* ]]; then
+    BOOT_STRING="${BOOT_STRING} capture-overlay-mask"
+elif [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]; then
     BOOT_STRING="${BOOT_STRING} capture-overlay"
 fi
 

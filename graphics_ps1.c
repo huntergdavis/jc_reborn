@@ -200,6 +200,7 @@ int grCaptureInterval = 0;
 int grCaptureStartFrame = 0;
 int grCaptureEndFrame = -1;
 int grCaptureOverlay = 0;
+int grCaptureOverlayMaskOnly = 0;
 static int grCurrentFrame = 0;
 static struct TPs1CapturedSpriteDraw grCapturedDraws[MAX_CAPTURED_DRAWS];
 static int grCapturedDrawCount = 0;
@@ -588,18 +589,22 @@ static void grDrawCaptureOverlay(void)
     size_t symbolIndex = 0;
 
     payloadLen = grCaptureBuildOverlayPayload(payload, sizeof(payload));
-    if (payloadLen == 0)
+    if (!grCaptureOverlayMaskOnly && payloadLen == 0)
         return;
 
-    crc = grCaptureCrc32(payload, payloadLen);
-    packet[0] = (uint8)(payloadLen & 0xff);
-    packet[1] = (uint8)((payloadLen >> 8) & 0xff);
-    memcpy(packet + 2, payload, payloadLen);
-    packet[2 + payloadLen + 0] = (uint8)(crc & 0xff);
-    packet[2 + payloadLen + 1] = (uint8)((crc >> 8) & 0xff);
-    packet[2 + payloadLen + 2] = (uint8)((crc >> 16) & 0xff);
-    packet[2 + payloadLen + 3] = (uint8)((crc >> 24) & 0xff);
-    packetLen = payloadLen + 6;
+    if (!grCaptureOverlayMaskOnly) {
+        crc = grCaptureCrc32(payload, payloadLen);
+        packet[0] = (uint8)(payloadLen & 0xff);
+        packet[1] = (uint8)((payloadLen >> 8) & 0xff);
+        memcpy(packet + 2, payload, payloadLen);
+        packet[2 + payloadLen + 0] = (uint8)(crc & 0xff);
+        packet[2 + payloadLen + 1] = (uint8)((crc >> 8) & 0xff);
+        packet[2 + payloadLen + 2] = (uint8)((crc >> 16) & 0xff);
+        packet[2 + payloadLen + 3] = (uint8)((crc >> 24) & 0xff);
+        packetLen = payloadLen + 6;
+    } else {
+        packetLen = 0;
+    }
 
     for (int cellY = 0; cellY < heightCells; cellY++) {
         for (int cellX = 0; cellX < widthCells; cellX++) {
@@ -644,6 +649,8 @@ static void grDrawCaptureActorPanel(void)
 
     grCaptureSummarizeEntities(entities);
     grDrawCounterBar(panelX, panelY, panelW, 50, 0x0000);
+    if (grCaptureOverlayMaskOnly)
+        return;
 
     for (entity = 0; entity < GR_CAPTURE_ENTITY_COUNT; entity++) {
         const struct TPs1CaptureEntitySummary *summary = &entities[entity];

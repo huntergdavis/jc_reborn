@@ -117,6 +117,7 @@ extern int grCaptureInterval;
 extern int grCaptureStartFrame;
 extern int grCaptureEndFrame;
 extern int grCaptureOverlay;
+extern int grCaptureOverlayMaskOnly;
 
 
 void graphicsInit();

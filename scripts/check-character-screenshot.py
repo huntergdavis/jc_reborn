@@ -211,6 +211,11 @@ def main() -> int:
         description="Decode an overlay screenshot into character truth, compare it against expected truth, and render a small HTML report."
     )
     parser.add_argument("--image", type=Path, required=True, help="Overlay-bearing host or DuckStation screenshot")
+    parser.add_argument(
+        "--baseline-image",
+        type=Path,
+        help="Matching baseline screenshot without overlay payload, used for clean PS1 overlay diff decoding",
+    )
     parser.add_argument("--expected-truth-json", type=Path)
     parser.add_argument(
         "--expected-root",
@@ -270,7 +275,7 @@ def main() -> int:
             actual_root,
         )
     else:
-        actor_panel = decode_ps1_bars.decode_actor_panel(args.image)
+        actor_panel = decode_ps1_bars.decode_actor_panel(args.image, baseline_image=args.baseline_image)
         if actor_panel.get("character_count", 0) > 0:
             decode_method = "ps1-actor-bars"
             actual_truth = build_single_frame_truth_from_characters(

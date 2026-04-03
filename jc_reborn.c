@@ -163,6 +163,7 @@ static void ps1ResetBootArgs(void)
     }
 
     grCaptureOverlay = 0;
+    grCaptureOverlayMaskOnly = 0;
 }
 
 static int ps1CopyBootArg(int index, const char *src)
@@ -225,7 +226,10 @@ static void ps1ApplyBootOverride(char *buffer)
     }
 
     for (int i = 0; i < tokenCount; i++) {
-        if (!strcmp(tokens[i], "capture-overlay")) {
+        if (!strcmp(tokens[i], "capture-overlay-mask")) {
+            grCaptureOverlay = 1;
+            grCaptureOverlayMaskOnly = 1;
+        } else if (!strcmp(tokens[i], "capture-overlay")) {
             grCaptureOverlay = 1;
         }
     }
@@ -427,6 +431,7 @@ static void usage()
         printf("         capture-range START END - capture inclusive frame range; END=-1 means until exit\n");
         printf("         capture-interval N - capture every Nth frame in the active range\n");
         printf("         capture-overlay - embed a machine-readable debug overlay in captures\n");
+        printf("         capture-overlay-mask - draw overlay background only for paired baseline captures\n");
         printf("         capture-scene-label TEXT - annotate metadata with the scene label\n");
         printf("         seed N          - force deterministic RNG seed for host runs\n");
         printf("         story-day N     - force story day 1..11 for host story runs\n");
@@ -586,6 +591,10 @@ static void parseArgs(int argc, char **argv)
             }
             else if (!strcmp(argv[i], "capture-overlay")) {
                 grCaptureOverlay = 1;
+            }
+            else if (!strcmp(argv[i], "capture-overlay-mask")) {
+                grCaptureOverlay = 1;
+                grCaptureOverlayMaskOnly = 1;
             }
             else if (!strcmp(argv[i], "capture-scene-label")) {
                 if (i + 1 < argc) {

@@ -139,6 +139,7 @@ extern int grCaptureInterval;
 extern int grCaptureStartFrame;
 extern int grCaptureEndFrame;
 extern int grCaptureOverlay;
+extern int grCaptureOverlayMaskOnly;
 void grCaptureSetSceneLabel(const char *sceneLabel);
 
 /* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly)

@@ -17,7 +17,7 @@ from statistics import median
 from typing import Dict, List, Optional, Tuple
 
 try:
-    from PIL import Image
+    from PIL import Image, ImageChops
 except Exception:
     print("error: Pillow is required (pip install pillow)", file=sys.stderr)
     raise
@@ -517,11 +517,25 @@ def _scaled_actor_row_value(
     return max(0, min(ACTOR_PANEL_SCAN_W, best))
 
 
-def decode_actor_panel(image: Image.Image | str | Path) -> Dict[str, object]:
+def decode_actor_panel(
+    image: Image.Image | str | Path,
+    baseline_image: Image.Image | str | Path | None = None,
+) -> Dict[str, object]:
     if not isinstance(image, Image.Image):
         img = Image.open(image).convert("RGB")
     else:
         img = image.convert("RGB")
+
+    source = "single-image"
+    if baseline_image is not None:
+        if not isinstance(baseline_image, Image.Image):
+            baseline = Image.open(baseline_image).convert("RGB")
+        else:
+            baseline = baseline_image.convert("RGB")
+        if baseline.size != img.size:
+            raise ValueError("baseline image size does not match overlay image size")
+        img = ImageChops.difference(img, baseline)
+        source = "image-diff"
 
     scale_x = img.width / float(NATIVE_W)
     scale_y = img.height / float(HEADLESS_NATIVE_H)
@@ -577,6 +591,7 @@ def decode_actor_panel(image: Image.Image | str | Path) -> Dict[str, object]:
     return {
         "character_count": len(characters),
         "characters": characters,
+        "source": source,
         "panel": {
             "x": ACTOR_PANEL_X,
             "y": ACTOR_PANEL_Y,

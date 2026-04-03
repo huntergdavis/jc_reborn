@@ -160,7 +160,11 @@ if [ -z "$BOOT" ]; then
                 exit 1
             fi
             if [[ "$SCENE_BOOT_TOKENS" =~ ^story[[:space:]]+(scene|index)[[:space:]]+[0-9]+$ ]]; then
-                BOOT="window nosound island ads ${ADS_FILE} ${TAG}"
+                if [ -z "$SCENE_INDEX" ]; then
+                    echo "ERROR: scene-exact requires scene index for story scene entries" >&2
+                    exit 1
+                fi
+                BOOT="window nosound story direct ${SCENE_INDEX}"
             else
                 BOOT="window nosound ${SCENE_BOOT_TOKENS}"
             fi

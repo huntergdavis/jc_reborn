@@ -211,15 +211,16 @@ Screenshots are saved to:
 
 ### Overlay-Backed Screenshot Checks
 
-For controlled PS1 bug runs, prefer overlay-backed screenshots over manual visual comparison.
-The PS1 build can now draw the same machine-readable capture overlay into the live DuckStation frame
-when you launch with `capture-overlay`.
+For controlled PS1 bug runs, prefer the headless regtest harness with overlay-backed screenshots over manual visual comparison.
+The PS1 build can now draw the same machine-readable capture overlay into captured frames when you launch with `capture-overlay`.
 
 Fastest workflow:
 
 ```bash
 ./scripts/capture-and-check-ps1.sh \
   --expected-root host-script-review/fishing1 \
+  --scene "FISHING 1" \
+  --frame-number 80 \
   "story scene 17"
 ```
 
@@ -231,11 +232,22 @@ Reuse an existing overlay screenshot:
   --image host-references-test4/FISHING-1/frame_00081.bmp
 ```
 
-Equivalent manual steps:
+Equivalent headless manual steps:
 
 ```bash
-./scripts/auto-test-ps1.sh 35 --overlay "story scene 17"
-./scripts/capture-duckstation-scene.sh --scene "FISHING 1" --overlay
+./scripts/regtest-scene.sh \
+  --scene "FISHING 1" \
+  --boot "story scene 17" \
+  --overlay
+```
+
+Live DuckStation fallback is still available if explicitly requested:
+
+```bash
+./scripts/capture-and-check-ps1.sh \
+  --live \
+  --expected-root host-script-review/fishing1 \
+  "story scene 17"
 ```
 
 Then compare a captured screenshot against expected character truth:

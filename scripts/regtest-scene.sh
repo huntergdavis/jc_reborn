@@ -43,6 +43,7 @@ INTERVAL="$REGTEST_INTERVAL"
 OUTPUT_DIR=""
 SKIP_BUILD=0
 QUIET=0
+CAPTURE_OVERLAY=0
 
 usage() {
     cat <<'USAGE'
@@ -56,6 +57,7 @@ Options:
   --frames N       Number of emulated frames (default: 1800 = 30s)
   --interval N     Capture a frame every N frames (default: 60 = 1/sec)
   --output DIR     Output directory for results (default: auto-generated)
+  --overlay        Append capture-overlay to the boot string
   --skip-build     Skip CD image rebuild (use existing jcreborn.cue)
   --quiet          Suppress progress messages on stderr
   -h, --help       Show this help
@@ -72,6 +74,7 @@ while [ $# -gt 0 ]; do
         --frames)    FRAMES="$2"; shift 2 ;;
         --interval)  INTERVAL="$2"; shift 2 ;;
         --output)    OUTPUT_DIR="$2"; shift 2 ;;
+        --overlay)   CAPTURE_OVERLAY=1; shift ;;
         --skip-build) SKIP_BUILD=1; shift ;;
         --quiet)     QUIET=1; shift ;;
         -h|--help)   usage ;;
@@ -98,6 +101,10 @@ if [ -z "$BOOT_STRING" ]; then
     else
         BOOT_STRING="island ads ${ADS_NAME} ${SCENE_TAG}"
     fi
+fi
+
+if [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]; then
+    BOOT_STRING="${BOOT_STRING} capture-overlay"
 fi
 
 # Output directory

@@ -286,8 +286,8 @@ That avoids false verification from terminal or unrelated-window captures.
 
 For PS1 bug fixing, the preferred screenshot harness is now:
 
-1. launch a controlled DuckStation run with `capture-overlay`
-2. take a DuckStation screenshot
+1. run a headless regtest scene with `capture-overlay`
+2. take one dumped PNG from the headless run
 3. decode the embedded overlay into character truth
 4. compare against expected truth
 5. open the generated HTML diff report
@@ -297,6 +297,8 @@ One-command path:
 ```bash
 ./scripts/capture-and-check-ps1.sh \
   --expected-root host-script-review/fishing1 \
+  --scene "FISHING 1" \
+  --frame-number 80 \
   "story scene 17"
 ```
 
@@ -308,11 +310,13 @@ Or reuse an existing overlay screenshot:
   --image host-references-test4/FISHING-1/frame_00081.bmp
 ```
 
-Examples:
+Headless manual capture:
 
 ```bash
-./scripts/auto-test-ps1.sh 35 --overlay "story scene 17"
-./scripts/capture-duckstation-scene.sh --scene "FISHING 1" --overlay
+./scripts/regtest-scene.sh \
+  --scene "FISHING 1" \
+  --boot "story scene 17" \
+  --overlay
 ```
 
 Single-screenshot check:
@@ -325,6 +329,7 @@ python3 scripts/check-character-screenshot.py \
 ```
 
 Notes:
+- `capture-and-check-ps1.sh` now defaults to the headless regtest harness; use `--live` only when you explicitly want the older UI path.
 - `check-character-screenshot.py` now prefers the frame number embedded in the overlay packet, so DuckStation timestamped filenames do not need manual frame numbering.
 - If `--expected-root` contains only one scene, `--scene-label` is optional and will be inferred automatically.
 - This path is intended for controlled test captures we generate ourselves. Arbitrary screenshots without the overlay still need a separate image-matching path.

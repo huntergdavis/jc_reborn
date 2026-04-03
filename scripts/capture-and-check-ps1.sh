@@ -1,6 +1,7 @@
 #!/bin/bash
-# capture-and-check-ps1.sh — Run an overlay-backed PS1 capture, compare the
-# resulting screenshot against expected character truth, and open the HTML diff.
+# capture-and-check-ps1.sh — Run an overlay-backed PS1 capture through the
+# headless regtest harness by default, compare the resulting screenshot against
+# expected character truth, and open the HTML diff.
 
 set -euo pipefail
 
@@ -13,14 +14,24 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+if [ -f "$PROJECT_ROOT/config/ps1/regtest-config.sh" ]; then
+    # shellcheck source=../config/ps1/regtest-config.sh
+    source "$PROJECT_ROOT/config/ps1/regtest-config.sh"
+fi
+
+MODE="headless"
 WAIT_TIME=35
+FRAMES="${REGTEST_FRAMES:-9000}"
+INTERVAL="${REGTEST_INTERVAL:-60}"
 EXPECTED_ROOT=""
 LOOKUP_ROOT=""
 OUT_DIR="/tmp/ps1-bug-check"
 SCENE_LABEL=""
 FRAME_NUMBER=""
+ACTUAL_FRAME=""
 OPEN_REPORT=1
 IMAGE_PATH=""
+SCENE_SPEC=""
 BOOT_ARGS=()
 
 usage() {
@@ -31,6 +42,11 @@ Options:
   --expected-root PATH  Expected scene/corpus root used to build truth
   --lookup-root PATH    Root used to resolve overlay sprite hashes (default: expected root)
   --image PATH          Reuse an existing overlay screenshot instead of launching DuckStation
+  --scene SPEC          Scene spec for headless regtest capture, e.g. "FISHING 1"
+  --frames N            Headless regtest frame budget (default: REGTEST_FRAMES or 9000)
+  --interval N          Headless regtest dump interval (default: REGTEST_INTERVAL or 60)
+  --actual-frame N      Use frame_NNNNN.png from the headless run instead of the last dumped frame
+  --live                Use the older live DuckStation path instead of headless regtest
   --wait N              Seconds before first screenshot (default: 35)
   --out-dir PATH        Output directory for diff artifacts (default: /tmp/ps1-bug-check)
   --scene-label LABEL   Override expected scene label
@@ -39,8 +55,8 @@ Options:
   -h, --help            Show this help
 
 Examples:
-  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/fishing1 "story scene 17"
-  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/mary1 --scene-label "MARY 1" "story scene 61"
+  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/fishing1 --scene "FISHING 1" --frame-number 80 "story scene 17"
+  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/mary1 --scene "MARY 1" --frame-number 50 "story scene 61"
   ./scripts/capture-and-check-ps1.sh --expected-root host-references-test4/FISHING-1 --image host-references-test4/FISHING-1/frame_00081.bmp
 USAGE
     exit 0
@@ -51,6 +67,11 @@ while [ $# -gt 0 ]; do
         --expected-root) EXPECTED_ROOT="$2"; shift 2 ;;
         --lookup-root) LOOKUP_ROOT="$2"; shift 2 ;;
         --image) IMAGE_PATH="$2"; shift 2 ;;
+        --scene) SCENE_SPEC="$2"; shift 2 ;;
+        --frames) FRAMES="$2"; shift 2 ;;
+        --interval) INTERVAL="$2"; shift 2 ;;
+        --actual-frame) ACTUAL_FRAME="$2"; shift 2 ;;
+        --live) MODE="live"; shift ;;
         --wait) WAIT_TIME="$2"; shift 2 ;;
         --out-dir) OUT_DIR="$2"; shift 2 ;;
         --scene-label) SCENE_LABEL="$2"; shift 2 ;;
@@ -81,22 +102,75 @@ trap 'rm -f "$LOG_FILE"' EXIT
 if [ -n "$IMAGE_PATH" ]; then
     SCREENSHOT_PATH="$IMAGE_PATH"
 else
-    AUTO_CMD=(./scripts/auto-test-ps1.sh "$WAIT_TIME" --overlay)
-    if [ "${#BOOT_ARGS[@]}" -gt 0 ]; then
-        AUTO_CMD+=("${BOOT_ARGS[@]}")
-    fi
+    if [ "$MODE" = "headless" ]; then
+        if [ -z "$SCENE_SPEC" ]; then
+            echo "ERROR: --scene is required for headless capture." >&2
+            exit 1
+        fi
 
-    echo "=== PS1 capture ==="
-    printf 'Running:'
-    printf ' %q' "${AUTO_CMD[@]}"
-    printf '\n'
+        REGTEST_OUT_DIR="$OUT_DIR/regtest"
+        REGTEST_CMD=(./scripts/regtest-scene.sh
+            --scene "$SCENE_SPEC"
+            --frames "$FRAMES"
+            --interval "$INTERVAL"
+            --output "$REGTEST_OUT_DIR"
+            --overlay)
+        if [ "${#BOOT_ARGS[@]}" -gt 0 ]; then
+            REGTEST_BOOT="${BOOT_ARGS[*]}"
+            REGTEST_CMD+=(--boot "$REGTEST_BOOT")
+        fi
 
-    "${AUTO_CMD[@]}" | tee "$LOG_FILE"
+        echo "=== PS1 headless capture ==="
+        printf 'Running:'
+        printf ' %q' "${REGTEST_CMD[@]}"
+        printf '\n'
 
-    SCREENSHOT_PATH="$(sed -n 's/^SCREENSHOT_PATH=//p' "$LOG_FILE" | tail -1)"
-    if [ -z "$SCREENSHOT_PATH" ] || [ ! -f "$SCREENSHOT_PATH" ]; then
-        echo "ERROR: could not find captured screenshot in auto-test output." >&2
-        exit 1
+        "${REGTEST_CMD[@]}" | tee "$LOG_FILE"
+
+        if [ ! -f "$REGTEST_OUT_DIR/result.json" ]; then
+            echo "ERROR: headless regtest did not produce result.json." >&2
+            exit 1
+        fi
+
+        FRAMES_DIR="$(python3 - <<'PY' "$REGTEST_OUT_DIR/result.json"
+import json, sys
+from pathlib import Path
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print((payload.get("paths") or {}).get("frames_dir") or "")
+PY
+)"
+        if [ -z "$FRAMES_DIR" ] || [ ! -d "$FRAMES_DIR" ]; then
+            echo "ERROR: headless regtest did not produce a frames directory." >&2
+            exit 1
+        fi
+
+        if [ -n "$ACTUAL_FRAME" ]; then
+            SCREENSHOT_PATH="$FRAMES_DIR/frame_$(printf '%05d' "$ACTUAL_FRAME").png"
+        else
+            SCREENSHOT_PATH="$(find "$FRAMES_DIR" -maxdepth 1 -type f -name 'frame_*.png' | sort | tail -1)"
+        fi
+        if [ -z "$SCREENSHOT_PATH" ] || [ ! -f "$SCREENSHOT_PATH" ]; then
+            echo "ERROR: headless regtest did not produce a usable frame PNG." >&2
+            exit 1
+        fi
+    else
+        AUTO_CMD=(./scripts/auto-test-ps1.sh "$WAIT_TIME" --overlay)
+        if [ "${#BOOT_ARGS[@]}" -gt 0 ]; then
+            AUTO_CMD+=("${BOOT_ARGS[@]}")
+        fi
+
+        echo "=== PS1 live capture ==="
+        printf 'Running:'
+        printf ' %q' "${AUTO_CMD[@]}"
+        printf '\n'
+
+        "${AUTO_CMD[@]}" | tee "$LOG_FILE"
+
+        SCREENSHOT_PATH="$(sed -n 's/^SCREENSHOT_PATH=//p' "$LOG_FILE" | tail -1)"
+        if [ -z "$SCREENSHOT_PATH" ] || [ ! -f "$SCREENSHOT_PATH" ]; then
+            echo "ERROR: could not find captured screenshot in auto-test output." >&2
+            exit 1
+        fi
     fi
 fi
 

@@ -61,6 +61,9 @@ static int storyForcedLowTideValid = 0;
 static int storyForcedLowTide = 0;
 static int storyForcedRaftStageValid = 0;
 static int storyForcedRaftStage = 0;
+static int storyForcedSceneOffsetValid = 0;
+static int storyForcedSceneOffsetX = 0;
+static int storyForcedSceneOffsetY = 0;
 
 #ifdef PS1_BUILD
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
@@ -200,6 +203,21 @@ void storySetIslandOverrides(int hasPosition, int xPos, int yPos, int hasLowTide
     storyForcedRaftStage = raftStage;
 }
 
+void storySetSceneOffsetOverride(int hasOffset, int xOffset, int yOffset)
+{
+    storyForcedSceneOffsetValid = hasOffset;
+    storyForcedSceneOffsetX = xOffset;
+    storyForcedSceneOffsetY = yOffset;
+}
+
+static void storyApplyForcedSceneOffset(void)
+{
+    if (!storyForcedSceneOffsetValid)
+        return;
+    ttmDx += storyForcedSceneOffsetX;
+    ttmDy += storyForcedSceneOffsetY;
+}
+
 int storyHasBootOverridePending(void)
 {
     return storyBootSingleSceneIndex >= 0 ||
@@ -227,6 +245,7 @@ void storyPlayBootSceneDirect(int sceneIndex)
         ttmDx = 0;
         ttmDy = 0;
     }
+    storyApplyForcedSceneOffset();
 
     adsInit();
 
@@ -547,6 +566,7 @@ void storyPlay()
                 ttmDx = islandState.xPos
                             + (scene->flags & LEFT_ISLAND ? 272 : 0);
                 ttmDy = islandState.yPos;
+                storyApplyForcedSceneOffset();
 
                 if (scene->dayNo)
                     soundPlay(0);
@@ -602,6 +622,7 @@ void storyPlay()
         else {
             ttmDx = ttmDy = 0;
         }
+        storyApplyForcedSceneOffset();
 
         if (finalScene->dayNo)
             soundPlay(0);

@@ -27,5 +27,6 @@ void storySetBootSceneIndex(int sceneIndex);
 void storySetBootSingleSceneIndex(int sceneIndex);
 void storySetForcedCurrentDay(int day);
 void storySetIslandOverrides(int hasPosition, int xPos, int yPos, int hasLowTide, int lowTide, int hasRaftStage, int raftStage);
+void storySetSceneOffsetOverride(int hasOffset, int xOffset, int yOffset);
 void storyPlayBootSceneDirect(int sceneIndex);
 int storyHasBootOverridePending(void);

@@ -115,6 +115,9 @@ static int hostForcedIslandX = 0;
 static int hostForcedIslandY = 0;
 static int hostForcedLowTide = -1;
 static int hostForcedRaftStage = -1;
+static int hostForcedSceneOffsetValid = 0;
+static int hostForcedSceneOffsetX = 0;
+static int hostForcedSceneOffsetY = 0;
 #endif
 
 #ifdef PS1_BUILD
@@ -390,6 +393,7 @@ static void usage()
         printf("         island-pos X Y  - force island position for host story/island runs\n");
         printf("         lowtide 0|1     - force low tide state for host story/island runs\n");
         printf("         raft-stage N    - force raft stage 0..5 for host story/island runs\n");
+        printf("         scene-offset X Y - force thread-layer scene offset for host story runs\n");
         printf("\n");
         printf(" While-playing hot-keys (if enabled):\n");
         printf("         Esc        - Terminate immediately\n");
@@ -600,6 +604,16 @@ static void parseArgs(int argc, char **argv)
                     usage();
                 }
             }
+            else if (!strcmp(argv[i], "scene-offset")) {
+                if (i + 2 < argc) {
+                    hostForcedSceneOffsetX = atoi(argv[++i]);
+                    hostForcedSceneOffsetY = atoi(argv[++i]);
+                    hostForcedSceneOffsetValid = 1;
+                } else {
+                    fprintf(stderr, "Error: scene-offset requires X and Y\n");
+                    usage();
+                }
+            }
         }
     }
 
@@ -662,6 +676,11 @@ int main(int argc, char **argv)
         hostForcedLowTide,
         hostForcedRaftStage >= 0,
         hostForcedRaftStage
+    );
+    storySetSceneOffsetOverride(
+        hostForcedSceneOffsetValid,
+        hostForcedSceneOffsetX,
+        hostForcedSceneOffsetY
     );
 
     if (hostForcedSeed >= 0)

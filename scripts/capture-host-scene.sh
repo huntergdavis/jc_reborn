@@ -29,6 +29,8 @@ ISLAND_X=""
 ISLAND_Y=""
 LOWTIDE=""
 RAFT_STAGE=""
+SCENE_OFFSET_X=""
+SCENE_OFFSET_Y=""
 SKIP_VISUAL_DETECT=1
 STAMP_PREFIX=1
 UNTIL_EXIT=0
@@ -53,6 +55,8 @@ Options:
   --island-y N         Force island Y position
   --lowtide 0|1        Force low tide state
   --raft-stage N       Force raft stage 0..5
+  --scene-offset-x N   Force thread-layer scene X offset
+  --scene-offset-y N   Force thread-layer scene Y offset
   --mode NAME          Boot mode: scene-default, scene-exact, story-direct, story-hold, story-single, ads (default: scene-default)
   --output DIR         Output directory (default: host-results/scene)
   --timeout N          Kill host run after N seconds; 0 disables timeout (default: auto)
@@ -80,6 +84,8 @@ while [ $# -gt 0 ]; do
         --island-y) ISLAND_Y="$2"; shift 2 ;;
         --lowtide) LOWTIDE="$2"; shift 2 ;;
         --raft-stage) RAFT_STAGE="$2"; shift 2 ;;
+        --scene-offset-x) SCENE_OFFSET_X="$2"; shift 2 ;;
+        --scene-offset-y) SCENE_OFFSET_Y="$2"; shift 2 ;;
         --mode) MODE="$2"; shift 2 ;;
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --timeout) TIMEOUT_SECONDS="$2"; shift 2 ;;
@@ -220,6 +226,13 @@ if [ -n "$LOWTIDE" ]; then
 fi
 if [ -n "$RAFT_STAGE" ]; then
     BOOT="$BOOT raft-stage $RAFT_STAGE"
+fi
+if [ -n "$SCENE_OFFSET_X" ] || [ -n "$SCENE_OFFSET_Y" ]; then
+    if [ -z "$SCENE_OFFSET_X" ] || [ -z "$SCENE_OFFSET_Y" ]; then
+        echo "ERROR: --scene-offset-x and --scene-offset-y must be provided together" >&2
+        exit 1
+    fi
+    BOOT="$BOOT scene-offset $SCENE_OFFSET_X $SCENE_OFFSET_Y"
 fi
 
 if [ "$FRAMES" = "auto" ]; then

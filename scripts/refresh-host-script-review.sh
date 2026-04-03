@@ -180,6 +180,7 @@ capture_review_set() {
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "MARY 1" \
         --boot "window nosound story scene 61 island-pos -124 37 raft-stage 5 capture-prelude-frame" \
+        --frame-list 0,50,150,200,250 \
         --frames 250 \
         --interval 50 \
         --output "$root/mary1" \

@@ -59,6 +59,8 @@ static int storyForcedIslandX = 0;
 static int storyForcedIslandY = 0;
 static int storyForcedLowTideValid = 0;
 static int storyForcedLowTide = 0;
+static int storyForcedRaftStageValid = 0;
+static int storyForcedRaftStage = 0;
 
 #ifdef PS1_BUILD
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
@@ -187,13 +189,15 @@ void storySetForcedCurrentDay(int day)
     storyForcedCurrentDay = day;
 }
 
-void storySetIslandOverrides(int hasPosition, int xPos, int yPos, int hasLowTide, int lowTide)
+void storySetIslandOverrides(int hasPosition, int xPos, int yPos, int hasLowTide, int lowTide, int hasRaftStage, int raftStage)
 {
     storyForcedIslandPosValid = hasPosition;
     storyForcedIslandX = xPos;
     storyForcedIslandY = yPos;
     storyForcedLowTideValid = hasLowTide;
     storyForcedLowTide = lowTide;
+    storyForcedRaftStageValid = hasRaftStage;
+    storyForcedRaftStage = raftStage;
 }
 
 int storyHasBootOverridePending(void)
@@ -397,6 +401,9 @@ static void storyCalculateIslandFromScene(struct TStoryScene *scene)
                 break;
         }
     }
+
+    if (storyForcedRaftStageValid)
+        islandState.raft = storyForcedRaftStage;
 
 
     // For scene VISITOR.ADS#3 (cargo), never display holiday items - or they

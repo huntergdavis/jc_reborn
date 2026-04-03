@@ -28,6 +28,7 @@ STORY_DAY=""
 ISLAND_X=""
 ISLAND_Y=""
 LOWTIDE=""
+RAFT_STAGE=""
 SKIP_VISUAL_DETECT=1
 STAMP_PREFIX=1
 UNTIL_EXIT=0
@@ -51,6 +52,7 @@ Options:
   --island-x N         Force island X position
   --island-y N         Force island Y position
   --lowtide 0|1        Force low tide state
+  --raft-stage N       Force raft stage 0..5
   --mode NAME          Boot mode: scene-default, scene-exact, story-direct, story-hold, story-single, ads (default: scene-default)
   --output DIR         Output directory (default: host-results/scene)
   --timeout N          Kill host run after N seconds; 0 disables timeout (default: auto)
@@ -77,6 +79,7 @@ while [ $# -gt 0 ]; do
         --island-x) ISLAND_X="$2"; shift 2 ;;
         --island-y) ISLAND_Y="$2"; shift 2 ;;
         --lowtide) LOWTIDE="$2"; shift 2 ;;
+        --raft-stage) RAFT_STAGE="$2"; shift 2 ;;
         --mode) MODE="$2"; shift 2 ;;
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --timeout) TIMEOUT_SECONDS="$2"; shift 2 ;;
@@ -214,6 +217,9 @@ if [ -n "$ISLAND_X" ] || [ -n "$ISLAND_Y" ]; then
 fi
 if [ -n "$LOWTIDE" ]; then
     BOOT="$BOOT lowtide $LOWTIDE"
+fi
+if [ -n "$RAFT_STAGE" ]; then
+    BOOT="$BOOT raft-stage $RAFT_STAGE"
 fi
 
 if [ "$FRAMES" = "auto" ]; then

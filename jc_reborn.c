@@ -114,6 +114,7 @@ static int hostForcedIslandPosValid = 0;
 static int hostForcedIslandX = 0;
 static int hostForcedIslandY = 0;
 static int hostForcedLowTide = -1;
+static int hostForcedRaftStage = -1;
 #endif
 
 #ifdef PS1_BUILD
@@ -388,6 +389,7 @@ static void usage()
         printf("         story-day N     - force story day 1..11 for host story runs\n");
         printf("         island-pos X Y  - force island position for host story/island runs\n");
         printf("         lowtide 0|1     - force low tide state for host story/island runs\n");
+        printf("         raft-stage N    - force raft stage 0..5 for host story/island runs\n");
         printf("\n");
         printf(" While-playing hot-keys (if enabled):\n");
         printf("         Esc        - Terminate immediately\n");
@@ -586,6 +588,18 @@ static void parseArgs(int argc, char **argv)
                     usage();
                 }
             }
+            else if (!strcmp(argv[i], "raft-stage")) {
+                if (i + 1 < argc) {
+                    hostForcedRaftStage = atoi(argv[++i]);
+                    if (hostForcedRaftStage < 0 || hostForcedRaftStage > 5) {
+                        fprintf(stderr, "Error: raft-stage must be in range 0..5\n");
+                        usage();
+                    }
+                } else {
+                    fprintf(stderr, "Error: raft-stage requires a value\n");
+                    usage();
+                }
+            }
         }
     }
 
@@ -645,7 +659,9 @@ int main(int argc, char **argv)
         hostForcedIslandX,
         hostForcedIslandY,
         hostForcedLowTide >= 0,
-        hostForcedLowTide
+        hostForcedLowTide,
+        hostForcedRaftStage >= 0,
+        hostForcedRaftStage
     );
 
     if (hostForcedSeed >= 0)
@@ -800,6 +816,8 @@ int main(int argc, char **argv)
 
         if (hostForcedLowTide >= 0)
             islandState.lowTide = hostForcedLowTide;
+        if (hostForcedRaftStage >= 0)
+            islandState.raft = hostForcedRaftStage;
         if (hostForcedIslandPosValid) {
             islandState.xPos = hostForcedIslandX;
             islandState.yPos = hostForcedIslandY;

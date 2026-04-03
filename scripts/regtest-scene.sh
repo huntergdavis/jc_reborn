@@ -42,6 +42,7 @@ SCENE_INDEX=""
 SCENE_STATUS=""
 FRAMES="$REGTEST_FRAMES"
 INTERVAL="$REGTEST_INTERVAL"
+SEED="${REGTEST_SEED:-1}"
 OUTPUT_DIR=""
 SKIP_BUILD=0
 QUIET=0
@@ -60,6 +61,7 @@ Options:
   --status NAME    Scene status label for result metadata
   --frames N       Number of emulated frames (default: 1800 = 30s)
   --interval N     Capture a frame every N frames (default: 60 = 1/sec)
+  --seed N         Force deterministic RNG seed for the PS1 run (default: REGTEST_SEED or 1)
   --output DIR     Output directory for results (default: auto-generated)
   --overlay        Append capture-overlay to the boot string
   --overlay-mask   Append capture-overlay-mask to the boot string
@@ -78,6 +80,7 @@ while [ $# -gt 0 ]; do
         --status)    SCENE_STATUS="$2"; shift 2 ;;
         --frames)    FRAMES="$2"; shift 2 ;;
         --interval)  INTERVAL="$2"; shift 2 ;;
+        --seed)      SEED="$2"; shift 2 ;;
         --output)    OUTPUT_DIR="$2"; shift 2 ;;
         --overlay)   CAPTURE_OVERLAY=1; shift ;;
         --overlay-mask) CAPTURE_OVERLAY_MASK=1; shift ;;
@@ -151,6 +154,9 @@ elif [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]
 fi
 if [[ "$BOOT_STRING" != *"capture-meta-dir"* ]]; then
     BOOT_STRING="${BOOT_STRING} capture-meta-dir ps1-meta capture-range 0 ${FRAMES} capture-interval ${INTERVAL} capture-scene-label ${SCENE_LABEL}"
+fi
+if [[ "$BOOT_STRING" != *" seed "* ]] && [[ "$BOOT_STRING" != seed\ * ]] && [[ "$BOOT_STRING" != *" seed" ]]; then
+    BOOT_STRING="${BOOT_STRING} seed ${SEED}"
 fi
 
 if [ "$SKIP_BUILD" -eq 1 ]; then

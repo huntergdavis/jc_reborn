@@ -109,6 +109,7 @@ static int  numArgs  = 0;
 #ifndef PS1_BUILD
 static int hostForcedSeed = -1;
 static int hostForcedStoryDay = -1;
+static int hostBootDirectSceneIndex = -1;
 static int hostForcedIslandPosValid = 0;
 static int hostForcedIslandX = 0;
 static int hostForcedIslandY = 0;
@@ -433,6 +434,29 @@ static void parseArgs(int argc, char **argv)
             else if (!strcmp(argv[i], "bench")) {
                 argBench = 1;
             }
+            else if (!strcmp(argv[i], "story")) {
+                if (i + 2 < argc && !strcmp(argv[i + 1], "single")) {
+                    storySetBootSingleSceneIndex(atoi(argv[i + 2]));
+                    i += 2;
+                }
+                else if (i + 2 < argc && !strcmp(argv[i + 1], "direct")) {
+                    hostBootDirectSceneIndex = atoi(argv[i + 2]);
+                    i += 2;
+                }
+                else if (i + 2 < argc &&
+                         (!strcmp(argv[i + 1], "scene") || !strcmp(argv[i + 1], "index"))) {
+                    storySetBootSceneIndex(atoi(argv[i + 2]));
+                    i += 2;
+                }
+                else if (i + 3 < argc && !strcmp(argv[i + 1], "ads")) {
+                    storySetBootScene(argv[i + 2], (uint16)atoi(argv[i + 3]));
+                    i += 3;
+                }
+                else {
+                    fprintf(stderr, "Error: unsupported story boot form\n");
+                    usage();
+                }
+            }
             else if (!strcmp(argv[i], "ttm")) {
                 argTtm = 1;
                 numExpectedArgs = 1;
@@ -682,7 +706,26 @@ int main(int argc, char **argv)
     return 0;
 #endif
 
-    if (argPlayAll) {
+    if (hostBootDirectSceneIndex >= 0) {
+        printf("Initializing graphics...\n");
+        graphicsInit();
+        printf("Graphics initialized\n");
+
+        printf("Initializing sound...\n");
+        soundInit();
+        printf("Sound initialized\n");
+
+        printf("Starting direct story scene %d...\n", hostBootDirectSceneIndex);
+        storyPlayBootSceneDirect(hostBootDirectSceneIndex);
+
+        printf("Shutting down sound...\n");
+        soundEnd();
+        printf("Shutting down graphics...\n");
+        graphicsEnd();
+        printf("Shutdown complete\n");
+    }
+
+    else if (argPlayAll) {
         printf("Initializing graphics...\n");
         graphicsInit();
         printf("Graphics initialized\n");

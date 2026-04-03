@@ -6,7 +6,7 @@ from itertools import permutations
 from pathlib import Path
 from zlib import crc32
 
-from PIL import Image
+from PIL import Image, ImageChops
 
 FIXED_COLOR_MAP = {
     (0, 0, 0): 0,
@@ -72,7 +72,13 @@ def read_overlay_cells(image: Image.Image) -> list[tuple[int, int, int]]:
     raise ValueError(str(last_error or "image too small for overlay"))
 
 
-def decode_image(image: Image.Image) -> dict:
+def decode_image(image: Image.Image, baseline_image: Image.Image | None = None) -> dict:
+    if baseline_image is not None:
+        try:
+            return decode_strip_image_diff(image, baseline_image)
+        except ValueError:
+            pass
+
     try:
         return decode_strip_image(image)
     except ValueError:
@@ -98,6 +104,89 @@ def decode_image(image: Image.Image) -> dict:
     raise ValueError(str(last_error or "could not decode overlay payload"))
 
 
+def read_strip_pattern_symbols_from_diff_at(
+    overlay_image: Image.Image,
+    baseline_image: Image.Image,
+    origin_x: int,
+    origin_y: int,
+) -> list[int]:
+    overlay = overlay_image.convert("RGB")
+    baseline = baseline_image.convert("RGB")
+    if overlay.size != baseline.size:
+        raise ValueError("baseline image size does not match overlay image size")
+
+    width, height = overlay.size
+    width_cells = 40
+    height_cells = 6
+    cell_size = 8
+    if origin_x < 0 or origin_y < 0:
+        raise ValueError("image too small for strip overlay")
+    if origin_x + width_cells * cell_size > width or origin_y + height_cells * cell_size > height:
+        raise ValueError("strip overlay origin is outside image bounds")
+
+    diff = ImageChops.difference(overlay, baseline)
+    symbols: list[int] = []
+    for cell_y in range(height_cells):
+        for cell_x in range(width_cells):
+            base_x = origin_x + cell_x * cell_size
+            base_y = origin_y + cell_y * cell_size
+            quad_counts = [0, 0, 0, 0]
+
+            for sample_y in range(cell_size):
+                for sample_x in range(cell_size):
+                    r, g, b = diff.getpixel((base_x + sample_x, base_y + sample_y))
+                    if max(r, g, b) < 24:
+                        continue
+                    quad = (1 if sample_y >= 4 else 0) * 2 + (1 if sample_x >= 4 else 0)
+                    quad_counts[quad] += 1
+
+            max_quad = max(quad_counts)
+            lit_quads = sum(1 for count in quad_counts if count >= 4)
+            if max_quad < 4:
+                symbols.append(0)
+                continue
+            if lit_quads != 1:
+                raise ValueError("ambiguous strip pattern cell in diff image")
+            quad_index = quad_counts.index(max_quad)
+            if quad_index == 0:
+                symbols.append(1)
+            elif quad_index == 1:
+                symbols.append(2)
+            elif quad_index == 2:
+                symbols.append(3)
+            else:
+                raise ValueError("unsupported strip pattern quadrant in diff image")
+    return symbols
+
+
+def decode_strip_image_diff(overlay_image: Image.Image, baseline_image: Image.Image) -> dict:
+    width, _ = overlay_image.size
+    width_cells = 40
+    cell_size = 8
+    candidate_origins = [
+        (width - width_cells * cell_size, 140),
+        (0, 140),
+        (0, 0),
+        (width - width_cells * cell_size, 0),
+    ]
+    last_error = None
+
+    for origin_x, origin_y in candidate_origins:
+        try:
+            symbols = read_strip_pattern_symbols_from_diff_at(
+                overlay_image,
+                baseline_image,
+                origin_x,
+                origin_y,
+            )
+            return parse_overlay(unpack_packet(symbols))
+        except ValueError as exc:
+            last_error = exc
+            continue
+
+    raise ValueError(str(last_error or "could not decode strip overlay payload from diff"))
+
+
 def read_strip_cells_at(image: Image.Image, origin_x: int, origin_y: int) -> list[tuple[int, int, int]]:
     img = image.convert("RGB")
     width, height = img.size
@@ -121,6 +210,54 @@ def read_strip_cells_at(image: Image.Image, origin_x: int, origin_y: int) -> lis
     return cells
 
 
+def read_strip_pattern_symbols_at(image: Image.Image, origin_x: int, origin_y: int) -> list[int]:
+    img = image.convert("RGB")
+    width, height = img.size
+    width_cells = 40
+    height_cells = 6
+    cell_size = 8
+    if origin_x < 0 or origin_y < 0:
+        raise ValueError("image too small for strip overlay")
+    if origin_x + width_cells * cell_size > width or origin_y + height_cells * cell_size > height:
+        raise ValueError("strip overlay origin is outside image bounds")
+
+    def is_foreground(color: tuple[int, int, int]) -> bool:
+        r, g, b = color
+        return r >= 192 and g >= 192 and b >= 192
+
+    symbols: list[int] = []
+    for cell_y in range(height_cells):
+        for cell_x in range(width_cells):
+            quad_counts = [0, 0, 0, 0]
+            base_x = origin_x + cell_x * cell_size
+            base_y = origin_y + cell_y * cell_size
+            for sample_y in range(cell_size):
+                for sample_x in range(cell_size):
+                    if not is_foreground(img.getpixel((base_x + sample_x, base_y + sample_y))):
+                        continue
+                    quad = (1 if sample_y >= 4 else 0) * 2 + (1 if sample_x >= 4 else 0)
+                    quad_counts[quad] += 1
+
+            max_quad = max(quad_counts)
+            lit_quads = sum(1 for count in quad_counts if count >= 4)
+            if max_quad < 4:
+                symbols.append(0)
+                continue
+            if lit_quads != 1:
+                raise ValueError("ambiguous strip pattern cell")
+            quad_index = quad_counts.index(max_quad)
+            if quad_index == 0:
+                symbols.append(1)
+            elif quad_index == 1:
+                symbols.append(2)
+            elif quad_index == 2:
+                symbols.append(3)
+            else:
+                raise ValueError("unsupported strip pattern quadrant")
+
+    return symbols
+
+
 def decode_strip_image(image: Image.Image) -> dict:
     width, _ = image.size
     width_cells = 40
@@ -134,6 +271,12 @@ def decode_strip_image(image: Image.Image) -> dict:
     last_error = None
 
     for origin_x, origin_y in candidate_origins:
+        try:
+            symbols = read_strip_pattern_symbols_at(image, origin_x, origin_y)
+            return parse_overlay(unpack_packet(symbols))
+        except ValueError as exc:
+            last_error = exc
+
         try:
             cells = read_strip_cells_at(image, origin_x, origin_y)
         except ValueError as exc:

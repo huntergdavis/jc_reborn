@@ -47,14 +47,34 @@ def infer_frame_number_from_name(image_path: Path) -> int:
     return int(match.group(1))
 
 
-def load_decoded_overlay(image_path: Path) -> dict:
+def load_decoded_overlay(image_path: Path, baseline_image_path: Path | None = None) -> dict:
     sidecar_path = image_path.with_name(f"{image_path.stem}.overlay.json")
-    if sidecar_path.is_file():
+    if baseline_image_path is None and sidecar_path.is_file():
         return json.loads(sidecar_path.read_text(encoding="utf-8"))
 
     from PIL import Image
     with Image.open(image_path) as image:
+        if baseline_image_path is not None:
+            with Image.open(baseline_image_path) as baseline_image:
+                return decode_capture_overlay.decode_image(image, baseline_image=baseline_image)
         return decode_capture_overlay.decode_image(image)
+
+
+def load_frame_meta_sidecar(image_path: Path) -> dict | None:
+    candidates = [
+        image_path.with_suffix(".json"),
+        image_path.parent.parent.parent / "frame-meta" / f"{image_path.stem}.json",
+        image_path.parent.parent / "frame-meta" / f"{image_path.stem}.json",
+    ]
+    for path in candidates:
+        if path.is_file():
+            try:
+                payload = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            if isinstance(payload, dict) and isinstance(payload.get("visible_draws"), list):
+                return payload
+    return None
 
 
 def build_hash_lookup(lookup_root: Path) -> tuple[dict[int, str], dict[int, list[str]]]:
@@ -112,6 +132,31 @@ def build_actor_candidates(decoded: dict, hash_lookup: dict[int, str]) -> tuple[
         resolved_draws.append(row)
     actor_candidates = [row for row in resolved_draws if row.get("actor_candidate")]
     return actor_candidates, unresolved_draws
+
+
+def build_actor_candidates_from_frame_meta(payload: dict) -> list[dict]:
+    actor_candidates: list[dict] = []
+    for draw in payload.get("visible_draws", []):
+        if not isinstance(draw, dict):
+            continue
+        bmp_name = draw.get("bmp_name")
+        if not bmp_name:
+            continue
+        row = {
+            "bmp_name": str(bmp_name),
+            "sprite_no": int(draw.get("sprite_no", -1)),
+            "image_no": int(draw.get("image_no", -1)),
+            "x": int(draw.get("x", 0)),
+            "y": int(draw.get("y", 0)),
+            "width": int(draw.get("width", 0)),
+            "height": int(draw.get("height", 0)),
+            "flipped": bool(draw.get("flipped", False)),
+        }
+        row["entity"] = summarize_frame_meta.classify_entity(row["bmp_name"])
+        row["actor_candidate"] = summarize_frame_meta.is_actor_candidate(row["bmp_name"])
+        if row["actor_candidate"]:
+            actor_candidates.append(row)
+    return actor_candidates
 
 
 def build_single_frame_truth(
@@ -243,8 +288,9 @@ def main() -> int:
     with args.image.open("rb"):
         pass
     overlay_decode_error = None
+    frame_meta_sidecar = load_frame_meta_sidecar(args.image)
     try:
-        decoded = load_decoded_overlay(args.image)
+        decoded = load_decoded_overlay(args.image, baseline_image_path=args.baseline_image)
     except Exception as exc:
         decoded = {}
         overlay_decode_error = str(exc)
@@ -256,6 +302,8 @@ def main() -> int:
         frame_number = infer_frame_number_from_name(args.image)
 
     actor_candidates, unresolved_draws = build_actor_candidates(decoded, hash_lookup)
+    if not actor_candidates and frame_meta_sidecar is not None:
+        actor_candidates = build_actor_candidates_from_frame_meta(frame_meta_sidecar)
 
     actual_root = args.out_dir / "actual-root"
     frame_name = f"frame_{frame_number:05d}{args.image.suffix.lower()}"
@@ -305,6 +353,7 @@ def main() -> int:
         "hash_collision_count": len(collisions),
         "unresolved_draws": unresolved_draws,
         "overlay_decode_error": overlay_decode_error,
+        "frame_meta_sidecar": str(frame_meta_sidecar.get("image_path")) if isinstance(frame_meta_sidecar, dict) else None,
         "actor_panel": actor_panel,
     }
 

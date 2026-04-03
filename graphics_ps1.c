@@ -761,7 +761,16 @@ static void grDrawCaptureActorPanel(void)
         int yW = 0;
         int widthW = 0;
         int heightW = 0;
-        grDrawCounterBar(panelX + 2, baseY, 3, rowH, 0x7FFF);
+        uint16 markerColor = 0x7FFF;
+
+        switch (entity) {
+            case GR_CAPTURE_ENTITY_JOHNNY: markerColor = 0x001F; break;
+            case GR_CAPTURE_ENTITY_MARY: markerColor = 0x03E0; break;
+            case GR_CAPTURE_ENTITY_SUZY: markerColor = 0x7C00; break;
+            case GR_CAPTURE_ENTITY_OTHER: markerColor = 0x7FFF; break;
+        }
+
+        grDrawCounterBar(panelX + 2, baseY, 3, rowH, markerColor);
 
         if (summary->present) {
             centerX = (summary->left + summary->right) / 2;
@@ -776,10 +785,10 @@ static void grDrawCaptureActorPanel(void)
             heightW = (height > 63) ? 63 : height;
         }
 
-        if (xW > 0) grDrawCounterBar(panelX + 8, baseY + 0, xW, rowH, 0x7FFF);
-        if (yW > 0) grDrawCounterBar(panelX + 8, baseY + 3, yW, rowH, 0x7FFF);
-        if (widthW > 0) grDrawCounterBar(panelX + 8, baseY + 6, widthW, rowH, 0x7FFF);
-        if (heightW > 0) grDrawCounterBar(panelX + 8, baseY + 9, heightW, rowH, 0x7FFF);
+        if (xW > 0) grDrawCounterBar(panelX + 8, baseY + 0, xW, rowH, 0x03FF);
+        if (yW > 0) grDrawCounterBar(panelX + 8, baseY + 3, yW, rowH, 0x03E0);
+        if (widthW > 0) grDrawCounterBar(panelX + 8, baseY + 6, widthW, rowH, 0x7C1F);
+        if (heightW > 0) grDrawCounterBar(panelX + 8, baseY + 9, heightW, rowH, 0x7FE0);
     }
 }
 

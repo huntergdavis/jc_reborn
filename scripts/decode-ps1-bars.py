@@ -31,6 +31,8 @@ ACTOR_PANEL_X = 8
 ACTOR_PANEL_Y = 140
 ACTOR_PANEL_DATA_X = ACTOR_PANEL_X + 8
 ACTOR_PANEL_SCAN_W = 63
+ACTOR_PANEL_MARKER_X = ACTOR_PANEL_X + 2
+ACTOR_PANEL_MARKER_W = 4
 ACTOR_PANEL_ENTITY_STRIDE = 12
 ACTOR_PANEL_ROW_OFFSETS = {
     "centroid_x": 0,
@@ -40,10 +42,17 @@ ACTOR_PANEL_ROW_OFFSETS = {
 }
 ACTOR_PANEL_ENTITIES = ("johnny", "mary", "suzy", "other_actor")
 ACTOR_PANEL_FAMILIES = {
-    "centroid_x": "white",
-    "centroid_y": "white",
-    "bbox_width": "white",
-    "bbox_height": "white",
+    "centroid_x": "cyan",
+    "centroid_y": "green",
+    "bbox_width": "magenta",
+    "bbox_height": "yellow",
+}
+
+ACTOR_PANEL_MARKER_FAMILIES = {
+    "johnny": "green",
+    "mary": "green",
+    "suzy": "red",
+    "other_actor": "white",
 }
 
 
@@ -517,6 +526,23 @@ def _scaled_actor_row_value(
     return max(0, min(ACTOR_PANEL_SCAN_W, best))
 
 
+def _scaled_actor_marker_strength(
+    rgb_img: Image.Image,
+    base_y: int,
+    family: str,
+    scale_x: float,
+    scale_y: float,
+) -> int:
+    abs_x0 = max(0, int(round(ACTOR_PANEL_MARKER_X * scale_x)))
+    abs_width = max(1, int(round(ACTOR_PANEL_MARKER_W * scale_x)))
+    best = 0
+    for y_off in (0, 1):
+        yy = int(round((base_y + y_off) * scale_y))
+        yy = max(0, min(rgb_img.height - 1, yy))
+        best = max(best, count_family_row(rgb_img, yy, abs_x0, abs_width, family))
+    return best
+
+
 def decode_actor_panel(
     image: Image.Image | str | Path,
     baseline_image: Image.Image | str | Path | None = None,
@@ -541,8 +567,18 @@ def decode_actor_panel(
     scale_y = img.height / float(HEADLESS_NATIVE_H)
 
     characters: List[Dict[str, object]] = []
+    marker_active: List[str] = []
     for entity_index, entity_name in enumerate(ACTOR_PANEL_ENTITIES):
         base_y = ACTOR_PANEL_Y + 2 + (entity_index * ACTOR_PANEL_ENTITY_STRIDE)
+        marker_strength = _scaled_actor_marker_strength(
+            img,
+            base_y,
+            ACTOR_PANEL_MARKER_FAMILIES[entity_name],
+            scale_x,
+            scale_y,
+        )
+        if marker_strength >= 2:
+            marker_active.append(entity_name)
         values: Dict[str, int] = {}
         for key, row_offset in ACTOR_PANEL_ROW_OFFSETS.items():
             sample_y = int(round((base_y + row_offset) * scale_y))
@@ -588,6 +624,33 @@ def decode_actor_panel(
             }
         )
 
+    if marker_active:
+        characters = [item for item in characters if item["character"] in marker_active]
+        if not characters:
+            for entity_name in marker_active:
+                characters.append(
+                    {
+                        "character": entity_name,
+                        "draw_count": 1,
+                        "bbox": {
+                            "left": 0,
+                            "top": 0,
+                            "right": 0,
+                            "bottom": 0,
+                            "width": 0,
+                            "height": 0,
+                        },
+                        "centroid": {
+                            "x": 0.0,
+                            "y": 0.0,
+                        },
+                        "sprite_sources": [],
+                        "overlay_metrics": {
+                            "marker_only": True,
+                        },
+                    }
+                )
+
     return {
         "character_count": len(characters),
         "characters": characters,
@@ -598,6 +661,7 @@ def decode_actor_panel(
             "data_x": ACTOR_PANEL_DATA_X,
             "scan_width": ACTOR_PANEL_SCAN_W,
         },
+        "marker_active": marker_active,
     }
 
 

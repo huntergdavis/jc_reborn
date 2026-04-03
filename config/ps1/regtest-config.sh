@@ -20,6 +20,9 @@ REGTEST_INTERVAL="${REGTEST_INTERVAL:-60}"
 # Maximum concurrent scene tests
 REGTEST_PARALLEL="${REGTEST_PARALLEL:-4}"
 
+# DuckStation log level for headless regtest runs.
+REGTEST_LOG_LEVEL="${REGTEST_LOG_LEVEL:-Info}"
+
 # Per-scene timeout in seconds (wall-clock; kills runaway tests)
 # 9000 frames at ~470 FPS headless = ~19 sec; allow 60 sec for safety.
 REGTEST_TIMEOUT="${REGTEST_TIMEOUT:-60}"

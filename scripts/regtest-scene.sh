@@ -46,6 +46,7 @@ SKIP_BUILD=0
 QUIET=0
 CAPTURE_OVERLAY=0
 CAPTURE_OVERLAY_MASK=0
+LOG_LEVEL="${REGTEST_LOG_LEVEL:-Info}"
 
 usage() {
     cat <<'USAGE'
@@ -91,6 +92,8 @@ if [ -z "$SCENE_SPEC" ]; then
     exit 1
 fi
 
+SCENE_LABEL="$SCENE_SPEC"
+
 # Parse scene spec: "STAND 2" => ADS_NAME=STAND TAG=2
 read -r ADS_NAME SCENE_TAG <<< "$SCENE_SPEC"
 if [ -z "$ADS_NAME" ] || [ -z "$SCENE_TAG" ]; then
@@ -134,6 +137,9 @@ if [ "$CAPTURE_OVERLAY_MASK" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay-m
     BOOT_STRING="${BOOT_STRING} capture-overlay-mask"
 elif [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]; then
     BOOT_STRING="${BOOT_STRING} capture-overlay"
+fi
+if [[ "$BOOT_STRING" != *"capture-meta-dir"* ]]; then
+    BOOT_STRING="${BOOT_STRING} capture-meta-dir ps1-meta capture-range 0 ${FRAMES} capture-interval ${INTERVAL} capture-scene-label ${SCENE_LABEL}"
 fi
 
 # Output directory
@@ -246,6 +252,8 @@ if [ "$USE_DOCKER_REGTEST" -eq 0 ]; then
     #     -screenshot-interval <N>  save screenshot every N frames
     #     -screenshot-directory <DIR>
     timeout "$REGTEST_TIMEOUT" "$REGTEST_BIN" \
+        -log "$LOG_LEVEL" \
+        -console \
         -disc "$CUE_FILE" \
         -frames "$FRAMES" \
         -screenshot-interval "$INTERVAL" \
@@ -271,6 +279,7 @@ else
         --frames "$FRAMES" \
         --dumpinterval "$INTERVAL" \
         --dumpdir "$OUTPUT_DIR" \
+        --log "$LOG_LEVEL" \
         --timeout "$REGTEST_TIMEOUT" \
         > "$REGTEST_LOG" 2>&1 || REGTEST_EXIT=$?
 
@@ -330,6 +339,39 @@ if [ -f "$REGTEST_LOG" ]; then
 else
     : > "$PRINTF_FILE"
 fi
+
+# ---------------------------------------------------------------------------
+# Extract PS1 capture metadata sidecars from printf output
+# ---------------------------------------------------------------------------
+FRAME_META_DIR="$OUTPUT_DIR/frame-meta"
+mkdir -p "$FRAME_META_DIR"
+python3 - <<'PY' "$PRINTF_FILE" "$FRAME_META_DIR" "$FRAMES_DIR"
+import json
+import re
+import sys
+from pathlib import Path
+
+printf_path = Path(sys.argv[1])
+meta_dir = Path(sys.argv[2])
+frames_dir = Path(sys.argv[3])
+pattern = re.compile(r"PS1_CAPTURE_META (\{.*\})")
+
+if printf_path.is_file():
+    for line in printf_path.read_text(encoding="utf-8", errors="ignore").splitlines():
+        match = pattern.search(line)
+        if not match:
+            continue
+        try:
+            payload = json.loads(match.group(1))
+        except Exception:
+            continue
+        frame_number = int(payload.get("frame_number", -1))
+        if frame_number < 0:
+            continue
+        payload["image_path"] = str((frames_dir / f"frame_{frame_number:05d}.png").resolve())
+        out_path = meta_dir / f"frame_{frame_number:05d}.json"
+        out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+PY
 
 # ---------------------------------------------------------------------------
 # Compute a simple state hash from the last captured frame

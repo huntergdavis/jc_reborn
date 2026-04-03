@@ -170,6 +170,7 @@ capture_review_set() {
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "FISHING 1" \
         --boot "window nosound story scene 17 island-pos -124 37 capture-prelude-frame" \
+        --frame-list 0,20,40,80 \
         --frames 80 \
         --interval 20 \
         --output "$root/fishing1" \

@@ -21,6 +21,7 @@ OUTPUT_DIR="$PROJECT_ROOT/host-results/scene"
 FRAMES=600
 START_FRAME=0
 INTERVAL=60
+FRAME_LIST=""
 DURATION_TABLE=""
 SEED="1"
 MODE="scene-default"
@@ -46,6 +47,7 @@ Options:
   --boot STRING        Explicit host boot string
   --frames N           Capture through frame N (default: 600)
   --start-frame N     Start sampling at frame N instead of 0 (default: 0)
+  --frame-list LIST    Capture specific frame numbers, e.g. 0,20,40,80
   --until-exit         Capture every requested frame until the executable returns
   --duration-table P   JSON from estimate-scene-durations.py; used when --frames auto
   --interval N         Capture every Nth frame (default: 60)
@@ -75,6 +77,7 @@ while [ $# -gt 0 ]; do
         --boot) BOOT="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
         --start-frame) START_FRAME="$2"; shift 2 ;;
+        --frame-list) FRAME_LIST="$2"; shift 2 ;;
         --until-exit) UNTIL_EXIT=1; shift ;;
         --duration-table) DURATION_TABLE="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
@@ -262,6 +265,43 @@ PY
 )"
 fi
 
+if [ -n "$FRAME_LIST" ]; then
+    if [ "$UNTIL_EXIT" -eq 1 ]; then
+        echo "ERROR: --frame-list cannot be combined with --until-exit" >&2
+        exit 1
+    fi
+    mapfile -t frame_list_numbers < <(python3 - "$FRAME_LIST" <<'PY'
+import math
+import sys
+
+raw = sys.argv[1]
+parts = [p.strip() for p in raw.split(",") if p.strip()]
+if not parts:
+    raise SystemExit("empty frame list")
+frames = []
+for part in parts:
+    value = int(part)
+    if value < 0:
+        raise SystemExit("frame list values must be >= 0")
+    frames.append(value)
+frames = sorted(set(frames))
+interval = 1
+if len(frames) > 1:
+    interval = frames[1] - frames[0]
+    for a, b in zip(frames, frames[1:]):
+        interval = math.gcd(interval, b - a)
+print(frames[0])
+print(frames[-1])
+print(interval)
+print(",".join(str(v) for v in frames))
+PY
+    )
+    START_FRAME="${frame_list_numbers[0]}"
+    FRAMES="${frame_list_numbers[1]}"
+    INTERVAL="${frame_list_numbers[2]}"
+    FRAME_LIST="${frame_list_numbers[3]}"
+fi
+
 if [ "$START_FRAME" -lt 0 ]; then
     echo "ERROR: --start-frame must be >= 0" >&2
     exit 1
@@ -317,7 +357,7 @@ set -e
 popd >/dev/null
 
 python3 - "$PROJECT_ROOT" "$OUTPUT_DIR" "$SCENE_LIST_FILE" "$ADS_NAME" "$TAG" \
-           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$START_FRAME" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" "$TIMEOUT_SECONDS" <<'PY'
+           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$START_FRAME" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" "$TIMEOUT_SECONDS" "$FRAME_LIST" <<'PY'
 import hashlib
 import json
 import os
@@ -347,8 +387,21 @@ until_exit = int(sys.argv[17]) != 0
 host_exit_code = int(sys.argv[18])
 capture_overlay = int(sys.argv[19]) != 0
 timeout_seconds = int(sys.argv[20]) if sys.argv[20] else 0
+frame_list_raw = sys.argv[21].strip()
 frames_dir = output_dir / "frames"
 frame_meta_dir = output_dir / "frame-meta"
+
+frame_list = []
+if frame_list_raw:
+    frame_list = [int(part) for part in frame_list_raw.split(",") if part]
+    keep_frame_names = {f"frame_{frame_no:05d}.bmp" for frame_no in frame_list}
+    keep_meta_names = {f"frame_{frame_no:05d}.json" for frame_no in frame_list}
+    for frame_path in sorted(frames_dir.glob("frame_*.bmp")):
+        if frame_path.name not in keep_frame_names:
+            frame_path.unlink()
+    for meta_path in sorted(frame_meta_dir.glob("frame_*.json")):
+        if meta_path.name not in keep_meta_names:
+            meta_path.unlink()
 
 
 def rel_to_output(path: Path) -> str:
@@ -532,7 +585,9 @@ if frame_files:
     state_hash = scene_pixel_hash(frame_files[-1])
 
 expected_frame_numbers = []
-if not until_exit and requested_interval > 0:
+if frame_list:
+    expected_frame_numbers = list(frame_list)
+elif not until_exit and requested_interval > 0:
     expected_frame_numbers = list(range(requested_start_frame, requested_frames + 1, requested_interval))
 expected_frame_names = {f"frame_{frame_no:05d}.bmp" for frame_no in expected_frame_numbers}
 actual_frame_names = {path.name for path in frame_files}

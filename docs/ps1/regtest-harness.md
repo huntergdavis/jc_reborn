@@ -281,3 +281,34 @@ For rebuild-and-watch runs:
 The desktop harness now prefers DuckStation-native screenshots and refuses
 whole-desktop fallback capture unless `PS1_ALLOW_FALLBACK_CAPTURE=1` is set.
 That avoids false verification from terminal or unrelated-window captures.
+
+### Overlay-Backed PS1 Character Checks
+
+For PS1 bug fixing, the preferred screenshot harness is now:
+
+1. launch a controlled DuckStation run with `capture-overlay`
+2. take a DuckStation screenshot
+3. decode the embedded overlay into character truth
+4. compare against expected truth
+5. open the generated HTML diff report
+
+Examples:
+
+```bash
+./scripts/auto-test-ps1.sh 35 --overlay "story scene 17"
+./scripts/capture-duckstation-scene.sh --scene "FISHING 1" --overlay
+```
+
+Single-screenshot check:
+
+```bash
+python3 scripts/check-character-screenshot.py \
+  --image ~/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots/<shot>.png \
+  --expected-truth-json /tmp/character-truth.json \
+  --scene-label "FISHING 1" \
+  --out-dir /tmp/ps1-character-check
+```
+
+Notes:
+- `check-character-screenshot.py` now prefers the frame number embedded in the overlay packet, so DuckStation timestamped filenames do not need manual frame numbering.
+- This path is intended for controlled test captures we generate ourselves. Arbitrary screenshots without the overlay still need a separate image-matching path.

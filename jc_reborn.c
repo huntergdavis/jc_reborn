@@ -119,6 +119,19 @@ static int hostForcedSceneOffsetValid = 0;
 static int hostForcedSceneOffsetX = 0;
 static int hostForcedSceneOffsetY = 0;
 static int hostCapturePreludeFrame = 0;
+#else
+static int hostForcedSeed = -1;
+static int hostForcedStoryDay = -1;
+static int hostBootDirectSceneIndex = -1;
+static int hostForcedIslandPosValid = 0;
+static int hostForcedIslandX = 0;
+static int hostForcedIslandY = 0;
+static int hostForcedLowTide = -1;
+static int hostForcedRaftStage = -1;
+static int hostForcedSceneOffsetValid = 0;
+static int hostForcedSceneOffsetX = 0;
+static int hostForcedSceneOffsetY = 0;
+static int hostCapturePreludeFrame = 0;
 #endif
 
 #ifdef PS1_BUILD
@@ -147,6 +160,8 @@ static void ps1ResetBootArgs(void)
         args[i] = NULL;
         ps1BootArgStorage[i][0] = '\0';
     }
+
+    grCaptureOverlay = 0;
 }
 
 static int ps1CopyBootArg(int index, const char *src)
@@ -205,6 +220,12 @@ static void ps1ApplyBootOverride(char *buffer)
         if (!strcmp(tokens[i], "seed")) {
             ps1BootForcedSeed = atoi(tokens[i + 1]);
             break;
+        }
+    }
+
+    for (int i = 0; i < tokenCount; i++) {
+        if (!strcmp(tokens[i], "capture-overlay")) {
+            grCaptureOverlay = 1;
         }
     }
 

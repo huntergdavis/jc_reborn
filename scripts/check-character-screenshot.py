@@ -37,10 +37,10 @@ def scene_slug(scene_label: str) -> str:
     return "".join(ch for ch in scene_label.lower() if ch.isalnum())
 
 
-def infer_frame_number(image_path: Path) -> int:
+def infer_frame_number_from_name(image_path: Path) -> int:
     match = re.search(r"(\d+)", image_path.stem)
     if not match:
-        raise ValueError("could not infer frame number from image name; pass --frame-number")
+        raise ValueError("could not infer frame number from image name")
     return int(match.group(1))
 
 
@@ -165,7 +165,6 @@ def main() -> int:
     parser.add_argument("--out-dir", type=Path, required=True)
     args = parser.parse_args()
 
-    frame_number = args.frame_number if args.frame_number is not None else infer_frame_number(args.image)
     expected_truth = json.loads(args.expected_truth_json.read_text(encoding="utf-8"))
     hash_lookup, collisions = build_hash_lookup(args.lookup_root)
 
@@ -174,6 +173,12 @@ def main() -> int:
     from PIL import Image
     with Image.open(args.image) as image:
         decoded = decode_capture_overlay.decode_packet_from_cells(decode_capture_overlay.read_overlay_cells(image))
+    if args.frame_number is not None:
+        frame_number = args.frame_number
+    elif decoded.get("frame_number") is not None:
+        frame_number = int(decoded["frame_number"])
+    else:
+        frame_number = infer_frame_number_from_name(args.image)
 
     actor_candidates, unresolved_draws = build_actor_candidates(decoded, hash_lookup)
 

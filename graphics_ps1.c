@@ -39,6 +39,19 @@ typedef struct _FILE FILE;
 #include "psb_format.h"
 #include "psb_registry.h"
 
+#define MAX_CAPTURED_DRAWS 255
+
+struct TPs1CapturedSpriteDraw {
+    sint16 x;
+    sint16 y;
+    uint16 width;
+    uint16 height;
+    uint16 spriteNo;
+    uint16 imageNo;
+    uint8 flipped;
+    const char *bmpName;
+};
+
 /* Primitive buffer for GPU commands */
 #define PRIMITIVE_BUFFER_SIZE 32768
 uint8 *primitiveBuffer[2];  /* Malloc'd, not static array! */
@@ -179,7 +192,15 @@ int grUpdateDelay = 0;
 /* Frame capture - stubbed for PS1 */
 int grCaptureFrameNumber = -1;
 char *grCaptureFilename = NULL;
+char *grCaptureDir = NULL;
+char *grCaptureMetaDir = NULL;
+int grCaptureInterval = 0;
+int grCaptureStartFrame = 0;
+int grCaptureEndFrame = -1;
+int grCaptureOverlay = 0;
 static int grCurrentFrame = 0;
+static struct TPs1CapturedSpriteDraw grCapturedDraws[MAX_CAPTURED_DRAWS];
+static int grCapturedDrawCount = 0;
 
 /* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly) */
 int grGpuAlreadyInitialized = 0;
@@ -260,6 +281,174 @@ static void grDrawCounterBar(int x, int y, int w, int h, uint16 color)
     for (int yy = 0; yy < h; yy++) {
         uint16 *row = bgTile0->pixels + (y + yy) * (int)bgTile0->width + x;
         for (int xx = 0; xx < w; xx++) row[xx] = color;
+    }
+}
+
+static void grCaptureResetFrameDraws(void)
+{
+    grCapturedDrawCount = 0;
+}
+
+static void grCaptureRecordSpriteDraw(const char *bmpName,
+                                      sint16 x,
+                                      sint16 y,
+                                      uint16 spriteNo,
+                                      uint16 imageNo,
+                                      uint16 width,
+                                      uint16 height,
+                                      int flipped)
+{
+    struct TPs1CapturedSpriteDraw *draw;
+
+    if (bmpName == NULL || width == 0 || height == 0)
+        return;
+    if (grCapturedDrawCount >= MAX_CAPTURED_DRAWS)
+        return;
+
+    draw = &grCapturedDraws[grCapturedDrawCount++];
+    draw->x = x;
+    draw->y = y;
+    draw->width = width;
+    draw->height = height;
+    draw->spriteNo = spriteNo;
+    draw->imageNo = imageNo;
+    draw->flipped = (flipped ? 1 : 0);
+    draw->bmpName = bmpName;
+}
+
+static uint32 grCaptureCrc32(const uint8 *data, size_t length)
+{
+    uint32 crc = 0xffffffffu;
+    size_t i;
+
+    for (i = 0; i < length; i++) {
+        int bit;
+        crc ^= data[i];
+        for (bit = 0; bit < 8; bit++) {
+            if (crc & 1u)
+                crc = (crc >> 1) ^ 0xedb88320u;
+            else
+                crc >>= 1;
+        }
+    }
+
+    return crc ^ 0xffffffffu;
+}
+
+static size_t grCaptureBuildOverlayPayload(uint8 *buffer, size_t capacity)
+{
+    size_t offset = 0;
+    int limit = grCapturedDrawCount;
+    int i;
+
+    if (capacity < 11)
+        return 0;
+
+    if (limit > 16)
+        limit = 16;
+
+    buffer[offset++] = 'J';
+    buffer[offset++] = 'C';
+    buffer[offset++] = 'D';
+    buffer[offset++] = '1';
+    buffer[offset++] = (uint8)(grCurrentFrame & 0xff);
+    buffer[offset++] = (uint8)((grCurrentFrame >> 8) & 0xff);
+    buffer[offset++] = (uint8)((grCurrentFrame >> 16) & 0xff);
+    buffer[offset++] = (uint8)((grCurrentFrame >> 24) & 0xff);
+    buffer[offset++] = (uint8)(grCapturedDrawCount & 0xff);
+    buffer[offset++] = (uint8)((grCapturedDrawCount >> 8) & 0xff);
+    buffer[offset++] = (uint8)limit;
+
+    for (i = 0; i < limit; i++) {
+        const struct TPs1CapturedSpriteDraw *draw = &grCapturedDraws[i];
+        unsigned int nameHash = 0;
+        const unsigned char *p = (const unsigned char *)(draw->bmpName ? draw->bmpName : "");
+
+        while (*p) {
+            nameHash = ((nameHash << 5) - nameHash) + *p;
+            p++;
+        }
+
+        if (offset + 12 > capacity)
+            break;
+
+        buffer[offset++] = (uint8)((uint16)draw->x & 0xff);
+        buffer[offset++] = (uint8)(((uint16)draw->x >> 8) & 0xff);
+        buffer[offset++] = (uint8)((uint16)draw->y & 0xff);
+        buffer[offset++] = (uint8)(((uint16)draw->y >> 8) & 0xff);
+        buffer[offset++] = (uint8)(draw->width & 0xff);
+        buffer[offset++] = (uint8)(draw->height & 0xff);
+        buffer[offset++] = (uint8)(draw->spriteNo & 0xff);
+        buffer[offset++] = (uint8)(draw->imageNo & 0xff);
+        buffer[offset++] = draw->flipped;
+        buffer[offset++] = (uint8)(nameHash & 0xff);
+        buffer[offset++] = (uint8)((nameHash >> 8) & 0xff);
+        buffer[offset++] = (uint8)((nameHash >> 16) & 0xff);
+    }
+
+    return offset;
+}
+
+static void grDrawCaptureOverlay(void)
+{
+    uint8 payload[512];
+    uint8 packet[1024];
+    size_t payloadLen;
+    size_t packetLen;
+    uint32 crc;
+    const int widthCells = 32;
+    const int heightCells = 32;
+    const int cellSize = 4;
+    const int originX = SCREEN_WIDTH - (widthCells * cellSize);
+    const int originY = SCREEN_HEIGHT - (heightCells * cellSize);
+    size_t symbolIndex = 0;
+
+    payloadLen = grCaptureBuildOverlayPayload(payload, sizeof(payload));
+    if (payloadLen == 0)
+        return;
+
+    crc = grCaptureCrc32(payload, payloadLen);
+    packet[0] = (uint8)(payloadLen & 0xff);
+    packet[1] = (uint8)((payloadLen >> 8) & 0xff);
+    memcpy(packet + 2, payload, payloadLen);
+    packet[2 + payloadLen + 0] = (uint8)(crc & 0xff);
+    packet[2 + payloadLen + 1] = (uint8)((crc >> 8) & 0xff);
+    packet[2 + payloadLen + 2] = (uint8)((crc >> 16) & 0xff);
+    packet[2 + payloadLen + 3] = (uint8)((crc >> 24) & 0xff);
+    packetLen = payloadLen + 6;
+
+    for (int cellY = 0; cellY < heightCells; cellY++) {
+        for (int cellX = 0; cellX < widthCells; cellX++) {
+            int value = 0;
+            uint8 color = 0;
+
+            if ((cellX < 2 && cellY < 2) ||
+                (cellX >= widthCells - 2 && cellY < 2) ||
+                (cellX < 2 && cellY >= heightCells - 2) ||
+                (cellX >= widthCells - 2 && cellY >= heightCells - 2)) {
+                value = 3;
+            }
+            else if (symbolIndex < packetLen * 4) {
+                size_t byteIndex = symbolIndex / 4;
+                int shift = (int)((symbolIndex % 4) * 2);
+                value = (packet[byteIndex] >> shift) & 0x3;
+                symbolIndex++;
+            }
+
+            switch (value) {
+                case 1: color = 3; break;
+                case 2: color = 2; break;
+                case 3: color = 4; break;
+                default: color = 0; break;
+            }
+
+            grDrawRect(NULL,
+                       (sint16)(originX + (cellX * cellSize)),
+                       (sint16)(originY + (cellY * cellSize)),
+                       (uint16)cellSize,
+                       (uint16)cellSize,
+                       color);
+        }
     }
 }
 
@@ -657,6 +846,7 @@ void graphicsInit()
 
     /* Initialize event system */
     eventsInit();
+    grCaptureResetFrameDraws();
 
     if (debugMode)
         printf("GPU: Graphics initialization complete!\n");
@@ -942,6 +1132,9 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
         grDrawPilotPackDiagnostics();
         grDrawAdsFreezeDiagnostics();
     }
+    if (grCaptureOverlay) {
+        grDrawCaptureOverlay();
+    }
 
     /* Wait for VSync BEFORE uploading to framebuffer.
      * This ensures we write during vertical blank when display isn't scanning. */
@@ -954,6 +1147,7 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     eventsWaitTick(grUpdateDelay);
 
     grCurrentFrame++;
+    grCaptureResetFrameDraws();
 }
 
 /*
@@ -1236,6 +1430,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     }
 
     ttmSlot->numSprites[slotNo] = numToLoad;
+    ttmSlot->loadedBmpNames[slotNo] = strArg;
 }
 
 /*
@@ -1250,6 +1445,7 @@ void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo)
     /* Invalidate replay records that reference previous contents of this slot. */
     ttmSlot->spriteGen[bmpSlotNo]++;
     ttmSlot->loadedBmp[bmpSlotNo] = NULL;
+    ttmSlot->loadedBmpNames[bmpSlotNo] = NULL;
 
     /* Free all sprites in this slot (PS1Surface structs only;
      * indexedPixels with indexedOwned=0 are NOT freed here because
@@ -1441,6 +1637,7 @@ static int grTryLoadPsb(struct TTtmSlot *ttmSlot, uint16 slotNo,
     /* Dedup: store the BMP resource pointer so repeated loads of the same
      * BMP into the same slot are detected and skipped by grLoadBmpRAM. */
     ttmSlot->loadedBmp[slotNo] = bmpResource;
+    ttmSlot->loadedBmpNames[slotNo] = strArg;
 
     return 1;
 }
@@ -1546,6 +1743,7 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         ttmSlot->numSprites[slotNo] = framesLoaded;
         ttmSlot->loadedBmp[slotNo] = bmpResource;
+        ttmSlot->loadedBmpNames[slotNo] = strArg;
         gStatLastBmpFrames = (uint16)framesLoaded;
         gStatLastBmpStatus = (framesLoaded == numToLoad) ? 7 : 8;  /* ok / short install */
         if (framesLoaded < numToLoad) {
@@ -2170,6 +2368,17 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
+    grCaptureRecordSpriteDraw(
+        ttmSlot->loadedBmpNames[imageNo],
+        x,
+        y,
+        spriteNo,
+        imageNo,
+        (sprite->fullWidth ? sprite->fullWidth : sprite->width),
+        (sprite->fullHeight ? sprite->fullHeight : sprite->height),
+        0
+    );
+
     /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackground(sprite, x, y);
@@ -2384,6 +2593,17 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
     if (sprite == NULL) {
         return;
     }
+
+    grCaptureRecordSpriteDraw(
+        ttmSlot->loadedBmpNames[imageNo],
+        x,
+        y,
+        spriteNo,
+        imageNo,
+        (sprite->fullWidth ? sprite->fullWidth : sprite->width),
+        (sprite->fullHeight ? sprite->fullHeight : sprite->height),
+        1
+    );
 
     /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
@@ -3356,4 +3576,14 @@ int grCaptureFrame(const char *filename)
 {
     /* Frame capture not supported on PS1 hardware */
     return -1;
+}
+
+int grCaptureSequenceComplete(void)
+{
+    return 0;
+}
+
+void grCaptureSetSceneLabel(const char *sceneLabel)
+{
+    (void)sceneLabel;
 }

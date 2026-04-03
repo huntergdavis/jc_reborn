@@ -72,6 +72,7 @@ struct TTtmSlot {
     int         numSprites[MAX_BMP_SLOTS];
     uint16      spriteGen[MAX_BMP_SLOTS];
     struct TBmpResource *loadedBmp[MAX_BMP_SLOTS];
+    const char  *loadedBmpNames[MAX_BMP_SLOTS];
     uint8       *psbData[MAX_BMP_SLOTS]; /* PSB buffer per-slot (sprites point into it) */
     PS1Surface  *sprites[MAX_BMP_SLOTS][MAX_SPRITES_PER_BMP];
     struct TTtmResource *ttmResource;  /* For LRU cache unpinning */
@@ -131,6 +132,13 @@ extern int grUpdateDelay;
 /* Frame capture for visual regression testing */
 extern int grCaptureFrameNumber;
 extern char *grCaptureFilename;
+extern char *grCaptureDir;
+extern char *grCaptureMetaDir;
+extern int grCaptureInterval;
+extern int grCaptureStartFrame;
+extern int grCaptureEndFrame;
+extern int grCaptureOverlay;
+void grCaptureSetSceneLabel(const char *sceneLabel);
 
 /* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly)
  * Set this to 1 BEFORE calling graphicsInit() if GPU is already set up */
@@ -199,6 +207,7 @@ int grGetCurrentFrame(void);
 
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
+int grCaptureSequenceComplete(void);
 
 /* PS1 telemetry overlay toggle (intended to be wired to pause menu later). */
 void grSetPs1Telemetry(int enabled);

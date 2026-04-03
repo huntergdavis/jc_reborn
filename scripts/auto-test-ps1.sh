@@ -25,11 +25,21 @@ DUCK_SETTINGS_BACKUP=""
 BOOTMODE_FILE="$PWD/config/ps1/BOOTMODE.TXT"
 BOOTMODE_BACKUP=""
 BOOT_OVERRIDE=""
+CAPTURE_OVERLAY=0
 
 shift || true
-if [ "$#" -gt 0 ]; then
-    BOOT_OVERRIDE="$*"
-fi
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --overlay)
+            CAPTURE_OVERLAY=1
+            shift
+            ;;
+        *)
+            BOOT_OVERRIDE="${BOOT_OVERRIDE:+$BOOT_OVERRIDE }$1"
+            shift
+            ;;
+    esac
+done
 
 echo "=== Automated PS1 Test Cycle ==="
 echo "CUE file: $CUE_FILE"
@@ -71,9 +81,14 @@ stage_boot_override() {
     BOOTMODE_BACKUP="/tmp/ps1-bootmode-$$.txt"
     cp "$BOOTMODE_FILE" "$BOOTMODE_BACKUP"
 
-    if [ -n "$BOOT_OVERRIDE" ]; then
-        printf '%s\n' "$BOOT_OVERRIDE" > "$BOOTMODE_FILE"
-        echo "Boot override: $BOOT_OVERRIDE"
+    local final_boot="$BOOT_OVERRIDE"
+    if [ "$CAPTURE_OVERLAY" -eq 1 ]; then
+        final_boot="${final_boot:+$final_boot }capture-overlay"
+    fi
+
+    if [ -n "$final_boot" ]; then
+        printf '%s\n' "$final_boot" > "$BOOTMODE_FILE"
+        echo "Boot override: $final_boot"
     else
         : > "$BOOTMODE_FILE"
     fi

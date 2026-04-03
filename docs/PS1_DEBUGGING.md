@@ -209,6 +209,35 @@ Each tile is 320x240 pixels, stored in RAM as 16-bit direct color (not VRAM).
 Screenshots are saved to:
 `~/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots/`
 
+### Overlay-Backed Screenshot Checks
+
+For controlled PS1 bug runs, prefer overlay-backed screenshots over manual visual comparison.
+The PS1 build can now draw the same machine-readable capture overlay into the live DuckStation frame
+when you launch with `capture-overlay`.
+
+Example:
+
+```bash
+./scripts/auto-test-ps1.sh 35 --overlay "story scene 17"
+./scripts/capture-duckstation-scene.sh --scene "FISHING 1" --overlay
+```
+
+Then compare a captured screenshot against expected character truth:
+
+```bash
+python3 scripts/check-character-screenshot.py \
+  --image ~/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots/<shot>.png \
+  --expected-truth-json /tmp/character-truth.json \
+  --scene-label "FISHING 1" \
+  --out-dir /tmp/ps1-character-check
+```
+
+This reports:
+- who is onscreen
+- rough positions and bounding boxes
+- diff vs expected truth
+- an HTML report under `/tmp/ps1-character-check/character-truth-report.html`
+
 ## Next Steps
 
 1. Debug `adsInitIsland()` hang - add logging to isolate where it stalls

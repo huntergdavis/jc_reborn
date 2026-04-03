@@ -66,6 +66,7 @@ static int storyForcedRaftStage = 0;
 static int storyForcedSceneOffsetValid = 0;
 static int storyForcedSceneOffsetX = 0;
 static int storyForcedSceneOffsetY = 0;
+static int storyCapturePreludeFrame = 0;
 
 #ifdef PS1_BUILD
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
@@ -210,6 +211,11 @@ void storySetSceneOffsetOverride(int hasOffset, int xOffset, int yOffset)
     storyForcedSceneOffsetValid = hasOffset;
     storyForcedSceneOffsetX = xOffset;
     storyForcedSceneOffsetY = yOffset;
+}
+
+void storySetCapturePreludeFrame(int enabled)
+{
+    storyCapturePreludeFrame = enabled ? 1 : 0;
 }
 
 static void storyApplyForcedSceneOffset(void)
@@ -441,6 +447,7 @@ void storyPlay()
     uint16 wantedFlags   = 0;
     uint16 unwantedFlags = 0;
     int firstSequence = 1;
+    int capturePreludePending = 0;
     struct TStoryScene *bootScene = NULL;
     struct TStoryScene *forcedIntermediateScene = NULL;
     struct TStoryScene *forcedFinalScene = NULL;
@@ -490,6 +497,8 @@ void storyPlay()
             storyApplySceneDay(forcedFinalScene);
         else if (forcedIntermediateScene != NULL)
             storyApplySceneDay(forcedIntermediateScene);
+
+        capturePreludePending = (storyCapturePreludeFrame && forcedIntermediateScene != NULL);
 
         struct TStoryScene *finalScene = bootScene;
         if (forcedFinalScene != NULL)
@@ -571,6 +580,13 @@ void storyPlay()
                             + (scene->flags & LEFT_ISLAND ? 272 : 0);
                 ttmDy = islandState.yPos;
                 storyApplyForcedSceneOffset();
+
+                if (capturePreludePending && prevSpot == -1) {
+                    adsCaptureCurrentFrame();
+                    capturePreludePending = 0;
+                    if (grCaptureSequenceComplete())
+                        return;
+                }
 
                 if (scene->dayNo)
                     soundPlay(0);

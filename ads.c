@@ -1807,3 +1807,9 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
 
     adsStopScene(0);
 }
+void adsCaptureCurrentFrame(void)
+{
+    grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
+}
+
+

@@ -118,6 +118,7 @@ static int hostForcedRaftStage = -1;
 static int hostForcedSceneOffsetValid = 0;
 static int hostForcedSceneOffsetX = 0;
 static int hostForcedSceneOffsetY = 0;
+static int hostCapturePreludeFrame = 0;
 #endif
 
 #ifdef PS1_BUILD
@@ -394,6 +395,7 @@ static void usage()
         printf("         lowtide 0|1     - force low tide state for host story/island runs\n");
         printf("         raft-stage N    - force raft stage 0..5 for host story/island runs\n");
         printf("         scene-offset X Y - force thread-layer scene offset for host story runs\n");
+        printf("         capture-prelude-frame - capture one establishing frame before forced non-final story scenes\n");
         printf("\n");
         printf(" While-playing hot-keys (if enabled):\n");
         printf("         Esc        - Terminate immediately\n");
@@ -614,6 +616,9 @@ static void parseArgs(int argc, char **argv)
                     usage();
                 }
             }
+            else if (!strcmp(argv[i], "capture-prelude-frame")) {
+                hostCapturePreludeFrame = 1;
+            }
         }
     }
 
@@ -682,6 +687,7 @@ int main(int argc, char **argv)
         hostForcedSceneOffsetX,
         hostForcedSceneOffsetY
     );
+    storySetCapturePreludeFrame(hostCapturePreludeFrame);
 
     if (hostForcedSeed >= 0)
         srand((unsigned int)hostForcedSeed);

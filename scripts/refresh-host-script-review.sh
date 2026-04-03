@@ -169,7 +169,7 @@ capture_review_set() {
     run_with_timeout 60 \
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "FISHING 1" \
-        --boot "window nosound story scene 17 island-pos -124 37" \
+        --boot "window nosound story scene 17 island-pos -124 37 capture-prelude-frame" \
         --frames 80 \
         --interval 20 \
         --output "$root/fishing1" \
@@ -178,7 +178,7 @@ capture_review_set() {
     run_with_timeout 90 \
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "MARY 1" \
-        --boot "window nosound story scene 61 island-pos -124 37 raft-stage 5" \
+        --boot "window nosound story scene 61 island-pos -124 37 raft-stage 5 capture-prelude-frame" \
         --frames 250 \
         --interval 50 \
         --output "$root/mary1" \

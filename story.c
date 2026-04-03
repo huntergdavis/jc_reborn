@@ -105,6 +105,12 @@ static void storyUpdateCurrentDay(void);
 static void storyCalculateIslandFromDateAndTime(void);
 static void storyCalculateIslandFromScene(struct TStoryScene *scene);
 
+static void storyApplySceneDay(struct TStoryScene *scene)
+{
+    if (scene != NULL && scene->dayNo > 0)
+        storyCurrentDay = scene->dayNo;
+}
+
 static int storyHasValidStart(struct TStoryScene *scene)
 {
     return storyIsValidSpot(scene->spotStart) && storyIsValidHdg(scene->hdgStart);
@@ -205,6 +211,7 @@ void storyPlayBootSceneDirect(int sceneIndex)
 
     storyUpdateCurrentDay();
     storyCalculateIslandFromDateAndTime();
+    storyApplySceneDay(scene);
     if (scene->flags & ISLAND)
         storyCalculateIslandFromScene(scene);
 
@@ -448,6 +455,13 @@ void storyPlay()
             storyBootAdsName[0] = '\0';
             storyBootAdsTag = -1;
         }
+
+        if (bootScene != NULL)
+            storyApplySceneDay(bootScene);
+        else if (forcedFinalScene != NULL)
+            storyApplySceneDay(forcedFinalScene);
+        else if (forcedIntermediateScene != NULL)
+            storyApplySceneDay(forcedIntermediateScene);
 
         struct TStoryScene *finalScene = bootScene;
         if (forcedFinalScene != NULL)

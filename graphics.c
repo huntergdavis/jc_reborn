@@ -63,6 +63,7 @@ int grCaptureEndFrame = -1;
 int grCaptureOverlay = 0;
 static int grCurrentFrame = 0;
 static char grCaptureSceneLabel[64] = "";
+static int grCaptureSequenceFinished = 0;
 
 #define MAX_CAPTURED_DRAWS 2048
 #define MAX_CAPTURE_SURFACES 64
@@ -686,6 +687,7 @@ void graphicsInit()
 
     eventsInit();
     grCaptureResetFrameDraws();
+    grCaptureSequenceFinished = 0;
 }
 
 
@@ -795,11 +797,19 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
             printf("Frame %d captured to %s\n", grCurrentFrame, filename);
             if (grCaptureFrameNumber >= 0)
                 grCaptureFrameNumber = -1;
+            if (grCaptureEndFrame >= 0 && grCurrentFrame >= grCaptureEndFrame)
+                grCaptureSequenceFinished = 1;
         }
     }
 
     grCurrentFrame++;
     grCaptureResetFrameDraws();
+}
+
+
+int grCaptureSequenceComplete(void)
+{
+    return grCaptureSequenceFinished;
 }
 
 

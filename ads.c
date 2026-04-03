@@ -64,6 +64,8 @@ extern int strcmp(const char *s1, const char *s2);
 #include "ps1_restore_pilots.h"
 #endif
 
+extern int grCaptureSequenceComplete(void);
+
 
 #define MAX_RANDOM_OPS        10
 #define MAX_ADS_CHUNKS        100
@@ -943,6 +945,8 @@ void adsPlaySingleTtm(char *ttmName)  // TODO - tempo
 #endif
         ttmThreads[0].isRunning = 1;
         grUpdateDisplay(NULL, ttmThreads, NULL);
+        if (grCaptureSequenceComplete())
+            break;
         grUpdateDelay = ttmThreads[0].delay;
     }
 
@@ -1417,6 +1421,8 @@ void adsPlay(char *adsName, uint16 adsTag)
 #else
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
 #endif
+        if (grCaptureSequenceComplete())
+            break;
 
         // Determine min timer and collect active indices in a single pass
         {
@@ -1771,6 +1777,8 @@ void adsPlayWalk(int fromSpot, int fromHdg, int toSpot, int toHdg)
 #else
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
 #endif
+        if (grCaptureSequenceComplete())
+            break;
 
         // Determine min timer from the two threads
         uint16 mini = 300;

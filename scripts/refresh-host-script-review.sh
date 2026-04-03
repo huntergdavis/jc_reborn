@@ -178,7 +178,7 @@ capture_review_set() {
     run_with_timeout 90 \
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "MARY 1" \
-        --mode scene-default \
+        --boot "window nosound story scene 61 island-pos -124 37 raft-stage 5" \
         --frames 250 \
         --interval 50 \
         --output "$root/mary1" \

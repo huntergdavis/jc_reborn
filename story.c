@@ -48,6 +48,8 @@ extern int rand(void);
 #include "story.h"
 #include "story_data.h"
 
+extern int grCaptureSequenceComplete(void);
+
 
 static int storyCurrentDay = 1;
 static char storyBootAdsName[13] = "";
@@ -562,6 +564,8 @@ void storyPlay()
                     adsPlayWalk(prevSpot, prevHdg,
                         scene->spotStart, scene->hdgStart);
 #endif
+                if (grCaptureSequenceComplete())
+                    return;
 
                 ttmDx = islandState.xPos
                             + (scene->flags & LEFT_ISLAND ? 272 : 0);
@@ -579,6 +583,8 @@ void storyPlay()
                 ps1StoryDbgNextHdg = (uint16)scene->hdgEnd;
 #endif
                 adsPlay(scene->adsName, scene->adsTagNo);
+                if (grCaptureSequenceComplete())
+                    return;
 #ifdef PS1_BUILD
                 if (!ps1AdsLastPlayLaunched) {
                     /* Skip dead scene selections that produced no ADS threads. */
@@ -614,6 +620,8 @@ void storyPlay()
 #else
             adsPlayWalk(prevSpot, prevHdg, finalScene->spotStart, finalScene->hdgStart);
 #endif
+        if (grCaptureSequenceComplete())
+            return;
 
         if (finalScene->flags & ISLAND) {
             ttmDx = islandState.xPos + (finalScene->flags & LEFT_ISLAND ? 272 : 0);
@@ -635,6 +643,8 @@ void storyPlay()
         ps1StoryDbgNextHdg = (uint16)finalScene->hdgEnd;
 #endif
         adsPlay(finalScene->adsName, finalScene->adsTagNo);
+        if (grCaptureSequenceComplete())
+            return;
 #ifdef PS1_BUILD
         if (!ps1AdsLastPlayLaunched) {
             /* Retry a fresh sequence immediately instead of idling on static background. */

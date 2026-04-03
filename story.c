@@ -408,6 +408,7 @@ void storyPlay()
     int firstSequence = 1;
     struct TStoryScene *bootScene = NULL;
     struct TStoryScene *forcedIntermediateScene = NULL;
+    struct TStoryScene *forcedFinalScene = NULL;
 
     adsInit();
 
@@ -434,7 +435,9 @@ void storyPlay()
         }
         else if (storyBootSceneIndex >= 0 && storyBootSceneIndex < NUM_SCENES) {
             struct TStoryScene *requestedScene = &storyScenes[storyBootSceneIndex];
-            if (requestedScene->flags & FINAL)
+            if ((requestedScene->flags & FINAL) && !(requestedScene->flags & FIRST))
+                forcedFinalScene = requestedScene;
+            else if (requestedScene->flags & FINAL)
                 bootScene = requestedScene;
             else
                 forcedIntermediateScene = requestedScene;
@@ -447,7 +450,9 @@ void storyPlay()
         }
 
         struct TStoryScene *finalScene = bootScene;
-        if (finalScene == NULL) {
+        if (forcedFinalScene != NULL)
+            finalScene = forcedFinalScene;
+        else if (finalScene == NULL) {
             unwantedFlags = 0;
             if (firstSequence)
                 unwantedFlags |= FIRST;

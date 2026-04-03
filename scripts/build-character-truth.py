@@ -66,10 +66,14 @@ def aggregate_character(draws: list[dict]) -> dict:
     }
 
 
-def build_frame_truth(meta_path: Path) -> dict:
-    summary = summarize(meta_path)
+def build_frame_truth_from_actor_candidates(
+    actor_candidates: list[dict],
+    frame_number: int,
+    frame_name: str,
+    scene_label: str | None,
+) -> dict:
     by_character: dict[str, list[dict]] = {}
-    for draw in summary.get("actor_candidates", []):
+    for draw in actor_candidates:
         entity = str(draw.get("entity") or "unknown")
         if entity in {"background_or_prop", "ambiguous", "unknown"}:
             continue
@@ -79,13 +83,23 @@ def build_frame_truth(meta_path: Path) -> dict:
         for _, draws in sorted(by_character.items())
     ]
     return {
-        "frame_number": int(summary["frame_number"]),
-        "frame_name": meta_path.stem,
-        "scene_label": summary.get("scene_label"),
+        "frame_number": int(frame_number),
+        "frame_name": frame_name,
+        "scene_label": scene_label,
         "character_count": len(characters),
         "visible_characters": [item["character"] for item in characters],
         "characters": characters,
     }
+
+
+def build_frame_truth(meta_path: Path) -> dict:
+    summary = summarize(meta_path)
+    return build_frame_truth_from_actor_candidates(
+        summary.get("actor_candidates", []),
+        int(summary["frame_number"]),
+        meta_path.stem,
+        summary.get("scene_label"),
+    )
 
 
 def build_truth(root: Path) -> dict:

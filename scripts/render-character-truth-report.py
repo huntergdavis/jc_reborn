@@ -18,9 +18,10 @@ def rel(path: Path, dst_dir: Path) -> str:
 
 def frame_image_path(actual_root: Path, scene_label: str, frame_name: str) -> Path | None:
     scene_dir_name = scene_label.lower().replace(" ", "")
-    path = actual_root / scene_dir_name / "frames" / f"{frame_name}.bmp"
-    if path.is_file():
-        return path
+    for suffix in (".bmp", ".png"):
+        path = actual_root / scene_dir_name / "frames" / f"{frame_name}{suffix}"
+        if path.is_file():
+            return path
     return None
 
 

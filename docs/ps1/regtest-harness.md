@@ -298,8 +298,7 @@ One-command path:
 ./scripts/capture-and-check-ps1.sh \
   --expected-root host-script-review/fishing1 \
   --scene "FISHING 1" \
-  --frame-number 80 \
-  "story scene 17"
+  --frame-number 80
 ```
 
 Or reuse an existing overlay screenshot:
@@ -315,7 +314,6 @@ Headless manual capture:
 ```bash
 ./scripts/regtest-scene.sh \
   --scene "FISHING 1" \
-  --boot "story scene 17" \
   --overlay
 ```
 
@@ -330,6 +328,7 @@ python3 scripts/check-character-screenshot.py \
 
 Notes:
 - `capture-and-check-ps1.sh` now defaults to the headless regtest harness; use `--live` only when you explicitly want the older UI path.
+- `regtest-scene.sh` now consults [config/ps1/regtest-scenes.txt](/home/hunter/workspace/jc_reborn/config/ps1/regtest-scenes.txt) and reuses the canonical boot route for known scenes before falling back to raw `island ads`.
 - `check-character-screenshot.py` now prefers the frame number embedded in the overlay packet, so DuckStation timestamped filenames do not need manual frame numbering.
 - If `--expected-root` contains only one scene, `--scene-label` is optional and will be inferred automatically.
 - This path is intended for controlled test captures we generate ourselves. Arbitrary screenshots without the overlay still need a separate image-matching path.

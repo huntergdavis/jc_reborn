@@ -55,8 +55,8 @@ Options:
   -h, --help            Show this help
 
 Examples:
-  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/fishing1 --scene "FISHING 1" --frame-number 80 "story scene 17"
-  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/mary1 --scene "MARY 1" --frame-number 50 "story scene 61"
+  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/fishing1 --scene "FISHING 1" --frame-number 80
+  ./scripts/capture-and-check-ps1.sh --expected-root host-script-review/mary1 --scene "MARY 1" --frame-number 50
   ./scripts/capture-and-check-ps1.sh --expected-root host-references-test4/FISHING-1 --image host-references-test4/FISHING-1/frame_00081.bmp
 USAGE
     exit 0

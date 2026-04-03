@@ -26,6 +26,7 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
+REGTEST_SCENE_LIST="$PROJECT_ROOT/config/ps1/regtest-scenes.txt"
 
 # Load shared config
 # shellcheck source=../config/ps1/regtest-config.sh
@@ -94,10 +95,33 @@ if [ -z "$ADS_NAME" ] || [ -z "$SCENE_TAG" ]; then
     exit 1
 fi
 
+lookup_scene_manifest() {
+    local ads_name="$1"
+    local scene_tag="$2"
+    local line
+    [ -f "$REGTEST_SCENE_LIST" ] || return 1
+    line="$(awk -v ads="$ads_name" -v tag="$scene_tag" '
+        $0 !~ /^[[:space:]]*#/ && NF >= 5 && $1 == ads && $2 == tag {
+            print;
+            exit;
+        }
+    ' "$REGTEST_SCENE_LIST")"
+    [ -n "$line" ] || return 1
+    printf '%s\n' "$line"
+}
+
 # Build the BOOTMODE override string
 if [ -z "$BOOT_STRING" ]; then
     if [ -n "$SCENE_INDEX" ]; then
         BOOT_STRING="story scene ${SCENE_INDEX}"
+    elif SCENE_MANIFEST_LINE="$(lookup_scene_manifest "$ADS_NAME" "$SCENE_TAG")"; then
+        if [ -z "$SCENE_INDEX" ]; then
+            SCENE_INDEX="$(printf '%s\n' "$SCENE_MANIFEST_LINE" | awk '{print $3}')"
+        fi
+        if [ -z "$SCENE_STATUS" ]; then
+            SCENE_STATUS="$(printf '%s\n' "$SCENE_MANIFEST_LINE" | awk '{print $4}')"
+        fi
+        BOOT_STRING="$(printf '%s\n' "$SCENE_MANIFEST_LINE" | cut -d' ' -f5-)"
     else
         BOOT_STRING="island ads ${ADS_NAME} ${SCENE_TAG}"
     fi

@@ -220,8 +220,7 @@ Fastest workflow:
 ./scripts/capture-and-check-ps1.sh \
   --expected-root host-script-review/fishing1 \
   --scene "FISHING 1" \
-  --frame-number 80 \
-  "story scene 17"
+  --frame-number 80
 ```
 
 Reuse an existing overlay screenshot:
@@ -237,7 +236,6 @@ Equivalent headless manual steps:
 ```bash
 ./scripts/regtest-scene.sh \
   --scene "FISHING 1" \
-  --boot "story scene 17" \
   --overlay
 ```
 
@@ -264,6 +262,8 @@ This reports:
 - rough positions and bounding boxes
 - diff vs expected truth
 - an HTML report under `/tmp/ps1-character-check/character-truth-report.html`
+
+When a scene exists in [regtest-scenes.txt](/home/hunter/workspace/jc_reborn/config/ps1/regtest-scenes.txt), `regtest-scene.sh` now reuses that canonical boot route automatically instead of defaulting to raw `island ads`.
 
 ## Next Steps
 

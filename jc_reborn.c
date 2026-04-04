@@ -824,6 +824,15 @@ int main(int argc, char **argv)
         grLoadPalette(palResources[0]);
     }
 
+    if (hostForcedLowTide >= 0)
+        islandState.lowTide = hostForcedLowTide;
+    if (hostForcedRaftStage >= 0)
+        islandState.raft = hostForcedRaftStage;
+    if (hostForcedIslandPosValid) {
+        islandState.xPos = hostForcedIslandX;
+        islandState.yPos = hostForcedIslandY;
+    }
+
     if (ps1BootDirectSceneIndex >= 0) {
         storyPlayBootSceneDirect(ps1BootDirectSceneIndex);
     }

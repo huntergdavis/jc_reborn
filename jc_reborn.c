@@ -166,6 +166,18 @@ static void ps1ResetBootArgs(void)
     grCaptureOverlay = 0;
     grCaptureOverlayMaskOnly = 0;
     ps1BootDbgCaptureMode = 0;
+    ps1BootForcedSeed = -1;
+    ps1BootDirectSceneIndex = -1;
+    hostForcedStoryDay = -1;
+    hostForcedIslandPosValid = 0;
+    hostForcedIslandX = 0;
+    hostForcedIslandY = 0;
+    hostForcedLowTide = -1;
+    hostForcedRaftStage = -1;
+    hostForcedSceneOffsetValid = 0;
+    hostForcedSceneOffsetX = 0;
+    hostForcedSceneOffsetY = 0;
+    hostCapturePreludeFrame = 0;
 }
 
 static int ps1CopyBootArg(int index, const char *src)
@@ -249,6 +261,27 @@ static void ps1ApplyBootOverride(char *buffer)
         } else if (!strcmp(tokens[i], "capture-scene-label") && (i + 1) < tokenCount) {
             grCaptureSetSceneLabel(tokens[i + 1]);
             i++;
+        } else if (!strcmp(tokens[i], "story-day") && (i + 1) < tokenCount) {
+            hostForcedStoryDay = atoi(tokens[i + 1]);
+            i++;
+        } else if (!strcmp(tokens[i], "island-pos") && (i + 2) < tokenCount) {
+            hostForcedIslandX = atoi(tokens[i + 1]);
+            hostForcedIslandY = atoi(tokens[i + 2]);
+            hostForcedIslandPosValid = 1;
+            i += 2;
+        } else if (!strcmp(tokens[i], "lowtide") && (i + 1) < tokenCount) {
+            hostForcedLowTide = atoi(tokens[i + 1]) ? 1 : 0;
+            i++;
+        } else if (!strcmp(tokens[i], "raft-stage") && (i + 1) < tokenCount) {
+            hostForcedRaftStage = atoi(tokens[i + 1]);
+            i++;
+        } else if (!strcmp(tokens[i], "scene-offset") && (i + 2) < tokenCount) {
+            hostForcedSceneOffsetX = atoi(tokens[i + 1]);
+            hostForcedSceneOffsetY = atoi(tokens[i + 2]);
+            hostForcedSceneOffsetValid = 1;
+            i += 2;
+        } else if (!strcmp(tokens[i], "capture-prelude-frame")) {
+            hostCapturePreludeFrame = 1;
         }
     }
 

@@ -327,6 +327,8 @@ static void ps1ApplyBootOverride(char *buffer)
     if (!strcmp(tokens[tokenBase], "ttm") && (tokenBase + 1) < tokenCount) {
         if (ps1CopyBootArg(0, tokens[tokenBase + 1])) {
             numArgs = 1;
+            if ((tokenBase + 2) < tokenCount && ps1CopyBootArg(1, tokens[tokenBase + 2]))
+                numArgs = 2;
             argTtm = 1;
             argPlayAll = 0;
         }
@@ -832,7 +834,7 @@ int main(int argc, char **argv)
         adsPlayBench();
     }
     else if (argTtm && numArgs >= 1) {
-        adsPlaySingleTtm(args[0]);
+        adsPlaySingleTtm(args[0], (numArgs >= 2) ? (uint16)atoi(args[1]) : 0);
     }
     else if (argAds && numArgs >= 2) {
         adsInit();
@@ -935,7 +937,7 @@ int main(int argc, char **argv)
         printf("PS1: Render test complete\n");
 #else
         soundInit();
-        adsPlaySingleTtm(args[0]);
+        adsPlaySingleTtm(args[0], (numArgs >= 2) ? (uint16)atoi(args[1]) : 0);
         soundEnd();
 #endif
 

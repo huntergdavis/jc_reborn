@@ -922,7 +922,7 @@ void adsInit()    // Init slots and threads for TTM scripts  // TODO : rename
 }
 
 
-void adsPlaySingleTtm(char *ttmName)  // TODO - tempo
+void adsPlaySingleTtm(char *ttmName, uint16 startTag)  // TODO - tempo
 {
     adsInit();
     ttmLoadTtm(ttmSlots, ttmName);
@@ -930,7 +930,7 @@ void adsPlaySingleTtm(char *ttmName)  // TODO - tempo
     if (ttmSlots[0].data == NULL) return;
 #endif
     adsAddScene(0,0,0);
-    ttmThreads[0].ip = 0;
+    ttmThreads[0].ip = (startTag ? ttmFindTag(ttmSlots, startTag) : 0);
 
     while (ttmThreads[0].ip < ttmSlots[0].dataSize) {
 #ifdef PS1_BUILD
@@ -1811,5 +1811,4 @@ void adsCaptureCurrentFrame(void)
 {
     grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
 }
-
 

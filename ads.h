@@ -28,7 +28,7 @@ void adsNoIsland();
 void adsPlay(char *adsName, uint16 adsTag);
 void adsPlayIntro();
 void adsPlayWalk();
-void adsPlaySingleTtm(char *ttmName);
+void adsPlaySingleTtm(char *ttmName, uint16 startTag);
 void adsPlayBench();  // TODO
 void adsCaptureCurrentFrame(void);
 

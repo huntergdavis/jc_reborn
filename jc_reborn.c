@@ -709,14 +709,23 @@ int main(int argc, char **argv)
 
     debugMode = 0;  /* Disable debug output on PS1 - vprintf crashes */
 
-    /* Show title screen FIRST - instant visual feedback */
-    loadTitleScreenEarly();
+    /* Load boot override BEFORE seeding RNG so "seed N" can override. */
+    ps1LoadBootOverride();
+
+    /* For normal interactive boots, show the title screen before loading
+     * resources. For scripted/headless boots, skip it so direct scene
+     * captures start at the requested scene instead of burning hundreds of
+     * frames on startup/title artwork. */
+    if (ps1BootDirectSceneIndex < 0 &&
+        !storyHasBootOverridePending() &&
+        !argBench &&
+        !argTtm &&
+        !argAds) {
+        loadTitleScreenEarly();
+    }
 
     /* Parse resource files from CD - needed for background and sprites */
     parseResourceFiles("RESOURCE.MAP");
-
-    /* Load boot override BEFORE seeding RNG so "seed N" can override. */
-    ps1LoadBootOverride();
 
     /* Seed RNG — use forced seed if specified in BOOTMODE, else hardware RNG. */
     if (ps1BootForcedSeed >= 0) {

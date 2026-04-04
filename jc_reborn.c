@@ -141,6 +141,7 @@ static int hostCapturePreludeFrame = 0;
 static int ps1BootForcedSeed = -1;  /* -1 = use hardware RNG */
 static int ps1BootDirectSceneIndex = -1;  /* -1 = not set; >=0 = play scene directly and exit */
 static char ps1BootArgStorage[3][32];
+volatile uint16 ps1BootDbgCaptureMode = 0;
 
 static int ps1IsSpace(char c)
 {
@@ -164,6 +165,7 @@ static void ps1ResetBootArgs(void)
 
     grCaptureOverlay = 0;
     grCaptureOverlayMaskOnly = 0;
+    ps1BootDbgCaptureMode = 0;
 }
 
 static int ps1CopyBootArg(int index, const char *src)
@@ -229,8 +231,11 @@ static void ps1ApplyBootOverride(char *buffer)
         if (!strcmp(tokens[i], "capture-overlay-mask")) {
             grCaptureOverlay = 1;
             grCaptureOverlayMaskOnly = 1;
+            ps1BootDbgCaptureMode = 2;
         } else if (!strcmp(tokens[i], "capture-overlay")) {
             grCaptureOverlay = 1;
+            if (ps1BootDbgCaptureMode == 0)
+                ps1BootDbgCaptureMode = 1;
         } else if (!strcmp(tokens[i], "capture-meta-dir") && (i + 1) < tokenCount) {
             grCaptureMetaDir = tokens[i + 1];
             i++;

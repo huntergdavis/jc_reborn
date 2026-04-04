@@ -435,6 +435,38 @@ if [ "$FRAME_COUNT" -gt 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Extract raw DuckStation hashes from regtest log
+# ---------------------------------------------------------------------------
+RAW_HASHES_FILE="$OUTPUT_DIR/raw-hashes.json"
+python3 - <<'PY' "$REGTEST_LOG" "$RAW_HASHES_FILE"
+import json
+import re
+import sys
+from pathlib import Path
+
+log_path = Path(sys.argv[1])
+out_path = Path(sys.argv[2])
+
+patterns = {
+    "save_state_hash": re.compile(r"Save State Hash:\s*([0-9a-fA-F]+)"),
+    "ram_hash": re.compile(r"RAM Hash:\s*([0-9a-fA-F]+)"),
+    "spu_ram_hash": re.compile(r"SPU RAM Hash:\s*([0-9a-fA-F]+)"),
+    "vram_hash": re.compile(r"VRAM Hash:\s*([0-9a-fA-F]+)"),
+    "exe_hash": re.compile(r"Hash for 'JCREBORN\.EXE' -\s*([0-9A-F]+)"),
+}
+
+result = {}
+if log_path.is_file():
+    text = log_path.read_text(encoding="utf-8", errors="ignore")
+    for key, pattern in patterns.items():
+        match = pattern.search(text)
+        if match:
+            result[key] = match.group(1)
+
+out_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+PY
+
+# ---------------------------------------------------------------------------
 # Build structured JSON result
 # ---------------------------------------------------------------------------
 # Check for crash indicators in printf log
@@ -474,6 +506,7 @@ result = {
         'frames_dir': os.path.abspath('$FRAMES_DIR'),
         'telemetry': os.path.abspath('$TELEMETRY_FILE'),
         'printf_log': os.path.abspath('$PRINTF_FILE'),
+        'raw_hashes': os.path.abspath('$RAW_HASHES_FILE'),
         'build_log': os.path.abspath('$OUTPUT_DIR/build.log'),
     },
 }
@@ -494,6 +527,16 @@ if os.path.isfile(telemetry_path) and os.path.getsize(telemetry_path) > 2:
         rows = last.get('rows', [])
         drops = {r['key']: r['width'] for r in rows if r.get('key', '').startswith('drop_')}
         result['outcome']['drop_indicators'] = drops
+    except Exception:
+        pass
+
+raw_hashes_path = '$RAW_HASHES_FILE'
+if os.path.isfile(raw_hashes_path):
+    try:
+        with open(raw_hashes_path) as f:
+            raw_hashes = json.load(f)
+        if isinstance(raw_hashes, dict) and raw_hashes:
+            result['outcome']['raw_hashes'] = raw_hashes
     except Exception:
         pass
 

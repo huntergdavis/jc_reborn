@@ -48,7 +48,7 @@ MARY 1 31 untested story scene 61 island-pos -124 37 raft-stage 5
 MARY 2 33 untested story scene 33
 MARY 3 32 verified story scene 32
 MARY 4 34 untested story scene 34
-MARY 5 35 verified story scene 35
+MARY 5 35 verified story direct 35
 
 # --- MISCGAG.ADS (verified=2) ---
 MISCGAG 1 36 verified story scene 36

@@ -1,0 +1,39 @@
+--- a/src/duckstation-regtest/regtest_host.cpp
++++ b/src/duckstation-regtest/regtest_host.cpp
+@@ -105,7 +105,9 @@
+   si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Info));
+   si.SetBoolValue("Main", "ApplyGameSettings", false); // don't want game settings interfering
+   si.SetBoolValue("BIOS", "PatchFastBoot", true);      // no point validating the bios intro..
+-  si.SetFloatValue("Main", "EmulationSpeed", 0.0f);
++  /* Keep frame presentation live for dump-based harness runs. */
++  si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
++  INFO_LOG("JC_REGTEST_PATCH: EmulationSpeed forced to 1.0");
+ 
+   // disable all sources
+   for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
+--- a/src/core/system.cpp
++++ b/src/core/system.cpp
+@@ -3874,7 +3874,9 @@
+ {
+   // Avoid flipping vsync on and off by manually throttling when vsync is on.
+   const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
+-  const PresentSkipMode present_skip_mode = GetEffectivePresentSkipMode();
++  // Force real presented frames for headless regtest dumps.
++  INFO_LOG("JC_REGTEST_PATCH: Forcing PresentSkipMode::Disabled");
++  const PresentSkipMode present_skip_mode = PresentSkipMode::Disabled;
+ 
+   static constexpr std::array<const char*, 3> present_throttle_names = {"Disabled", "WhenVSyncBlocks", "Always"};
+ 
+@@ -3916,9 +3918,10 @@
+   if (!IsRunningAtNonStandardSpeed())
+     return PresentSkipMode::Disabled;
+ 
+-  // Always present throttle when running uncapped.
++  // Regtest frame dumping needs real presented frames, even when the host
++  // is running uncapped.
+   if (!s_state.throttler_enabled)
+-    return PresentSkipMode::Always;
++    return PresentSkipMode::Disabled;
+ 
+   // Must present skip if the refresh rate is below the system frame rate.
+   const float host_refresh_rate = VideoThread::GetRenderWindowInfo().surface_refresh_rate;

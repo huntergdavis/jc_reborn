@@ -91,6 +91,8 @@ RUN git clone --depth 1 https://github.com/stenzek/duckstation.git
 
 WORKDIR /build/duckstation
 
+COPY config/ps1/duckstation-regtest.patch /tmp/duckstation-regtest.patch
+
 # Download prebuilt third-party dependencies.
 # DuckStation ships a version file at dep/PREBUILT-VERSION that pins the
 # exact release tag in the duckstation/dependencies repo.  We read that
@@ -101,6 +103,36 @@ RUN DEPS_VERSION=$(cat dep/PREBUILT-VERSION) && \
     curl -sSL \
       "https://github.com/duckstation/dependencies/releases/download/${DEPS_VERSION}/deps-linux-x64.tar.xz" \
       | tar -xJ -C dep/prebuilt
+
+RUN patch -p1 < /tmp/duckstation-regtest.patch
+
+RUN python3 - <<'PY'
+from pathlib import Path
+
+regtest = Path("src/duckstation-regtest/regtest_host.cpp").read_text(encoding="utf-8")
+system = Path("src/core/system.cpp").read_text(encoding="utf-8")
+
+expected_regtest = [
+    'si.SetFloatValue("Main", "EmulationSpeed", 1.0f);',
+    'INFO_LOG("JC_REGTEST_PATCH: EmulationSpeed forced to 1.0");',
+]
+expected_system = [
+    'INFO_LOG("JC_REGTEST_PATCH: Forcing PresentSkipMode::Disabled");',
+    'const PresentSkipMode present_skip_mode = PresentSkipMode::Disabled;',
+    'return PresentSkipMode::Disabled;',
+]
+for needle in expected_regtest:
+    if needle not in regtest:
+        raise SystemExit(f"missing patched regtest source line: {needle}")
+for needle in expected_system:
+    if needle not in system:
+        raise SystemExit(f"missing patched system source line: {needle}")
+if 'si.SetFloatValue("Main", "EmulationSpeed", 0.0f);' in regtest:
+    raise SystemExit("unpatched regtest emulation speed line still present")
+print("JC_REGTEST_PATCH_VERIFY_OK")
+PY
+
+FROM builder AS patched-source-check
 
 # Configure with CMake.
 # Key flags:
@@ -164,9 +196,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy the regtest binary, resources, and prebuilt shared libraries.
-COPY --from=builder /build/duckstation/build/bin/duckstation-regtest /usr/local/bin/
-COPY --from=builder /build/duckstation/build/bin/resources /usr/local/bin/resources
-COPY --from=builder /build/duckstation/dep/prebuilt/linux-x64/lib/*.so* /usr/local/lib/
+COPY --from=patched-source-check /build/duckstation/build/bin/duckstation-regtest /usr/local/bin/
+COPY --from=patched-source-check /build/duckstation/build/bin/resources /usr/local/bin/resources
+COPY --from=patched-source-check /build/duckstation/dep/prebuilt/linux-x64/lib/*.so* /usr/local/lib/
 RUN ldconfig
 
 # Create directories for game images and output.
@@ -180,7 +212,7 @@ ENV DUCKSTATION_BIOS_PATH=/bios
 WORKDIR /output
 
 # Default entrypoint is the regtest binary.
-ENTRYPOINT ["duckstation-regtest"]
+ENTRYPOINT ["/usr/local/bin/duckstation-regtest"]
 
 # Default arguments: software renderer, console logging, fast boot.
 CMD ["-renderer", "Software", "-log", "Info", "-console", "-help"]

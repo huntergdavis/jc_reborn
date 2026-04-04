@@ -471,6 +471,15 @@ static void grCaptureEmitFrameMetadataLine(void)
     if (!grCaptureIsMetadataFrame())
         return;
 
+    /* PS1 printf uses the BIOS break instruction for TTY output.
+     * Calling printf in the game loop crashes/hangs the PS1 unless PCDrv
+     * is enabled in the emulator.  The headless regtest captures this
+     * metadata from the guest TTY, but the regtest image does not enable
+     * PCDrv by default, so skip the emission entirely.  The regtest
+     * harness extracts sprite draw data from the capture overlay instead. */
+    (void)emitted; (void)i;
+    return;
+
     printf("PS1_CAPTURE_META ");
     printf("{\"frame_number\":%d,", grCurrentFrame);
     printf("\"scene_label\":");

@@ -637,8 +637,11 @@ static uint32 adsFindTag(uint16 reqdTag)
             i++;
     }
 
-    if (result == 0)
+    if (result == 0) {
+#ifndef PS1_BUILD
         fprintf(stderr, "Warning : ADS tag #%d not found, returning offset 0000\n", reqdTag);
+#endif
+    }
 
     return result;
 }

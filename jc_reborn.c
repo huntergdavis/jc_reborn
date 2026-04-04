@@ -834,6 +834,11 @@ int main(int argc, char **argv)
         adsPlayBench();
     }
     else if (argTtm && numArgs >= 1) {
+        adsInit();
+        if (argIsland)
+            adsInitIsland();
+        else
+            adsNoIsland();
         adsPlaySingleTtm(args[0], (numArgs >= 2) ? (uint16)atoi(args[1]) : 0);
     }
     else if (argAds && numArgs >= 2) {

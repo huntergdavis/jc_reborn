@@ -49,6 +49,7 @@ QUIET=0
 CAPTURE_OVERLAY=0
 CAPTURE_OVERLAY_MASK=0
 LOG_LEVEL="${REGTEST_LOG_LEVEL:-Info}"
+LOCK_FILE="${REGTEST_LOCK_FILE:-$PROJECT_ROOT/.regtest-build.lock}"
 
 usage() {
     cat <<'USAGE'
@@ -186,6 +187,19 @@ log() {
     fi
 }
 
+acquire_lock() {
+    local lock_path="$1"
+    mkdir -p "$(dirname "$lock_path")"
+    exec 9>"$lock_path"
+    if command -v flock >/dev/null 2>&1; then
+        log "Waiting for regtest lock: $lock_path"
+        flock 9
+    else
+        echo "ERROR: flock is required for regtest-scene.sh shared-artifact locking." >&2
+        exit 1
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # Check for duckstation-regtest or Docker fallback
 # ---------------------------------------------------------------------------
@@ -242,6 +256,8 @@ cleanup() {
     fi
 }
 trap cleanup EXIT
+
+acquire_lock "$LOCK_FILE"
 
 # ---------------------------------------------------------------------------
 # Build CD image

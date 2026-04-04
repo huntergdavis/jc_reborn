@@ -34,6 +34,9 @@ REGTEST_TIMEOUT="${REGTEST_TIMEOUT:-60}"
 # Default output root for results
 REGTEST_OUTPUT_DIR="${REGTEST_OUTPUT_DIR:-regtest-results}"
 
+# Global lock guarding shared BOOTMODE/build/CD-image artifacts.
+REGTEST_LOCK_FILE="${REGTEST_LOCK_FILE:-.regtest-build.lock}"
+
 # Scene list
 REGTEST_SCENE_LIST="${REGTEST_SCENE_LIST:-config/ps1/regtest-scenes.txt}"
 

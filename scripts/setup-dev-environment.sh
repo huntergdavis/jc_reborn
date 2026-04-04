@@ -1,7 +1,7 @@
 #!/bin/bash
 # setup-dev-environment.sh — Install everything needed for jc_reborn development
 #
-# Targets Pop!_OS / Ubuntu / Debian-based systems.
+# Targets KDE Neon / Ubuntu / Pop!_OS / Debian-based systems.
 # Installs: system packages, Docker, Python venv, SDL2, DuckStation flatpak,
 #           PS1 Docker build image, regtest Docker image.
 #

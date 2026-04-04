@@ -1278,10 +1278,15 @@ void adsPlay(char *adsName, uint16 adsTag)
 #ifdef PS1_BUILD
     /* Recovery: some ADS control paths can parse without launching a scene
      * (no ADD_SCENE emitted), which leaves PS1 on a static background.
-     * If that happens, retry one bookmarked chunk instead of idling. */
+     * This happens when IF_LASTPLAYED conditions don't match because no
+     * prior scene context exists (cold boot).  Try each bookmarked chunk
+     * in random order until one actually spawns a thread. */
     if (numThreads == 0 && !adsStopRequested && numAdsChunks > 0) {
-        int pick = rand() % numAdsChunks;
-        adsPlayChunk(data, dataSize, adsChunks[pick].offset);
+        int start = rand() % numAdsChunks;
+        for (int attempt = 0; attempt < numAdsChunks && numThreads == 0; attempt++) {
+            int pick = (start + attempt) % numAdsChunks;
+            adsPlayChunk(data, dataSize, adsChunks[pick].offset);
+        }
     }
 #endif
     if (numThreads > 0) ps1AdsLastPlayLaunched = 1;

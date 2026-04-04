@@ -756,6 +756,11 @@ def decode_actor_panel(
                     },
                 }
             )
+    elif source == "single-image":
+        # Single-image decoding can see real scene pixels in the nominal actor-panel
+        # area once the payload strip is unavailable. Without an active identity marker,
+        # per-entity row samples are not trustworthy enough to claim named characters.
+        characters = []
 
     return {
         "character_count": len(characters),

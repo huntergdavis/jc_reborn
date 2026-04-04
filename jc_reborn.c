@@ -355,6 +355,7 @@ static void loadTitleScreenEarly(void)
     /* Initialize graphics for 640x480 interlaced */
     ResetGraph(0);
     SetVideoMode(MODE_NTSC);
+    grGpuAlreadyInitialized = 1;
 
     /* Set up display environment for 640x480 */
     DISPENV disp;
@@ -780,7 +781,7 @@ int main(int argc, char **argv)
     initLRUCache();
 
 #ifdef PS1_BUILD
-    grGpuAlreadyInitialized = 1;
+    grGpuAlreadyInitialized = 0;
     graphicsInit();
     soundInit();
 

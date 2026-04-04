@@ -711,7 +711,14 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
         ttmThread->sceneIterations = arg3 - 1;
     }
 
+#ifdef PS1_BUILD
+    /* PS1 RAM-sprite path composites directly into the background tiles, so
+     * scene restore ops must target that same surface instead of an empty
+     * side layer that never reaches the framebuffer. */
+    ttmThread->ttmLayer = grBackgroundSfc;
+#else
     ttmThread->ttmLayer = grNewLayer();
+#endif
 
     if (numThreads < MAX_TTM_THREADS)
         numThreads++;
@@ -723,7 +730,12 @@ static void adsStopScene(int sceneNo)
 #ifdef PS1_BUILD
     adsCaptureHandoffReplay(&ttmThreads[sceneNo]);
 #endif
+#ifdef PS1_BUILD
+    if (ttmThreads[sceneNo].ttmLayer != grBackgroundSfc)
+        grFreeLayer(ttmThreads[sceneNo].ttmLayer);
+#else
     grFreeLayer(ttmThreads[sceneNo].ttmLayer);
+#endif
     ttmThreads[sceneNo].isRunning = 0;
 #ifdef PS1_BUILD
     ttmThreads[sceneNo].numDrawnSprites = 0;
@@ -1811,4 +1823,3 @@ void adsCaptureCurrentFrame(void)
 {
     grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
 }
-

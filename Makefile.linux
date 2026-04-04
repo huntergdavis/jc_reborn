@@ -1,0 +1,12 @@
+SHELL := /bin/bash
+
+.PHONY: all clean bench
+
+all:
+	./scripts/build-host.sh
+
+bench:
+	./scripts/bench-host.sh
+
+clean:
+	rm -rf build-host jc_reborn-host

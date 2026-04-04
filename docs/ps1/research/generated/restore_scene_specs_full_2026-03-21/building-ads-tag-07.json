@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "building-ads",
+    "ads_name": "BUILDING.ADS",
+    "ads_tag": 7,
+    "scene_index": 15,
+    "peak_memory_bytes": 291628,
+    "bmp_count": 7,
+    "ttm_count": 3,
+    "restore_candidate": true,
+    "clear_screen_count": 1088,
+    "unique_rect_count": 11,
+    "union_rect": {
+      "x": 40,
+      "y": 56,
+      "width": 600,
+      "height": 294
+    },
+    "ttm_names": [
+      "GJGULIVR.TTM",
+      "MJFIRE.TTM",
+      "MJSAND.TTM"
+    ],
+    "restore_score": 91
+  },
+  "scene_flags": [
+    "ISLAND",
+    "VARPOS_OK",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 139312,
+    "bmp_15bit_bytes": 557248,
+    "bmp_raw_bytes": 139312,
+    "ttm_bytes": 10576,
+    "ads_bytes": 4512,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 652,
+    "ttm_slot_overhead_bytes": 24576,
+    "peak_memory_bytes": 291628
+  },
+  "resource_counts": {
+    "bmps": 7,
+    "scrs": 1,
+    "ttms": 3
+  },
+  "scene_resources": {
+    "bmps": [
+      "JOHNWALK.BMP",
+      "TRUNK.BMP",
+      "FIRE.BMP",
+      "FIRE1.BMP",
+      "FIRE3.BMP",
+      "FIRE4.BMP",
+      "FIRE2.BMP",
+      "SANDCAST.BMP",
+      "MJSANDC.BMP",
+      "GJCASTLE.BMP",
+      "GJRUNAWA.BMP",
+      "GJKINGKO.BMP",
+      "SPLASH.BMP",
+      "SHIPS.BMP",
+      "GJBIPLAN.BMP",
+      "STNDLAY.BMP",
+      "ZZZZS.BMP",
+      "SLEEP.BMP",
+      "LILIPUTS.BMP",
+      "GJGULL1.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "MJSAND.TTM",
+      "GJGULIVR.TTM",
+      "MJFIRE.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 40,
+      "y": 56,
+      "width": 600,
+      "height": 294
+    },
+    "unique_rects": [
+      {
+        "x": 280,
+        "y": 119,
+        "width": 360,
+        "height": 231
+      },
+      {
+        "x": 194,
+        "y": 123,
+        "width": 175,
+        "height": 142
+      },
+      {
+        "x": 176,
+        "y": 120,
+        "width": 192,
+        "height": 144
+      },
+      {
+        "x": 120,
+        "y": 215,
+        "width": 472,
+        "height": 124
+      },
+      {
+        "x": 192,
+        "y": 90,
+        "width": 448,
+        "height": 207
+      },
+      {
+        "x": 240,
+        "y": 134,
+        "width": 352,
+        "height": 204
+      },
+      {
+        "x": 40,
+        "y": 132,
+        "width": 448,
+        "height": 202
+      },
+      {
+        "x": 296,
+        "y": 254,
+        "width": 72,
+        "height": 61
+      },
+      {
+        "x": 304,
+        "y": 56,
+        "width": 304,
+        "height": 272
+      },
+      {
+        "x": 184,
+        "y": 121,
+        "width": 176,
+        "height": 139
+      },
+      {
+        "x": 240,
+        "y": 303,
+        "width": 88,
+        "height": 47
+      }
+    ],
+    "clear_screen_count": 1088,
+    "ttm_names": [
+      "GJGULIVR.TTM",
+      "MJFIRE.TTM",
+      "MJSAND.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "GJGULIVR.TTM",
+      "union_rect": {
+        "x": 120,
+        "y": 90,
+        "width": 520,
+        "height": 260
+      },
+      "unique_rects": [
+        {
+          "x": 280,
+          "y": 119,
+          "width": 360,
+          "height": 231
+        },
+        {
+          "x": 194,
+          "y": 123,
+          "width": 175,
+          "height": 142
+        },
+        {
+          "x": 176,
+          "y": 120,
+          "width": 192,
+          "height": 144
+        },
+        {
+          "x": 120,
+          "y": 215,
+          "width": 472,
+          "height": 124
+        },
+        {
+          "x": 192,
+          "y": 90,
+          "width": 448,
+          "height": 207
+        }
+      ],
+      "region_ids": [
+        0,
+        1
+      ],
+      "clear_region_ids": [
+        0,
+        1
+      ],
+      "op_counts": {
+        "region_id": 3,
+        "copy_zone_to_bg": 2,
+        "save_image1": 3,
+        "save_zone": 1,
+        "restore_zone": 1,
+        "clear_screen": 470
+      }
+    },
+    {
+      "ttm_name": "MJFIRE.TTM",
+      "union_rect": {
+        "x": 240,
+        "y": 134,
+        "width": 352,
+        "height": 204
+      },
+      "unique_rects": [
+        {
+          "x": 240,
+          "y": 134,
+          "width": 352,
+          "height": 204
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 324
+      }
+    },
+    {
+      "ttm_name": "MJSAND.TTM",
+      "union_rect": {
+        "x": 40,
+        "y": 56,
+        "width": 568,
+        "height": 294
+      },
+      "unique_rects": [
+        {
+          "x": 40,
+          "y": 132,
+          "width": 448,
+          "height": 202
+        },
+        {
+          "x": 296,
+          "y": 254,
+          "width": 72,
+          "height": 61
+        },
+        {
+          "x": 304,
+          "y": 56,
+          "width": 304,
+          "height": 272
+        },
+        {
+          "x": 184,
+          "y": 121,
+          "width": 176,
+          "height": 139
+        },
+        {
+          "x": 240,
+          "y": 303,
+          "width": 88,
+          "height": 47
+        }
+      ],
+      "region_ids": [
+        0,
+        1
+      ],
+      "clear_region_ids": [
+        0,
+        1
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 3,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 294
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "BUILDING.ADS",
+    "ads_tags": [
+      7
+    ],
+    "scene_indices": [
+      15
+    ],
+    "ttm_names": [
+      "GJGULIVR.TTM",
+      "MJFIRE.TTM",
+      "MJSAND.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

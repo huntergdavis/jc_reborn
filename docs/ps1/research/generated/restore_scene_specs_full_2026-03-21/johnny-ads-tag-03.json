@@ -1,0 +1,276 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "johnny-ads",
+    "ads_name": "JOHNNY.ADS",
+    "ads_tag": 3,
+    "scene_index": 27,
+    "peak_memory_bytes": 334342,
+    "bmp_count": 6,
+    "ttm_count": 4,
+    "restore_candidate": true,
+    "clear_screen_count": 289,
+    "unique_rect_count": 5,
+    "union_rect": {
+      "x": 0,
+      "y": 87,
+      "width": 528,
+      "height": 263
+    },
+    "ttm_names": [
+      "MEANWHIL.TTM",
+      "SJMSSGE.TTM",
+      "SJWORK.TTM",
+      "THEEND.TTM"
+    ],
+    "restore_score": 101
+  },
+  "scene_flags": [
+    "ISLAND",
+    "VARPOS_OK",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 182620,
+    "bmp_15bit_bytes": 730480,
+    "bmp_raw_bytes": 182620,
+    "ttm_bytes": 5178,
+    "ads_bytes": 1080,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 696,
+    "ttm_slot_overhead_bytes": 32768,
+    "peak_memory_bytes": 334342
+  },
+  "resource_counts": {
+    "bmps": 6,
+    "scrs": 1,
+    "ttms": 4
+  },
+  "scene_resources": {
+    "bmps": [
+      "JOHNWALK.BMP",
+      "MJBOTTLE.BMP",
+      "MJBTL2.BMP",
+      "THNKBUBL.BMP",
+      "MJFISH3.BMP",
+      "LITEBULB.BMP",
+      "THEEND1.BMP",
+      "ENDCRDTS.BMP",
+      "SJWORK.BMP",
+      "MEANWHIL.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "THEEND.TTM",
+      "SJMSSGE.TTM",
+      "SJWORK.TTM",
+      "MEANWHIL.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 0,
+      "y": 87,
+      "width": 528,
+      "height": 263
+    },
+    "unique_rects": [
+      {
+        "x": 224,
+        "y": 91,
+        "width": 160,
+        "height": 131
+      },
+      {
+        "x": 232,
+        "y": 90,
+        "width": 144,
+        "height": 134
+      },
+      {
+        "x": 0,
+        "y": 147,
+        "width": 448,
+        "height": 203
+      },
+      {
+        "x": 192,
+        "y": 199,
+        "width": 264,
+        "height": 142
+      },
+      {
+        "x": 144,
+        "y": 87,
+        "width": 384,
+        "height": 152
+      }
+    ],
+    "clear_screen_count": 289,
+    "ttm_names": [
+      "MEANWHIL.TTM",
+      "SJMSSGE.TTM",
+      "SJWORK.TTM",
+      "THEEND.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "MEANWHIL.TTM",
+      "union_rect": {
+        "x": 224,
+        "y": 90,
+        "width": 160,
+        "height": 134
+      },
+      "unique_rects": [
+        {
+          "x": 224,
+          "y": 91,
+          "width": 160,
+          "height": 131
+        },
+        {
+          "x": 232,
+          "y": 90,
+          "width": 144,
+          "height": 134
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 1,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 49
+      }
+    },
+    {
+      "ttm_name": "SJMSSGE.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 147,
+        "width": 448,
+        "height": 203
+      },
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 147,
+          "width": 448,
+          "height": 203
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 142
+      }
+    },
+    {
+      "ttm_name": "SJWORK.TTM",
+      "union_rect": {
+        "x": 192,
+        "y": 199,
+        "width": 264,
+        "height": 142
+      },
+      "unique_rects": [
+        {
+          "x": 192,
+          "y": 199,
+          "width": 264,
+          "height": 142
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 25
+      }
+    },
+    {
+      "ttm_name": "THEEND.TTM",
+      "union_rect": {
+        "x": 144,
+        "y": 87,
+        "width": 384,
+        "height": 152
+      },
+      "unique_rects": [
+        {
+          "x": 144,
+          "y": 87,
+          "width": 384,
+          "height": 152
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 73
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "JOHNNY.ADS",
+    "ads_tags": [
+      3,
+      4,
+      5
+    ],
+    "scene_indices": [
+      27,
+      28,
+      29
+    ],
+    "ttm_names": [
+      "MEANWHIL.TTM",
+      "SJMSSGE.TTM",
+      "SJWORK.TTM",
+      "THEEND.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

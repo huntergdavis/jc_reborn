@@ -1,0 +1,382 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "activity-ads",
+    "ads_name": "ACTIVITY.ADS",
+    "ads_tag": 4,
+    "scene_index": 4,
+    "peak_memory_bytes": 255612,
+    "bmp_count": 2,
+    "ttm_count": 6,
+    "restore_candidate": true,
+    "clear_screen_count": 1076,
+    "unique_rect_count": 9,
+    "union_rect": {
+      "x": 0,
+      "y": 43,
+      "width": 640,
+      "height": 307
+    },
+    "ttm_names": [
+      "GJDIVE.TTM",
+      "GJNAT1.TTM",
+      "GJNAT3.TTM",
+      "MJBATH.TTM",
+      "MJDIVE.TTM",
+      "MJREAD.TTM"
+    ],
+    "restore_score": 100
+  },
+  "scene_flags": [
+    "ISLAND",
+    "VARPOS_OK",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 88604,
+    "bmp_15bit_bytes": 354416,
+    "bmp_raw_bytes": 88604,
+    "ttm_bytes": 3034,
+    "ads_bytes": 2558,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 264,
+    "ttm_slot_overhead_bytes": 49152,
+    "peak_memory_bytes": 255612
+  },
+  "resource_counts": {
+    "bmps": 2,
+    "scrs": 1,
+    "ttms": 6
+  },
+  "scene_resources": {
+    "bmps": [
+      "MJDIVE.BMP",
+      "JOHNWALK.BMP",
+      "GJDIVE.BMP",
+      "COCONUTS.BMP",
+      "MJREAD.BMP",
+      "TRUNK.BMP",
+      "ZZZZS.BMP",
+      "LITEBULB.BMP",
+      "GJGULL1.BMP",
+      "GJGULL1A.BMP",
+      "GJGULL3.BMP",
+      "GJGULL3A.BMP",
+      "MJBATH.BMP",
+      "JCHANGE.BMP",
+      "GJGULL2.BMP",
+      "GJGULL2A.BMP",
+      "GJHOT.BMP",
+      "GJNAT1LI.BMP",
+      "MEXCWALK.BMP",
+      "GJNAT1.BMP",
+      "GJNAT3.BMP",
+      "BOAT.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "GJDIVE.TTM",
+      "MJDIVE.TTM",
+      "MJREAD.TTM",
+      "MJBATH.TTM",
+      "GJNAT1.TTM",
+      "GJNAT3.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 0,
+      "y": 43,
+      "width": 640,
+      "height": 307
+    },
+    "unique_rects": [
+      {
+        "x": 96,
+        "y": 43,
+        "width": 400,
+        "height": 295
+      },
+      {
+        "x": 0,
+        "y": 128,
+        "width": 640,
+        "height": 180
+      },
+      {
+        "x": 144,
+        "y": 161,
+        "width": 432,
+        "height": 189
+      },
+      {
+        "x": 192,
+        "y": 77,
+        "width": 448,
+        "height": 236
+      },
+      {
+        "x": 155,
+        "y": 50,
+        "width": 336,
+        "height": 288
+      },
+      {
+        "x": 256,
+        "y": 123,
+        "width": 384,
+        "height": 227
+      },
+      {
+        "x": 280,
+        "y": 200,
+        "width": 304,
+        "height": 150
+      },
+      {
+        "x": 160,
+        "y": 61,
+        "width": 440,
+        "height": 276
+      },
+      {
+        "x": 232,
+        "y": 60,
+        "width": 408,
+        "height": 281
+      }
+    ],
+    "clear_screen_count": 1076,
+    "ttm_names": [
+      "GJDIVE.TTM",
+      "GJNAT1.TTM",
+      "GJNAT3.TTM",
+      "MJBATH.TTM",
+      "MJDIVE.TTM",
+      "MJREAD.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "GJDIVE.TTM",
+      "union_rect": {
+        "x": 96,
+        "y": 43,
+        "width": 400,
+        "height": 295
+      },
+      "unique_rects": [
+        {
+          "x": 96,
+          "y": 43,
+          "width": 400,
+          "height": 295
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 115
+      }
+    },
+    {
+      "ttm_name": "GJNAT1.TTM",
+      "union_rect": null,
+      "unique_rects": [],
+      "region_ids": [],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 0,
+        "copy_zone_to_bg": 0,
+        "save_image1": 0,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 177
+      }
+    },
+    {
+      "ttm_name": "GJNAT3.TTM",
+      "union_rect": {
+        "x": 0,
+        "y": 128,
+        "width": 640,
+        "height": 180
+      },
+      "unique_rects": [
+        {
+          "x": 0,
+          "y": 128,
+          "width": 640,
+          "height": 180
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 206
+      }
+    },
+    {
+      "ttm_name": "MJBATH.TTM",
+      "union_rect": {
+        "x": 144,
+        "y": 77,
+        "width": 496,
+        "height": 273
+      },
+      "unique_rects": [
+        {
+          "x": 144,
+          "y": 161,
+          "width": 432,
+          "height": 189
+        },
+        {
+          "x": 192,
+          "y": 77,
+          "width": 448,
+          "height": 236
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 2,
+        "copy_zone_to_bg": 0,
+        "save_image1": 2,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 190
+      }
+    },
+    {
+      "ttm_name": "MJDIVE.TTM",
+      "union_rect": {
+        "x": 155,
+        "y": 50,
+        "width": 336,
+        "height": 288
+      },
+      "unique_rects": [
+        {
+          "x": 155,
+          "y": 50,
+          "width": 336,
+          "height": 288
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 93
+      }
+    },
+    {
+      "ttm_name": "MJREAD.TTM",
+      "union_rect": {
+        "x": 160,
+        "y": 60,
+        "width": 480,
+        "height": 290
+      },
+      "unique_rects": [
+        {
+          "x": 256,
+          "y": 123,
+          "width": 384,
+          "height": 227
+        },
+        {
+          "x": 280,
+          "y": 200,
+          "width": 304,
+          "height": 150
+        },
+        {
+          "x": 160,
+          "y": 61,
+          "width": 440,
+          "height": 276
+        },
+        {
+          "x": 232,
+          "y": 60,
+          "width": 408,
+          "height": 281
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 5,
+        "copy_zone_to_bg": 0,
+        "save_image1": 5,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 295
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "ACTIVITY.ADS",
+    "ads_tags": [
+      4
+    ],
+    "scene_indices": [
+      4
+    ],
+    "ttm_names": [
+      "GJDIVE.TTM",
+      "GJNAT1.TTM",
+      "GJNAT3.TTM",
+      "MJBATH.TTM",
+      "MJDIVE.TTM",
+      "MJREAD.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

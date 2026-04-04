@@ -39,3 +39,26 @@ dump/
 
 # Zip archives
 *.zip
+
+# VLM models (multi-GB, download separately)
+models/
+
+# Python virtual environments
+.venv*/
+
+# Docker / build locks
+.regtest-build.lock
+
+# Binary library output (regenerate with build-binary-library.sh)
+binary-library/
+
+# Host build artifacts
+jc_reborn-host
+build-host/
+
+# Regtest results (regenerate with regtest-scene.sh)
+regtest-results/
+
+# Python caches
+__pycache__/
+*.pyc

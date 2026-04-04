@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "restore_pilot_spec",
+  "selected_scene": {
+    "pack_id": "stand-ads",
+    "ads_name": "STAND.ADS",
+    "ads_tag": 15,
+    "scene_index": 50,
+    "peak_memory_bytes": 165910,
+    "bmp_count": 2,
+    "ttm_count": 2,
+    "restore_candidate": true,
+    "clear_screen_count": 394,
+    "unique_rect_count": 2,
+    "union_rect": {
+      "x": 248,
+      "y": 196,
+      "width": 352,
+      "height": 140
+    },
+    "ttm_names": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ],
+    "restore_score": 117
+  },
+  "scene_flags": [
+    "ISLAND",
+    "VARPOS_OK",
+    "LOWTIDE_OK"
+  ],
+  "memory": {
+    "bmp_indexed_bytes": 31200,
+    "bmp_15bit_bytes": 124800,
+    "bmp_raw_bytes": 31200,
+    "ttm_bytes": 3826,
+    "ads_bytes": 2396,
+    "scr_bytes": 112000,
+    "sprite_pointer_bytes": 104,
+    "ttm_slot_overhead_bytes": 16384,
+    "peak_memory_bytes": 165910
+  },
+  "resource_counts": {
+    "bmps": 2,
+    "scrs": 1,
+    "ttms": 2
+  },
+  "scene_resources": {
+    "bmps": [
+      "MJTELE.BMP",
+      "MJTELE2.BMP",
+      "MJ_AMB.BMP"
+    ],
+    "scrs": [
+      "ISLETEMP.SCR"
+    ],
+    "ttms": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ]
+  },
+  "restore_template": {
+    "union_rect": {
+      "x": 248,
+      "y": 196,
+      "width": 352,
+      "height": 140
+    },
+    "unique_rects": [
+      {
+        "x": 248,
+        "y": 196,
+        "width": 344,
+        "height": 139
+      },
+      {
+        "x": 256,
+        "y": 197,
+        "width": 344,
+        "height": 139
+      }
+    ],
+    "clear_screen_count": 394,
+    "ttm_names": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ]
+  },
+  "ttm_details": [
+    {
+      "ttm_name": "MJAMBWLK.TTM",
+      "union_rect": {
+        "x": 248,
+        "y": 196,
+        "width": 344,
+        "height": 139
+      },
+      "unique_rects": [
+        {
+          "x": 248,
+          "y": 196,
+          "width": 344,
+          "height": 139
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 273
+      }
+    },
+    {
+      "ttm_name": "MJTELE.TTM",
+      "union_rect": {
+        "x": 256,
+        "y": 197,
+        "width": 344,
+        "height": 139
+      },
+      "unique_rects": [
+        {
+          "x": 256,
+          "y": 197,
+          "width": 344,
+          "height": 139
+        }
+      ],
+      "region_ids": [
+        0
+      ],
+      "clear_region_ids": [
+        0
+      ],
+      "op_counts": {
+        "region_id": 1,
+        "copy_zone_to_bg": 0,
+        "save_image1": 1,
+        "save_zone": 0,
+        "restore_zone": 0,
+        "clear_screen": 121
+      }
+    }
+  ],
+  "recommended_runtime_scope": {
+    "ads_name": "STAND.ADS",
+    "ads_tags": [
+      15,
+      16
+    ],
+    "scene_indices": [
+      50,
+      51
+    ],
+    "ttm_names": [
+      "MJAMBWLK.TTM",
+      "MJTELE.TTM"
+    ],
+    "notes": [
+      "Keep pack path authoritative; do not reintroduce extracted fallback.",
+      "Scope runtime attempts to the compatible scene cluster only, not the whole ADS family.",
+      "Prefer rect-restore validation around the listed TTM names before touching replay carry logic."
+    ]
+  }
+}

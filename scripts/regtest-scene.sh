@@ -379,11 +379,20 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Extract printf output from regtest log
+# Extract guest printf/TTY output
 # ---------------------------------------------------------------------------
 PRINTF_FILE="$OUTPUT_DIR/printf.log"
-if [ -f "$REGTEST_LOG" ]; then
-    cp "$REGTEST_LOG" "$PRINTF_FILE"
+TTY_SOURCE=""
+if [ -n "${DOCKER_RUN_DIR:-}" ] && [ -f "$DOCKER_RUN_DIR/tty-output.txt" ]; then
+    TTY_SOURCE="$DOCKER_RUN_DIR/tty-output.txt"
+elif [ -f "$OUTPUT_DIR/tty-output.txt" ]; then
+    TTY_SOURCE="$OUTPUT_DIR/tty-output.txt"
+fi
+
+if [ -n "$TTY_SOURCE" ]; then
+    cp "$TTY_SOURCE" "$PRINTF_FILE"
+elif [ -f "$REGTEST_LOG" ]; then
+    grep -v '^\[' "$REGTEST_LOG" > "$PRINTF_FILE" 2>/dev/null || : > "$PRINTF_FILE"
 else
     : > "$PRINTF_FILE"
 fi

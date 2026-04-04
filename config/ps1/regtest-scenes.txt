@@ -4,17 +4,17 @@
 # STATUS: verified | bringup | blocked | untested
 # BOOTMODE defaults to exact story-scene routes where available.
 #
-# --- ACTIVITY.ADS (untested=10) ---
-ACTIVITY 1 0 untested story scene 0
-ACTIVITY 4 4 untested story scene 4
-ACTIVITY 5 5 untested story scene 5
-ACTIVITY 6 6 untested story scene 6
-ACTIVITY 7 7 untested story scene 7
-ACTIVITY 8 8 untested story scene 8
-ACTIVITY 9 9 untested story scene 9
-ACTIVITY 10 3 untested story scene 3
-ACTIVITY 11 2 untested story scene 2
-ACTIVITY 12 1 untested story scene 1
+# --- ACTIVITY.ADS (bringup=10) ---
+ACTIVITY 1 0 bringup island ads ACTIVITY.ADS 1
+ACTIVITY 4 4 bringup island ads ACTIVITY.ADS 4
+ACTIVITY 5 5 bringup island ads ACTIVITY.ADS 5
+ACTIVITY 6 6 bringup island ads ACTIVITY.ADS 6
+ACTIVITY 7 7 bringup island ads ACTIVITY.ADS 7
+ACTIVITY 8 8 bringup island ads ACTIVITY.ADS 8
+ACTIVITY 9 9 bringup island ads ACTIVITY.ADS 9
+ACTIVITY 10 3 bringup island ads ACTIVITY.ADS 10
+ACTIVITY 11 2 bringup island ads ACTIVITY.ADS 11
+ACTIVITY 12 1 bringup island ads ACTIVITY.ADS 12
 
 # --- BUILDING.ADS (bringup=7) ---
 BUILDING 1 10 bringup island ads BUILDING.ADS 1
@@ -25,15 +25,15 @@ BUILDING 5 14 bringup island ads BUILDING.ADS 5
 BUILDING 6 16 bringup island ads BUILDING.ADS 6
 BUILDING 7 15 bringup island ads BUILDING.ADS 7
 
-# --- FISHING.ADS (untested=7, blocked=1) ---
-FISHING 1 17 blocked story scene 17
-FISHING 2 18 untested story scene 18
-FISHING 3 19 untested story scene 19
-FISHING 4 20 untested story scene 20
-FISHING 5 21 untested story scene 21
-FISHING 6 22 untested story scene 22
-FISHING 7 23 untested story scene 23
-FISHING 8 24 untested story scene 24
+# --- FISHING.ADS (bringup=8) ---
+FISHING 1 17 bringup island ads FISHING.ADS 1
+FISHING 2 18 bringup island ads FISHING.ADS 2
+FISHING 3 19 bringup island ads FISHING.ADS 3
+FISHING 4 20 bringup island ads FISHING.ADS 4
+FISHING 5 21 bringup island ads FISHING.ADS 5
+FISHING 6 22 bringup island ads FISHING.ADS 6
+FISHING 7 23 bringup island ads FISHING.ADS 7
+FISHING 8 24 bringup island ads FISHING.ADS 8
 
 # --- JOHNNY.ADS (verified=6) ---
 JOHNNY 1 25 verified story scene 25
@@ -70,17 +70,17 @@ STAND 12 49 verified story scene 49
 STAND 15 50 verified story scene 50
 STAND 16 51 verified story scene 51
 
-# --- SUZY.ADS (untested=2) ---
-SUZY 1 52 untested story scene 52
-SUZY 2 53 untested story scene 53
+# --- SUZY.ADS (bringup=2) ---
+SUZY 1 52 bringup island ads SUZY.ADS 1
+SUZY 2 53 bringup island ads SUZY.ADS 2
 
-# --- VISITOR.ADS (untested=6) ---
-VISITOR 1 54 untested story scene 54
-VISITOR 3 55 untested story scene 55
-VISITOR 4 56 untested story scene 56
-VISITOR 5 59 untested story scene 59
-VISITOR 6 57 untested story scene 57
-VISITOR 7 58 untested story scene 58
+# --- VISITOR.ADS (bringup=6) ---
+VISITOR 1 54 bringup island ads VISITOR.ADS 1
+VISITOR 3 55 bringup island ads VISITOR.ADS 3
+VISITOR 4 56 bringup island ads VISITOR.ADS 4
+VISITOR 5 59 bringup island ads VISITOR.ADS 5
+VISITOR 6 57 bringup island ads VISITOR.ADS 6
+VISITOR 7 58 bringup island ads VISITOR.ADS 7
 
 # --- WALKSTUF.ADS (verified=3) ---
 WALKSTUF 1 60 verified story scene 60

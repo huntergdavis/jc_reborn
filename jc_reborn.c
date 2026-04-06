@@ -816,6 +816,23 @@ int main(int argc, char **argv)
     initLRUCache();
 
 #ifdef PS1_BUILD
+    storySetForcedCurrentDay(hostForcedStoryDay);
+    storySetIslandOverrides(
+        hostForcedIslandPosValid,
+        hostForcedIslandX,
+        hostForcedIslandY,
+        hostForcedLowTide >= 0,
+        hostForcedLowTide,
+        hostForcedRaftStage >= 0,
+        hostForcedRaftStage
+    );
+    storySetSceneOffsetOverride(
+        hostForcedSceneOffsetValid,
+        hostForcedSceneOffsetX,
+        hostForcedSceneOffsetY
+    );
+    storySetCapturePreludeFrame(hostCapturePreludeFrame);
+
     grGpuAlreadyInitialized = 0;
     graphicsInit();
     soundInit();

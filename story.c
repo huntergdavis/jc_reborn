@@ -69,6 +69,7 @@ static int storyForcedSceneOffsetY = 0;
 static int storyCapturePreludeFrame = 0;
 
 #ifdef PS1_BUILD
+static struct TStoryScene storyPs1DirectSceneScratch;
 /* Persistent transition diagnostics rendered by graphics_ps1 overlay. */
 uint16 ps1StoryDbgPhase = 0;
 uint16 ps1StoryDbgSceneTag = 0;
@@ -235,9 +236,16 @@ int storyHasBootOverridePending(void)
 
 void storyPlayBootSceneDirect(int sceneIndex)
 {
+    struct TStoryScene *scene;
+
     if (sceneIndex < 0 || sceneIndex >= NUM_SCENES) return;
 
-    struct TStoryScene *scene = &storyScenes[sceneIndex];
+#ifdef PS1_BUILD
+    memcpy(&storyPs1DirectSceneScratch, &storyScenes[sceneIndex], sizeof(storyPs1DirectSceneScratch));
+    scene = &storyPs1DirectSceneScratch;
+#else
+    scene = &storyScenes[sceneIndex];
+#endif
 
     storyUpdateCurrentDay();
     storyCalculateIslandFromDateAndTime();
@@ -481,8 +489,10 @@ void storyPlay()
                 forcedFinalScene = requestedScene;
             else if (requestedScene->flags & FINAL)
                 bootScene = requestedScene;
-            else
+            else if (storyCapturePreludeFrame)
                 forcedIntermediateScene = requestedScene;
+            else
+                bootScene = requestedScene;
             storyBootSceneIndex = -1;
         }
         else if (storyBootAdsName[0] != '\0' && storyBootAdsTag >= 0) {

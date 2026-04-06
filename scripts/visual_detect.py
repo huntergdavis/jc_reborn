@@ -293,13 +293,14 @@ def classify_screen_type(img: Image.Image, regions: ScreenRegions) -> ScreenType
     # "SIERRA" logo with dark_magenta pixels.
     #
     # Detection strategy: the title screen is the ONLY state where >40%
-    # black co-occurs with significant island/scene colors.  Normal island
-    # scenes have <5% black; normal black/fade screens have >90% black with
-    # no scene colors.  The title occupies the gap between these two.
+    # black co-occurs with significant island/scene colors AND title-logo
+    # colors in the lower center. Normal island scenes can also carry large
+    # black borders, especially in reference captures, so black+scene alone
+    # is not specific enough.
     #
-    # Additional check: scan for dark_magenta (173,0,173) at step=1 in
-    # the lower-center area where the SIERRA logo lives, since step=2
-    # subsampling can miss these sparse pixels.
+    # Scan for dark_magenta (173,0,173) at step=1 in the lower-center area
+    # where the SIERRA logo lives, since step=2 subsampling can miss these
+    # sparse pixels.
     high_black = black_pct > 40.0
     scene_colors_pct = (
         pct("cyan") + pct("blue") + pct("dark_blue") + pct("dark_cyan")
@@ -307,14 +308,7 @@ def classify_screen_type(img: Image.Image, regions: ScreenRegions) -> ScreenType
         + pct("red") + pct("dark_red")
     )
     if high_black and scene_colors_pct > 8.0:
-        # This frame has a large black border AND significant scene content.
-        # This is the title screen signature.
-        conf = 0.7
-        if scene_colors_pct > 15.0:
-            conf += 0.1
-        if pct("cyan") > 5.0:
-            conf += 0.1
-        # Bonus: scan for dark_magenta at full resolution in lower center.
+        # Scan for title-logo color evidence at full resolution.
         dm_count = 0
         px = img.load()
         dm_y0 = int(h * 0.60)
@@ -326,12 +320,16 @@ def classify_screen_type(img: Image.Image, regions: ScreenRegions) -> ScreenType
                 r, g, b = px[x, y]
                 if abs(r - 173) < 20 and g < 20 and abs(b - 173) < 20:
                     dm_count += 1
-        if dm_count > 10:
-            conf += 0.1
-        return ScreenTypeResult("title", min(1.0, conf),
-                                {"black_pct": round(black_pct, 1),
-                                 "scene_colors_pct": round(scene_colors_pct, 1),
-                                 "dark_magenta_found": dm_count})
+        if dm_count > 100:
+            conf = 0.8
+            if scene_colors_pct > 15.0:
+                conf += 0.1
+            if pct("cyan") > 5.0:
+                conf += 0.1
+            return ScreenTypeResult("title", min(1.0, conf),
+                                    {"black_pct": round(black_pct, 1),
+                                     "scene_colors_pct": round(scene_colors_pct, 1),
+                                     "dark_magenta_found": dm_count})
 
     # --- OCEAN vs ISLAND ---
     # An ocean scene is dominated by cyan (sky) + blue (water) with no

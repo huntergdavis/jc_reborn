@@ -19,6 +19,7 @@ REGTEST_SCENE_LIST="$PROJECT_ROOT/config/ps1/regtest-scenes.txt"
 OUTPUT_ROOT=""
 SCENE_SPEC=""
 BOOT_STRING=""
+REFERENCE_PATH=""
 SCENE_INDEX=""
 SCENE_STATUS=""
 START_SEQ=""
@@ -40,6 +41,7 @@ Usage: regtest-binary-library-scene.sh --scene "ADS TAG" [options]
 Options:
   --scene SPEC      Scene specification, e.g. "BUILDING 1"
   --boot STRING     Explicit BOOTMODE override instead of scene manifest lookup
+  --reference PATH  Host/reference result dir or result.json for semantic compare
   --library DIR     Binary library root (default: ./binary-library)
   --output DIR      Output root (default: regtest-results/binlib-<scene>)
   --start-seq N     First binary-library sequence number to test
@@ -59,6 +61,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --scene) SCENE_SPEC="$2"; shift 2 ;;
         --boot) BOOT_STRING="$2"; shift 2 ;;
+        --reference) REFERENCE_PATH="$2"; shift 2 ;;
         --library) LIBRARY_DIR="$2"; shift 2 ;;
         --output) OUTPUT_ROOT="$2"; shift 2 ;;
         --start-seq) START_SEQ="$2"; shift 2 ;;
@@ -208,6 +211,9 @@ fi
 
 echo "Scene: $SCENE_SPEC"
 echo "BOOTMODE: $BOOT_STRING"
+if [ -n "$REFERENCE_PATH" ]; then
+    echo "Reference: $REFERENCE_PATH"
+fi
 echo "Selected builds: $TOTAL_SELECTED"
 echo "Output: $OUTPUT_ROOT"
 
@@ -415,6 +421,57 @@ json.dump(result, open(sys.argv[1], "w"), indent=2)
 print()
 PY
 
+    if [ -n "$REFERENCE_PATH" ]; then
+        compare_json="$out_dir/compare.json"
+        if python3 "$PROJECT_ROOT/scripts/compare-sequence-runs.py" \
+            --json \
+            --scene-entry-align \
+            --result "$out_dir" \
+            --reference "$REFERENCE_PATH" \
+            > "$compare_json" 2> "$out_dir/compare.stderr"; then
+            python3 - <<'PY' "$result_json" "$compare_json"
+import json, sys
+
+result_path, compare_path = sys.argv[1], sys.argv[2]
+result = json.load(open(result_path))
+compare = json.load(open(compare_path))
+
+semantic_status = "unknown"
+if compare.get("error"):
+    semantic_status = "no_anchor"
+else:
+    verdict = compare.get("verdict")
+    if verdict == "MATCH":
+        semantic_status = "match"
+    elif verdict == "TIMING_MISMATCH":
+        semantic_status = "timing_mismatch"
+    elif verdict == "PIXEL_MISMATCH":
+        semantic_status = "pixel_mismatch"
+    elif verdict == "ALIGNMENT_FAILED":
+        semantic_status = "alignment_failed"
+
+result["compare"] = {
+    "semantic_status": semantic_status,
+    "verdict": compare.get("verdict"),
+    "error": compare.get("error"),
+    "alignment_mode": compare.get("alignment_mode"),
+    "result_entry_frame": compare.get("result_entry_frame"),
+    "reference_entry_frame": compare.get("reference_entry_frame"),
+    "common_frame_count": compare.get("common_frame_count"),
+    "result_scene_candidate_count": compare.get("result_scene_candidate_count"),
+    "result_coverage_ratio": compare.get("result_coverage_ratio"),
+    "reference_coverage_ratio": compare.get("reference_coverage_ratio"),
+    "all_frames_match": compare.get("all_frames_match"),
+}
+result.setdefault("paths", {})["compare_json"] = compare_path
+json.dump(result, open(result_path, "w"), indent=2)
+print()
+PY
+        else
+            rm -f "$compare_json"
+        fi
+    fi
+
     if [ "$REGTEST_EXIT" -eq 0 ] && [ "$frame_count" -gt 0 ] && [ "$has_fatal" -eq 0 ]; then
         echo "pass (${frame_count} frames)"
     else
@@ -439,18 +496,21 @@ import csv, json, sys
 
 entries = json.load(open(sys.argv[1]))
 w = csv.writer(sys.stdout)
-w.writerow(["sequence", "short_hash", "date", "scene", "status", "exit_code", "frames_captured", "message"])
+w.writerow(["sequence", "short_hash", "date", "scene", "status", "semantic_status", "state_hash", "exit_code", "frames_captured", "message"])
 for entry in entries:
     build = entry.get("build", {})
     commit = build.get("commit", {})
     outcome = entry.get("outcome", {})
     scene = entry.get("scene", {})
+    compare = entry.get("compare", {})
     w.writerow([
         build.get("sequence", ""),
         commit.get("short_hash", ""),
         commit.get("date", ""),
         scene.get("spec", ""),
         outcome.get("status", ""),
+        compare.get("semantic_status", ""),
+        outcome.get("state_hash", ""),
         outcome.get("exit_code", ""),
         outcome.get("frames_captured", ""),
         commit.get("message", ""),
@@ -463,6 +523,12 @@ import json, sys
 entries = json.load(open(sys.argv[1]))
 passes = sum(1 for e in entries if e.get("outcome", {}).get("status") == "pass")
 fails = len(entries) - passes
+semantic = {}
+for entry in entries:
+    key = entry.get("compare", {}).get("semantic_status")
+    if not key:
+        continue
+    semantic[key] = semantic.get(key, 0) + 1
 scene = entries[0]["scene"]["spec"] if entries else "unknown"
 print("Binary Library Scene Sweep")
 print("=========================")
@@ -470,6 +536,10 @@ print(f"Scene:  {scene}")
 print(f"Runs:   {len(entries)}")
 print(f"Pass:   {passes}")
 print(f"Fail:   {fails}")
+if semantic:
+    print("Semantic:")
+    for key in sorted(semantic):
+        print(f"  {key}: {semantic[key]}")
 PY
 
 rm -f "$OUTPUT_ROOT/.selected-builds.jsonl"

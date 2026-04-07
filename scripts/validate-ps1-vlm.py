@@ -121,6 +121,12 @@ def case_label(compare: dict[str, Any]) -> str:
     return "uncertain"
 
 
+def ratio(part: int, total: int) -> float:
+    if total <= 0:
+        return 0.0
+    return float(part) / float(total)
+
+
 def run_pack(args: argparse.Namespace) -> int:
     root = project_root()
     manifest = load_json(args.manifest)
@@ -133,6 +139,11 @@ def run_pack(args: argparse.Namespace) -> int:
 
     rows = []
     passed = 0
+    expected_counts: Counter[str] = Counter()
+    actual_counts: Counter[str] = Counter()
+    confusion: dict[str, Counter[str]] = {}
+    family_stats: dict[str, dict[str, int]] = {}
+    source_kind_stats: dict[str, dict[str, int]] = {}
     for index, case in enumerate(manifest.get("cases", []), start=1):
         case_id = case["case_id"]
         reference_image = (root / case["reference_image"]).resolve()
@@ -154,13 +165,26 @@ def run_pack(args: argparse.Namespace) -> int:
         compare = load_json(out_json)
         actual = case_label(compare)
         expected = case["expected_label"]
+        expected_counts[expected] += 1
+        actual_counts[actual] += 1
+        confusion.setdefault(expected, Counter())[actual] += 1
         ok = actual == expected
         if ok:
             passed += 1
+        family = case.get("family") or "unknown"
+        source_kind = case.get("source_kind") or "unknown"
+        family_row = family_stats.setdefault(family, {"case_count": 0, "passed_count": 0})
+        family_row["case_count"] += 1
+        family_row["passed_count"] += 1 if ok else 0
+        source_row = source_kind_stats.setdefault(source_kind, {"case_count": 0, "passed_count": 0})
+        source_row["case_count"] += 1
+        source_row["passed_count"] += 1 if ok else 0
         rows.append(
             {
                 "case_id": case_id,
                 "scene_id": case.get("scene_id"),
+                "family": family,
+                "source_kind": source_kind,
                 "expected_label": expected,
                 "actual_label": actual,
                 "passed": ok,
@@ -181,7 +205,25 @@ def run_pack(args: argparse.Namespace) -> int:
         "case_count": len(rows),
         "passed_count": passed,
         "failed_count": len(rows) - passed,
+        "accuracy": ratio(passed, len(rows)),
         "all_passed": passed == len(rows),
+        "expected_label_counts": dict(expected_counts),
+        "actual_label_counts": dict(actual_counts),
+        "confusion": {key: dict(value) for key, value in confusion.items()},
+        "family_stats": {
+            key: {
+                **value,
+                "accuracy": ratio(value["passed_count"], value["case_count"]),
+            }
+            for key, value in sorted(family_stats.items())
+        },
+        "source_kind_stats": {
+            key: {
+                **value,
+                "accuracy": ratio(value["passed_count"], value["case_count"]),
+            }
+            for key, value in sorted(source_kind_stats.items())
+        },
         "cases": rows,
     }
     (outdir / "validation-summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")

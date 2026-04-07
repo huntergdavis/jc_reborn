@@ -16,13 +16,11 @@
 
 set -euo pipefail
 
-if [ "$(id -u)" = "0" ]; then
-    echo "ERROR: Do not run as root/sudo." >&2
-    exit 1
-fi
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=./docker-common.sh
+source "$PROJECT_ROOT/scripts/docker-common.sh"
+docker_init
 
 # ---------------------------------------------------------------------------
 # Defaults
@@ -58,7 +56,7 @@ done
 # ---------------------------------------------------------------------------
 cd "$PROJECT_ROOT"
 
-if ! docker image inspect "$DOCKER_IMAGE" >/dev/null 2>&1; then
+if ! "${DOCKER_CMD[@]}" image inspect "$DOCKER_IMAGE" >/dev/null 2>&1; then
     echo "ERROR: Docker image '$DOCKER_IMAGE' not found." >&2
     echo "Run: ./scripts/build-docker-image.sh" >&2
     exit 1
@@ -114,7 +112,7 @@ WORKTREE="/tmp/jc_reborn_binlib_$$"
 cleanup_worktree() {
     echo "Cleaning up worktree..."
     # Docker creates root-owned files in build-ps1/; fix ownership first
-    docker run --rm --platform linux/amd64 -v "$WORKTREE":/project "$DOCKER_IMAGE" \
+    "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 -v "$WORKTREE":/project "$DOCKER_IMAGE" \
         bash -c "chown -R $(id -u):$(id -g) /project/build-ps1 2>/dev/null" 2>/dev/null || true
     git -C "$PROJECT_ROOT" worktree remove --force "$WORKTREE" 2>/dev/null || rm -rf "$WORKTREE"
     echo "Done."
@@ -212,7 +210,7 @@ HEADER
 
     # Step 4: CMake configure (always needed — Makefile isn't tracked in git)
     if [ -f "$WORKTREE/CMakeLists.ps1.txt" ]; then
-        docker run --rm --platform linux/amd64 \
+        "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 \
             "${DOCKER_MOUNTS[@]}" \
             "$DOCKER_IMAGE" \
             bash -c 'mkdir -p /project/build-ps1 && cd /project/build-ps1 && cmake -DCMAKE_BUILD_TYPE=Release .. 2>&1' \
@@ -246,7 +244,7 @@ json.dump({
 
     # Step 5: Build PS1 executable
     BUILD_EXIT=0
-    docker run --rm --platform linux/amd64 \
+    "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 \
         "${DOCKER_MOUNTS[@]}" \
         "$DOCKER_IMAGE" \
         bash -c 'cd /project/build-ps1 && make -j4 jcreborn 2>&1' \
@@ -274,7 +272,7 @@ json.dump({
 
         if [ -n "$CD_LAYOUT" ]; then
             rm -f "$WORKTREE/jcreborn.bin" "$WORKTREE/jcreborn.cue"
-            docker run --rm --platform linux/amd64 \
+            "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 \
                 "${DOCKER_MOUNTS[@]}" \
                 "$DOCKER_IMAGE" \
                 bash -c "cd /project && mkpsxiso -y $CD_LAYOUT 2>&1" \
@@ -339,7 +337,7 @@ print()
 "
 
     # Step 9: Clean build dir for next iteration (fresh cmake each time)
-    docker run --rm --platform linux/amd64 -v "$WORKTREE":/project "$DOCKER_IMAGE" \
+    "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 -v "$WORKTREE":/project "$DOCKER_IMAGE" \
         bash -c "rm -rf /project/build-ps1" 2>/dev/null || true
     rm -f "$WORKTREE/jcreborn.bin" "$WORKTREE/jcreborn.cue"
 
@@ -354,7 +352,7 @@ if [ "$SMOKE_TEST" -eq 1 ]; then
     echo ""
     echo "=== Smoke Test Pass ==="
     REGTEST_AVAILABLE=0
-    if docker image inspect jc-reborn-regtest:latest >/dev/null 2>&1; then
+    if "${DOCKER_CMD[@]}" image inspect jc-reborn-regtest:latest >/dev/null 2>&1; then
         REGTEST_AVAILABLE=1
     elif command -v duckstation-regtest >/dev/null 2>&1; then
         REGTEST_AVAILABLE=1

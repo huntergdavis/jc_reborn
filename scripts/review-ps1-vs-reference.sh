@@ -13,6 +13,10 @@ RESULT_PATH=""
 REFERENCE_PATH=""
 OUTPUT_HTML=""
 COMPARE_JSON=""
+VLM_MODEL_DIR=""
+VLM_OUT_JSON=""
+VLM_BANK_DIR=""
+VLM_SAMPLES="3"
 MIN_RESULT_SCENE_FRAME=""
 MIN_REFERENCE_SCENE_FRAME="0"
 SCENE_WINDOW_ONLY=0
@@ -28,6 +32,10 @@ Options:
   --reference PATH            Host reference dir or result.json
   --output PATH               Output HTML path
   --compare-json PATH         Optional compare JSON output path
+  --vlm-model-dir PATH        Optional OpenVINO VLM model dir for scene-fix verdict
+  --vlm-out-json PATH         Optional VLM scene-fix JSON output path
+  --vlm-bank-dir PATH         Optional reference-bank dir for VLM hints
+  --vlm-samples N             Number of frame pairs to validate (default: 3)
   --min-result-scene-frame N  Minimum PS1 frame eligible as a scene-entry anchor
   --min-reference-scene-frame N
                               Minimum host frame eligible as a scene-entry anchor
@@ -44,6 +52,10 @@ while [ $# -gt 0 ]; do
         --reference) REFERENCE_PATH="$2"; shift 2 ;;
         --output) OUTPUT_HTML="$2"; shift 2 ;;
         --compare-json) COMPARE_JSON="$2"; shift 2 ;;
+        --vlm-model-dir) VLM_MODEL_DIR="$2"; shift 2 ;;
+        --vlm-out-json) VLM_OUT_JSON="$2"; shift 2 ;;
+        --vlm-bank-dir) VLM_BANK_DIR="$2"; shift 2 ;;
+        --vlm-samples) VLM_SAMPLES="$2"; shift 2 ;;
         --min-result-scene-frame) MIN_RESULT_SCENE_FRAME="$2"; shift 2 ;;
         --min-reference-scene-frame) MIN_REFERENCE_SCENE_FRAME="$2"; shift 2 ;;
         --scene-window-only) SCENE_WINDOW_ONLY=1; shift ;;
@@ -71,9 +83,13 @@ fi
 if [ -z "$COMPARE_JSON" ]; then
     COMPARE_JSON="${OUTPUT_HTML%.html}.json"
 fi
+if [ -z "$VLM_OUT_JSON" ]; then
+    VLM_OUT_JSON="${OUTPUT_HTML%.html}-vlm.json"
+fi
 
 mkdir -p "$(dirname "$OUTPUT_HTML")"
 mkdir -p "$(dirname "$COMPARE_JSON")"
+mkdir -p "$(dirname "$VLM_OUT_JSON")"
 
 if [ -z "$TITLE" ]; then
     if [ -n "$SCENE_SPEC" ]; then
@@ -104,5 +120,24 @@ python3 "$SCRIPT_DIR/render-compare-timeline.py" \
     --output "$OUTPUT_HTML" \
     --title "$TITLE" \
     >/dev/null
+
+if [ -n "$VLM_MODEL_DIR" ]; then
+    VLM_CMD=(
+        python3 "$SCRIPT_DIR/validate-ps1-vlm.py"
+        scene-fix
+        --model-dir "$VLM_MODEL_DIR"
+        --reference "$REFERENCE_PATH"
+        --result "$RESULT_PATH"
+        --out-json "$VLM_OUT_JSON"
+        --samples "$VLM_SAMPLES"
+    )
+    if [ -n "$SCENE_SPEC" ]; then
+        VLM_CMD+=(--scene-id "${SCENE_SPEC/ /-}")
+    fi
+    if [ -n "$VLM_BANK_DIR" ]; then
+        VLM_CMD+=(--bank-dir "$VLM_BANK_DIR")
+    fi
+    "${VLM_CMD[@]}" >/dev/null
+fi
 
 echo "$OUTPUT_HTML"

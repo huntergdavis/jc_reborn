@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "case_id": "building1_broken_story_scene",
+      "scene_id": "BUILDING-1",
+      "reference_image": "regtest-references/BUILDING-1/frames/frame_00100.bmp",
+      "query_image": "regtest-results/building-1-story-scene-3600/20260406-101612/frames/jcreborn/frame_02400.png",
+      "expected_label": "broken_scene_output"
+    },
+    {
+      "case_id": "building1_ps1fix_scene",
+      "scene_id": "BUILDING-1",
+      "reference_image": "regtest-references/BUILDING-1/frames/frame_00100.bmp",
+      "query_image": "regtest-results/building-1-story-scene-10-3600-ps1fix/20260407-081542/frames/jcreborn/frame_02400.png",
+      "expected_label": "correct_scene_content"
+    },
+    {
+      "case_id": "fishing1_broken_story_scene",
+      "scene_id": "FISHING-1",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00015.bmp",
+      "query_image": "regtest-results/fishing-1-story17-current/20260406-083911/frames/jcreborn/frame_00400.png",
+      "expected_label": "broken_scene_output"
+    },
+    {
+      "case_id": "fishing1_ps1_scene",
+      "scene_id": "FISHING-1",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00015.bmp",
+      "query_image": "regtest-results/fishing-1-raw-3600-current/20260406-133715/frames/jcreborn/frame_02640.png",
+      "expected_label": "correct_scene_content"
+    }
+  ]
+}

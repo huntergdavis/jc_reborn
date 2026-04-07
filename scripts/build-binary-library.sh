@@ -137,6 +137,30 @@ git -C "$WORKTREE" checkout
 
 mkdir -p "$OUTPUT_DIR"
 
+next_sequence_base() {
+    local outdir="$1"
+    python3 - "$outdir" <<'PY'
+import json
+import os
+import sys
+
+outdir = sys.argv[1]
+max_seq = 0
+if os.path.isdir(outdir):
+    for name in os.listdir(outdir):
+        meta_path = os.path.join(outdir, name, "metadata.json")
+        if not os.path.isfile(meta_path):
+            continue
+        try:
+            with open(meta_path, encoding="utf-8") as f:
+                seq = int(json.load(f).get("sequence", 0))
+        except Exception:
+            continue
+        max_seq = max(max_seq, seq)
+print(max_seq)
+PY
+}
+
 # ---------------------------------------------------------------------------
 # Counters
 # ---------------------------------------------------------------------------
@@ -149,7 +173,7 @@ TIME_START=$(date +%s)
 # ---------------------------------------------------------------------------
 # Build loop
 # ---------------------------------------------------------------------------
-SEQ=0
+SEQ="$(next_sequence_base "$OUTPUT_DIR")"
 for COMMIT in "${COMMITS[@]}"; do
     SEQ=$((SEQ + 1))
     SHORT=$(git rev-parse --short=8 "$COMMIT")
@@ -414,6 +438,8 @@ for name in sorted(os.listdir(outdir)):
     if os.path.isfile(meta_path):
         with open(meta_path) as f:
             entries.append(json.load(f))
+
+entries.sort(key=lambda e: (int(e.get("sequence", 0)), e.get("dir_name", "")))
 
 # Write JSON index
 with open(os.path.join(outdir, "index.json"), "w") as f:

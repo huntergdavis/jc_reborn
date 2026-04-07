@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate ps1_restore_pilots.h from verified exact-scene regtest entries."""
+"""Generate ps1_restore_pilots.h from PS1 bringup exact-scene regtest entries."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ EXTRA_SPEC_PATHS = [
 
 
 def parse_scene_list(path: Path) -> list[dict]:
-    verified: list[dict] = []
+    bringup: list[dict] = []
     for raw_line in path.read_text(encoding="utf-8").splitlines():
         line = raw_line.strip()
         if not line or line.startswith("#"):
@@ -32,9 +32,9 @@ def parse_scene_list(path: Path) -> list[dict]:
         scene_index = int(parts[2])
         status = parts[3]
         boot = parts[4] if len(parts) == 5 else parts[4] + " " + parts[5]
-        if status != "verified":
+        if status != "bringup":
             continue
-        verified.append(
+        bringup.append(
             {
                 "ads_name": f"{ads_name}.ADS",
                 "ads_tag": ads_tag,
@@ -42,11 +42,11 @@ def parse_scene_list(path: Path) -> list[dict]:
                 "boot": boot,
             }
         )
-    verified.sort(key=lambda row: (row["ads_name"], row["scene_index"], row["ads_tag"]))
-    return verified
+    bringup.sort(key=lambda row: (row["ads_name"], row["scene_index"], row["ads_tag"]))
+    return bringup
 
 
-def collect_specs(spec_dir: Path, verified: list[dict]) -> list[Path]:
+def collect_specs(spec_dir: Path, bringup: list[dict]) -> list[Path]:
     by_scene_index: dict[int, Path] = {}
     for path in sorted(spec_dir.glob("*.json")):
         if path.name == "summary.json":
@@ -54,14 +54,14 @@ def collect_specs(spec_dir: Path, verified: list[dict]) -> list[Path]:
         data = json.loads(path.read_text(encoding="utf-8"))
         by_scene_index[int(data["selected_scene"]["scene_index"])] = path
 
-    missing = [row for row in verified if row["scene_index"] not in by_scene_index]
+    missing = [row for row in bringup if row["scene_index"] not in by_scene_index]
     if missing:
         missing_desc = ", ".join(
             f"{row['ads_name']} tag {row['ads_tag']} scene {row['scene_index']}" for row in missing
         )
-        raise SystemExit(f"Missing restore scene specs for verified scenes: {missing_desc}")
+        raise SystemExit(f"Missing restore scene specs for bringup scenes: {missing_desc}")
 
-    spec_paths = [by_scene_index[row["scene_index"]] for row in verified]
+    spec_paths = [by_scene_index[row["scene_index"]] for row in bringup]
 
     for extra_path in EXTRA_SPEC_PATHS:
         if not extra_path.exists():
@@ -79,11 +79,11 @@ def main() -> int:
     ap.add_argument("--header", type=Path, default=DEFAULT_HEADER)
     args = ap.parse_args()
 
-    verified = parse_scene_list(args.scene_list)
-    if not verified:
-        raise SystemExit("No verified scenes found in regtest scene list.")
+    bringup = parse_scene_list(args.scene_list)
+    if not bringup:
+        raise SystemExit("No bringup scenes found in regtest scene list.")
 
-    specs = collect_specs(args.spec_dir, verified)
+    specs = collect_specs(args.spec_dir, bringup)
 
     cmd = ["python3", str(GENERATOR), "--header", str(args.header)]
     for spec in specs:
@@ -96,9 +96,9 @@ def main() -> int:
                 "scene_list": str(args.scene_list),
                 "spec_dir": str(args.spec_dir),
                 "header": str(args.header),
-                "verified_scene_count": len(verified),
+                "bringup_scene_count": len(bringup),
                 "spec_count": len(specs),
-                "verified_scenes": verified,
+                "bringup_scenes": bringup,
             },
             indent=2,
         )

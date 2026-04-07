@@ -107,6 +107,15 @@ What Johnny Reborn brings is:
 
 Johnny Reborn includes comprehensive test suites to ensure quality and catch regressions.
 
+### PS1 Status
+
+Current PS1 scene status must be read conservatively.
+
+- `regtest-references/` contains host reference captures, not PS1 signoff.
+- `config/ps1/regtest-scenes.txt` tracks PS1 bringup routing, blocked scenes, and untested scenes.
+- No scene should currently be described as PS1-verified unless a human has reviewed actual PS1-vs-host output and signed it off.
+- A scene that boots on PS1 or emits frames is not, by itself, considered verified.
+
 ### Running All Tests
 
 ```bash
@@ -204,5 +213,4 @@ Hans Milling thanks a number of people for giving him (or helping him find) some
   - Jaap - Helping in finding the format of the resource files
   - Gregori - Assisting with the Lempel-Ziv decompression
   - Guido - The author of the xBaK project that led to understanding the TTM and ADS commands.
-
 

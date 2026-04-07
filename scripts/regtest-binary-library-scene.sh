@@ -20,6 +20,11 @@ OUTPUT_ROOT=""
 SCENE_SPEC=""
 BOOT_STRING=""
 REFERENCE_PATH=""
+COMPARE_MIN_RESULT_SCENE_FRAME=""
+COMPARE_MIN_REFERENCE_SCENE_FRAME=""
+COMPARE_ENTRY_MAX_DIFF=""
+COMPARE_ENTRY_REFERENCE_WINDOW=""
+COMPARE_SCENE_WINDOW_ONLY=0
 SCENE_INDEX=""
 SCENE_STATUS=""
 START_SEQ=""
@@ -42,6 +47,16 @@ Options:
   --scene SPEC      Scene specification, e.g. "BUILDING 1"
   --boot STRING     Explicit BOOTMODE override instead of scene manifest lookup
   --reference PATH  Host/reference result dir or result.json for semantic compare
+  --min-result-scene-frame N
+                    Minimum result frame eligible as a scene-entry anchor
+  --min-reference-scene-frame N
+                    Minimum reference frame eligible as a scene-entry anchor
+  --entry-max-diff N
+                    Max palette-index diff allowed for scene-entry anchor match
+  --entry-reference-window N
+                    How many early reference frames to search for the anchor
+  --scene-window-only
+                    Only compare result frames that align into reference range
   --library DIR     Binary library root (default: ./binary-library)
   --output DIR      Output root (default: regtest-results/binlib-<scene>)
   --start-seq N     First binary-library sequence number to test
@@ -62,6 +77,11 @@ while [ $# -gt 0 ]; do
         --scene) SCENE_SPEC="$2"; shift 2 ;;
         --boot) BOOT_STRING="$2"; shift 2 ;;
         --reference) REFERENCE_PATH="$2"; shift 2 ;;
+        --min-result-scene-frame) COMPARE_MIN_RESULT_SCENE_FRAME="$2"; shift 2 ;;
+        --min-reference-scene-frame) COMPARE_MIN_REFERENCE_SCENE_FRAME="$2"; shift 2 ;;
+        --entry-max-diff) COMPARE_ENTRY_MAX_DIFF="$2"; shift 2 ;;
+        --entry-reference-window) COMPARE_ENTRY_REFERENCE_WINDOW="$2"; shift 2 ;;
+        --scene-window-only) COMPARE_SCENE_WINDOW_ONLY=1; shift ;;
         --library) LIBRARY_DIR="$2"; shift 2 ;;
         --output) OUTPUT_ROOT="$2"; shift 2 ;;
         --start-seq) START_SEQ="$2"; shift 2 ;;
@@ -423,13 +443,31 @@ PY
 
     if [ -n "$REFERENCE_PATH" ]; then
         compare_json="$out_dir/compare.json"
+        compare_args=(
+            --json
+            --scene-entry-align
+            --result "$out_dir"
+            --reference "$REFERENCE_PATH"
+        )
+        if [ -n "$COMPARE_MIN_RESULT_SCENE_FRAME" ]; then
+            compare_args+=(--min-result-scene-frame "$COMPARE_MIN_RESULT_SCENE_FRAME")
+        fi
+        if [ -n "$COMPARE_MIN_REFERENCE_SCENE_FRAME" ]; then
+            compare_args+=(--min-reference-scene-frame "$COMPARE_MIN_REFERENCE_SCENE_FRAME")
+        fi
+        if [ -n "$COMPARE_ENTRY_MAX_DIFF" ]; then
+            compare_args+=(--entry-max-diff "$COMPARE_ENTRY_MAX_DIFF")
+        fi
+        if [ -n "$COMPARE_ENTRY_REFERENCE_WINDOW" ]; then
+            compare_args+=(--entry-reference-window "$COMPARE_ENTRY_REFERENCE_WINDOW")
+        fi
+        if [ "$COMPARE_SCENE_WINDOW_ONLY" -eq 1 ]; then
+            compare_args+=(--scene-window-only)
+        fi
         if python3 "$PROJECT_ROOT/scripts/compare-sequence-runs.py" \
-            --json \
-            --scene-entry-align \
-            --result "$out_dir" \
-            --reference "$REFERENCE_PATH" \
+            "${compare_args[@]}" \
             > "$compare_json" 2> "$out_dir/compare.stderr"; then
-            python3 - <<'PY' "$result_json" "$compare_json"
+            python3 - <<'PY' "$result_json" "$compare_json" "$COMPARE_MIN_RESULT_SCENE_FRAME" "$COMPARE_MIN_REFERENCE_SCENE_FRAME" "$COMPARE_ENTRY_MAX_DIFF" "$COMPARE_ENTRY_REFERENCE_WINDOW" "$COMPARE_SCENE_WINDOW_ONLY"
 import json, sys
 
 result_path, compare_path = sys.argv[1], sys.argv[2]
@@ -462,6 +500,11 @@ result["compare"] = {
     "result_coverage_ratio": compare.get("result_coverage_ratio"),
     "reference_coverage_ratio": compare.get("reference_coverage_ratio"),
     "all_frames_match": compare.get("all_frames_match"),
+    "min_result_scene_frame": int(sys.argv[3]) if sys.argv[3] else None,
+    "min_reference_scene_frame": int(sys.argv[4]) if sys.argv[4] else None,
+    "entry_max_diff": int(sys.argv[5]) if sys.argv[5] else None,
+    "entry_reference_window": int(sys.argv[6]) if sys.argv[6] else None,
+    "scene_window_only": bool(int(sys.argv[7])),
 }
 result.setdefault("paths", {})["compare_json"] = compare_path
 json.dump(result, open(result_path, "w"), indent=2)

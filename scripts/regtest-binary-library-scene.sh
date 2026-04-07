@@ -20,6 +20,10 @@ OUTPUT_ROOT=""
 SCENE_SPEC=""
 BOOT_STRING=""
 REFERENCE_PATH=""
+VLM_ENABLE=0
+VLM_MODEL_DIR=""
+VLM_BANK_DIR=""
+VLM_SAMPLES="2"
 COMPARE_MIN_RESULT_SCENE_FRAME=""
 COMPARE_MIN_REFERENCE_SCENE_FRAME=""
 COMPARE_ENTRY_MAX_DIFF=""
@@ -47,6 +51,12 @@ Options:
   --scene SPEC      Scene specification, e.g. "BUILDING 1"
   --boot STRING     Explicit BOOTMODE override instead of scene manifest lookup
   --reference PATH  Host/reference result dir or result.json for semantic compare
+  --vlm             Run VLM scene-fix validation when --reference is present
+  --vlm-model-dir PATH
+                    Optional OpenVINO VLM model dir override
+  --vlm-bank-dir PATH
+                    Optional reference-bank dir for VLM hints
+  --vlm-samples N   Number of VLM frame pairs per build (default: 2)
   --min-result-scene-frame N
                     Minimum result frame eligible as a scene-entry anchor
   --min-reference-scene-frame N
@@ -77,6 +87,10 @@ while [ $# -gt 0 ]; do
         --scene) SCENE_SPEC="$2"; shift 2 ;;
         --boot) BOOT_STRING="$2"; shift 2 ;;
         --reference) REFERENCE_PATH="$2"; shift 2 ;;
+        --vlm) VLM_ENABLE=1; shift ;;
+        --vlm-model-dir) VLM_MODEL_DIR="$2"; shift 2 ;;
+        --vlm-bank-dir) VLM_BANK_DIR="$2"; shift 2 ;;
+        --vlm-samples) VLM_SAMPLES="$2"; shift 2 ;;
         --min-result-scene-frame) COMPARE_MIN_RESULT_SCENE_FRAME="$2"; shift 2 ;;
         --min-reference-scene-frame) COMPARE_MIN_REFERENCE_SCENE_FRAME="$2"; shift 2 ;;
         --entry-max-diff) COMPARE_ENTRY_MAX_DIFF="$2"; shift 2 ;;
@@ -233,6 +247,9 @@ echo "Scene: $SCENE_SPEC"
 echo "BOOTMODE: $BOOT_STRING"
 if [ -n "$REFERENCE_PATH" ]; then
     echo "Reference: $REFERENCE_PATH"
+fi
+if [ "$VLM_ENABLE" -eq 1 ]; then
+    echo "VLM: enabled"
 fi
 echo "Selected builds: $TOTAL_SELECTED"
 echo "Output: $OUTPUT_ROOT"
@@ -513,6 +530,46 @@ PY
         else
             rm -f "$compare_json"
         fi
+
+        if [ "$VLM_ENABLE" -eq 1 ]; then
+            vlm_json="$out_dir/vlm-scene-fix.json"
+            vlm_args=(
+                scene-fix
+                --reference "$REFERENCE_PATH"
+                --result "$out_dir"
+                --out-json "$vlm_json"
+                --scene-id "${ADS_NAME}-${SCENE_TAG}"
+                --samples "$VLM_SAMPLES"
+            )
+            if [ -n "$VLM_MODEL_DIR" ]; then
+                vlm_args+=(--model-dir "$VLM_MODEL_DIR")
+            fi
+            if [ -n "$VLM_BANK_DIR" ]; then
+                vlm_args+=(--bank-dir "$VLM_BANK_DIR")
+            fi
+            if python3 "$PROJECT_ROOT/scripts/validate-ps1-vlm.py" \
+                "${vlm_args[@]}" \
+                > "$out_dir/vlm.stdout" 2> "$out_dir/vlm.stderr"; then
+                python3 - <<'PY' "$result_json" "$vlm_json"
+import json, sys
+
+result_path, vlm_path = sys.argv[1], sys.argv[2]
+result = json.load(open(result_path))
+vlm = json.load(open(vlm_path))
+result.setdefault("compare", {})["vlm"] = {
+    "verdict": vlm.get("verdict"),
+    "pair_count": vlm.get("pair_count"),
+    "label_counts": vlm.get("label_counts", {}),
+    "dominant_hint_scene": vlm.get("dominant_hint_scene"),
+}
+result.setdefault("paths", {})["vlm_json"] = vlm_path
+json.dump(result, open(result_path, "w"), indent=2)
+print()
+PY
+            else
+                rm -f "$vlm_json"
+            fi
+        fi
     fi
 
     if [ "$REGTEST_EXIT" -eq 0 ] && [ "$frame_count" -gt 0 ] && [ "$has_fatal" -eq 0 ]; then
@@ -539,13 +596,14 @@ import csv, json, sys
 
 entries = json.load(open(sys.argv[1]))
 w = csv.writer(sys.stdout)
-w.writerow(["sequence", "short_hash", "date", "scene", "status", "semantic_status", "state_hash", "exit_code", "frames_captured", "message"])
+w.writerow(["sequence", "short_hash", "date", "scene", "status", "semantic_status", "vlm_status", "state_hash", "exit_code", "frames_captured", "message"])
 for entry in entries:
     build = entry.get("build", {})
     commit = build.get("commit", {})
     outcome = entry.get("outcome", {})
     scene = entry.get("scene", {})
     compare = entry.get("compare", {})
+    vlm = compare.get("vlm", {})
     w.writerow([
         build.get("sequence", ""),
         commit.get("short_hash", ""),
@@ -553,6 +611,7 @@ for entry in entries:
         scene.get("spec", ""),
         outcome.get("status", ""),
         compare.get("semantic_status", ""),
+        vlm.get("verdict", ""),
         outcome.get("state_hash", ""),
         outcome.get("exit_code", ""),
         outcome.get("frames_captured", ""),
@@ -567,11 +626,17 @@ entries = json.load(open(sys.argv[1]))
 passes = sum(1 for e in entries if e.get("outcome", {}).get("status") == "pass")
 fails = len(entries) - passes
 semantic = {}
+vlm = {}
 for entry in entries:
     key = entry.get("compare", {}).get("semantic_status")
     if not key:
         continue
     semantic[key] = semantic.get(key, 0) + 1
+for entry in entries:
+    key = entry.get("compare", {}).get("vlm", {}).get("verdict")
+    if not key:
+        continue
+    vlm[key] = vlm.get(key, 0) + 1
 scene = entries[0]["scene"]["spec"] if entries else "unknown"
 print("Binary Library Scene Sweep")
 print("=========================")
@@ -583,6 +648,10 @@ if semantic:
     print("Semantic:")
     for key in sorted(semantic):
         print(f"  {key}: {semantic[key]}")
+if vlm:
+    print("VLM:")
+    for key in sorted(vlm):
+        print(f"  {key}: {vlm[key]}")
 PY
 
 rm -f "$OUTPUT_ROOT/.selected-builds.jsonl"

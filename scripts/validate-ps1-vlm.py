@@ -9,15 +9,47 @@ import argparse
 import json
 import math
 import os
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
+def project_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
+def ensure_local_vlm_python() -> None:
+    try:
+        import openvino  # noqa: F401
+        import openvino_genai  # noqa: F401
+        return
+    except ImportError:
+        pass
+
+    root = project_root()
+    local_python = root / ".venv-vlm" / "bin" / "python"
+    current_python = Path(sys.executable)
+    if local_python.is_file() and current_python != local_python:
+        os.execv(str(local_python), [str(local_python), __file__, *sys.argv[1:]])
+
+
+ensure_local_vlm_python()
+
 import vision_vlm as vv
 
 
-def project_root() -> Path:
-    return Path(__file__).resolve().parent.parent
+def resolve_model_dir(model_dir: Path | None) -> Path:
+    if model_dir is not None:
+        return model_dir.resolve()
+
+    root = project_root()
+    candidates = [
+        root / "models" / "Qwen2.5-VL-3B-Instruct-ov-int4",
+    ]
+    for path in candidates:
+        if (path / "openvino_language_model.xml").is_file():
+            return path.resolve()
+    raise SystemExit("No local OpenVINO VLM model found. Pass --model-dir or install the local 3B int4 model.")
 
 
 def load_json(path: Path) -> dict[str, Any]:
@@ -94,9 +126,10 @@ def run_pack(args: argparse.Namespace) -> int:
     manifest = load_json(args.manifest)
     outdir = args.outdir.resolve()
     outdir.mkdir(parents=True, exist_ok=True)
+    model_dir = resolve_model_dir(args.model_dir)
 
     _, openvino_genai = vv._require_openvino()
-    pipe = openvino_genai.VLMPipeline(str(args.model_dir), args.device)
+    pipe = openvino_genai.VLMPipeline(str(model_dir), args.device)
 
     rows = []
     passed = 0
@@ -108,7 +141,7 @@ def run_pack(args: argparse.Namespace) -> int:
         out_json.parent.mkdir(parents=True, exist_ok=True)
         print(f"[{index}] {case_id}", flush=True)
         vv.compare_images(
-            args.model_dir,
+            model_dir,
             reference_image,
             query_image,
             out_json,
@@ -141,7 +174,8 @@ def run_pack(args: argparse.Namespace) -> int:
         )
 
     summary = {
-        "model_dir": str(args.model_dir.resolve()),
+        "model_dir": str(model_dir),
+        "selected_model_dir": str(model_dir),
         "device": args.device,
         "manifest": str(args.manifest.resolve()),
         "case_count": len(rows),
@@ -157,6 +191,7 @@ def run_pack(args: argparse.Namespace) -> int:
 def run_scene_fix(args: argparse.Namespace) -> int:
     out_json = args.out_json.resolve()
     out_json.parent.mkdir(parents=True, exist_ok=True)
+    model_dir = resolve_model_dir(args.model_dir)
 
     reference_frames_dir = resolve_frames_dir(args.reference)
     query_frames_dir = resolve_frames_dir(args.result)
@@ -178,7 +213,7 @@ def run_scene_fix(args: argparse.Namespace) -> int:
     bank = vv.load_bank(args.bank_dir)
 
     _, openvino_genai = vv._require_openvino()
-    pipe = openvino_genai.VLMPipeline(str(args.model_dir), args.device)
+    pipe = openvino_genai.VLMPipeline(str(model_dir), args.device)
 
     rows = []
     label_counts: Counter[str] = Counter()
@@ -188,7 +223,7 @@ def run_scene_fix(args: argparse.Namespace) -> int:
         compare_json.parent.mkdir(parents=True, exist_ok=True)
         print(f"[{index}/{pair_count}] {reference_image.name} vs {query_image.name}", flush=True)
         vv.compare_images(
-            args.model_dir,
+            model_dir,
             reference_image,
             query_image,
             compare_json,
@@ -230,7 +265,7 @@ def run_scene_fix(args: argparse.Namespace) -> int:
 
     summary = {
         "scene_id": scene_id,
-        "model_dir": str(args.model_dir.resolve()),
+        "model_dir": str(model_dir),
         "device": args.device,
         "reference": str(args.reference.resolve()),
         "result": str(args.result.resolve()),
@@ -254,7 +289,7 @@ def parse_args() -> argparse.Namespace:
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     pack = sub.add_parser("pack", help="Run the representative validation scene pack")
-    pack.add_argument("--model-dir", type=Path, required=True)
+    pack.add_argument("--model-dir", type=Path)
     pack.add_argument("--manifest", type=Path, default=root / "config" / "ps1" / "vlm-scene-pack.json")
     pack.add_argument("--outdir", type=Path, required=True)
     pack.add_argument("--device", type=str, default="CPU")
@@ -262,7 +297,7 @@ def parse_args() -> argparse.Namespace:
     pack.add_argument("--image-size", type=int, default=256)
 
     scene_fix = sub.add_parser("scene-fix", help="Run a VLM scene-fix verdict against one result/reference pair")
-    scene_fix.add_argument("--model-dir", type=Path, required=True)
+    scene_fix.add_argument("--model-dir", type=Path)
     scene_fix.add_argument("--reference", type=Path, required=True)
     scene_fix.add_argument("--result", type=Path, required=True)
     scene_fix.add_argument("--out-json", type=Path, required=True)

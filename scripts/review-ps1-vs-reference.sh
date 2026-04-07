@@ -17,6 +17,7 @@ VLM_MODEL_DIR=""
 VLM_OUT_JSON=""
 VLM_BANK_DIR=""
 VLM_SAMPLES="3"
+VLM_ENABLE=0
 MIN_RESULT_SCENE_FRAME=""
 MIN_REFERENCE_SCENE_FRAME="0"
 SCENE_WINDOW_ONLY=0
@@ -32,6 +33,7 @@ Options:
   --reference PATH            Host reference dir or result.json
   --output PATH               Output HTML path
   --compare-json PATH         Optional compare JSON output path
+  --vlm                       Enable local VLM scene-fix validation using auto-detected runtime/model if available
   --vlm-model-dir PATH        Optional OpenVINO VLM model dir for scene-fix verdict
   --vlm-out-json PATH         Optional VLM scene-fix JSON output path
   --vlm-bank-dir PATH         Optional reference-bank dir for VLM hints
@@ -52,6 +54,7 @@ while [ $# -gt 0 ]; do
         --reference) REFERENCE_PATH="$2"; shift 2 ;;
         --output) OUTPUT_HTML="$2"; shift 2 ;;
         --compare-json) COMPARE_JSON="$2"; shift 2 ;;
+        --vlm) VLM_ENABLE=1; shift ;;
         --vlm-model-dir) VLM_MODEL_DIR="$2"; shift 2 ;;
         --vlm-out-json) VLM_OUT_JSON="$2"; shift 2 ;;
         --vlm-bank-dir) VLM_BANK_DIR="$2"; shift 2 ;;
@@ -86,6 +89,9 @@ fi
 if [ -z "$VLM_OUT_JSON" ]; then
     VLM_OUT_JSON="${OUTPUT_HTML%.html}-vlm.json"
 fi
+if [ -z "$VLM_BANK_DIR" ] && [ -d "$PROJECT_ROOT/vision-artifacts/vision-reference-pipeline-current/reference-bank" ]; then
+    VLM_BANK_DIR="$PROJECT_ROOT/vision-artifacts/vision-reference-pipeline-current/reference-bank"
+fi
 
 mkdir -p "$(dirname "$OUTPUT_HTML")"
 mkdir -p "$(dirname "$COMPARE_JSON")"
@@ -115,16 +121,31 @@ fi
 
 "${COMPARE_CMD[@]}" > "$COMPARE_JSON"
 
+resolve_vlm_python() {
+    if [ -x "$PROJECT_ROOT/.venv-vlm/bin/python" ]; then
+        printf '%s\n' "$PROJECT_ROOT/.venv-vlm/bin/python"
+        return 0
+    fi
+    command -v python3
+}
+
 if [ -n "$VLM_MODEL_DIR" ]; then
+    VLM_ENABLE=1
+fi
+
+if [ "$VLM_ENABLE" -eq 1 ]; then
+    VLM_PYTHON="$(resolve_vlm_python)"
     VLM_CMD=(
-        python3 "$SCRIPT_DIR/validate-ps1-vlm.py"
+        "$VLM_PYTHON" "$SCRIPT_DIR/validate-ps1-vlm.py"
         scene-fix
-        --model-dir "$VLM_MODEL_DIR"
         --reference "$REFERENCE_PATH"
         --result "$RESULT_PATH"
         --out-json "$VLM_OUT_JSON"
         --samples "$VLM_SAMPLES"
     )
+    if [ -n "$VLM_MODEL_DIR" ]; then
+        VLM_CMD+=(--model-dir "$VLM_MODEL_DIR")
+    fi
     if [ -n "$SCENE_SPEC" ]; then
         VLM_CMD+=(--scene-id "${SCENE_SPEC/ /-}")
     fi
@@ -140,7 +161,7 @@ RENDER_CMD=(
     --output "$OUTPUT_HTML"
     --title "$TITLE"
 )
-if [ -n "$VLM_MODEL_DIR" ]; then
+if [ "$VLM_ENABLE" -eq 1 ] && [ -f "$VLM_OUT_JSON" ]; then
     RENDER_CMD+=(--vlm-json "$VLM_OUT_JSON")
 fi
 "${RENDER_CMD[@]}" >/dev/null

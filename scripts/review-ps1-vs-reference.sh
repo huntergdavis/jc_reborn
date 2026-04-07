@@ -1,0 +1,108 @@
+#!/bin/bash
+# review-ps1-vs-reference.sh — Generate an HTML review page for one PS1 capture
+# against its host reference, even when the aligner cannot verify a scene anchor.
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+cd "$PROJECT_ROOT"
+
+SCENE_SPEC=""
+RESULT_PATH=""
+REFERENCE_PATH=""
+OUTPUT_HTML=""
+COMPARE_JSON=""
+MIN_RESULT_SCENE_FRAME=""
+MIN_REFERENCE_SCENE_FRAME="0"
+SCENE_WINDOW_ONLY=0
+TITLE=""
+
+usage() {
+    cat <<'USAGE'
+Usage: review-ps1-vs-reference.sh [options]
+
+Options:
+  --scene "ADS TAG"           Scene label used in the HTML title
+  --result PATH               PS1 result dir or result.json
+  --reference PATH            Host reference dir or result.json
+  --output PATH               Output HTML path
+  --compare-json PATH         Optional compare JSON output path
+  --min-result-scene-frame N  Minimum PS1 frame eligible as a scene-entry anchor
+  --min-reference-scene-frame N
+                              Minimum host frame eligible as a scene-entry anchor
+  --scene-window-only         Clip comparison to the host scene window
+  --title TEXT                Optional HTML title override
+  -h, --help                  Show this help
+USAGE
+}
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --scene) SCENE_SPEC="$2"; shift 2 ;;
+        --result) RESULT_PATH="$2"; shift 2 ;;
+        --reference) REFERENCE_PATH="$2"; shift 2 ;;
+        --output) OUTPUT_HTML="$2"; shift 2 ;;
+        --compare-json) COMPARE_JSON="$2"; shift 2 ;;
+        --min-result-scene-frame) MIN_RESULT_SCENE_FRAME="$2"; shift 2 ;;
+        --min-reference-scene-frame) MIN_REFERENCE_SCENE_FRAME="$2"; shift 2 ;;
+        --scene-window-only) SCENE_WINDOW_ONLY=1; shift ;;
+        --title) TITLE="$2"; shift 2 ;;
+        -h|--help) usage; exit 0 ;;
+        *) echo "Unknown option: $1" >&2; exit 1 ;;
+    esac
+done
+
+if [ -z "$RESULT_PATH" ] || [ -z "$REFERENCE_PATH" ] || [ -z "$OUTPUT_HTML" ]; then
+    echo "ERROR: --result, --reference, and --output are required." >&2
+    usage
+    exit 1
+fi
+
+if [ -z "$MIN_RESULT_SCENE_FRAME" ]; then
+    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
+    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
+    MIN_RESULT_SCENE_FRAME=$((grace - tolerance))
+    if [ "$MIN_RESULT_SCENE_FRAME" -lt 0 ]; then
+        MIN_RESULT_SCENE_FRAME=0
+    fi
+fi
+
+if [ -z "$COMPARE_JSON" ]; then
+    COMPARE_JSON="${OUTPUT_HTML%.html}.json"
+fi
+
+mkdir -p "$(dirname "$OUTPUT_HTML")"
+mkdir -p "$(dirname "$COMPARE_JSON")"
+
+if [ -z "$TITLE" ]; then
+    if [ -n "$SCENE_SPEC" ]; then
+        TITLE="$SCENE_SPEC PS1 vs Host Review"
+    else
+        TITLE="PS1 vs Host Review"
+    fi
+fi
+
+COMPARE_CMD=(
+    python3 "$SCRIPT_DIR/compare-sequence-runs.py"
+    --json
+    --scene-entry-align
+    --result "$RESULT_PATH"
+    --reference "$REFERENCE_PATH"
+    --min-result-scene-frame "$MIN_RESULT_SCENE_FRAME"
+    --min-reference-scene-frame "$MIN_REFERENCE_SCENE_FRAME"
+)
+
+if [ "$SCENE_WINDOW_ONLY" -eq 1 ]; then
+    COMPARE_CMD+=(--scene-window-only)
+fi
+
+"${COMPARE_CMD[@]}" > "$COMPARE_JSON"
+
+python3 "$SCRIPT_DIR/render-compare-timeline.py" \
+    --compare-json "$COMPARE_JSON" \
+    --output "$OUTPUT_HTML" \
+    --title "$TITLE" \
+    >/dev/null
+
+echo "$OUTPUT_HTML"

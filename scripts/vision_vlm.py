@@ -612,11 +612,19 @@ def sanitize_analysis_payload(payload: dict[str, Any], state: dict[str, Any] | N
 
 def sanitize_compare_payload(payload: dict[str, Any], reference_state: dict[str, Any], query_state: dict[str, Any]) -> dict[str, Any]:
     cleaned = dict(payload)
+    reference_screen_raw = cleaned.get("reference_screen_type")
+    query_screen_raw = cleaned.get("query_screen_type")
+    # Some models echo the schema enum string instead of a value. Fall back to
+    # the independently-classified state in that case.
+    if isinstance(reference_screen_raw, str) and "|" in reference_screen_raw:
+        reference_screen_raw = None
+    if isinstance(query_screen_raw, str) and "|" in query_screen_raw:
+        query_screen_raw = None
     cleaned["reference_screen_type"] = canonical_screen_type(
-        cleaned.get("reference_screen_type") or reference_state.get("screen_type")
+        reference_screen_raw or reference_state.get("screen_type")
     )
     cleaned["query_screen_type"] = canonical_screen_type(
-        cleaned.get("query_screen_type") or query_state.get("screen_type")
+        query_screen_raw or query_state.get("screen_type")
     )
     cleaned["same_scene_state"] = bool(cleaned.get("same_scene_state", False))
     cleaned["summary"] = str(cleaned.get("summary") or "").strip()

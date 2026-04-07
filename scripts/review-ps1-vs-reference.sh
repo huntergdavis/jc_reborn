@@ -115,12 +115,6 @@ fi
 
 "${COMPARE_CMD[@]}" > "$COMPARE_JSON"
 
-python3 "$SCRIPT_DIR/render-compare-timeline.py" \
-    --compare-json "$COMPARE_JSON" \
-    --output "$OUTPUT_HTML" \
-    --title "$TITLE" \
-    >/dev/null
-
 if [ -n "$VLM_MODEL_DIR" ]; then
     VLM_CMD=(
         python3 "$SCRIPT_DIR/validate-ps1-vlm.py"
@@ -139,5 +133,16 @@ if [ -n "$VLM_MODEL_DIR" ]; then
     fi
     "${VLM_CMD[@]}" >/dev/null
 fi
+
+RENDER_CMD=(
+    python3 "$SCRIPT_DIR/render-compare-timeline.py"
+    --compare-json "$COMPARE_JSON"
+    --output "$OUTPUT_HTML"
+    --title "$TITLE"
+)
+if [ -n "$VLM_MODEL_DIR" ]; then
+    RENDER_CMD+=(--vlm-json "$VLM_OUT_JSON")
+fi
+"${RENDER_CMD[@]}" >/dev/null
 
 echo "$OUTPUT_HTML"

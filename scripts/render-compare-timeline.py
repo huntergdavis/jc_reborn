@@ -28,6 +28,80 @@ def fmt_int(value):
     return f"{value:,}"
 
 
+def load_optional_json(path_value: str | None):
+    if not path_value:
+        return None
+    path = Path(path_value).resolve()
+    if not path.is_file():
+        return None
+    try:
+        with path.open() as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def render_vlm_summary(vlm_data: dict | None, output_path: Path) -> str:
+    if not vlm_data:
+        return ""
+
+    verdict = str(vlm_data.get("verdict", "unknown"))
+    verdict_class = "good" if verdict == "correct_scene_content" else "bad" if verdict == "broken_scene_output" else ""
+    label_counts = vlm_data.get("label_counts", {}) or {}
+    dominant_hint_scene = vlm_data.get("dominant_hint_scene")
+    pair_rows = []
+    for idx, pair in enumerate(vlm_data.get("pairs", []), start=1):
+        query_path = Path(pair.get("query_image", ""))
+        analysis_json = pair.get("analysis_json")
+        analysis_href = ""
+        if analysis_json:
+            analysis_href = html.escape(__import__("os").path.relpath((output_path.parent / analysis_json).resolve(), output_path.parent))
+        pair_rows.append(
+            f"""
+<tr>
+  <td>{idx}</td>
+  <td><code>{html.escape(query_path.name)}</code></td>
+  <td><code>{html.escape(str(pair.get('label', 'unknown')))}</code></td>
+  <td><code>{html.escape(str(pair.get('query_screen_type', 'unknown')))}</code></td>
+  <td>{html.escape(', '.join(pair.get('missing_characters', [])) or 'none')}</td>
+  <td>{html.escape(str(pair.get('summary', '')))}</td>
+  <td>{f'<a href=\"{analysis_href}\">json</a>' if analysis_href else ''}</td>
+</tr>
+"""
+        )
+
+    return f"""
+<section class="card">
+  <div class="card-head">
+    <div>
+      <h2>VLM Scene-Fix Verdict</h2>
+      <div class="meta">OpenVINO VLM pass over sampled reference/PS1 frame pairs.</div>
+    </div>
+    <div class="stats">
+      <span class="pill {verdict_class}">{html.escape(verdict)}</span>
+    </div>
+  </div>
+  <div class="summary-grid">
+    <div class="box"><div class="k">Pair Count</div><div class="v">{fmt_int(vlm_data.get("pair_count"))}</div></div>
+    <div class="box"><div class="k">Broken Votes</div><div class="v">{fmt_int(label_counts.get("broken_scene_output"))}</div></div>
+    <div class="box"><div class="k">Correct Votes</div><div class="v">{fmt_int(label_counts.get("correct_scene_content"))}</div></div>
+    <div class="box"><div class="k">Uncertain Votes</div><div class="v">{fmt_int(label_counts.get("uncertain"))}</div></div>
+    <div class="box"><div class="k">Hint Scene</div><div class="v"><code>{html.escape(str(dominant_hint_scene or "none"))}</code></div></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>#</th><th>PS1 Frame</th><th>Vote</th><th>Query Screen</th><th>Missing</th><th>Summary</th><th>Pair JSON</th></tr>
+      </thead>
+      <tbody>
+        {''.join(pair_rows)}
+      </tbody>
+    </table>
+  </div>
+</section>
+"""
+
+
 def load_run_frames(result_json_path: Path) -> list[Path]:
     if result_json_path.is_dir():
         frames_dir = find_best_frame_dir(result_json_path)
@@ -94,6 +168,7 @@ def main() -> int:
     ap.add_argument("--compare-json", required=True)
     ap.add_argument("--output", required=True)
     ap.add_argument("--title", default="Sequence Timeline")
+    ap.add_argument("--vlm-json")
     args = ap.parse_args()
 
     compare_path = Path(args.compare_json).resolve()
@@ -101,6 +176,7 @@ def main() -> int:
 
     with compare_path.open() as f:
         data = json.load(f)
+    vlm_data = load_optional_json(args.vlm_json)
 
     frames = data.get("frames", [])
     result_json_path = Path(data["result"]).resolve() if data.get("result") else None
@@ -213,6 +289,10 @@ def main() -> int:
     .pill.bad {{ color:var(--bad); border-color:#6b2f2b; }}
     .grid {{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }}
     .timeline-grid {{ display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }}
+    .table-wrap {{ overflow:auto; margin-top:16px; }}
+    table {{ width:100%; border-collapse:collapse; }}
+    th, td {{ text-align:left; padding:10px 12px; border-top:1px solid var(--border); vertical-align:top; }}
+    thead th {{ color:var(--muted); font-weight:600; }}
     .timeline-figure {{ margin:0; background:var(--panel2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }}
     figure {{ margin:0; background:var(--panel2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }}
     figcaption {{ padding:10px 12px; border-bottom:1px solid var(--border); color:var(--accent); }}
@@ -252,6 +332,8 @@ def main() -> int:
         <ul>{ref_only}</ul>
       </div>
     </div>
+
+    {render_vlm_summary(vlm_data, output_path)}
 
     {cards_html}
 

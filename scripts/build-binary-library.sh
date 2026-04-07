@@ -1,6 +1,6 @@
 #!/bin/bash
 # build-binary-library.sh — Build a PS1 executable + CD image for every
-#                           code-changing commit since the PS1 port began.
+#                           PS1 code/tooling-changing commit since the port began.
 #
 # Creates a directory of numbered, date-stamped builds that can be tested
 # against any scene to find exact regressions.
@@ -80,7 +80,12 @@ fi
 # ---------------------------------------------------------------------------
 echo "Enumerating commits from $PS1_PORT_ORIGIN to $END_REF..."
 
-mapfile -t COMMITS < <(git rev-list --reverse "$PS1_PORT_ORIGIN"^.."$END_REF" -- '*.c' '*.h')
+mapfile -t COMMITS < <(
+    git rev-list --reverse "$PS1_PORT_ORIGIN"^.."$END_REF" -- \
+        '*.c' '*.h' \
+        'scripts/*.sh' 'scripts/*.py' \
+        'config/ps1/*.sh'
+)
 TOTAL=${#COMMITS[@]}
 
 if [ "$TOTAL" -eq 0 ]; then

@@ -109,7 +109,7 @@ def load_frame_map(result: dict, result_path: Path) -> dict[str, Path]:
         if frame_dir in seen_dirs or not frame_dir.is_dir():
             continue
         seen_dirs.add(frame_dir)
-        for frame_path in sorted(frame_dir.glob("frame_*.*")):
+        for frame_path in sorted(frame_dir.glob("**/frame_*.*")):
             frame_map[frame_key(frame_path)] = frame_path
         if frame_map:
             break

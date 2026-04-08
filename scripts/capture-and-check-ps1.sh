@@ -112,11 +112,15 @@ if [ -z "$LOOKUP_ROOT" ]; then
 fi
 
 if [ -z "$START_FRAME" ]; then
-    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
-    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
-    START_FRAME=$((grace - tolerance))
-    if [ "$START_FRAME" -lt 0 ]; then
-        START_FRAME=0
+    if [ -n "$SCENE_SPEC" ]; then
+        START_FRAME="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$SCENE_SPEC")"
+    else
+        grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
+        tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
+        START_FRAME=$((grace - tolerance))
+        if [ "$START_FRAME" -lt 0 ]; then
+            START_FRAME=0
+        fi
     fi
 fi
 

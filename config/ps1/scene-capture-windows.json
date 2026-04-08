@@ -1,0 +1,19 @@
+{
+  "default": {
+    "start_frame": 1680
+  },
+  "scenes": {
+    "FISHING-1": {
+      "start_frame": 2400,
+      "source": "human review 2026-04-08 near-correct late-frame focus"
+    },
+    "STAND-1": {
+      "start_frame": 1890,
+      "source": "human review 2026-04-08 title frames through kept frame 00006"
+    },
+    "STAND-2": {
+      "start_frame": 1890,
+      "source": "human review 2026-04-08 title frames through kept frame 00006"
+    }
+  }
+}

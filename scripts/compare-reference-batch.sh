@@ -93,17 +93,6 @@ if [ -z "$MIN_RESULT_SCENE_FRAME" ]; then
     fi
 fi
 
-if [ -z "$START_FRAME" ]; then
-    START_FRAME="$MIN_RESULT_SCENE_FRAME"
-fi
-
-if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
-    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
-    if [ "$FRAMES" -lt "$min_frames" ]; then
-        FRAMES="$min_frames"
-    fi
-fi
-
 if [ -n "$SCENE_FILE" ]; then
     mapfile -t FILE_SCENES < <(python3 - "$SCENE_FILE" "$STATUS_FILTER" "$LIMIT" <<'PY'
 import sys
@@ -166,6 +155,17 @@ declare -a SUMMARY_ROWS=()
 
 for scene in "${SCENES[@]}"; do
     read -r ADS_NAME TAG <<< "$scene"
+    SCENE_START_FRAME="$START_FRAME"
+    if [ -z "$SCENE_START_FRAME" ]; then
+        SCENE_START_FRAME="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$scene")"
+    fi
+    SCENE_FRAMES="$FRAMES"
+    if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+        min_frames=$((SCENE_START_FRAME + MIN_TAIL_FRAMES))
+        if [ "$SCENE_FRAMES" -lt "$min_frames" ]; then
+            SCENE_FRAMES="$min_frames"
+        fi
+    fi
     LABEL_BASE="${ADS_NAME,,}-${TAG}"
     RESULT_DIR="$OUTPUT_ROOT/${LABEL_BASE}"
     REFERENCE_META="$REFERENCE_DIR/${ADS_NAME}-${TAG}/metadata.json"
@@ -199,8 +199,8 @@ for scene in "${SCENES[@]}"; do
         --scene-index "$SCENE_INDEX"
         --status "$STATUS"
         --boot "$BOOT_STRING"
-        --frames "$FRAMES"
-        --start-frame "$START_FRAME"
+        --frames "$SCENE_FRAMES"
+        --start-frame "$SCENE_START_FRAME"
         --interval "$INTERVAL"
         --output "$RESULT_DIR"
     )

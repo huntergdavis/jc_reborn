@@ -142,35 +142,6 @@ fi
 
 mkdir -p "$REFERENCE_DIR"
 
-if [ -z "$START_FRAME" ]; then
-    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
-    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
-    START_FRAME=$((grace - tolerance))
-    if [ "$START_FRAME" -lt 0 ]; then
-        START_FRAME=0
-    fi
-fi
-
-if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
-    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
-    if [ "$CAPTURE_FRAMES" -lt "$min_frames" ]; then
-        CAPTURE_FRAMES="$min_frames"
-    fi
-fi
-
-if ! [[ "$START_FRAME" =~ ^[0-9]+$ ]]; then
-    echo "ERROR: --start-frame must be an integer >= 0" >&2
-    exit 1
-fi
-if [ "$START_FRAME" -lt 0 ]; then
-    echo "ERROR: --start-frame must be >= 0" >&2
-    exit 1
-fi
-if [ "$CAPTURE_FRAMES" -lt "$START_FRAME" ]; then
-    echo "ERROR: --frames must be >= --start-frame" >&2
-    exit 1
-fi
-
 log() {
     echo "[capture-ref] $*" >&2
 }
@@ -215,13 +186,37 @@ capture_scene() {
     local boot_string="$5"
     local scene_label="${ads_name}-${tag}"
     local scene_dir="$REFERENCE_DIR/$scene_label"
+    local scene_start_frame="$START_FRAME"
+    local scene_capture_frames="$CAPTURE_FRAMES"
     local capture_ts
     capture_ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+    if [ -z "$scene_start_frame" ]; then
+        scene_start_frame="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$ads_name $tag")"
+    fi
+    if ! [[ "$scene_start_frame" =~ ^[0-9]+$ ]]; then
+        echo "ERROR: scene start frame must be an integer >= 0" >&2
+        return 1
+    fi
+    if [ "$scene_start_frame" -lt 0 ]; then
+        echo "ERROR: scene start frame must be >= 0" >&2
+        return 1
+    fi
+    if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+        min_frames=$((scene_start_frame + MIN_TAIL_FRAMES))
+        if [ "$scene_capture_frames" -lt "$min_frames" ]; then
+            scene_capture_frames="$min_frames"
+        fi
+    fi
+    if [ "$scene_capture_frames" -lt "$scene_start_frame" ]; then
+        echo "ERROR: --frames must be >= resolved scene start frame" >&2
+        return 1
+    fi
 
     if [ "$DRY_RUN" -eq 1 ]; then
         echo "  [dry-run] Would capture: $ads_name tag $tag (index=$scene_index) => $scene_dir"
         echo "            Boot: $boot_string"
-        echo "            Frames: $CAPTURE_FRAMES, Start: $START_FRAME, Interval: $CAPTURE_INTERVAL"
+        echo "            Frames: $scene_capture_frames, Start: $scene_start_frame, Interval: $CAPTURE_INTERVAL"
         return 0
     fi
 
@@ -237,8 +232,8 @@ capture_scene() {
         --scene-index "$scene_index" \
         --status "$status" \
         --boot "$boot_string" \
-        --frames "$CAPTURE_FRAMES" \
-        --start-frame "$START_FRAME" \
+        --frames "$scene_capture_frames" \
+        --start-frame "$scene_start_frame" \
         --interval "$CAPTURE_INTERVAL" \
         --output "$scene_dir/.regtest-work" \
         --quiet \
@@ -279,6 +274,7 @@ PY
     fi
 
     # Write metadata sidecar
+    SCENE_CAPTURE_FRAMES="$scene_capture_frames" SCENE_START_FRAME="$scene_start_frame" \
     python3 - "$scene_dir" "$ads_name" "$tag" "$scene_index" "$status" \
               "$boot_string" "$frames_found" "$capture_ts" "$scene_result" <<'PYEOF'
 import json, sys, os, glob
@@ -305,8 +301,8 @@ metadata = {
     "scene_index": scene_index,
     "status": status,
     "boot_string": boot_string,
-    "capture_frames": int(os.environ.get("CAPTURE_FRAMES", 1800)),
-    "capture_start_frame": int(os.environ.get("START_FRAME", 0)),
+    "capture_frames": int(os.environ.get("SCENE_CAPTURE_FRAMES", os.environ.get("CAPTURE_FRAMES", 1800))),
+    "capture_start_frame": int(os.environ.get("SCENE_START_FRAME", os.environ.get("START_FRAME", 0))),
     "capture_interval": int(os.environ.get("CAPTURE_INTERVAL", 30)),
     "frame_count": len(frame_files),
     "frames": frame_files,

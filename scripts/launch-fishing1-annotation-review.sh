@@ -7,7 +7,7 @@ OUTDIR="${1:-$PROJECT_ROOT/vision-artifacts/fishing1-annotation-review}"
 PORT="${SCENE_REVIEW_PORT:-8123}"
 FILTERED_RESULT_DIR="$OUTDIR/filtered-result"
 SOURCE_RESULT="${FISHING1_REVIEW_RESULT:-$PROJECT_ROOT/regtest-results/fishing-1-raw-3600-current/result.json}"
-START_FRAME="${FISHING1_REVIEW_START_FRAME:-2400}"
+START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(python3 "$PROJECT_ROOT/scripts/get-scene-capture-start.py" --scene "FISHING 1")}"
 
 python3 "$PROJECT_ROOT/scripts/filter-result-frames.py" \
   --result "$SOURCE_RESULT" \

@@ -75,11 +75,15 @@ if [ -z "$RESULT_PATH" ] || [ -z "$REFERENCE_PATH" ] || [ -z "$OUTPUT_HTML" ]; t
 fi
 
 if [ -z "$MIN_RESULT_SCENE_FRAME" ]; then
-    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
-    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
-    MIN_RESULT_SCENE_FRAME=$((grace - tolerance))
-    if [ "$MIN_RESULT_SCENE_FRAME" -lt 0 ]; then
-        MIN_RESULT_SCENE_FRAME=0
+    if [ -n "$SCENE_SPEC" ]; then
+        MIN_RESULT_SCENE_FRAME="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$SCENE_SPEC")"
+    else
+        grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
+        tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
+        MIN_RESULT_SCENE_FRAME=$((grace - tolerance))
+        if [ "$MIN_RESULT_SCENE_FRAME" -lt 0 ]; then
+            MIN_RESULT_SCENE_FRAME=0
+        fi
     fi
 fi
 

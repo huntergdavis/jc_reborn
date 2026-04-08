@@ -123,12 +123,7 @@ if [ -z "$SCENE_SPEC" ]; then
 fi
 
 if [ -z "$START_FRAME" ]; then
-    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
-    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
-    START_FRAME=$((grace - tolerance))
-    if [ "$START_FRAME" -lt 0 ]; then
-        START_FRAME=0
-    fi
+    START_FRAME="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$SCENE_SPEC")"
 fi
 
 if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then

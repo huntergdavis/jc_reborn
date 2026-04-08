@@ -8,6 +8,24 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 ROOT_DIR="$PROJECT_ROOT/host-script-review"
 REQUIRE_HEAD_MATCH=1
 
+resolve_scene_start() {
+    python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$1"
+}
+
+frame_name() {
+    printf 'frame_%05d' "$1"
+}
+
+FISHING_REVIEW_START_FRAME="$(resolve_scene_start "FISHING 1")"
+FISHING_REVIEW_LATE_FRAME="$((FISHING_REVIEW_START_FRAME + 240))"
+FISHING_REVIEW_START_NAME="$(frame_name "$FISHING_REVIEW_START_FRAME")"
+FISHING_REVIEW_LATE_NAME="$(frame_name "$FISHING_REVIEW_LATE_FRAME")"
+
+MARY_REVIEW_START_FRAME="$(resolve_scene_start "MARY 1")"
+MARY_REVIEW_LATE_FRAME="$((MARY_REVIEW_START_FRAME + 120))"
+MARY_REVIEW_START_NAME="$(frame_name "$MARY_REVIEW_START_FRAME")"
+MARY_REVIEW_LATE_NAME="$(frame_name "$MARY_REVIEW_LATE_FRAME")"
+
 usage() {
     cat <<'USAGE'
 Usage: verify-host-script-review.sh [OPTIONS]
@@ -29,7 +47,9 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-python3 - "$ROOT_DIR" "$PROJECT_ROOT" "$REQUIRE_HEAD_MATCH" <<'PY'
+python3 - "$ROOT_DIR" "$PROJECT_ROOT" "$REQUIRE_HEAD_MATCH" \
+    "$FISHING_REVIEW_START_NAME" "$FISHING_REVIEW_LATE_NAME" \
+    "$MARY_REVIEW_START_NAME" "$MARY_REVIEW_LATE_NAME" <<'PY'
 import hashlib
 import json
 import re
@@ -40,6 +60,10 @@ from pathlib import Path
 root = Path(sys.argv[1])
 project_root = Path(sys.argv[2])
 require_head_match = sys.argv[3] == "1"
+fishing_start_name = sys.argv[4]
+fishing_late_name = sys.argv[5]
+mary_start_name = sys.argv[6]
+mary_late_name = sys.argv[7]
 
 required = [
     "manifest.json",
@@ -76,6 +100,7 @@ summary = json.loads((root / "verification-summary.json").read_text(encoding="ut
 review_root = summary.get("review_root")
 if review_root != str(root.resolve()):
     raise SystemExit("verification-summary review_root mismatch")
+review_root_path = Path(review_root).resolve()
 print(f"review-root: ok root={review_root}")
 
 path_map_count = sum(
@@ -289,7 +314,6 @@ for key, value in summary.items():
             raise SystemExit(f"verification-summary {key}.{path_key} does not exist")
 print("summary-existing-paths: ok")
 
-review_root_path = Path(review_root).resolve()
 for key, value in summary.items():
     if key == "review_root" or not key.endswith("_paths"):
         continue
@@ -516,10 +540,10 @@ print(
 
 key_frame_paths = summary.get("key_frame_paths", {})
 required_key_frame_paths = {
-    "fishing_start_bmp": root / "fishing1" / "frames" / "frame_00000.bmp",
-    "fishing_late_bmp": root / "fishing1" / "frames" / "frame_00080.bmp",
-    "mary_start_bmp": root / "mary1" / "frames" / "frame_00000.bmp",
-    "mary_late_bmp": root / "mary1" / "frames" / "frame_00100.bmp",
+    "fishing_start_bmp": root / "fishing1" / "frames" / f"{fishing_start_name}.bmp",
+    "fishing_late_bmp": root / "fishing1" / "frames" / f"{fishing_late_name}.bmp",
+    "mary_start_bmp": root / "mary1" / "frames" / f"{mary_start_name}.bmp",
+    "mary_late_bmp": root / "mary1" / "frames" / f"{mary_late_name}.bmp",
 }
 for key, expected_path in required_key_frame_paths.items():
     actual = key_frame_paths.get(key)
@@ -535,10 +559,10 @@ print(
 
 key_frame_meta_paths = summary.get("key_frame_meta_paths", {})
 required_key_frame_meta_paths = {
-    "fishing_start_json": root / "fishing1" / "frame-meta" / "frame_00000.json",
-    "fishing_late_json": root / "fishing1" / "frame-meta" / "frame_00080.json",
-    "mary_start_json": root / "mary1" / "frame-meta" / "frame_00000.json",
-    "mary_late_json": root / "mary1" / "frame-meta" / "frame_00100.json",
+    "fishing_start_json": root / "fishing1" / "frame-meta" / f"{fishing_start_name}.json",
+    "fishing_late_json": root / "fishing1" / "frame-meta" / f"{fishing_late_name}.json",
+    "mary_start_json": root / "mary1" / "frame-meta" / f"{mary_start_name}.json",
+    "mary_late_json": root / "mary1" / "frame-meta" / f"{mary_late_name}.json",
 }
 for key, expected_path in required_key_frame_meta_paths.items():
     actual = key_frame_meta_paths.get(key)
@@ -553,14 +577,34 @@ print(
 )
 
 summary_txt = (root / "verification-summary.txt").read_text(encoding="utf-8")
+path_map_type_counts_text = ",".join(
+    f"{key}:{path_map_type_counts[key]['files']}f/{path_map_type_counts[key]['dirs']}d"
+    for key in sorted(path_map_type_counts)
+)
+path_map_file_class_counts_text = ",".join(
+    f"{key}:{path_map_file_class_counts[key]['json']}j/{path_map_file_class_counts[key]['html']}h/{path_map_file_class_counts[key]['bmp']}b/{path_map_file_class_counts[key]['other']}o"
+    for key in sorted(path_map_file_class_counts)
+)
+path_map_entry_names_text = ",".join(
+    f"{key}:{'|'.join(path_map_entry_names[key])}"
+    for key in sorted(path_map_entry_names)
+)
+artifact_input_depth_counts_text = ",".join(
+    f"{depth}:{summary.get('artifact_input_depth_counts', {}).get(depth)}"
+    for depth in sorted(summary.get("artifact_input_depth_counts", {}), key=int)
+)
+artifact_input_parent_dir_depth_counts_text = ",".join(
+    f"{depth}:{summary.get('artifact_input_parent_dir_depth_counts', {}).get(depth)}"
+    for depth in sorted(summary.get("artifact_input_parent_dir_depth_counts", {}), key=int)
+)
 required_summary_txt_tokens = {
     f"review-root={review_root}",
     f"path-map-count={path_map_count}",
     f"path-map-names={','.join(path_map_names)}",
     f"path-map-entry-counts={','.join(f'{key}:{path_map_entry_counts[key]}' for key in sorted(path_map_entry_counts))}",
-    f"path-map-type-counts={','.join(f\"{key}:{path_map_type_counts[key]['files']}f/{path_map_type_counts[key]['dirs']}d\" for key in sorted(path_map_type_counts))}",
-    f"path-map-file-class-counts={','.join(f\"{key}:{path_map_file_class_counts[key]['json']}j/{path_map_file_class_counts[key]['html']}h/{path_map_file_class_counts[key]['bmp']}b/{path_map_file_class_counts[key]['other']}o\" for key in sorted(path_map_file_class_counts))}",
-    f"path-map-entry-names={','.join(f\"{key}:{'|'.join(path_map_entry_names[key])}\" for key in sorted(path_map_entry_names))}",
+    f"path-map-type-counts={path_map_type_counts_text}",
+    f"path-map-file-class-counts={path_map_file_class_counts_text}",
+    f"path-map-entry-names={path_map_entry_names_text}",
     f"path-basenames={','.join(path_basenames)}",
     f"path-relpaths={','.join(path_relpaths)}",
     f"path-depth-counts={','.join(f'{depth}:{path_depth_counts[depth]}' for depth in sorted(path_depth_counts, key=int))}",
@@ -570,12 +614,12 @@ required_summary_txt_tokens = {
     f"artifact-input-names={','.join(summary.get('artifact_input_names', []))}",
     f"artifact-input-names-sha256={summary.get('artifact_input_names_sha256')}",
     f"artifact-input-file-class-counts={summary.get('artifact_input_file_class_counts', {}).get('json', 0)}j/{summary.get('artifact_input_file_class_counts', {}).get('html', 0)}h/{summary.get('artifact_input_file_class_counts', {}).get('bmp', 0)}b/{summary.get('artifact_input_file_class_counts', {}).get('other', 0)}o",
-    f"artifact-input-depth-counts={','.join(f\"{depth}:{summary.get('artifact_input_depth_counts', {}).get(depth)}\" for depth in sorted(summary.get('artifact_input_depth_counts', {}), key=int))}",
+    f"artifact-input-depth-counts={artifact_input_depth_counts_text}",
     f"artifact-input-max-depth={summary.get('artifact_input_max_depth')}",
     f"artifact-input-min-nonroot-depth={summary.get('artifact_input_min_nonroot_depth')}",
     f"artifact-input-parent-dirs-sha256={summary.get('artifact_input_parent_dirs_sha256')}",
     f"artifact-input-parent-dir-count={summary.get('artifact_input_parent_dir_count')}",
-    f"artifact-input-parent-dir-depth-counts={','.join(f\"{depth}:{summary.get('artifact_input_parent_dir_depth_counts', {}).get(depth)}\" for depth in sorted(summary.get('artifact_input_parent_dir_depth_counts', {}), key=int))}",
+    f"artifact-input-parent-dir-depth-counts={artifact_input_parent_dir_depth_counts_text}",
     f"artifact-input-parent-dir-max-depth={summary.get('artifact_input_parent_dir_max_depth')}",
     f"artifact-input-parent-dir-min-nonroot-depth={summary.get('artifact_input_parent_dir_min_nonroot_depth')}",
     f"artifact-input-parent-dir-basenames-sha256={summary.get('artifact_input_parent_dir_basenames_sha256')}",
@@ -723,10 +767,10 @@ for href in (
     "identification-challenges.json",
     "identification-temporal.json",
     "semantic-truth.json",
-    "fishing1/frames/frame_00000.bmp",
-    "mary1/frames/frame_00000.bmp",
-    "fishing1/frames/frame_00080.bmp",
-    "mary1/frames/frame_00100.bmp",
+    f"fishing1/frames/{fishing_start_name}.bmp",
+    f"mary1/frames/{mary_start_name}.bmp",
+    f"fishing1/frames/{fishing_late_name}.bmp",
+    f"mary1/frames/{mary_late_name}.bmp",
 ):
     if href not in identification_html:
         raise SystemExit(f"identification-review.html missing link: {href}")

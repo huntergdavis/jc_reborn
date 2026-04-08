@@ -34,7 +34,7 @@ def load_frames(result: dict, result_path: Path) -> list[Path]:
     path = resolve_capture_path(frames_dir, result_path.parent)
     if not path.is_dir():
         return []
-    return sorted(path.glob("frame_*.png"))
+    return sorted(path.glob("**/frame_*.png"))
 
 
 def frame_meta_by_name(result: dict) -> dict[str, dict]:

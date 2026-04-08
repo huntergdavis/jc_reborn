@@ -39,6 +39,8 @@ SCENE_INDEX=""
 SCENE_STATUS=""
 FRAMES="$REGTEST_FRAMES"
 START_FRAME=0
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${REGTEST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-1200}"
 INTERVAL="$REGTEST_INTERVAL"
 SEED="${REGTEST_SEED:-1}"
 OUTPUT_DIR=""
@@ -60,7 +62,7 @@ Options:
   --scene-index N  Scene index for story-scene boot and result metadata
   --status NAME    Scene status label for result metadata
   --frames N       Number of emulated frames (default: 1800 = 30s)
-  --start-frame N  First emulated frame to include in capture output (default: 0)
+  --start-frame N  First emulated frame to include in capture output (default: reviewed per-scene start)
   --interval N     Capture a frame every N frames (default: 60 = 1/sec)
   --seed N         Force deterministic RNG seed for the PS1 run (default: REGTEST_SEED or 1)
   --output DIR     Output directory for results (default: auto-generated)
@@ -80,7 +82,7 @@ while [ $# -gt 0 ]; do
         --scene-index) SCENE_INDEX="$2"; shift 2 ;;
         --status)    SCENE_STATUS="$2"; shift 2 ;;
         --frames)    FRAMES="$2"; shift 2 ;;
-        --start-frame) START_FRAME="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval)  INTERVAL="$2"; shift 2 ;;
         --seed)      SEED="$2"; shift 2 ;;
         --output)    OUTPUT_DIR="$2"; shift 2 ;;
@@ -132,6 +134,10 @@ read_embedded_bootmode() {
     ' "$EMBEDDED_BOOTMODE_HEADER"
 }
 
+resolve_scene_start() {
+    python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$SCENE_SPEC"
+}
+
 # Build the BOOTMODE override string
 if [ -z "$BOOT_STRING" ]; then
     if [ -n "$SCENE_INDEX" ]; then
@@ -173,6 +179,14 @@ if [ "$SKIP_BUILD" -eq 1 ]; then
         echo "       requested: $BOOT_STRING" >&2
         echo "       Re-run without --skip-build so the executable/CD image are rebuilt." >&2
         exit 1
+    fi
+fi
+
+if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+    START_FRAME="$(resolve_scene_start)"
+    min_required_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$FRAMES" -lt "$min_required_frames" ]; then
+        FRAMES="$min_required_frames"
     fi
 fi
 

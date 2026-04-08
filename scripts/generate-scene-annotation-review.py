@@ -544,8 +544,6 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     }});
     qs('prevBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(-1); }});
     qs('nextBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(1); }});
-    qs('sidePrevBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(-1); }});
-    qs('sideNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(1); }});
     qs('exportBtn').addEventListener('click', () => {{
       const blob = new Blob([JSON.stringify({{
         scene_id: manifest.scene_id,

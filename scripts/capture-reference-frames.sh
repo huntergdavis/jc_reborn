@@ -319,6 +319,27 @@ with open(os.path.join(scene_dir, "metadata.json"), "w") as f:
     f.write("\n")
 PYEOF
 
+    if [ -f "$scene_dir/.regtest-result.json" ]; then
+        python3 - "$scene_dir/.regtest-result.json" "$scene_dir/result.json" "$scene_dir" "$capture_ts" <<'PYEOF'
+import json, os, sys
+from pathlib import Path
+
+source_path = Path(sys.argv[1])
+dest_path = Path(sys.argv[2])
+scene_dir = Path(sys.argv[3]).resolve()
+capture_date = sys.argv[4]
+
+payload = json.loads(source_path.read_text(encoding="utf-8"))
+payload["capture_date"] = capture_date
+paths = payload.setdefault("paths", {})
+paths["output_dir"] = str(scene_dir)
+paths["frames_dir"] = str(scene_dir)
+payload.setdefault("config", {})
+payload["config"]["frames_dir_layout"] = "flat"
+dest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+PYEOF
+    fi
+
     # Clean up work directory (keep only frames and metadata)
     if [ -d "$scene_dir/.regtest-work" ]; then
         chmod -R u+w "$scene_dir/.regtest-work" 2>/dev/null || true

@@ -22,7 +22,7 @@ fi
 MODE="headless"
 WAIT_TIME=35
 FRAMES="${REGTEST_FRAMES:-9000}"
-START_FRAME=0
+START_FRAME=""
 INTERVAL="${REGTEST_INTERVAL:-60}"
 USE_BASELINE_MASK=1
 EXPECTED_ROOT=""
@@ -107,6 +107,15 @@ fi
 
 if [ -z "$LOOKUP_ROOT" ]; then
     LOOKUP_ROOT="$EXPECTED_ROOT"
+fi
+
+if [ -z "$START_FRAME" ]; then
+    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
+    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
+    START_FRAME=$((grace - tolerance))
+    if [ "$START_FRAME" -lt 0 ]; then
+        START_FRAME=0
+    fi
 fi
 
 if [ "$MODE" = "headless" ] && [ -n "$FRAME_NUMBER" ] && [ -z "$ACTUAL_FRAME" ] && [ -z "$IMAGE_PATH" ]; then

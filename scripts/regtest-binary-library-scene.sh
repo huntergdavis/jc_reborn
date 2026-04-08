@@ -36,7 +36,7 @@ END_SEQ=""
 LIMIT=""
 RESUME=0
 FRAMES="${REGTEST_FRAMES:-1800}"
-START_FRAME=0
+START_FRAME=""
 INTERVAL="${REGTEST_INTERVAL:-60}"
 TIMEOUT="${REGTEST_TIMEOUT:-180}"
 LOG_LEVEL="${REGTEST_LOG_LEVEL:-Warning}"
@@ -118,6 +118,15 @@ done
 if [ -z "$SCENE_SPEC" ]; then
     echo "ERROR: --scene is required" >&2
     exit 1
+fi
+
+if [ -z "$START_FRAME" ]; then
+    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
+    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
+    START_FRAME=$((grace - tolerance))
+    if [ "$START_FRAME" -lt 0 ]; then
+        START_FRAME=0
+    fi
 fi
 
 if ! [[ "$START_FRAME" =~ ^[0-9]+$ ]]; then

@@ -16,7 +16,7 @@ cd "$PROJECT_ROOT"
 REFERENCE_DIR="$PROJECT_ROOT/regtest-references"
 OUTPUT_ROOT="$PROJECT_ROOT/regtest-results/reference-compare"
 FRAMES=4200
-START_FRAME=0
+START_FRAME=""
 INTERVAL=1
 SEED=""
 SKIP_BUILD=0
@@ -89,6 +89,10 @@ if [ -z "$MIN_RESULT_SCENE_FRAME" ]; then
     if [ "$MIN_RESULT_SCENE_FRAME" -lt 0 ]; then
         MIN_RESULT_SCENE_FRAME=0
     fi
+fi
+
+if [ -z "$START_FRAME" ]; then
+    START_FRAME="$MIN_RESULT_SCENE_FRAME"
 fi
 
 if [ -n "$SCENE_FILE" ]; then

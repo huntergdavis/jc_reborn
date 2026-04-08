@@ -3,12 +3,43 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import shutil
 from pathlib import Path
 
 
 def load_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def resolve_scene_spec(payload: dict) -> str | None:
+    scene = payload.get("scene") or {}
+    ads_name = scene.get("ads_name")
+    tag = scene.get("tag")
+    if ads_name and tag is not None:
+        return f"{ads_name} {tag}"
+    return None
+
+
+def resolve_start_frame(result_path: Path, payload: dict, explicit_start_frame: int | None) -> int:
+    if explicit_start_frame is not None:
+        return max(0, int(explicit_start_frame))
+
+    scene_spec = resolve_scene_spec(payload)
+    if scene_spec:
+        helper = result_path.parent.parent / "scripts" / "get-scene-capture-start.py"
+        if not helper.is_file():
+            helper = Path(__file__).resolve().parent / "get-scene-capture-start.py"
+        if helper.is_file():
+            resolved = subprocess.check_output(
+                ["python3", str(helper), "--scene", scene_spec],
+                text=True,
+            ).strip()
+            return max(0, int(resolved))
+
+    grace = 1800
+    tolerance = 120
+    return max(0, grace - tolerance)
 
 
 def main() -> int:
@@ -25,12 +56,7 @@ def main() -> int:
     outdir = args.outdir.resolve()
     outdir.mkdir(parents=True, exist_ok=True)
 
-    if args.start_frame is None:
-        grace = 1800
-        tolerance = 120
-        start_frame = max(0, grace - tolerance)
-    else:
-        start_frame = max(0, int(args.start_frame))
+    start_frame = resolve_start_frame(result_path, payload, args.start_frame)
 
     frames_dir_value = (payload.get("paths") or {}).get("frames_dir")
     if not frames_dir_value:

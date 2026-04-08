@@ -272,6 +272,8 @@ def analyze_scene(
     # --- Baseline comparison ---
     if baseline_dir and os.path.isdir(baseline_dir):
         baseline_frames_dir = os.path.join(baseline_dir, "frames")
+        if not os.path.isdir(baseline_frames_dir):
+            baseline_frames_dir = baseline_dir
         if os.path.isdir(baseline_frames_dir):
             baseline_frames = sorted(glob.glob(os.path.join(baseline_frames_dir, "**", "frame_*.png"), recursive=True))
             for bf in baseline_frames:

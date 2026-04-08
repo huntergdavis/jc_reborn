@@ -94,9 +94,19 @@ def build_frame_truth_from_actor_candidates(
 
 def build_frame_truth(meta_path: Path) -> dict:
     summary = summarize(meta_path)
+    frame_number = summary.get("frame_number")
+    if frame_number is None:
+        stem = meta_path.stem
+        if stem.startswith("frame_"):
+            try:
+                frame_number = int(stem.split("_", 1)[1])
+            except ValueError:
+                frame_number = 0
+        else:
+            frame_number = 0
     return build_frame_truth_from_actor_candidates(
         summary.get("actor_candidates", []),
-        int(summary["frame_number"]),
+        int(frame_number),
         meta_path.stem,
         summary.get("scene_label"),
     )

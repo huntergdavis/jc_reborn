@@ -188,11 +188,11 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     .side {{ background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: calc(100vh - 40px); position: sticky; top: 20px; overflow: hidden; }}
     .summarybox {{ background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; color: var(--muted); }}
     .thumbs {{ overflow: auto; display: grid; gap: 8px; padding-right: 4px; }}
-    .thumb {{ border: 1px solid var(--line); border-radius: 12px; padding: 8px; background: var(--panel2); cursor: pointer; }}
+    .thumb {{ border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: var(--panel2); cursor: pointer; text-align: left; }}
     .thumb.active {{ border-color: var(--accent); }}
     .thumb.done {{ border-color: var(--good); }}
-    .thumb img {{ border-radius: 8px; }}
     .thumb .name {{ margin-top: 6px; font-size: 12px; color: var(--muted); }}
+    .thumb .title {{ font-size: 13px; color: var(--text); }}
     .chips {{ display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }}
     .chip {{ font-size: 11px; padding: 3px 8px; border-radius: 999px; background: var(--chip); border: 1px solid var(--line); color: var(--muted); }}
     .chip.on {{ color: var(--text); border-color: var(--accent); }}
@@ -229,11 +229,6 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
           <div class="meta" id="progressMeta"></div>
         </div>
         <div class="pairgrid">
-          <figure id="referenceFigure" style="display:{reference_display};">
-            <figcaption>Reference</figcaption>
-            <img id="referenceImage" alt="Reference frame">
-            <div class="path" id="referencePath"></div>
-          </figure>
           <figure>
             <figcaption>Query</figcaption>
             <div class="imagewrap">
@@ -300,6 +295,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
             const prior = byId.get(frame.id);
             if (prior) {{
               frame.labels = prior.labels || {{}};
+              frame.johnny_capture = prior.johnny_capture || null;
               frame.notes = prior.notes || '';
             }}
           }}
@@ -348,15 +344,15 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
           currentIndex = index;
           render();
         }});
-        const img = document.createElement('img');
-        img.src = frame.query_rel;
-        img.alt = frame.query_name;
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = `${{index + 1}}. ${{frame.query_frame}}`;
         const name = document.createElement('div');
         name.className = 'name';
-        name.textContent = `${{frame.query_frame}}`;
+        name.textContent = frame.query_name;
         const chips = document.createElement('div');
         chips.className = 'chips';
-        item.appendChild(img);
+        item.appendChild(title);
         item.appendChild(name);
         item.appendChild(chips);
         thumbList.appendChild(item);
@@ -446,17 +442,8 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     function render() {{
       const frame = manifest.frames[currentIndex];
       qs('pairTitle').textContent = `${{manifest.scene_id}} · frame ${{currentIndex + 1}}`;
-      qs('pairMeta').textContent = frame.reference_frame ? `${{frame.reference_frame}} vs ${{frame.query_frame}}` : `${{frame.query_frame}}`;
+      qs('pairMeta').textContent = `${{frame.query_frame}}`;
       qs('progressMeta').textContent = `${{currentIndex + 1}} / ${{manifest.frames.length}}`;
-      if (frame.reference_rel) {{
-        qs('referenceFigure').style.display = 'block';
-        qs('referenceImage').src = frame.reference_rel;
-        qs('referencePath').textContent = frame.reference_image;
-      }} else {{
-        qs('referenceFigure').style.display = 'none';
-        qs('referenceImage').removeAttribute('src');
-        qs('referencePath').textContent = '';
-      }}
       qs('queryImage').src = frame.query_rel;
       qs('queryPath').textContent = frame.query_image;
       for (const box of qs('checkboxGrid').querySelectorAll('input[type=checkbox]')) {{
@@ -556,10 +543,10 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       updateSummary();
       render();
     }});
-    qs('prevBtn').addEventListener('click', () => move(-1));
-    qs('nextBtn').addEventListener('click', () => move(1));
-    qs('sidePrevBtn').addEventListener('click', () => move(-1));
-    qs('sideNextBtn').addEventListener('click', () => move(1));
+    qs('prevBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(-1); }});
+    qs('nextBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(1); }});
+    qs('sidePrevBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(-1); }});
+    qs('sideNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(1); }});
     qs('exportBtn').addEventListener('click', () => {{
       const blob = new Blob([JSON.stringify({{
         scene_id: manifest.scene_id,

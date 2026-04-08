@@ -160,6 +160,13 @@ if [ "$CAPTURE_OVERLAY_MASK" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay-m
 elif [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]; then
     BOOT_STRING="${BOOT_STRING} capture-overlay"
 fi
+if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+    START_FRAME="$(resolve_scene_start)"
+    min_required_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$FRAMES" -lt "$min_required_frames" ]; then
+        FRAMES="$min_required_frames"
+    fi
+fi
 if [ "$APPEND_CAPTURE_ARGS" = "1" ] && [[ "$BOOT_STRING" != *"capture-meta-dir"* ]]; then
     BOOT_STRING="${BOOT_STRING} capture-meta-dir ps1-meta capture-range ${START_FRAME} ${FRAMES} capture-interval ${INTERVAL} capture-scene-label ${SCENE_LABEL}"
 fi
@@ -179,14 +186,6 @@ if [ "$SKIP_BUILD" -eq 1 ]; then
         echo "       requested: $BOOT_STRING" >&2
         echo "       Re-run without --skip-build so the executable/CD image are rebuilt." >&2
         exit 1
-    fi
-fi
-
-if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
-    START_FRAME="$(resolve_scene_start)"
-    min_required_frames=$((START_FRAME + MIN_TAIL_FRAMES))
-    if [ "$FRAMES" -lt "$min_required_frames" ]; then
-        FRAMES="$min_required_frames"
     fi
 fi
 

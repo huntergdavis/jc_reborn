@@ -68,8 +68,8 @@ def main() -> int:
     args = build_parser().parse_args()
     frames_dir = args.frames_dir
 
-    pngs = sorted(frames_dir.glob("frame_*.png"))
-    bmps = sorted(frames_dir.glob("frame_*.bmp"))
+    pngs = sorted(frames_dir.glob("**/frame_*.png"))
+    bmps = sorted(frames_dir.glob("**/frame_*.bmp"))
     frames = pngs if pngs else bmps
     if not frames:
         raise SystemExit(f"no captured frames found in {frames_dir}")

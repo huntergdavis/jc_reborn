@@ -70,7 +70,7 @@ def main() -> int:
     filtered_dir = outdir / "filtered-frames"
     filtered_dir.mkdir(parents=True, exist_ok=True)
     kept = 0
-    for frame_path in sorted(frames_dir.glob("frame_*.png")):
+    for frame_path in sorted(frames_dir.glob("**/frame_*.png")):
         stem = frame_path.stem
         try:
             frame_no = int(stem.split("_", 1)[1])

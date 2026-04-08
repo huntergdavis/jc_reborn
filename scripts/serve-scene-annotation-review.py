@@ -6,6 +6,7 @@ import json
 from http import HTTPStatus
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import unquote
 
 
 class ReviewHandler(SimpleHTTPRequestHandler):
@@ -18,6 +19,10 @@ class ReviewHandler(SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path == "/api/annotations":
             self._send_json(self._load_annotations())
+            return
+        fs_path = Path(unquote(self.path))
+        if fs_path.is_absolute() and fs_path.is_file():
+            self._send_file(fs_path)
             return
         super().do_GET()
 
@@ -50,6 +55,14 @@ class ReviewHandler(SimpleHTTPRequestHandler):
         self.send_response(HTTPStatus.OK)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _send_file(self, path: Path) -> None:
+        body = path.read_bytes()
+        self.send_response(HTTPStatus.OK)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Content-Type", self.guess_type(str(path)))
         self.end_headers()
         self.wfile.write(body)
 

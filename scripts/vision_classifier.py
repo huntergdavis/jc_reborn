@@ -484,7 +484,7 @@ def render_index(path: Path, rows: list[dict[str, Any]]) -> None:
 
 
 def build_reference_bank(refdir: Path, outdir: Path) -> None:
-    scene_dirs = sorted([p for p in refdir.iterdir() if p.is_dir() and (p / "frames").is_dir()])
+    scene_dirs = sorted([p for p in refdir.iterdir() if p.is_dir() and sample_frame_paths(p)])
     outdir.mkdir(parents=True, exist_ok=True)
     all_records: list[FrameRecord] = []
     per_scene_features: dict[str, np.ndarray] = {}
@@ -703,7 +703,7 @@ def analyze_run(scene_dir: Path, bank_dir: Path, outdir: Path, expected_scene: s
 
 
 def analyze_reference_set(refdir: Path, bank_dir: Path, outdir: Path) -> None:
-    scene_dirs = sorted([p for p in refdir.iterdir() if p.is_dir() and (p / "frames").is_dir()])
+    scene_dirs = sorted([p for p in refdir.iterdir() if p.is_dir() and sample_frame_paths(p)])
     outdir.mkdir(parents=True, exist_ok=True)
     rows = []
     for index, scene_dir in enumerate(scene_dirs, start=1):

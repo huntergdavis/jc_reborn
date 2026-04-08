@@ -63,7 +63,7 @@ def scan_scene_dir(scene_dir: Path) -> dict | None:
     metadata_file = scene_dir / "metadata.json"
 
     # List frame PNGs
-    frame_files = sorted(f.name for f in scene_dir.glob("frame_*.png"))
+    frame_files = sorted(f.name for f in scene_dir.glob("**/frame_*.png"))
     if not frame_files and not metadata_file.is_file():
         return None
 
@@ -92,7 +92,7 @@ def scan_scene_dir(scene_dir: Path) -> dict | None:
 
 def scan_special_dir(special_dir: Path) -> dict | None:
     """Read a special screen directory (title, transitions)."""
-    frame_files = sorted(f.name for f in special_dir.glob("frame_*.png"))
+    frame_files = sorted(f.name for f in special_dir.glob("**/frame_*.png"))
     if not frame_files:
         return None
 

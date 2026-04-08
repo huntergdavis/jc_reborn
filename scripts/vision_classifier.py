@@ -72,10 +72,11 @@ def resize_gray(rgb: np.ndarray, width: int = THUMB_W, height: int = THUMB_H) ->
 
 def sample_frame_paths(scene_dir: Path) -> list[Path]:
     frames_dir = scene_dir / "frames"
-    if not frames_dir.is_dir():
+    source_dir = frames_dir if frames_dir.is_dir() else scene_dir
+    if not source_dir.is_dir():
         return []
     frames = sorted(
-        [p for p in frames_dir.iterdir() if p.suffix.lower() in {".bmp", ".png", ".jpg", ".jpeg"}],
+        [p for p in source_dir.glob("**/*") if p.is_file() and p.suffix.lower() in {".bmp", ".png", ".jpg", ".jpeg"}],
         key=frame_number,
     )
     return frames

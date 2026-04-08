@@ -217,6 +217,8 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
         <div class="topnav">
           <button id="prevBtn" type="button">Prev</button>
           <button id="nextBtn" type="button">Next</button>
+          <button id="markBlankNextBtn" type="button">Mark blank screen and next</button>
+          <button id="markTitleNextBtn" type="button">Mark title screen and next</button>
         </div>
         <button id="exportBtn" type="button">Export JSON</button>
         <div class="status" id="saveStatus">Loading…</div>
@@ -500,6 +502,25 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       render();
     }}
 
+    function applyQuickLabelAndAdvance(labelId) {{
+      if (!manifest) return;
+      const frame = manifest.frames[currentIndex];
+      frame.labels = frame.labels || {{}};
+      if (labelId === 'black_screen') {{
+        frame.labels.black_screen = true;
+        frame.labels.title_screen = false;
+      }} else if (labelId === 'title_screen') {{
+        frame.labels.title_screen = true;
+        frame.labels.black_screen = false;
+      }} else {{
+        frame.labels[labelId] = true;
+      }}
+      queueSave();
+      updateThumb(currentIndex);
+      updateSummary();
+      move(1);
+    }}
+
     qs('notesBox').addEventListener('input', (event) => {{
       if (!manifest) return;
       manifest.frames[currentIndex].notes = event.target.value;
@@ -544,6 +565,8 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     }});
     qs('prevBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(-1); }});
     qs('nextBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(1); }});
+    qs('markBlankNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('black_screen'); }});
+    qs('markTitleNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('title_screen'); }});
     qs('exportBtn').addEventListener('click', () => {{
       const blob = new Blob([JSON.stringify({{
         scene_id: manifest.scene_id,

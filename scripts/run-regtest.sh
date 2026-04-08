@@ -25,12 +25,10 @@
 
 set -euo pipefail
 
-if [ "$(id -u)" = "0" ]; then
-    echo "ERROR: Do not run this script as root/sudo." >&2
-    exit 1
-fi
-
 cd "$(dirname "$0")/.."  # project root
+# shellcheck source=./docker-common.sh
+source "scripts/docker-common.sh"
+docker_init
 
 # Source shared regtest configuration for defaults.
 if [ -f "config/ps1/regtest-config.sh" ]; then
@@ -41,17 +39,19 @@ fi
 # ── Defaults ────────────────────────────────────────────────────────────────
 
 FRAMES="${REGTEST_FRAMES:-1800}"        # 1800 frames = 30 sec at 60fps
+START_FRAME=0
 INTERVAL="${REGTEST_INTERVAL:-60}"      # capture every 60th frame = 1/sec
 OUTPUT_DIR="${REGTEST_OUTPUT_DIR:-regtest-results}"
 RENDERER="Software"
 CUE_FILE=""
 BIOS_DIR=""
-LOG_LEVEL="Info"
+LOG_LEVEL="${REGTEST_LOG_LEVEL:-Warning}"
 IMAGE_TAG="jc-reborn-regtest:latest"
 EXTRA_ARGS=()
-TIMEOUT="${REGTEST_TIMEOUT:-120}"
+TIMEOUT="${REGTEST_TIMEOUT:-180}"
 UPSCALE=""
 CPU_MODE=""
+STREAM_MODE="${REGTEST_STREAM_MODE:-filtered}"
 
 # ── Argument Parsing ────────────────────────────────────────────────────────
 
@@ -61,6 +61,7 @@ Usage: run-regtest.sh [options]
 
 Options:
   --frames N          Run for N frames (default: 1800 = 30s at 60fps)
+  --start-frame N     Keep only dumped frames at or after frame N (default: 0)
   --dumpinterval N    Capture every Nth frame (default: 60 = 1 per second)
   --dumpdir DIR       Output directory for frames and logs (default: regtest-results/)
   --cue FILE          Path to .cue file (default: auto-detect jcreborn.cue)
@@ -71,6 +72,7 @@ Options:
   --upscale N         Upscale resolution multiplier (e.g., 2, 3)
   --cpu MODE          CPU execution mode (e.g., Interpreter, CachedInterpreter, Recompiler)
   --image TAG         Docker image tag (default: jc-reborn-regtest:latest)
+  --raw-console       Stream the full DuckStation log to stdout instead of filtering debug noise
   --help              Show this help message
 
 Environment variables (from config/ps1/regtest-config.sh):
@@ -85,6 +87,8 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --frames)
             FRAMES="$2"; shift 2 ;;
+        --start-frame)
+            START_FRAME="$2"; shift 2 ;;
         --dumpinterval)
             INTERVAL="$2"; shift 2 ;;
         --dumpdir)
@@ -105,6 +109,8 @@ while [ $# -gt 0 ]; do
             CPU_MODE="$2"; shift 2 ;;
         --image)
             IMAGE_TAG="$2"; shift 2 ;;
+        --raw-console)
+            STREAM_MODE="raw"; shift ;;
         --help|-h)
             usage; exit 0 ;;
         --)
@@ -115,6 +121,19 @@ while [ $# -gt 0 ]; do
             exit 1 ;;
     esac
 done
+
+if ! [[ "$START_FRAME" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: --start-frame must be an integer >= 0" >&2
+    exit 1
+fi
+if [ "$START_FRAME" -lt 0 ]; then
+    echo "ERROR: --start-frame must be >= 0" >&2
+    exit 1
+fi
+if [ "$FRAMES" -lt "$START_FRAME" ]; then
+    echo "ERROR: --frames must be >= --start-frame" >&2
+    exit 1
+fi
 
 # ── Auto-detect .cue file ──────────────────────────────────────────────────
 
@@ -176,7 +195,7 @@ fi
 
 # ── Verify Docker image ────────────────────────────────────────────────────
 
-if ! docker image inspect "$IMAGE_TAG" >/dev/null 2>&1; then
+if ! "${DOCKER_CMD[@]}" image inspect "$IMAGE_TAG" >/dev/null 2>&1; then
     echo "ERROR: Docker image '$IMAGE_TAG' not found." >&2
     echo "Build it first:  ./scripts/build-regtest-image.sh" >&2
     exit 1
@@ -193,7 +212,7 @@ mkdir -p "$FRAMES_DIR"
 # ── Build docker run command ───────────────────────────────────────────────
 
 DOCKER_ARGS=(
-    docker run --rm
+    "${DOCKER_CMD[@]}" run --rm
     --platform linux/amd64
     -v "${CUE_DIR}:/game:ro"
     -v "$(realpath "$RUN_OUTPUT_DIR"):/output"
@@ -243,6 +262,7 @@ echo ""
 echo "CUE file:       $CUE_FILE"
 echo "BIOS dir:       ${BIOS_DIR:-<not set>}"
 echo "Frames:         $FRAMES (~${RUN_SECONDS}s at 60fps)"
+echo "Start frame:    $START_FRAME"
 echo "Dump interval:  every ${INTERVAL} frames"
 echo "Renderer:       $RENDERER"
 echo "Output dir:     $RUN_OUTPUT_DIR"
@@ -251,17 +271,64 @@ echo ""
 
 LOG_FILE="${RUN_OUTPUT_DIR}/regtest.log"
 
+stream_filtered_log() {
+    python3 -c '
+import re
+import sys
+
+ansi = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
+keep_substrings = (
+    "TTY:",
+    "Console:",
+    "Save State Hash:",
+    "RAM Hash:",
+    "SPU RAM Hash:",
+    "VRAM Hash:",
+    "Trying to boot",
+    "Loading CD image",
+    "Using BIOS",
+    "Patching BIOS for fast boot",
+    "System booted in",
+    "Dumping every",
+    "Running for ",
+    "Total execution time:",
+    "Exiting with success.",
+)
+
+for raw in sys.stdin:
+    plain = ansi.sub("", raw)
+    if " W/" in plain or " E/" in plain or " F/" in plain:
+        sys.stdout.write(raw)
+        continue
+    if any(token in plain for token in keep_substrings):
+        sys.stdout.write(raw)
+'
+}
+
 # Run with a wall-clock timeout to catch infinite loops.
 REGTEST_EXIT=0
 if command -v timeout >/dev/null 2>&1; then
-    timeout "${TIMEOUT}s" \
-        "${DOCKER_ARGS[@]}" "${REGTEST_ARGS[@]}" \
-        2>&1 | tee "$LOG_FILE" \
-        || REGTEST_EXIT=$?
+    if [ "$STREAM_MODE" = "raw" ]; then
+        timeout "${TIMEOUT}s" \
+            "${DOCKER_ARGS[@]}" "${REGTEST_ARGS[@]}" \
+            2>&1 | tee "$LOG_FILE" \
+            || REGTEST_EXIT=$?
+    else
+        timeout "${TIMEOUT}s" \
+            "${DOCKER_ARGS[@]}" "${REGTEST_ARGS[@]}" \
+            2>&1 | tee "$LOG_FILE" | stream_filtered_log \
+            || REGTEST_EXIT=$?
+    fi
 else
-    "${DOCKER_ARGS[@]}" "${REGTEST_ARGS[@]}" \
-        2>&1 | tee "$LOG_FILE" \
-        || REGTEST_EXIT=$?
+    if [ "$STREAM_MODE" = "raw" ]; then
+        "${DOCKER_ARGS[@]}" "${REGTEST_ARGS[@]}" \
+            2>&1 | tee "$LOG_FILE" \
+            || REGTEST_EXIT=$?
+    else
+        "${DOCKER_ARGS[@]}" "${REGTEST_ARGS[@]}" \
+            2>&1 | tee "$LOG_FILE" | stream_filtered_log \
+            || REGTEST_EXIT=$?
+    fi
 fi
 
 # ── Report ──────────────────────────────────────────────────────────────────
@@ -276,11 +343,30 @@ if [ -d "$FRAMES_DIR" ]; then
     FRAME_COUNT=$(find "$FRAMES_DIR" -name "frame_*.png" 2>/dev/null | wc -l)
 fi
 
+FILTERED_DIR=""
+FILTERED_COUNT=0
+if [ "$START_FRAME" -gt 0 ] && [ -d "$FRAMES_DIR" ]; then
+    FILTERED_DIR="${RUN_OUTPUT_DIR}/filtered-frames"
+    mkdir -p "$FILTERED_DIR"
+    while IFS= read -r frame_path; do
+        frame_name="$(basename "$frame_path")"
+        frame_no="${frame_name#frame_}"
+        frame_no="${frame_no%.png}"
+        if [[ "$frame_no" =~ ^[0-9]+$ ]] && [ "$frame_no" -ge "$START_FRAME" ]; then
+            cp "$frame_path" "$FILTERED_DIR/$frame_name"
+            FILTERED_COUNT=$((FILTERED_COUNT + 1))
+        fi
+    done < <(find "$FRAMES_DIR" -maxdepth 1 -type f -name 'frame_*.png' | sort)
+fi
+
 echo ""
 echo "Exit code:      $REGTEST_EXIT"
 echo "Frames dumped:  $FRAME_COUNT"
 echo "Log file:       $LOG_FILE"
 echo "Frame PNGs:     $FRAMES_DIR/"
+if [ -n "$FILTERED_DIR" ]; then
+    echo "Filtered PNGs:  $FILTERED_DIR/ ($FILTERED_COUNT at >= frame $START_FRAME)"
+fi
 echo ""
 
 if [ "$REGTEST_EXIT" -eq 124 ]; then

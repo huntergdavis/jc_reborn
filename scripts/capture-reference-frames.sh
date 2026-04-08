@@ -25,6 +25,8 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
+# shellcheck source=./docker-common.sh
+source "$PROJECT_ROOT/scripts/docker-common.sh"
 
 # Load shared config
 # shellcheck source=../config/ps1/regtest-config.sh
@@ -38,6 +40,9 @@ BOOTMODE_FILE="$PROJECT_ROOT/config/ps1/BOOTMODE.TXT"
 
 # Capture settings: 1800 frames (30 sec), capture every 30 frames (2 per sec)
 CAPTURE_FRAMES=1800
+START_FRAME=""
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${REGTEST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-1200}"
 CAPTURE_INTERVAL=30
 
 # Title screen: 600 frames (10 sec)
@@ -69,6 +74,7 @@ Options:
   --skip-specials      Skip special screen captures (title, transitions)
   --skip-scenes        Skip scene captures (only do specials)
   --frames N           Frames per scene (default: 1800 = 30 sec)
+  --start-frame N      First PS1 frame to keep for scene captures
   --interval N         Capture every Nth frame (default: 30 = 2/sec)
   --parallel N         Max parallel scene captures (default: 2)
   --dry-run            Show what would be done without running
@@ -94,6 +100,7 @@ while [ $# -gt 0 ]; do
         --skip-specials) SKIP_SPECIALS=1; shift ;;
         --skip-scenes)   SKIP_SCENES=1; shift ;;
         --frames)        CAPTURE_FRAMES="$2"; shift 2 ;;
+        --start-frame)   START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval)      CAPTURE_INTERVAL="$2"; shift 2 ;;
         --parallel)      PARALLEL="$2"; shift 2 ;;
         --dry-run)       DRY_RUN=1; shift ;;
@@ -119,7 +126,7 @@ fi
 
 # Check for regtest capability
 if ! command -v duckstation-regtest >/dev/null 2>&1; then
-    if ! docker image inspect "jc-reborn-regtest:latest" >/dev/null 2>&1; then
+    if ! docker_maybe_init || ! "${DOCKER_CMD[@]}" image inspect "jc-reborn-regtest:latest" >/dev/null 2>&1; then
         echo "ERROR: No regtest runner available." >&2
         echo "Need either duckstation-regtest in PATH or Docker image jc-reborn-regtest:latest." >&2
         echo "Build the Docker image with: ./scripts/build-regtest-image.sh" >&2
@@ -134,6 +141,35 @@ if [ ! -f "$SCENE_LIST_FILE" ]; then
 fi
 
 mkdir -p "$REFERENCE_DIR"
+
+if [ -z "$START_FRAME" ]; then
+    grace="${REGTEST_BOOT_GRACE_FRAMES:-1800}"
+    tolerance="${REGTEST_BOOT_GRACE_TOLERANCE_FRAMES:-120}"
+    START_FRAME=$((grace - tolerance))
+    if [ "$START_FRAME" -lt 0 ]; then
+        START_FRAME=0
+    fi
+fi
+
+if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$CAPTURE_FRAMES" -lt "$min_frames" ]; then
+        CAPTURE_FRAMES="$min_frames"
+    fi
+fi
+
+if ! [[ "$START_FRAME" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: --start-frame must be an integer >= 0" >&2
+    exit 1
+fi
+if [ "$START_FRAME" -lt 0 ]; then
+    echo "ERROR: --start-frame must be >= 0" >&2
+    exit 1
+fi
+if [ "$CAPTURE_FRAMES" -lt "$START_FRAME" ]; then
+    echo "ERROR: --frames must be >= --start-frame" >&2
+    exit 1
+fi
 
 log() {
     echo "[capture-ref] $*" >&2
@@ -185,7 +221,7 @@ capture_scene() {
     if [ "$DRY_RUN" -eq 1 ]; then
         echo "  [dry-run] Would capture: $ads_name tag $tag (index=$scene_index) => $scene_dir"
         echo "            Boot: $boot_string"
-        echo "            Frames: $CAPTURE_FRAMES, Interval: $CAPTURE_INTERVAL"
+        echo "            Frames: $CAPTURE_FRAMES, Start: $START_FRAME, Interval: $CAPTURE_INTERVAL"
         return 0
     fi
 
@@ -202,6 +238,7 @@ capture_scene() {
         --status "$status" \
         --boot "$boot_string" \
         --frames "$CAPTURE_FRAMES" \
+        --start-frame "$START_FRAME" \
         --interval "$CAPTURE_INTERVAL" \
         --output "$scene_dir/.regtest-work" \
         --quiet \
@@ -258,6 +295,7 @@ metadata = {
     "status": status,
     "boot_string": boot_string,
     "capture_frames": int(os.environ.get("CAPTURE_FRAMES", 1800)),
+    "capture_start_frame": int(os.environ.get("START_FRAME", 0)),
     "capture_interval": int(os.environ.get("CAPTURE_INTERVAL", 30)),
     "frame_count": len(frame_files),
     "frames": frame_files,
@@ -271,7 +309,15 @@ with open(os.path.join(scene_dir, "metadata.json"), "w") as f:
 PYEOF
 
     # Clean up work directory (keep only frames and metadata)
-    rm -rf "$scene_dir/.regtest-work"
+    if [ -d "$scene_dir/.regtest-work" ]; then
+        chmod -R u+w "$scene_dir/.regtest-work" 2>/dev/null || true
+        "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 \
+            -v "$scene_dir/.regtest-work":/work \
+            jc-reborn-regtest:latest \
+            bash -lc "chown -R $(id -u):$(id -g) /work 2>/dev/null || true" \
+            >/dev/null 2>&1 || true
+        rm -rf "$scene_dir/.regtest-work" >/dev/null 2>&1 || true
+    fi
     rm -f "$scene_dir/.regtest-result.json" "$scene_dir/.regtest-stderr.log"
 
     if [ "$frames_found" -eq 0 ]; then
@@ -283,7 +329,7 @@ PYEOF
     fi
 }
 
-export CAPTURE_FRAMES CAPTURE_INTERVAL
+export CAPTURE_FRAMES CAPTURE_INTERVAL START_FRAME
 
 # ── Special Screen Capture ───────────────────────────────────────────────────
 
@@ -549,7 +595,7 @@ run_scene_captures() {
 
         # Default boot string if missing
         if [ -z "$boot_string" ]; then
-            boot_string="story single $scene_index"
+            boot_string="story scene $scene_index"
         fi
 
         TOTAL_SCENES=$((TOTAL_SCENES + 1))

@@ -194,11 +194,24 @@ def analyze_scene(
     if result.crash_lines:
         result.has_fatal_error = True
 
-    # Find frame images
+    # Find frame images. Prefer the published frames_dir from result.json,
+    # because modern regtest runs may use filtered late-window captures or
+    # nested frame trees under frames/jcreborn.
     frames_dir = os.path.join(scene_dir, "frames")
+    if os.path.isfile(result_json_path):
+        try:
+            with open(result_json_path, encoding="utf-8") as f:
+                rj = json.load(f)
+            published_frames_dir = (rj.get("paths") or {}).get("frames_dir")
+            if published_frames_dir:
+                if not os.path.isabs(published_frames_dir):
+                    published_frames_dir = os.path.abspath(os.path.join(scene_dir, published_frames_dir))
+                frames_dir = published_frames_dir
+        except (OSError, json.JSONDecodeError, TypeError):
+            pass
     frame_paths: List[str] = []
     if os.path.isdir(frames_dir):
-        frame_paths = sorted(glob.glob(os.path.join(frames_dir, "*.png")))
+        frame_paths = sorted(glob.glob(os.path.join(frames_dir, "**", "frame_*.png"), recursive=True))
 
     if not frame_paths:
         result.regressions.append("no_frames_captured")
@@ -260,7 +273,7 @@ def analyze_scene(
     if baseline_dir and os.path.isdir(baseline_dir):
         baseline_frames_dir = os.path.join(baseline_dir, "frames")
         if os.path.isdir(baseline_frames_dir):
-            baseline_frames = sorted(glob.glob(os.path.join(baseline_frames_dir, "*.png")))
+            baseline_frames = sorted(glob.glob(os.path.join(baseline_frames_dir, "**", "frame_*.png"), recursive=True))
             for bf in baseline_frames:
                 bf_name = os.path.basename(bf)
                 bf_hash = sha256_file(bf)

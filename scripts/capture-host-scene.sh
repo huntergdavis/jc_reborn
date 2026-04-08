@@ -20,6 +20,8 @@ BOOT=""
 OUTPUT_DIR="$PROJECT_ROOT/host-results/scene"
 FRAMES=600
 START_FRAME=0
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${HOST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-300}"
 INTERVAL=60
 FRAME_LIST=""
 DURATION_TABLE=""
@@ -46,7 +48,7 @@ Options:
   --scene "ADS TAG"    Scene label, e.g. "BUILDING 1"
   --boot STRING        Explicit host boot string
   --frames N           Capture through frame N (default: 600)
-  --start-frame N     Start sampling at frame N instead of 0 (default: 0)
+  --start-frame N     Start sampling at frame N instead of the reviewed scene start
   --frame-list LIST    Capture specific frame numbers, e.g. 0,20,40,80
   --until-exit         Capture every requested frame until the executable returns
   --duration-table P   JSON from estimate-scene-durations.py; used when --frames auto
@@ -76,7 +78,7 @@ while [ $# -gt 0 ]; do
         --scene) SCENE="$2"; shift 2 ;;
         --boot) BOOT="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
-        --start-frame) START_FRAME="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --frame-list) FRAME_LIST="$2"; shift 2 ;;
         --until-exit) UNTIL_EXIT=1; shift ;;
         --duration-table) DURATION_TABLE="$2"; shift 2 ;;
@@ -263,6 +265,17 @@ for row in table["rows"]:
 raise SystemExit("scene not found in duration table")
 PY
 )"
+fi
+
+if [ "$START_FRAME_EXPLICIT" -eq 0 ] && [ -z "$FRAME_LIST" ]; then
+    START_FRAME="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$SCENE")"
+fi
+
+if [ "$START_FRAME_EXPLICIT" -eq 0 ] && [ "$UNTIL_EXIT" -eq 0 ] && [ -z "$FRAME_LIST" ]; then
+    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$FRAMES" -lt "$min_frames" ]; then
+        FRAMES="$min_frames"
+    fi
 fi
 
 if [ -n "$FRAME_LIST" ]; then

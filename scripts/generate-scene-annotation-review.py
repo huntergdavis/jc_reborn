@@ -128,6 +128,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     .toolbar {{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }}
     .toolbar button {{ background: var(--chip); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; }}
     .toolbar button:hover {{ border-color: var(--accent); }}
+    .topnav {{ display: flex; gap: 8px; align-items: center; }}
     .status {{ color: var(--muted); font-size: 13px; min-width: 160px; text-align: right; }}
     .main {{ display: grid; grid-template-columns: 1fr 340px; gap: 16px; }}
     .viewer {{ background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }}
@@ -213,8 +214,10 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
         <p>Scene: {scene_id}. Click through frames, tick the boxes that apply, and type notes when needed. Every change autosaves to a local JSON file.</p>
       </div>
       <div class="toolbar">
-        <button id="prevBtn" type="button">Prev</button>
-        <button id="nextBtn" type="button">Next</button>
+        <div class="topnav">
+          <button id="prevBtn" type="button">Prev</button>
+          <button id="nextBtn" type="button">Next</button>
+        </div>
         <button id="exportBtn" type="button">Export JSON</button>
         <div class="status" id="saveStatus">Loading…</div>
       </div>
@@ -251,10 +254,6 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       </div>
       <aside class="side">
         <div class="summarybox" id="summaryBox"></div>
-        <div class="navrow">
-          <button id="sidePrevBtn" type="button">Prev</button>
-          <button id="sideNextBtn" type="button">Next</button>
-        </div>
         <div class="thumbs" id="thumbList"></div>
       </aside>
     </div>

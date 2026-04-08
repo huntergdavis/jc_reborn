@@ -73,10 +73,12 @@ for scene in "${SCENES[@]}"; do
         --scene "$scene"
         --seed "$SEED"
         --frames "$FRAMES"
-        --start-frame "$START_FRAME"
         --interval "$INTERVAL"
         --output "$OUTPUT_ROOT"
     )
+    if [ -n "$START_FRAME" ]; then
+        CMD+=(--start-frame "$START_FRAME")
+    fi
     if [ "$SKIP_BUILD" -eq 1 ]; then
         CMD+=(--skip-build)
     fi

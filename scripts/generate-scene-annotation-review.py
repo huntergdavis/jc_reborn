@@ -12,6 +12,7 @@ import vision_vlm as vv
 
 REVIEW_OPTIONS = [
     {"id": "correct", "label": "Correct"},
+    {"id": "title_screen", "label": "Title screen"},
     {"id": "johnny_visible", "label": "Johnny visible"},
     {"id": "other_sprites_visible", "label": "Other sprites visible"},
     {"id": "screen_tearing_or_visual_issue", "label": "Screen tearing / visual issue"},
@@ -87,6 +88,7 @@ def build_frames(reference_frames: list[Path], query_frames: list[Path], *, pair
                 "reference_frame": reference_image.stem if reference_image else None,
                 "query_frame": query_image.stem,
                 "labels": {},
+                "johnny_capture": None,
                 "notes": "",
             }
         )
@@ -137,6 +139,48 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     img {{ display: block; width: 100%; height: auto; image-rendering: pixelated; background: #000; }}
     .path {{ padding: 10px 12px 12px; font-family: ui-monospace, monospace; color: var(--muted); word-break: break-all; font-size: 12px; }}
     .controls {{ margin-top: 16px; display: grid; gap: 14px; }}
+    .imagewrap {{ position: relative; }}
+    .capture-marker {{
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      margin-left: -9px;
+      margin-top: -9px;
+      border: 2px solid #ff6b6b;
+      border-radius: 999px;
+      box-shadow: 0 0 0 2px rgba(0,0,0,0.55);
+      pointer-events: none;
+      display: none;
+    }}
+    .capture-marker::before, .capture-marker::after {{
+      content: "";
+      position: absolute;
+      background: #ff6b6b;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }}
+    .capture-marker::before {{ width: 2px; height: 24px; }}
+    .capture-marker::after {{ width: 24px; height: 2px; }}
+    .capturetools {{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }}
+    .capturetools button {{
+      background: var(--chip);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }}
+    .capturetools button.active {{ border-color: #ff6b6b; color: #ffb0b0; }}
+    .capturemeta {{
+      background: var(--panel2);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--muted);
+      font-family: ui-monospace, monospace;
+      font-size: 12px;
+    }}
     .checkgrid {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }}
     .check {{ background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; }}
     .check input {{ width: 18px; height: 18px; }}
@@ -192,12 +236,21 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
           </figure>
           <figure>
             <figcaption>Query</figcaption>
-            <img id="queryImage" alt="Query frame">
+            <div class="imagewrap">
+              <img id="queryImage" alt="Query frame">
+              <div class="capture-marker" id="johnnyMarker" aria-hidden="true"></div>
+            </div>
             <div class="path" id="queryPath"></div>
           </figure>
         </div>
         <div class="controls">
           <div class="checkgrid" id="checkboxGrid"></div>
+          <div class="capturetools">
+            <button id="captureJohnnyBtn" type="button">Capture Johnny</button>
+            <button id="clearJohnnyBtn" type="button">Clear Johnny</button>
+            <div class="meta" id="captureHint">Click capture, then click Johnny in the query image.</div>
+          </div>
+          <div class="capturemeta" id="johnnyMeta">Johnny capture: none</div>
           <textarea id="notesBox" placeholder="Notes, discrepancies, what is actually visible, etc."></textarea>
         </div>
       </div>
@@ -219,6 +272,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     let manifest = null;
     let currentIndex = 0;
     let saveTimer = null;
+    let captureJohnnyMode = false;
 
     function qs(id) {{
       return document.getElementById(id);
@@ -314,7 +368,9 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     }}
 
     function frameIsDone(frame) {{
-      return reviewOptions.some((opt) => frame.labels && frame.labels[opt.id]) || ((frame.notes || '').trim().length > 0);
+      return reviewOptions.some((opt) => frame.labels && frame.labels[opt.id]) ||
+             Boolean(frame.johnny_capture) ||
+             ((frame.notes || '').trim().length > 0);
     }}
 
     function updateThumb(index) {{
@@ -332,6 +388,12 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
         chip.textContent = opt.label;
         chips.appendChild(chip);
       }}
+      if (frame.johnny_capture) {{
+        const chip = document.createElement('span');
+        chip.className = 'chip on';
+        chip.textContent = `Johnny @ ${{Math.round(frame.johnny_capture.x_px)}},${{Math.round(frame.johnny_capture.y_px)}}`;
+        chips.appendChild(chip);
+      }}
     }}
 
     function updateAllThumbs() {{
@@ -342,10 +404,12 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       const total = manifest.frames.length;
       const done = manifest.frames.filter(frameIsDone).length;
       const counts = Object.fromEntries(reviewOptions.map((opt) => [opt.id, 0]));
+      let johnnyMarked = 0;
       for (const frame of manifest.frames) {{
         for (const opt of reviewOptions) {{
           if (frame.labels && frame.labels[opt.id]) counts[opt.id] += 1;
         }}
+        if (frame.johnny_capture) johnnyMarked += 1;
       }}
       const lines = [
         `<div><strong>${{done}} / ${{total}}</strong> frames labeled</div>`,
@@ -353,7 +417,30 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       for (const opt of reviewOptions) {{
         lines.push(`<div>${{opt.label}}: ${{counts[opt.id]}}</div>`);
       }}
+      lines.push(`<div>Johnny captured: ${{johnnyMarked}}</div>`);
       qs('summaryBox').innerHTML = lines.join('');
+    }}
+
+    function renderJohnnyCapture(frame) {{
+      const marker = qs('johnnyMarker');
+      const meta = qs('johnnyMeta');
+      if (frame.johnny_capture) {{
+        marker.style.display = 'block';
+        marker.style.left = `${{frame.johnny_capture.x_pct}}%`;
+        marker.style.top = `${{frame.johnny_capture.y_pct}}%`;
+        meta.textContent = `Johnny capture: x=${{Math.round(frame.johnny_capture.x_px)}} y=${{Math.round(frame.johnny_capture.y_px)}} (${{Math.round(frame.johnny_capture.x_pct * 10) / 10}}%, ${{Math.round(frame.johnny_capture.y_pct * 10) / 10}}%)`;
+      }} else {{
+        marker.style.display = 'none';
+        meta.textContent = 'Johnny capture: none';
+      }}
+    }}
+
+    function setCaptureJohnnyMode(active) {{
+      captureJohnnyMode = active;
+      qs('captureJohnnyBtn').classList.toggle('active', active);
+      qs('captureHint').textContent = active
+        ? 'Capture mode active: click Johnny in the query image.'
+        : 'Click capture, then click Johnny in the query image.';
     }}
 
     function render() {{
@@ -376,6 +463,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
         box.checked = Boolean(frame.labels && frame.labels[box.dataset.optionId]);
       }}
       qs('notesBox').value = frame.notes || '';
+      renderJohnnyCapture(frame);
       updateAllThumbs();
       updateSummary();
     }}
@@ -391,6 +479,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
           reference_image: frame.reference_image,
           query_image: frame.query_image,
           labels: frame.labels || {{}},
+          johnny_capture: frame.johnny_capture || null,
           notes: frame.notes || '',
         }})),
       }});
@@ -432,6 +521,41 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       updateThumb(currentIndex);
       updateSummary();
     }});
+    qs('captureJohnnyBtn').addEventListener('click', () => {{
+      setCaptureJohnnyMode(!captureJohnnyMode);
+    }});
+    qs('clearJohnnyBtn').addEventListener('click', () => {{
+      if (!manifest) return;
+      manifest.frames[currentIndex].johnny_capture = null;
+      setCaptureJohnnyMode(false);
+      renderJohnnyCapture(manifest.frames[currentIndex]);
+      queueSave();
+      updateThumb(currentIndex);
+      updateSummary();
+    }});
+    qs('queryImage').addEventListener('click', (event) => {{
+      if (!manifest || !captureJohnnyMode) return;
+      const frame = manifest.frames[currentIndex];
+      const rect = event.target.getBoundingClientRect();
+      const naturalWidth = event.target.naturalWidth || rect.width;
+      const naturalHeight = event.target.naturalHeight || rect.height;
+      const xPct = ((event.clientX - rect.left) / rect.width) * 100;
+      const yPct = ((event.clientY - rect.top) / rect.height) * 100;
+      frame.johnny_capture = {{
+        x_pct: Math.max(0, Math.min(100, xPct)),
+        y_pct: Math.max(0, Math.min(100, yPct)),
+        x_px: ((event.clientX - rect.left) / rect.width) * naturalWidth,
+        y_px: ((event.clientY - rect.top) / rect.height) * naturalHeight,
+      }};
+      frame.labels = frame.labels || {{}};
+      frame.labels.johnny_visible = true;
+      setCaptureJohnnyMode(false);
+      renderJohnnyCapture(frame);
+      queueSave();
+      updateThumb(currentIndex);
+      updateSummary();
+      render();
+    }});
     qs('prevBtn').addEventListener('click', () => move(-1));
     qs('nextBtn').addEventListener('click', () => move(1));
     qs('sidePrevBtn').addEventListener('click', () => move(-1));
@@ -444,6 +568,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
           reference_image: frame.reference_image,
           query_image: frame.query_image,
           labels: frame.labels || {{}},
+          johnny_capture: frame.johnny_capture || null,
           notes: frame.notes || '',
         }})),
       }}, null, 2)], {{ type: 'application/json' }});

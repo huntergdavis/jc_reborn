@@ -319,8 +319,32 @@ with open(os.path.join(scene_dir, "metadata.json"), "w") as f:
     f.write("\n")
 PYEOF
 
+    telemetry_copy=""
+    printf_copy=""
+    raw_hashes_copy=""
+    build_log_copy=""
+    if [ -f "$scene_dir/.regtest-work/telemetry.json" ]; then
+        telemetry_copy="$scene_dir/telemetry.json"
+        cp "$scene_dir/.regtest-work/telemetry.json" "$telemetry_copy"
+    fi
+    if [ -f "$scene_dir/.regtest-work/printf.log" ]; then
+        printf_copy="$scene_dir/printf.log"
+        cp "$scene_dir/.regtest-work/printf.log" "$printf_copy"
+    elif [ -f "$scene_dir/.regtest-work/tty-output.txt" ]; then
+        printf_copy="$scene_dir/printf.log"
+        cp "$scene_dir/.regtest-work/tty-output.txt" "$printf_copy"
+    fi
+    if [ -f "$scene_dir/.regtest-work/raw-hashes.json" ]; then
+        raw_hashes_copy="$scene_dir/raw-hashes.json"
+        cp "$scene_dir/.regtest-work/raw-hashes.json" "$raw_hashes_copy"
+    fi
+    if [ -f "$scene_dir/.regtest-work/build.log" ]; then
+        build_log_copy="$scene_dir/build.log"
+        cp "$scene_dir/.regtest-work/build.log" "$build_log_copy"
+    fi
+
     if [ -f "$scene_dir/.regtest-result.json" ]; then
-        python3 - "$scene_dir/.regtest-result.json" "$scene_dir/result.json" "$scene_dir" "$capture_ts" <<'PYEOF'
+        python3 - "$scene_dir/.regtest-result.json" "$scene_dir/result.json" "$scene_dir" "$capture_ts" "$telemetry_copy" "$printf_copy" "$raw_hashes_copy" "$build_log_copy" <<'PYEOF'
 import json, os, sys
 from pathlib import Path
 
@@ -328,12 +352,32 @@ source_path = Path(sys.argv[1])
 dest_path = Path(sys.argv[2])
 scene_dir = Path(sys.argv[3]).resolve()
 capture_date = sys.argv[4]
+telemetry_copy = sys.argv[5]
+printf_copy = sys.argv[6]
+raw_hashes_copy = sys.argv[7]
+build_log_copy = sys.argv[8]
 
 payload = json.loads(source_path.read_text(encoding="utf-8"))
 payload["capture_date"] = capture_date
 paths = payload.setdefault("paths", {})
 paths["output_dir"] = str(scene_dir)
 paths["frames_dir"] = str(scene_dir)
+if telemetry_copy:
+    paths["telemetry"] = telemetry_copy
+else:
+    paths.pop("telemetry", None)
+if printf_copy:
+    paths["printf_log"] = printf_copy
+else:
+    paths.pop("printf_log", None)
+if raw_hashes_copy:
+    paths["raw_hashes"] = raw_hashes_copy
+else:
+    paths.pop("raw_hashes", None)
+if build_log_copy:
+    paths["build_log"] = build_log_copy
+else:
+    paths.pop("build_log", None)
 payload.setdefault("config", {})
 payload["config"]["frames_dir_layout"] = "flat"
 dest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")

@@ -137,7 +137,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     .pairgrid {{ display: grid; grid-template-columns: {pair_columns}; gap: 16px; }}
     figure {{ margin: 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }}
     figcaption {{ padding: 10px 12px; border-bottom: 1px solid var(--line); color: var(--accent); font-weight: 600; }}
-    img {{ display: block; width: 100%; height: auto; image-rendering: pixelated; background: #000; }}
+    img {{ display: block; width: auto; max-width: 100%; max-height: 34vh; height: auto; margin: 0 auto; image-rendering: pixelated; background: #000; }}
     .path {{ padding: 10px 12px 12px; font-family: ui-monospace, monospace; color: var(--muted); word-break: break-all; font-size: 12px; }}
     .controls {{ margin-top: 16px; display: grid; gap: 14px; }}
     .imagewrap {{ position: relative; }}

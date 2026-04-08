@@ -22,6 +22,7 @@ fi
 MODE="headless"
 WAIT_TIME=35
 FRAMES="${REGTEST_FRAMES:-9000}"
+START_FRAME=0
 INTERVAL="${REGTEST_INTERVAL:-60}"
 USE_BASELINE_MASK=1
 EXPECTED_ROOT=""
@@ -47,6 +48,7 @@ Options:
   --scene SPEC          Scene spec for headless regtest capture, e.g. "FISHING 1"
   --boot STRING         Explicit BOOTMODE string for the headless regtest path
   --frames N            Headless regtest frame budget (default: REGTEST_FRAMES or 9000)
+  --start-frame N       First PS1 frame to keep in the headless capture set (default: 0)
   --interval N          Headless regtest dump interval (default: REGTEST_INTERVAL or 60)
   --actual-frame N      Use frame_NNNNN.png from the headless run instead of the last dumped frame
   --no-baseline-mask    Skip the paired headless overlay-mask baseline capture
@@ -74,6 +76,7 @@ while [ $# -gt 0 ]; do
         --scene) SCENE_SPEC="$2"; shift 2 ;;
         --boot) BOOT_STRING="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --actual-frame) ACTUAL_FRAME="$2"; shift 2 ;;
         --no-baseline-mask) USE_BASELINE_MASK=0; shift ;;
@@ -129,6 +132,7 @@ else
         REGTEST_CMD_BASE=(./scripts/regtest-scene.sh
             --scene "$SCENE_SPEC"
             --frames "$FRAMES"
+            --start-frame "$START_FRAME"
             --interval "$INTERVAL")
         if [ -n "$BOOT_STRING" ]; then
             REGTEST_BOOT="$BOOT_STRING"

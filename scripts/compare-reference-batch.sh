@@ -16,6 +16,7 @@ cd "$PROJECT_ROOT"
 REFERENCE_DIR="$PROJECT_ROOT/regtest-references"
 OUTPUT_ROOT="$PROJECT_ROOT/regtest-results/reference-compare"
 FRAMES=4200
+START_FRAME=0
 INTERVAL=1
 SEED=""
 SKIP_BUILD=0
@@ -42,6 +43,7 @@ Options:
   --output DIR       Output root for fresh runs (default: regtest-results/reference-compare/)
   --seed N           Force deterministic BOOTMODE RNG seed
   --frames N         Frames per run (default: 4200)
+  --start-frame N    First PS1 frame to keep in the capture set (default: 0)
   --interval N       Capture interval (default: 1)
   --min-result-scene-frame N
                      Minimum PS1 frame eligible to align as scene entry
@@ -68,6 +70,7 @@ while [ $# -gt 0 ]; do
         --output)     OUTPUT_ROOT="$2"; shift 2 ;;
         --seed)       SEED="$2"; shift 2 ;;
         --frames)     FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; shift 2 ;;
         --interval)   INTERVAL="$2"; shift 2 ;;
         --min-result-scene-frame) MIN_RESULT_SCENE_FRAME="$2"; shift 2 ;;
         --min-reference-scene-frame) MIN_REFERENCE_SCENE_FRAME="$2"; shift 2 ;;
@@ -154,6 +157,7 @@ for scene in "${SCENES[@]}"; do
     RESULT_DIR="$OUTPUT_ROOT/${LABEL_BASE}"
     REFERENCE_META="$REFERENCE_DIR/${ADS_NAME}-${TAG}/metadata.json"
     mkdir -p "$OUTPUT_ROOT"
+    mkdir -p "$RESULT_DIR"
 
     if [ ! -f "$REFERENCE_META" ]; then
         echo "ERROR: Reference metadata not found for $scene at $REFERENCE_META" >&2
@@ -183,6 +187,7 @@ for scene in "${SCENES[@]}"; do
         --status "$STATUS"
         --boot "$BOOT_STRING"
         --frames "$FRAMES"
+        --start-frame "$START_FRAME"
         --interval "$INTERVAL"
         --output "$RESULT_DIR"
     )
@@ -196,6 +201,11 @@ for scene in "${SCENES[@]}"; do
     set -e
     if [ "$rc" -ne 0 ]; then
         echo "[compare-ref] $scene exited with code $rc; preserving result for comparison." >&2
+    fi
+
+    if [ ! -s "$RESULT_DIR.result.json" ]; then
+        echo "[compare-ref] $scene produced no result JSON; skipping compare." >&2
+        continue
     fi
 
     COMPARE_CMD=(

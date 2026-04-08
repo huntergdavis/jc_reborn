@@ -18,14 +18,11 @@
 
 set -euo pipefail
 
-if [ "$(id -u)" = "0" ]; then
-    echo "ERROR: Do not run this script as root/sudo." >&2
-    exit 1
-fi
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
+# shellcheck source=./docker-common.sh
+source "$PROJECT_ROOT/scripts/docker-common.sh"
 REGTEST_SCENE_LIST="$PROJECT_ROOT/config/ps1/regtest-scenes.txt"
 EMBEDDED_BOOTMODE_HEADER="$PROJECT_ROOT/config/ps1/bootmode_embedded.h"
 
@@ -49,6 +46,7 @@ SKIP_BUILD=0
 QUIET=0
 CAPTURE_OVERLAY=0
 CAPTURE_OVERLAY_MASK=0
+APPEND_CAPTURE_ARGS="${REGTEST_APPEND_CAPTURE_ARGS:-0}"
 LOG_LEVEL="${REGTEST_LOG_LEVEL:-Info}"
 LOCK_FILE="${REGTEST_LOCK_FILE:-$PROJECT_ROOT/.regtest-build.lock}"
 
@@ -156,8 +154,8 @@ if [ "$CAPTURE_OVERLAY_MASK" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay-m
 elif [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT_STRING" != *"capture-overlay"* ]]; then
     BOOT_STRING="${BOOT_STRING} capture-overlay"
 fi
-if [[ "$BOOT_STRING" != *"capture-meta-dir"* ]]; then
-    BOOT_STRING="${BOOT_STRING} capture-meta-dir ps1-meta capture-range 0 ${FRAMES} capture-interval ${INTERVAL} capture-scene-label ${SCENE_LABEL}"
+if [ "$APPEND_CAPTURE_ARGS" = "1" ] && [[ "$BOOT_STRING" != *"capture-meta-dir"* ]]; then
+    BOOT_STRING="${BOOT_STRING} capture-meta-dir ps1-meta capture-range ${START_FRAME} ${FRAMES} capture-interval ${INTERVAL} capture-scene-label ${SCENE_LABEL}"
 fi
 if [[ "$BOOT_STRING" != *" seed "* ]] && [[ "$BOOT_STRING" != seed\ * ]] && [[ "$BOOT_STRING" != *" seed" ]]; then
     BOOT_STRING="${BOOT_STRING} seed ${SEED}"
@@ -221,7 +219,7 @@ acquire_lock() {
 # ---------------------------------------------------------------------------
 USE_DOCKER_REGTEST=0
 if ! command -v "$REGTEST_BIN" >/dev/null 2>&1; then
-    if docker image inspect "jc-reborn-regtest:latest" >/dev/null 2>&1; then
+    if docker_maybe_init && "${DOCKER_CMD[@]}" image inspect "jc-reborn-regtest:latest" >/dev/null 2>&1; then
         USE_DOCKER_REGTEST=1
         log "Using Dockerized regtest fallback (jc-reborn-regtest:latest)."
     else
@@ -341,6 +339,7 @@ else
     REGTEST_EXIT=0
     "$PROJECT_ROOT/scripts/run-regtest.sh" \
         --frames "$FRAMES" \
+        --start-frame "$START_FRAME" \
         --dumpinterval "$INTERVAL" \
         --dumpdir "$OUTPUT_DIR" \
         --log "$LOG_LEVEL" \
@@ -349,7 +348,11 @@ else
 
     DOCKER_RUN_DIR="$(find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 -type d -exec test -f '{}/regtest.log' ';' -print | sort | tail -1)"
     if [ -n "$DOCKER_RUN_DIR" ] && [ -d "$DOCKER_RUN_DIR" ]; then
-        FRAMES_DIR="$DOCKER_RUN_DIR/frames"
+        if [ "$START_FRAME" -gt 0 ] && [ -d "$DOCKER_RUN_DIR/filtered-frames" ]; then
+            FRAMES_DIR="$DOCKER_RUN_DIR/filtered-frames"
+        else
+            FRAMES_DIR="$DOCKER_RUN_DIR/frames"
+        fi
         if [ -f "$DOCKER_RUN_DIR/regtest.log" ]; then
             REGTEST_LOG="$DOCKER_RUN_DIR/regtest.log"
         fi

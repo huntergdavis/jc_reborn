@@ -356,7 +356,7 @@ if [ "$START_FRAME" -gt 0 ] && [ -d "$FRAMES_DIR" ]; then
             cp "$frame_path" "$FILTERED_DIR/$frame_name"
             FILTERED_COUNT=$((FILTERED_COUNT + 1))
         fi
-    done < <(find "$FRAMES_DIR" -maxdepth 1 -type f -name 'frame_*.png' | sort)
+    done < <(find "$FRAMES_DIR" -type f -name 'frame_*.png' | sort)
 fi
 
 echo ""

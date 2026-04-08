@@ -142,8 +142,9 @@ def discover_leaf_frame_dir(frame_dir: Path) -> Path | None:
 
     child_dirs = sorted(child for child in frame_dir.iterdir() if child.is_dir())
     for child in child_dirs:
-        if any(child.glob("frame_*.*")):
-            return child
+        nested = discover_leaf_frame_dir(child)
+        if nested is not None:
+            return nested
     return None
 
 

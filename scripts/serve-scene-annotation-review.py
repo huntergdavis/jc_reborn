@@ -12,6 +12,7 @@ from urllib.parse import unquote
 class ReviewHandler(SimpleHTTPRequestHandler):
     review_dir: Path
     annotations_path: Path
+    server_ref: ThreadingHTTPServer | None = None
 
     def __init__(self, *args, directory: str | None = None, **kwargs):
         super().__init__(*args, directory=str(self.review_dir), **kwargs)
@@ -27,6 +28,14 @@ class ReviewHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self) -> None:
+        if self.path == "/api/shutdown":
+            self._send_json({"ok": True, "shutting_down": True})
+            print("[scene-review] shutdown requested", flush=True)
+            if self.server_ref is not None:
+                import threading
+
+                threading.Thread(target=self.server_ref.shutdown, daemon=True).start()
+            return
         if self.path != "/api/save":
             self.send_error(HTTPStatus.NOT_FOUND, "Unknown endpoint")
             return
@@ -80,6 +89,7 @@ def main() -> int:
     ReviewHandler.annotations_path = annotations_path
 
     server = ThreadingHTTPServer((args.host, args.port), ReviewHandler)
+    ReviewHandler.server_ref = server
     url = f"http://{args.host}:{args.port}/review.html"
     print(url, flush=True)
     print(f"[scene-review] annotations -> {annotations_path}", flush=True)

@@ -227,10 +227,12 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
         <div class="topnav">
           <button id="prevBtn" type="button">Prev</button>
           <button id="nextBtn" type="button">Next</button>
+          <button id="copyPrevNextBtn" type="button">No change from last frame</button>
           <button id="markBlankNextBtn" type="button">Mark blank screen and next</button>
           <button id="markTitleNextBtn" type="button">Mark title screen and next</button>
           <button id="markOceanNextBtn" type="button">Mark only ocean and next</button>
           <button id="markIslandNextBtn" type="button">Mark only island and next</button>
+          <button id="finishBtn" type="button">Finish</button>
         </div>
         <button id="exportBtn" type="button">Export JSON</button>
         <div class="status" id="saveStatus">Loading…</div>
@@ -547,6 +549,46 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       move(1);
     }}
 
+    function copyPreviousFrameStateAndAdvance() {{
+      if (!manifest || currentIndex === 0) return;
+      const previous = manifest.frames[currentIndex - 1];
+      const frame = manifest.frames[currentIndex];
+      frame.labels = deepClone(previous.labels || {{}});
+      frame.johnny_capture = deepClone(previous.johnny_capture || null);
+      frame.notes = previous.notes || '';
+      setCaptureJohnnyMode(false);
+      queueSave();
+      updateThumb(currentIndex);
+      updateSummary();
+      render();
+      move(1);
+    }}
+
+    async function finishReview() {{
+      if (!manifest) return;
+      if (saveTimer) {{
+        window.clearTimeout(saveTimer);
+        saveTimer = null;
+      }}
+      await saveNow();
+      setCaptureJohnnyMode(false);
+      setStatus('Finishing…');
+      try {{
+        const res = await fetch('/api/shutdown', {{ method: 'POST' }});
+        if (!res.ok) throw new Error(`Shutdown failed: ${{res.status}}`);
+      }} catch (err) {{
+        setStatus(String(err));
+        return;
+      }}
+      setStatus('Finished');
+      window.setTimeout(() => {{
+        window.close();
+      }}, 150);
+      window.setTimeout(() => {{
+        document.body.innerHTML = '<div style="font-family: sans-serif; padding: 32px;">Review finished. You can close this tab.</div>';
+      }}, 250);
+    }}
+
     qs('notesBox').addEventListener('input', (event) => {{
       if (!manifest) return;
       manifest.frames[currentIndex].notes = event.target.value;
@@ -591,10 +633,18 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     }});
     qs('prevBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(-1); }});
     qs('nextBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(1); }});
+    qs('copyPrevNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); copyPreviousFrameStateAndAdvance(); }});
     qs('markBlankNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('black_screen'); }});
     qs('markTitleNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('title_screen'); }});
     qs('markOceanNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('only_ocean'); }});
     qs('markIslandNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('only_island'); }});
+    qs('finishBtn').addEventListener('click', (event) => {{
+      event.preventDefault();
+      finishReview().catch((err) => {{
+        console.error(err);
+        setStatus(String(err));
+      }});
+    }});
     qs('exportBtn').addEventListener('click', () => {{
       const blob = new Blob([JSON.stringify({{
         scene_id: manifest.scene_id,

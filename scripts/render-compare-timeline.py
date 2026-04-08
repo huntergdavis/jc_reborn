@@ -106,7 +106,7 @@ def load_run_frames(result_json_path: Path) -> list[Path]:
     if result_json_path.is_dir():
         frames_dir = find_best_frame_dir(result_json_path)
         if frames_dir.is_dir():
-            return sorted(frames_dir.glob("frame_*.*"))
+            return sorted(frames_dir.glob("**/frame_*.*"))
         return []
 
     try:
@@ -115,11 +115,11 @@ def load_run_frames(result_json_path: Path) -> list[Path]:
         return []
     frames_dir = data.get("paths", {}).get("frames_dir")
     if frames_dir:
-        return sorted(resolve_capture_path(frames_dir, result_json_path.parent).glob("frame_*.*"))
+        return sorted(resolve_capture_path(frames_dir, result_json_path.parent).glob("**/frame_*.*"))
 
     fallback_dir = find_best_frame_dir(result_json_path.parent)
     if fallback_dir.is_dir():
-        return sorted(fallback_dir.glob("frame_*.*"))
+        return sorted(fallback_dir.glob("**/frame_*.*"))
     return []
 
 

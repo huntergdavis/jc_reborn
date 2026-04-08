@@ -36,6 +36,7 @@ END_SEQ=""
 LIMIT=""
 RESUME=0
 FRAMES="${REGTEST_FRAMES:-1800}"
+START_FRAME=0
 INTERVAL="${REGTEST_INTERVAL:-60}"
 TIMEOUT="${REGTEST_TIMEOUT:-180}"
 LOG_LEVEL="${REGTEST_LOG_LEVEL:-Warning}"
@@ -74,6 +75,7 @@ Options:
   --limit N         Maximum number of matching builds to run
   --resume          Skip builds that already have result.json
   --frames N        Number of frames to run per build
+  --start-frame N   First PS1 frame to keep in each build capture set
   --interval N      Screenshot interval
   --timeout N       Wall-clock timeout in seconds
   --log LEVEL       DuckStation log level
@@ -103,6 +105,7 @@ while [ $# -gt 0 ]; do
         --limit) LIMIT="$2"; shift 2 ;;
         --resume) RESUME=1; shift ;;
         --frames) FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --timeout) TIMEOUT="$2"; shift 2 ;;
         --log) LOG_LEVEL="$2"; shift 2 ;;
@@ -114,6 +117,19 @@ done
 
 if [ -z "$SCENE_SPEC" ]; then
     echo "ERROR: --scene is required" >&2
+    exit 1
+fi
+
+if ! [[ "$START_FRAME" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: --start-frame must be an integer >= 0" >&2
+    exit 1
+fi
+if [ "$START_FRAME" -lt 0 ]; then
+    echo "ERROR: --start-frame must be >= 0" >&2
+    exit 1
+fi
+if [ "$FRAMES" -lt "$START_FRAME" ]; then
+    echo "ERROR: --frames must be >= --start-frame" >&2
     exit 1
 fi
 
@@ -391,6 +407,22 @@ PY
     fi
 
     if [ -n "$frames_dir" ] && [ -d "$frames_dir" ]; then
+        if [ "$START_FRAME" -gt 0 ]; then
+            filtered_frames_dir="$out_dir/filtered-frames"
+            rm -rf "$filtered_frames_dir"
+            mkdir -p "$filtered_frames_dir"
+            while IFS= read -r frame_path; do
+                frame_name="$(basename "$frame_path")"
+                frame_no="${frame_name#frame_}"
+                frame_no="${frame_no%.png}"
+                if [[ "$frame_no" =~ ^[0-9]+$ ]] && [ "$frame_no" -ge "$START_FRAME" ]; then
+                    cp "$frame_path" "$filtered_frames_dir/$frame_name"
+                fi
+            done < <(find "$frames_dir" -type f -name 'frame_*.png' | sort)
+            if find "$filtered_frames_dir" -maxdepth 1 -type f -name 'frame_*.png' | grep -q .; then
+                frames_dir="$filtered_frames_dir"
+            fi
+        fi
         frame_count="$(find "$frames_dir" -type f -name 'frame_*.png' | wc -l | tr -d ' ')"
         last_frame="$(find "$frames_dir" -type f -name 'frame_*.png' | sort | tail -1)"
         if [ -n "$last_frame" ] && command -v sha256sum >/dev/null 2>&1; then
@@ -407,12 +439,12 @@ PY
         fi
     fi
 
-    python3 - <<'PY' "$result_json" "$entry_json" "$ADS_NAME" "$SCENE_TAG" "$SCENE_SPEC" "$SCENE_INDEX" "$SCENE_STATUS" "$BOOT_STRING" "$FRAMES" "$INTERVAL" "$TIMEOUT" "$REGTEST_EXIT" "$timed_out" "$frame_count" "$state_hash" "$has_fatal" "$out_dir" "$frames_dir" "$regtest_log" "$printf_log" "$LIBRARY_DIR"
+    python3 - <<'PY' "$result_json" "$entry_json" "$ADS_NAME" "$SCENE_TAG" "$SCENE_SPEC" "$SCENE_INDEX" "$SCENE_STATUS" "$BOOT_STRING" "$FRAMES" "$START_FRAME" "$INTERVAL" "$TIMEOUT" "$REGTEST_EXIT" "$timed_out" "$frame_count" "$state_hash" "$has_fatal" "$out_dir" "$frames_dir" "$regtest_log" "$printf_log" "$LIBRARY_DIR"
 import json, os, sys
 
 entry = json.loads(sys.argv[2])
 scene_index = None if sys.argv[6] == "" else int(sys.argv[6])
-library_dir = os.path.abspath(sys.argv[21])
+library_dir = os.path.abspath(sys.argv[22])
 result = {
     "scene": {
         "ads_name": sys.argv[3],
@@ -424,8 +456,9 @@ result = {
     },
     "config": {
         "frames": int(sys.argv[9]),
-        "interval": int(sys.argv[10]),
-        "timeout": int(sys.argv[11]),
+        "start_frame": int(sys.argv[10]),
+        "interval": int(sys.argv[11]),
+        "timeout": int(sys.argv[12]),
     },
     "build": {
         "sequence": entry["sequence"],
@@ -438,20 +471,20 @@ result = {
         },
     },
     "outcome": {
-        "status": "pass" if int(sys.argv[12]) == 0 and int(sys.argv[14]) > 0 and int(sys.argv[16]) == 0 else "fail",
-        "exit_code": int(sys.argv[12]),
-        "timed_out": bool(int(sys.argv[13])),
-        "frames_captured": int(sys.argv[14]),
-        "state_hash": sys.argv[15] or None,
-        "has_fatal_error": bool(int(sys.argv[16])),
+        "status": "pass" if int(sys.argv[13]) == 0 and int(sys.argv[15]) > 0 and int(sys.argv[17]) == 0 else "fail",
+        "exit_code": int(sys.argv[13]),
+        "timed_out": bool(int(sys.argv[14])),
+        "frames_captured": int(sys.argv[15]),
+        "state_hash": sys.argv[16] or None,
+        "has_fatal_error": bool(int(sys.argv[17])),
     },
     "paths": {
-        "output_dir": os.path.abspath(sys.argv[17]),
-        "frames_dir": os.path.abspath(sys.argv[18]) if sys.argv[18] else None,
-        "regtest_log": os.path.abspath(sys.argv[19]) if sys.argv[19] else None,
-        "printf_log": os.path.abspath(sys.argv[20]) if sys.argv[20] else None,
-        "repack_log": os.path.abspath(os.path.join(sys.argv[17], "repack.log")),
-        "driver_log": os.path.abspath(os.path.join(sys.argv[17], "driver.log")),
+        "output_dir": os.path.abspath(sys.argv[18]),
+        "frames_dir": os.path.abspath(sys.argv[19]) if sys.argv[19] else None,
+        "regtest_log": os.path.abspath(sys.argv[20]) if sys.argv[20] else None,
+        "printf_log": os.path.abspath(sys.argv[21]) if sys.argv[21] else None,
+        "repack_log": os.path.abspath(os.path.join(sys.argv[18], "repack.log")),
+        "driver_log": os.path.abspath(os.path.join(sys.argv[18], "driver.log")),
     },
 }
 json.dump(result, open(sys.argv[1], "w"), indent=2)

@@ -5,13 +5,18 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 OUTDIR="${1:-$PROJECT_ROOT/vision-artifacts/fishing1-annotation-review}"
 PORT="${SCENE_REVIEW_PORT:-8123}"
+FILTERED_RESULT_DIR="$OUTDIR/filtered-result"
+
+python3 "$PROJECT_ROOT/scripts/filter-result-frames.py" \
+  --result "$PROJECT_ROOT/tmp-regtests/fishing1-zonecommit/result.json" \
+  --outdir "$FILTERED_RESULT_DIR" >/dev/null
 
 python3 "$PROJECT_ROOT/scripts/generate-scene-annotation-review.py" \
   --scene-id "FISHING-1" \
   --title "FISHING 1 Annotation Review" \
   --all-frames \
   --reference "$PROJECT_ROOT/regtest-references/FISHING-1/result.json" \
-  --result "$PROJECT_ROOT/tmp-regtests/fishing1-zonecommit/result.json" \
+  --result "$FILTERED_RESULT_DIR/result.json" \
   --outdir "$OUTDIR" >/dev/null
 
 URL="$(python3 - <<PY

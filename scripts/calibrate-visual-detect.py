@@ -205,7 +205,7 @@ def calibrate_from_scenes(ref_dir: Path, scene_filter: str | None, verbose: bool
     total_frames = 0
 
     for scene_dir in dirs_to_process:
-        frame_files = sorted(scene_dir.glob("frame_*.png"))
+        frame_files = sorted(scene_dir.glob("**/frame_*.png"))
         if not frame_files:
             continue
 
@@ -400,7 +400,7 @@ def main():
 
     # Check for any frames
     has_frames = any(
-        subdir.is_dir() and list(subdir.glob("frame_*.png"))
+        subdir.is_dir() and list(subdir.glob("**/frame_*.png"))
         for subdir in ref_dir.iterdir()
         if subdir.is_dir() and not subdir.name.startswith(".")
     )

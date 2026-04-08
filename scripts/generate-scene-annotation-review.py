@@ -126,9 +126,19 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     .title h1 {{ margin: 0 0 6px; font-size: 28px; }}
     .title p {{ margin: 0; color: var(--muted); max-width: 900px; }}
     .toolbar {{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }}
-    .toolbar button {{ background: var(--chip); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; cursor: pointer; }}
+    .toolbar button {{
+      background: var(--chip);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px 16px;
+      min-height: 46px;
+      min-width: 170px;
+      cursor: pointer;
+      font: inherit;
+    }}
     .toolbar button:hover {{ border-color: var(--accent); }}
-    .topnav {{ display: flex; gap: 8px; align-items: center; }}
+    .topnav {{ display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; }}
     .status {{ color: var(--muted); font-size: 13px; min-width: 160px; text-align: right; }}
     .main {{ display: grid; grid-template-columns: 1fr 340px; gap: 16px; }}
     .viewer {{ background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }}

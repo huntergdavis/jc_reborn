@@ -219,6 +219,8 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
           <button id="nextBtn" type="button">Next</button>
           <button id="markBlankNextBtn" type="button">Mark blank screen and next</button>
           <button id="markTitleNextBtn" type="button">Mark title screen and next</button>
+          <button id="markOceanNextBtn" type="button">Mark only ocean and next</button>
+          <button id="markIslandNextBtn" type="button">Mark only island and next</button>
         </div>
         <button id="exportBtn" type="button">Export JSON</button>
         <div class="status" id="saveStatus">Loading…</div>
@@ -509,9 +511,23 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       if (labelId === 'black_screen') {{
         frame.labels.black_screen = true;
         frame.labels.title_screen = false;
+        frame.labels.only_island = false;
+        frame.labels.only_ocean = false;
       }} else if (labelId === 'title_screen') {{
         frame.labels.title_screen = true;
         frame.labels.black_screen = false;
+        frame.labels.only_island = false;
+        frame.labels.only_ocean = false;
+      }} else if (labelId === 'only_ocean') {{
+        frame.labels.only_ocean = true;
+        frame.labels.only_island = false;
+        frame.labels.black_screen = false;
+        frame.labels.title_screen = false;
+      }} else if (labelId === 'only_island') {{
+        frame.labels.only_island = true;
+        frame.labels.only_ocean = false;
+        frame.labels.black_screen = false;
+        frame.labels.title_screen = false;
       }} else {{
         frame.labels[labelId] = true;
       }}
@@ -567,6 +583,8 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     qs('nextBtn').addEventListener('click', (event) => {{ event.preventDefault(); move(1); }});
     qs('markBlankNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('black_screen'); }});
     qs('markTitleNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('title_screen'); }});
+    qs('markOceanNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('only_ocean'); }});
+    qs('markIslandNextBtn').addEventListener('click', (event) => {{ event.preventDefault(); applyQuickLabelAndAdvance('only_island'); }});
     qs('exportBtn').addEventListener('click', () => {{
       const blob = new Blob([JSON.stringify({{
         scene_id: manifest.scene_id,

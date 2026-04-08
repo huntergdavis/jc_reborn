@@ -54,7 +54,7 @@ def palette_index_diff_pixels(result_rgb: Image.Image, reference_rgb: Image.Imag
 def load_frame_paths(result: dict, result_path: Path) -> list[Path]:
     frames_dir = result.get("paths", {}).get("frames_dir")
     if frames_dir:
-        frame_paths = sorted(resolve_capture_path(frames_dir, result_path.parent).glob("frame_*.*"))
+        frame_paths = sorted(resolve_capture_path(frames_dir, result_path.parent).glob("**/frame_*.*"))
         if frame_paths:
             return frame_paths
 

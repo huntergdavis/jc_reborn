@@ -56,6 +56,7 @@ SKIP_SPECIALS=0
 SKIP_SCENES=0
 PARALLEL="${REGTEST_PARALLEL:-2}"
 DRY_RUN=0
+SEED="${REGTEST_SEED:-1}"
 
 # ── Argument Parsing ─────────────────────────────────────────────────────────
 
@@ -76,6 +77,7 @@ Options:
   --frames N           Frames per scene (default: 1800 = 30 sec)
   --start-frame N      First PS1 frame to keep for scene captures
   --interval N         Capture every Nth frame (default: 30 = 2/sec)
+  --seed N             Force deterministic BOOTMODE RNG seed (default: REGTEST_SEED or 1)
   --parallel N         Max parallel scene captures (default: 2)
   --dry-run            Show what would be done without running
   --output DIR         Override output directory (default: regtest-references/)
@@ -102,6 +104,7 @@ while [ $# -gt 0 ]; do
         --frames)        CAPTURE_FRAMES="$2"; shift 2 ;;
         --start-frame)   START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval)      CAPTURE_INTERVAL="$2"; shift 2 ;;
+        --seed)          SEED="$2"; shift 2 ;;
         --parallel)      PARALLEL="$2"; shift 2 ;;
         --dry-run)       DRY_RUN=1; shift ;;
         --output)        REFERENCE_DIR="$2"; shift 2 ;;
@@ -216,7 +219,7 @@ capture_scene() {
     if [ "$DRY_RUN" -eq 1 ]; then
         echo "  [dry-run] Would capture: $ads_name tag $tag (index=$scene_index) => $scene_dir"
         echo "            Boot: $boot_string"
-        echo "            Frames: $scene_capture_frames, Start: $scene_start_frame, Interval: $CAPTURE_INTERVAL"
+        echo "            Frames: $scene_capture_frames, Start: $scene_start_frame, Interval: $CAPTURE_INTERVAL, Seed: $SEED"
         return 0
     fi
 
@@ -235,6 +238,7 @@ capture_scene() {
         --frames "$scene_capture_frames" \
         --start-frame "$scene_start_frame" \
         --interval "$CAPTURE_INTERVAL" \
+        --seed "$SEED" \
         --output "$scene_dir/.regtest-work" \
         --quiet \
         > "$scene_dir/.regtest-result.json" 2>"$scene_dir/.regtest-stderr.log" \
@@ -274,7 +278,7 @@ PY
     fi
 
     # Write metadata sidecar
-    SCENE_CAPTURE_FRAMES="$scene_capture_frames" SCENE_START_FRAME="$scene_start_frame" \
+    SCENE_CAPTURE_FRAMES="$scene_capture_frames" SCENE_START_FRAME="$scene_start_frame" SEED="$SEED" \
     python3 - "$scene_dir" "$ads_name" "$tag" "$scene_index" "$status" \
               "$boot_string" "$frames_found" "$capture_ts" "$scene_result" <<'PYEOF'
 import json, sys, os, glob
@@ -301,6 +305,7 @@ metadata = {
     "scene_index": scene_index,
     "status": status,
     "boot_string": boot_string,
+    "seed": int(os.environ.get("SEED", 1)),
     "capture_frames": int(os.environ.get("SCENE_CAPTURE_FRAMES", os.environ.get("CAPTURE_FRAMES", 1800))),
     "capture_start_frame": int(os.environ.get("SCENE_START_FRAME", os.environ.get("START_FRAME", 0))),
     "capture_interval": int(os.environ.get("CAPTURE_INTERVAL", 30)),

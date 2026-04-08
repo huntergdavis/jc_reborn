@@ -15,6 +15,7 @@ cd "$PROJECT_ROOT"
 
 SEED=""
 FRAMES=4200
+START_FRAME=""
 INTERVAL=120
 OUTPUT_DIR="$PROJECT_ROOT/regtest-references"
 SKIP_INDEX=0
@@ -34,6 +35,7 @@ Options:
   --limit N        Limit number of scenes loaded from scene-file
   --seed N         Force deterministic BOOTMODE RNG seed
   --frames N       Frames per scene (default: 4200)
+  --start-frame N  First PS1 frame to keep for every scene (default: reviewed per-scene start)
   --interval N     Capture interval (default: 120)
   --output DIR     Reference output root (default: regtest-references/)
   --skip-index     Do not rebuild the reference index after capture
@@ -50,6 +52,7 @@ while [ $# -gt 0 ]; do
         --limit)      LIMIT="$2"; shift 2 ;;
         --seed)       SEED="$2"; shift 2 ;;
         --frames)     FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; shift 2 ;;
         --interval)   INTERVAL="$2"; shift 2 ;;
         --output)     OUTPUT_DIR="$2"; shift 2 ;;
         --skip-index) SKIP_INDEX=1; shift ;;
@@ -105,6 +108,9 @@ for scene in "${SCENES[@]}"; do
         --skip-specials
         --output "$OUTPUT_DIR"
     )
+    if [ -n "$START_FRAME" ]; then
+        CMD+=(--start-frame "$START_FRAME")
+    fi
     if [ -n "$SEED" ]; then
         CMD+=(--seed "$SEED")
     fi

@@ -46,11 +46,11 @@ Options:
   --output DIR       Output root for fresh runs (default: regtest-results/reference-compare/)
   --seed N           Force deterministic BOOTMODE RNG seed
   --frames N         Frames per run (default: 4200)
-  --start-frame N    First PS1 frame to keep in the capture set (default: 0)
+  --start-frame N    First PS1 frame to keep in the capture set (default: reviewed per-scene start)
   --interval N       Capture interval (default: 1)
   --min-result-scene-frame N
                      Minimum PS1 frame eligible to align as scene entry
-                     (default: boot grace minus tolerance)
+                     (default: reviewed per-scene start)
   --min-reference-scene-frame N
                      Minimum reference frame eligible to align as scene entry
                      (default: 0)

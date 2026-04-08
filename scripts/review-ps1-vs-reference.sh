@@ -39,6 +39,7 @@ Options:
   --vlm-bank-dir PATH         Optional reference-bank dir for VLM hints
   --vlm-samples N             Number of frame pairs to validate (default: 3)
   --min-result-scene-frame N  Minimum PS1 frame eligible as a scene-entry anchor
+                              (default: reviewed per-scene start when --scene is set)
   --min-reference-scene-frame N
                               Minimum host frame eligible as a scene-entry anchor
   --scene-window-only         Clip comparison to the host scene window

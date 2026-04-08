@@ -50,7 +50,7 @@ Options:
   --scene SPEC          Scene spec for headless regtest capture, e.g. "FISHING 1"
   --boot STRING         Explicit BOOTMODE string for the headless regtest path
   --frames N            Headless regtest frame budget (default: REGTEST_FRAMES or 9000)
-  --start-frame N       First PS1 frame to keep in the headless capture set (default: 0)
+  --start-frame N       First PS1 frame to keep in the headless capture set (default: reviewed per-scene start when --scene is set)
   --interval N          Headless regtest dump interval (default: REGTEST_INTERVAL or 60)
   --actual-frame N      Use frame_NNNNN.png from the headless run instead of the last dumped frame
   --no-baseline-mask    Skip the paired headless overlay-mask baseline capture

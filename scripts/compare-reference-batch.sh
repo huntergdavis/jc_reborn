@@ -27,6 +27,7 @@ SCENE_FILE=""
 STATUS_FILTER=""
 LIMIT=""
 MIN_RESULT_SCENE_FRAME=""
+MIN_RESULT_SCENE_FRAME_EXPLICIT=0
 MIN_REFERENCE_SCENE_FRAME="0"
 SCENE_WINDOW_ONLY=1
 COMPARE_TIMEOUT="${COMPARE_TIMEOUT:-90}"
@@ -74,7 +75,7 @@ while [ $# -gt 0 ]; do
         --frames)     FRAMES="$2"; shift 2 ;;
         --start-frame) START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval)   INTERVAL="$2"; shift 2 ;;
-        --min-result-scene-frame) MIN_RESULT_SCENE_FRAME="$2"; shift 2 ;;
+        --min-result-scene-frame) MIN_RESULT_SCENE_FRAME="$2"; MIN_RESULT_SCENE_FRAME_EXPLICIT=1; shift 2 ;;
         --min-reference-scene-frame) MIN_REFERENCE_SCENE_FRAME="$2"; shift 2 ;;
         --no-scene-window-only) SCENE_WINDOW_ONLY=0; shift ;;
         --summary)    SUMMARY_FILE="$2"; shift 2 ;;
@@ -159,6 +160,10 @@ for scene in "${SCENES[@]}"; do
     if [ -z "$SCENE_START_FRAME" ]; then
         SCENE_START_FRAME="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$scene")"
     fi
+    SCENE_MIN_RESULT_SCENE_FRAME="$MIN_RESULT_SCENE_FRAME"
+    if [ "$MIN_RESULT_SCENE_FRAME_EXPLICIT" -eq 0 ]; then
+        SCENE_MIN_RESULT_SCENE_FRAME="$SCENE_START_FRAME"
+    fi
     SCENE_FRAMES="$FRAMES"
     if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
         min_frames=$((SCENE_START_FRAME + MIN_TAIL_FRAMES))
@@ -227,7 +232,7 @@ for scene in "${SCENES[@]}"; do
         --scene-entry-align \
         --result "$RESULT_DIR.result.json" \
         --reference "$REFERENCE_DIR/${ADS_NAME}-${TAG}" \
-        --min-result-scene-frame "$MIN_RESULT_SCENE_FRAME" \
+        --min-result-scene-frame "$SCENE_MIN_RESULT_SCENE_FRAME" \
         --min-reference-scene-frame "$MIN_REFERENCE_SCENE_FRAME"
     )
     if [ "$SCENE_WINDOW_ONLY" -eq 1 ]; then

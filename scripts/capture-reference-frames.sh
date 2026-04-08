@@ -245,16 +245,27 @@ capture_scene() {
         > "$scene_dir/.regtest-result.json" 2>"$scene_dir/.regtest-stderr.log" \
         || scene_result=$?
 
-    # Move captured frames from regtest work dir into the scene reference dir
+    # Move captured frames from the filtered regtest output into the scene reference dir
     local frames_found=0
     local frames_src=""
 
-    # Find the frames directory (may be nested due to Docker/run-regtest.sh)
-    if [ -d "$scene_dir/.regtest-work/frames" ]; then
-        frames_src="$scene_dir/.regtest-work/frames"
-    else
-        # Docker run-regtest.sh nests output in a timestamped subdir
-        frames_src="$(find "$scene_dir/.regtest-work" -type d -name "frames" 2>/dev/null | head -1)"
+    if [ -f "$scene_dir/.regtest-result.json" ]; then
+        frames_src="$(python3 - <<'PY' "$scene_dir/.regtest-result.json"
+import json, sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print((payload.get("paths") or {}).get("frames_dir") or "")
+PY
+)"
+    fi
+    if [ -z "$frames_src" ] || [ ! -d "$frames_src" ]; then
+        # Fallback for older result formats.
+        if [ -d "$scene_dir/.regtest-work/frames" ]; then
+            frames_src="$scene_dir/.regtest-work/frames"
+        else
+            frames_src="$(find "$scene_dir/.regtest-work" -type d -name "frames" 2>/dev/null | head -1)"
+        fi
     fi
 
     if [ -n "$frames_src" ] && [ -d "$frames_src" ]; then

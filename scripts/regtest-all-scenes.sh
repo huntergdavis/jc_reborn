@@ -39,6 +39,9 @@ PARALLEL="$REGTEST_PARALLEL"
 OUTPUT_ROOT="$REGTEST_OUTPUT_DIR"
 SCENE_LIST_FILE="$REGTEST_SCENE_LIST"
 FRAMES="$REGTEST_FRAMES"
+START_FRAME=""
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${REGTEST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-1200}"
 INTERVAL="$REGTEST_INTERVAL"
 STATUS_FILTER=""       # empty = use mode flag
 MODE=""                # verified-only | all | (default = verified + bringup)
@@ -54,6 +57,7 @@ Options:
   --status STATUSES    Comma-separated status filter (e.g. "verified,bringup")
   --parallel N         Max concurrent tests (default: 4)
   --frames N           Frames per scene (default: 1800)
+  --start-frame N      First PS1 frame to keep for every scene (default: per-scene reviewed start)
   --interval N         Capture interval (default: 60)
   --scene-list FILE    Scene list file (default: config/ps1/regtest-scenes.txt)
   --output DIR         Output root directory (default: regtest-results)
@@ -70,6 +74,7 @@ while [ $# -gt 0 ]; do
         --status)         STATUS_FILTER="$2"; shift 2 ;;
         --parallel)       PARALLEL="$2"; shift 2 ;;
         --frames)         FRAMES="$2"; shift 2 ;;
+        --start-frame)    START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval)       INTERVAL="$2"; shift 2 ;;
         --scene-list)     SCENE_LIST_FILE="$2"; shift 2 ;;
         --output)         OUTPUT_ROOT="$2"; shift 2 ;;
@@ -167,7 +172,7 @@ echo "========================================"
 echo "PS1 Regtest — $TOTAL scene(s), $PARALLEL parallel"
 echo "Filter: $STATUS_FILTER"
 echo "Output: $OUTPUT_ROOT"
-echo "Frames: $FRAMES  Interval: $INTERVAL"
+echo "Frames: $FRAMES  Start: ${START_FRAME:-per-scene}  Interval: $INTERVAL"
 echo "========================================"
 echo ""
 
@@ -211,12 +216,23 @@ for idx in "${!SCENES[@]}"; do
     scene_label="${ads} ${tag}"
     scene_dir="$RUN_DIR/${ads,,}-${tag}"
     scene_args=()
+    scene_start_frame="$START_FRAME"
+    scene_frames="$FRAMES"
 
     if [ -n "$scene_index" ]; then
         scene_args+=(--scene-index "$scene_index")
     fi
     if [ -n "$boot_string" ]; then
         scene_args+=(--boot "$boot_string")
+    fi
+    if [ -z "$scene_start_frame" ]; then
+        scene_start_frame="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$scene_label")"
+    fi
+    if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+        min_frames=$((scene_start_frame + MIN_TAIL_FRAMES))
+        if [ "$scene_frames" -lt "$min_frames" ]; then
+            scene_frames="$min_frames"
+        fi
     fi
 
     wait_for_slot
@@ -227,7 +243,8 @@ for idx in "${!SCENES[@]}"; do
         --scene "$scene_label" \
         --status "$status" \
         "${scene_args[@]}" \
-        --frames "$FRAMES" \
+        --frames "$scene_frames" \
+        --start-frame "$scene_start_frame" \
         --interval "$INTERVAL" \
         --output "$scene_dir" \
         --quiet \

@@ -15,6 +15,28 @@ OUT_DIR="$PROJECT_ROOT/host-script-review"
 TMP_DIR="$PROJECT_ROOT/host-script-review-verify"
 VERIFY_REPRO=1
 
+resolve_scene_start() {
+    python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$1"
+}
+
+frame_name() {
+    printf 'frame_%05d' "$1"
+}
+
+FISHING_REVIEW_START_FRAME="$(resolve_scene_start "FISHING 1")"
+FISHING_REVIEW_MID_FRAME="$((FISHING_REVIEW_START_FRAME + 120))"
+FISHING_REVIEW_LATE_FRAME="$((FISHING_REVIEW_START_FRAME + 240))"
+FISHING_REVIEW_TAIL_FRAME="$((FISHING_REVIEW_START_FRAME + 360))"
+FISHING_REVIEW_START_NAME="$(frame_name "$FISHING_REVIEW_START_FRAME")"
+FISHING_REVIEW_LATE_NAME="$(frame_name "$FISHING_REVIEW_LATE_FRAME")"
+
+MARY_REVIEW_START_FRAME="$(resolve_scene_start "MARY 1")"
+MARY_REVIEW_MID_FRAME="$((MARY_REVIEW_START_FRAME + 60))"
+MARY_REVIEW_LATE_FRAME="$((MARY_REVIEW_START_FRAME + 120))"
+MARY_REVIEW_TAIL_FRAME="$((MARY_REVIEW_START_FRAME + 240))"
+MARY_REVIEW_START_NAME="$(frame_name "$MARY_REVIEW_START_FRAME")"
+MARY_REVIEW_LATE_NAME="$(frame_name "$MARY_REVIEW_LATE_FRAME")"
+
 assert_clean_tracked_inputs() {
     local status
     status="$(git -C "$PROJECT_ROOT" status --short --untracked-files=no -- \
@@ -170,8 +192,8 @@ capture_review_set() {
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "FISHING 1" \
         --boot "window nosound story scene 17 island-pos -124 37 capture-prelude-frame" \
-        --frame-list 0,20,40,80 \
-        --frames 80 \
+        --frame-list "$FISHING_REVIEW_START_FRAME,$FISHING_REVIEW_MID_FRAME,$FISHING_REVIEW_LATE_FRAME,$FISHING_REVIEW_TAIL_FRAME" \
+        --frames "$FISHING_REVIEW_TAIL_FRAME" \
         --interval 20 \
         --output "$root/fishing1" \
         --no-stamp
@@ -180,8 +202,8 @@ capture_review_set() {
         "$SCRIPT_DIR/capture-host-scene.sh" \
         --scene "MARY 1" \
         --boot "window nosound story scene 61 island-pos -124 37 raft-stage 5 capture-prelude-frame" \
-        --frame-list 0,50,150,200,250 \
-        --frames 250 \
+        --frame-list "$MARY_REVIEW_START_FRAME,$MARY_REVIEW_MID_FRAME,$MARY_REVIEW_LATE_FRAME,$MARY_REVIEW_TAIL_FRAME" \
+        --frames "$MARY_REVIEW_TAIL_FRAME" \
         --interval 50 \
         --output "$root/mary1" \
         --no-stamp
@@ -999,19 +1021,23 @@ PY
 
 assert_verification_summary_key_frame_paths() {
     local root="$1"
-    python3 - "$root" <<'PY'
+    python3 - "$root" "$FISHING_REVIEW_START_NAME" "$FISHING_REVIEW_LATE_NAME" "$MARY_REVIEW_START_NAME" "$MARY_REVIEW_LATE_NAME" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
+fishing_start = sys.argv[2]
+fishing_late = sys.argv[3]
+mary_start = sys.argv[4]
+mary_late = sys.argv[5]
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
 key_frame_paths = summary.get("key_frame_paths", {})
 required = {
-    "fishing_start_bmp": root / "fishing1" / "frames" / "frame_00000.bmp",
-    "fishing_late_bmp": root / "fishing1" / "frames" / "frame_00080.bmp",
-    "mary_start_bmp": root / "mary1" / "frames" / "frame_00000.bmp",
-    "mary_late_bmp": root / "mary1" / "frames" / "frame_00100.bmp",
+    "fishing_start_bmp": root / "fishing1" / "frames" / f"{fishing_start}.bmp",
+    "fishing_late_bmp": root / "fishing1" / "frames" / f"{fishing_late}.bmp",
+    "mary_start_bmp": root / "mary1" / "frames" / f"{mary_start}.bmp",
+    "mary_late_bmp": root / "mary1" / "frames" / f"{mary_late}.bmp",
 }
 for key, expected in required.items():
     actual = key_frame_paths.get(key)
@@ -1023,19 +1049,23 @@ PY
 
 assert_verification_summary_key_frame_meta_paths() {
     local root="$1"
-    python3 - "$root" <<'PY'
+    python3 - "$root" "$FISHING_REVIEW_START_NAME" "$FISHING_REVIEW_LATE_NAME" "$MARY_REVIEW_START_NAME" "$MARY_REVIEW_LATE_NAME" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
+fishing_start = sys.argv[2]
+fishing_late = sys.argv[3]
+mary_start = sys.argv[4]
+mary_late = sys.argv[5]
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
 key_frame_meta_paths = summary.get("key_frame_meta_paths", {})
 required = {
-    "fishing_start_json": root / "fishing1" / "frame-meta" / "frame_00000.json",
-    "fishing_late_json": root / "fishing1" / "frame-meta" / "frame_00080.json",
-    "mary_start_json": root / "mary1" / "frame-meta" / "frame_00000.json",
-    "mary_late_json": root / "mary1" / "frame-meta" / "frame_00100.json",
+    "fishing_start_json": root / "fishing1" / "frame-meta" / f"{fishing_start}.json",
+    "fishing_late_json": root / "fishing1" / "frame-meta" / f"{fishing_late}.json",
+    "mary_start_json": root / "mary1" / "frame-meta" / f"{mary_start}.json",
+    "mary_late_json": root / "mary1" / "frame-meta" / f"{mary_late}.json",
 }
 for key, expected in required.items():
     actual = key_frame_meta_paths.get(key)
@@ -1908,11 +1938,15 @@ PY
 
 assert_identification_review_links() {
     local root="$1"
-    python3 - "$root" <<'PY'
+    python3 - "$root" "$FISHING_REVIEW_START_NAME" "$FISHING_REVIEW_LATE_NAME" "$MARY_REVIEW_START_NAME" "$MARY_REVIEW_LATE_NAME" <<'PY'
 import sys
 from pathlib import Path
 
 root = Path(sys.argv[1])
+fishing_start = sys.argv[2]
+fishing_late = sys.argv[3]
+mary_start = sys.argv[4]
+mary_late = sys.argv[5]
 html = (root / "identification-review.html").read_text(encoding="utf-8")
 required = [
     "index.html",
@@ -1929,10 +1963,10 @@ required = [
     "identification-challenges.json",
     "identification-temporal.json",
     "semantic-truth.json",
-    "fishing1/frames/frame_00000.bmp",
-    "mary1/frames/frame_00000.bmp",
-    "fishing1/frames/frame_00080.bmp",
-    "mary1/frames/frame_00100.bmp",
+    f"fishing1/frames/{fishing_start}.bmp",
+    f"mary1/frames/{mary_start}.bmp",
+    f"fishing1/frames/{fishing_late}.bmp",
+    f"mary1/frames/{mary_late}.bmp",
 ]
 for href in required:
     if href not in html:
@@ -2008,7 +2042,9 @@ write_verification_summary() {
     local git_head git_head_short
     git_head="$(git -C "$PROJECT_ROOT" rev-parse HEAD)"
     git_head_short="$(git -C "$PROJECT_ROOT" rev-parse --short HEAD)"
-    python3 - "$root" "$git_head" "$git_head_short" "$VERIFY_REPRO" <<'PY'
+    python3 - "$root" "$git_head" "$git_head_short" "$VERIFY_REPRO" \
+        "$FISHING_REVIEW_START_NAME" "$FISHING_REVIEW_LATE_NAME" \
+        "$MARY_REVIEW_START_NAME" "$MARY_REVIEW_LATE_NAME" <<'PY'
 import json
 import hashlib
 import sys
@@ -2019,6 +2055,10 @@ root = Path(sys.argv[1])
 git_head = sys.argv[2]
 git_head_short = sys.argv[3]
 verify_repro = sys.argv[4] == "1"
+fishing_start_name = sys.argv[5]
+fishing_late_name = sys.argv[6]
+mary_start_name = sys.argv[7]
+mary_late_name = sys.argv[8]
 
 
 def severity(value):
@@ -2453,16 +2493,16 @@ scene_asset_paths = {
     "mary_meta_dir": str((root / "mary1" / "frame-meta").resolve()),
 }
 key_frame_paths = {
-    "fishing_start_bmp": str((root / "fishing1" / "frames" / "frame_00000.bmp").resolve()),
-    "fishing_late_bmp": str((root / "fishing1" / "frames" / "frame_00080.bmp").resolve()),
-    "mary_start_bmp": str((root / "mary1" / "frames" / "frame_00000.bmp").resolve()),
-    "mary_late_bmp": str((root / "mary1" / "frames" / "frame_00100.bmp").resolve()),
+    "fishing_start_bmp": str((root / "fishing1" / "frames" / f"{fishing_start_name}.bmp").resolve()),
+    "fishing_late_bmp": str((root / "fishing1" / "frames" / f"{fishing_late_name}.bmp").resolve()),
+    "mary_start_bmp": str((root / "mary1" / "frames" / f"{mary_start_name}.bmp").resolve()),
+    "mary_late_bmp": str((root / "mary1" / "frames" / f"{mary_late_name}.bmp").resolve()),
 }
 key_frame_meta_paths = {
-    "fishing_start_json": str((root / "fishing1" / "frame-meta" / "frame_00000.json").resolve()),
-    "fishing_late_json": str((root / "fishing1" / "frame-meta" / "frame_00080.json").resolve()),
-    "mary_start_json": str((root / "mary1" / "frame-meta" / "frame_00000.json").resolve()),
-    "mary_late_json": str((root / "mary1" / "frame-meta" / "frame_00100.json").resolve()),
+    "fishing_start_json": str((root / "fishing1" / "frame-meta" / f"{fishing_start_name}.json").resolve()),
+    "fishing_late_json": str((root / "fishing1" / "frame-meta" / f"{fishing_late_name}.json").resolve()),
+    "mary_start_json": str((root / "mary1" / "frame-meta" / f"{mary_start_name}.json").resolve()),
+    "mary_late_json": str((root / "mary1" / "frame-meta" / f"{mary_late_name}.json").resolve()),
 }
 
 digest_inputs = {}

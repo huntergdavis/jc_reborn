@@ -23,6 +23,8 @@ MODE="headless"
 WAIT_TIME=35
 FRAMES="${REGTEST_FRAMES:-9000}"
 START_FRAME=""
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${REGTEST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-1200}"
 INTERVAL="${REGTEST_INTERVAL:-60}"
 USE_BASELINE_MASK=1
 EXPECTED_ROOT=""
@@ -76,7 +78,7 @@ while [ $# -gt 0 ]; do
         --scene) SCENE_SPEC="$2"; shift 2 ;;
         --boot) BOOT_STRING="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
-        --start-frame) START_FRAME="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --actual-frame) ACTUAL_FRAME="$2"; shift 2 ;;
         --no-baseline-mask) USE_BASELINE_MASK=0; shift ;;
@@ -115,6 +117,13 @@ if [ -z "$START_FRAME" ]; then
     START_FRAME=$((grace - tolerance))
     if [ "$START_FRAME" -lt 0 ]; then
         START_FRAME=0
+    fi
+fi
+
+if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$FRAMES" -lt "$min_frames" ]; then
+        FRAMES="$min_frames"
     fi
 fi
 

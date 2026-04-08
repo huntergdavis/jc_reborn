@@ -17,6 +17,8 @@ REFERENCE_DIR="$PROJECT_ROOT/regtest-references"
 OUTPUT_ROOT="$PROJECT_ROOT/regtest-results/reference-compare"
 FRAMES=4200
 START_FRAME=""
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${REGTEST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-1200}"
 INTERVAL=1
 SEED=""
 SKIP_BUILD=0
@@ -70,7 +72,7 @@ while [ $# -gt 0 ]; do
         --output)     OUTPUT_ROOT="$2"; shift 2 ;;
         --seed)       SEED="$2"; shift 2 ;;
         --frames)     FRAMES="$2"; shift 2 ;;
-        --start-frame) START_FRAME="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval)   INTERVAL="$2"; shift 2 ;;
         --min-result-scene-frame) MIN_RESULT_SCENE_FRAME="$2"; shift 2 ;;
         --min-reference-scene-frame) MIN_REFERENCE_SCENE_FRAME="$2"; shift 2 ;;
@@ -93,6 +95,13 @@ fi
 
 if [ -z "$START_FRAME" ]; then
     START_FRAME="$MIN_RESULT_SCENE_FRAME"
+fi
+
+if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$FRAMES" -lt "$min_frames" ]; then
+        FRAMES="$min_frames"
+    fi
 fi
 
 if [ -n "$SCENE_FILE" ]; then

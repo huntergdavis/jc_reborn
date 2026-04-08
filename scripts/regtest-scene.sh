@@ -41,6 +41,7 @@ BOOT_STRING=""
 SCENE_INDEX=""
 SCENE_STATUS=""
 FRAMES="$REGTEST_FRAMES"
+START_FRAME=0
 INTERVAL="$REGTEST_INTERVAL"
 SEED="${REGTEST_SEED:-1}"
 OUTPUT_DIR=""
@@ -61,6 +62,7 @@ Options:
   --scene-index N  Scene index for story-scene boot and result metadata
   --status NAME    Scene status label for result metadata
   --frames N       Number of emulated frames (default: 1800 = 30s)
+  --start-frame N  First emulated frame to include in capture output (default: 0)
   --interval N     Capture a frame every N frames (default: 60 = 1/sec)
   --seed N         Force deterministic RNG seed for the PS1 run (default: REGTEST_SEED or 1)
   --output DIR     Output directory for results (default: auto-generated)
@@ -80,6 +82,7 @@ while [ $# -gt 0 ]; do
         --scene-index) SCENE_INDEX="$2"; shift 2 ;;
         --status)    SCENE_STATUS="$2"; shift 2 ;;
         --frames)    FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; shift 2 ;;
         --interval)  INTERVAL="$2"; shift 2 ;;
         --seed)      SEED="$2"; shift 2 ;;
         --output)    OUTPUT_DIR="$2"; shift 2 ;;
@@ -173,6 +176,19 @@ if [ "$SKIP_BUILD" -eq 1 ]; then
         echo "       Re-run without --skip-build so the executable/CD image are rebuilt." >&2
         exit 1
     fi
+fi
+
+if ! [[ "$START_FRAME" =~ ^[0-9]+$ ]]; then
+    echo "ERROR: --start-frame must be an integer >= 0" >&2
+    exit 1
+fi
+if [ "$START_FRAME" -lt 0 ]; then
+    echo "ERROR: --start-frame must be >= 0" >&2
+    exit 1
+fi
+if [ "$FRAMES" -lt "$START_FRAME" ]; then
+    echo "ERROR: --frames must be >= --start-frame" >&2
+    exit 1
 fi
 
 # Output directory
@@ -355,6 +371,25 @@ if [ -d "$FRAMES_DIR" ]; then
     while IFS= read -r -d '' f; do
         FRAME_FILES+=("$f")
     done < <(find "$FRAMES_DIR" -type f -name "*.png" -print0 2>/dev/null | sort -z)
+    if [ "$START_FRAME" -gt 0 ] && [ "${#FRAME_FILES[@]}" -gt 0 ]; then
+        FILTERED_FRAME_FILES=()
+        FILTERED_FRAMES_DIR="$OUTPUT_DIR/filtered-frames"
+        rm -rf "$FILTERED_FRAMES_DIR"
+        mkdir -p "$FILTERED_FRAMES_DIR"
+        for f in "${FRAME_FILES[@]}"; do
+            frame_name="$(basename "$f")"
+            frame_no="${frame_name#frame_}"
+            frame_no="${frame_no%.png}"
+            if [[ "$frame_no" =~ ^[0-9]+$ ]] && [ "$frame_no" -lt "$START_FRAME" ]; then
+                continue
+            fi
+            filtered_path="$FILTERED_FRAMES_DIR/$frame_name"
+            cp "$f" "$filtered_path"
+            FILTERED_FRAME_FILES+=("$filtered_path")
+        done
+        FRAME_FILES=("${FILTERED_FRAME_FILES[@]}")
+        FRAMES_DIR="$FILTERED_FRAMES_DIR"
+    fi
     FRAME_COUNT=${#FRAME_FILES[@]}
 fi
 
@@ -500,6 +535,7 @@ result = {
     },
     'config': {
         'frames': $FRAMES,
+        'start_frame': $START_FRAME,
         'interval': $INTERVAL,
         'timeout': $REGTEST_TIMEOUT,
     },

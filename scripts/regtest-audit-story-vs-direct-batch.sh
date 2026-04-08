@@ -15,6 +15,7 @@ cd "$PROJECT_ROOT"
 
 SEED=1
 FRAMES=4200
+START_FRAME=""
 INTERVAL=120
 SKIP_BUILD=0
 OUTPUT_ROOT="$PROJECT_ROOT/regtest-results"
@@ -29,6 +30,7 @@ Options:
   --scene SPEC     Scene spec, e.g. "BUILDING 1" (repeatable)
   --seed N         Force BOOTMODE RNG seed (default: 1)
   --frames N       Frames per run (default: 4200)
+  --start-frame N  First PS1 frame to keep for every scene (default: reviewed per-scene start)
   --interval N     Capture interval (default: 120)
   --output DIR     Output root (default: regtest-results/)
   --summary FILE   Optional JSON summary output path
@@ -43,6 +45,7 @@ while [ $# -gt 0 ]; do
         --scene)    SCENES+=("$2"); shift 2 ;;
         --seed)     SEED="$2"; shift 2 ;;
         --frames)   FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --output)   OUTPUT_ROOT="$2"; shift 2 ;;
         --summary)  SUMMARY_FILE="$2"; shift 2 ;;
@@ -70,6 +73,7 @@ for scene in "${SCENES[@]}"; do
         --scene "$scene"
         --seed "$SEED"
         --frames "$FRAMES"
+        --start-frame "$START_FRAME"
         --interval "$INTERVAL"
         --output "$OUTPUT_ROOT"
     )

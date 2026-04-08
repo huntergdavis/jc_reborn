@@ -24,6 +24,9 @@ cd "$PROJECT_ROOT"
 SCENE_SPEC=""
 SCENE_INDEX=""
 FRAMES=4200
+START_FRAME=""
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${REGTEST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-1200}"
 INTERVAL=120
 OUTPUT_ROOT="$PROJECT_ROOT/regtest-results"
 SKIP_BUILD=0
@@ -37,6 +40,7 @@ Options:
   --scene SPEC       Scene spec, e.g. "BUILDING 1"
   --scene-index N    Force story scene index (otherwise derived from regtest-scenes.txt)
   --frames N         Frames per run (default: 4200)
+  --start-frame N    First PS1 frame to keep (default: reviewed per-scene start)
   --interval N       Capture interval (default: 120)
   --seed N           Force BOOTMODE RNG seed for both runs
   --output DIR       Output root (default: regtest-results/)
@@ -51,6 +55,7 @@ while [ $# -gt 0 ]; do
         --scene)       SCENE_SPEC="$2"; shift 2 ;;
         --scene-index) SCENE_INDEX="$2"; shift 2 ;;
         --frames)      FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval)    INTERVAL="$2"; shift 2 ;;
         --seed)        SEED="$2"; shift 2 ;;
         --output)      OUTPUT_ROOT="$2"; shift 2 ;;
@@ -97,10 +102,20 @@ fi
 LABEL_BASE="${ADS_NAME,,}-${TAG}"
 HOLD_DIR="$OUTPUT_ROOT/${LABEL_BASE}-storyhold-audit"
 DIRECT_DIR="$OUTPUT_ROOT/${LABEL_BASE}-storydirect-audit"
+if [ -z "$START_FRAME" ]; then
+    START_FRAME="$(python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$SCENE_SPEC")"
+fi
+if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$FRAMES" -lt "$min_frames" ]; then
+        FRAMES="$min_frames"
+    fi
+fi
 
 COMMON_ARGS=(
     --scene "$SCENE_SPEC"
     --frames "$FRAMES"
+    --start-frame "$START_FRAME"
     --interval "$INTERVAL"
 )
 if [ "$SKIP_BUILD" -eq 1 ]; then

@@ -16,6 +16,9 @@ cd "$PROJECT_ROOT"
 
 SCENE=""
 FRAMES=1200
+START_FRAME=""
+START_FRAME_EXPLICIT=0
+MIN_TAIL_FRAMES="${REGTEST_SCENE_CAPTURE_MIN_TAIL_FRAMES:-1200}"
 INTERVAL=60
 SEED=1
 OUTPUT_ROOT="$PROJECT_ROOT/cert-results/direct-scene"
@@ -50,6 +53,7 @@ Usage: certify-direct-scene.sh --scene "ADS TAG" [OPTIONS]
 Options:
   --scene "ADS TAG"  Scene label, e.g. "BUILDING 1"
   --frames N         Frame count (default: 1200)
+  --start-frame N    First PS1 frame to keep (default: reviewed per-scene start)
   --interval N       Capture interval (default: 60)
   --seed N           Forced deterministic seed (default: 1)
   --island-x N       Force island X position on both host and PS1
@@ -73,6 +77,7 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --scene) SCENE="$2"; shift 2 ;;
         --frames) FRAMES="$2"; shift 2 ;;
+        --start-frame) START_FRAME="$2"; START_FRAME_EXPLICIT=1; shift 2 ;;
         --interval) INTERVAL="$2"; shift 2 ;;
         --seed) SEED="$2"; shift 2 ;;
         --island-x) ISLAND_X="$2"; shift 2 ;;
@@ -142,6 +147,16 @@ raise SystemExit(1)
 PY
 )"
 
+if [ -z "$START_FRAME" ]; then
+    START_FRAME="$(python3 "$PROJECT_ROOT/scripts/get-scene-capture-start.py" --scene "$SCENE")"
+fi
+if [ "$START_FRAME_EXPLICIT" -eq 0 ]; then
+    min_frames=$((START_FRAME + MIN_TAIL_FRAMES))
+    if [ "$FRAMES" -lt "$min_frames" ]; then
+        FRAMES="$min_frames"
+    fi
+fi
+
 if [ -n "$HOST_SEQUENCE" ]; then
     HOST_SEQUENCE_PATH="$HOST_SEQUENCE"
 else
@@ -174,6 +189,7 @@ if ! "$PROJECT_ROOT/scripts/regtest-scene.sh" \
         --scene-index "$SCENE_INDEX" \
         --boot "story direct $SCENE_INDEX seed $SEED${ISLAND_X:+ island-pos $ISLAND_X $ISLAND_Y}${LOWTIDE:+ lowtide $LOWTIDE}" \
         --frames "$FRAMES" \
+        --start-frame "$START_FRAME" \
         --interval "$INTERVAL" \
         --output "$PS1_DIR" \
         --quiet \

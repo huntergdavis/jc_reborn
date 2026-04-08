@@ -18,6 +18,9 @@ scene validation without a display server.
 # Test a specific scene with more frames
 ./scripts/regtest-scene.sh --scene "BUILDING 1" --frames 9000 --interval 120
 
+# Raw headless run with a late capture window
+./scripts/run-regtest.sh --frames 3600 --start-frame 2400 --dumpinterval 60 --dumpdir /tmp/regtest-out
+
 # View the result
 ls regtest-results/building-1/frames/
 ```
@@ -112,7 +115,8 @@ binary-library/
 1. Find a scene that's broken: `./scripts/regtest-scene.sh --scene "FISHING 1"`
 2. Pick a known-good build from `index.csv` (check the date/message)
 3. Test it: `./scripts/run-regtest.sh --cue binary-library/NNN_.../jcreborn.cue`
-4. Binary search between good and bad to find the breaking commit
+4. Prefer `--start-frame` or scene-window-aware tools so you compare the real scene window, not title/ocean prefix frames
+5. Binary search between good and bad to find the breaking commit
 5. Read the breaking commit's diff to understand the root cause
 
 ## Known Issues

@@ -129,13 +129,14 @@ than a hand-maintained list.
 ### Single Test Run
 
 ```bash
-# Defaults: 1800 frames (30s), capture every 60 frames (1/sec)
-./scripts/run-regtest.sh
+# Late-window capture: keep only frames at/after the useful scene window
+./scripts/run-regtest.sh --frames 3600 --start-frame 2400 --dumpinterval 60
 
 # Custom settings
 ./scripts/run-regtest.sh \
   --cue build-ps1/jcreborn.cue \
   --frames 3600 \
+  --start-frame 2400 \
   --dumpinterval 30 \
   --bios ~/ps1-bios/
 ```
@@ -145,6 +146,7 @@ than a hand-maintained list.
 | Option              | Default               | Description                                   |
 |---------------------|-----------------------|-----------------------------------------------|
 | `--frames N`        | 1800                  | Total frames to execute (60fps)               |
+| `--start-frame N`   | 0                     | Keep only dumped frames at/after frame N      |
 | `--dumpinterval N`  | 60                    | Capture a frame every N frames                |
 | `--dumpdir DIR`     | `regtest-results/`    | Output root directory                         |
 | `--cue FILE`        | auto-detect           | Path to `.cue` file                           |
@@ -171,7 +173,7 @@ REGTEST_PARALLEL=4
 
 ### Frame PNGs
 
-Captured frames are saved as `frame_NNNNN.png` where `NNNNN` is the frame number. With default settings (1800 frames, interval 60), you get 30 PNGs showing one frame per second of gameplay.
+Captured frames are saved as `frame_NNNNN.png` where `NNNNN` is the frame number. When `--start-frame` is used, `run-regtest.sh` also materializes `filtered-frames/` so review tooling can skip title/ocean prefixes and look only at the useful scene window.
 
 ### PS1 Printf/TTY Output
 

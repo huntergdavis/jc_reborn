@@ -15,7 +15,7 @@ To rebuild from scratch (one-time, ~15-20 min):
 
 ## Running a Test
 
-Minimal example — run 1800 frames (30 sec) with frame capture every 60 frames:
+Minimal example — run a late-window capture and keep only frames at or after the reviewed scene start:
 ```bash
 docker run --rm \
   -v "$PWD":/game:ro \
@@ -23,13 +23,13 @@ docker run --rm \
   -v /tmp/regtest-out:/output \
   --entrypoint duckstation-regtest \
   jc-reborn-regtest:latest \
-  -renderer Software -console -frames 1800 -dumpdir /output -dumpinterval 60 \
+  -renderer Software -console -frames 3600 -dumpdir /output -dumpinterval 60 \
   -- /game/jcreborn.cue
 ```
 
 Or use the wrapper script:
 ```bash
-./scripts/run-regtest.sh --frames 1800 --dumpinterval 60 --dumpdir /tmp/regtest-out
+./scripts/run-regtest.sh --frames 3600 --start-frame 2400 --dumpinterval 60 --dumpdir /tmp/regtest-out
 ```
 
 ## What It Captures
@@ -78,7 +78,7 @@ docker run --rm --platform linux/amd64 \
 | Script | Purpose |
 |--------|---------|
 | `scripts/run-regtest.sh` | Run single test via Docker with full option set |
-| `scripts/regtest-scene.sh` | Test one scene: rebuilds CD with boot override, runs regtest, decodes telemetry, outputs JSON |
+| `scripts/regtest-scene.sh` | Test one scene: rebuilds CD with boot override, uses reviewed scene windows, decodes telemetry, outputs JSON |
 | `scripts/regtest-all-scenes.sh` | Parallel runner for multiple scenes (`--parallel 2`, `--verified-only`) |
 | `scripts/analyze-regtest.py` | Post-run analysis: frame inspection, telemetry decode, HTML report, regression detection |
 | `scripts/regtest-compare.sh` | Diff two test runs for before/after comparison |

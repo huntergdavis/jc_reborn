@@ -190,7 +190,7 @@ def collect_frame_paths(scene_dir: Path) -> list[Path]:
     if not source_dir.is_dir():
         return []
     frames = sorted(
-        [p for p in source_dir.iterdir() if p.suffix.lower() in {".bmp", ".png", ".jpg", ".jpeg"}],
+        [p for p in source_dir.glob("**/*") if p.is_file() and p.suffix.lower() in {".bmp", ".png", ".jpg", ".jpeg"}],
         key=vc.frame_number,
     )
     return frames

@@ -60,9 +60,9 @@ def resolve_frames_dir(path: Path) -> Path:
     path = path.resolve()
     if path.is_dir():
         frames = path / "frames"
-        if frames.is_dir():
+        if frames.is_dir() and any(p.suffix.lower() in {".png", ".bmp", ".jpg", ".jpeg"} for p in frames.rglob("*") if p.is_file()):
             return frames
-        if any(p.suffix.lower() in {".png", ".bmp", ".jpg", ".jpeg"} for p in path.iterdir()):
+        if any(p.suffix.lower() in {".png", ".bmp", ".jpg", ".jpeg"} for p in path.rglob("*") if p.is_file()):
             return path
         result_json = path / "result.json"
         if result_json.is_file():
@@ -185,6 +185,8 @@ def run_pack(args: argparse.Namespace) -> int:
                 "scene_id": case.get("scene_id"),
                 "family": family,
                 "source_kind": source_kind,
+                "human_review_status": case.get("human_review_status"),
+                "human_review_notes": case.get("human_review_notes"),
                 "expected_label": expected,
                 "actual_label": actual,
                 "passed": ok,

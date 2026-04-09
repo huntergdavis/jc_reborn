@@ -254,7 +254,8 @@ def run_scene_fix(args: argparse.Namespace) -> int:
 
     reference_sel = vv.vc.evenly_sample(reference_frames, pair_count)
     query_sel = vv.vc.evenly_sample(query_frames, pair_count)
-    bank = vv.load_bank(args.bank_dir)
+    resolved_bank_dir = vv.resolve_reference_bank(args.bank_dir)
+    bank = vv.load_bank(resolved_bank_dir)
 
     _, openvino_genai = vv._require_openvino()
     pipe = openvino_genai.VLMPipeline(str(model_dir), args.device)
@@ -315,7 +316,7 @@ def run_scene_fix(args: argparse.Namespace) -> int:
         "result": str(args.result.resolve()),
         "reference_frames_dir": str(reference_frames_dir),
         "query_frames_dir": str(query_frames_dir),
-        "bank_dir": str(args.bank_dir.resolve()) if args.bank_dir else None,
+        "bank_dir": str(resolved_bank_dir.resolve()) if resolved_bank_dir else None,
         "pair_count": pair_count,
         "verdict": verdict,
         "label_counts": dict(label_counts),
@@ -345,7 +346,7 @@ def parse_args() -> argparse.Namespace:
     scene_fix.add_argument("--reference", type=Path, required=True)
     scene_fix.add_argument("--result", type=Path, required=True)
     scene_fix.add_argument("--out-json", type=Path, required=True)
-    scene_fix.add_argument("--bank-dir", type=Path, default=root / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-bank")
+    scene_fix.add_argument("--bank-dir", type=Path)
     scene_fix.add_argument("--scene-id", type=str)
     scene_fix.add_argument("--samples", type=int, default=3)
     scene_fix.add_argument("--topk", type=int, default=3)

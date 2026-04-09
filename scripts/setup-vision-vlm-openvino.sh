@@ -21,6 +21,5 @@ Next steps:
     --model-dir "$ROOT/models/Qwen2.5-VL-3B-Instruct-ov-int4" \\
     --image "$ROOT/regtest-references/FISHING-1/frames/frame_00004.bmp" \\
     --out-json "$ROOT/vision-artifacts/vlm-smoke/analysis.json" \\
-    --bank-dir "$ROOT/vision-artifacts/vision-reference-pipeline-current/reference-bank" \\
     --scene-id FISHING-1
 EOF

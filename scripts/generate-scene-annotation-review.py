@@ -100,7 +100,6 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     annotations_name = annotations_path.name
     options_json = json.dumps(REVIEW_OPTIONS)
     pair_columns = "1fr 1fr" if paired else "1fr"
-    reference_display = "block" if paired else "none"
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -248,6 +247,11 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
           <div class="meta" id="progressMeta"></div>
         </div>
         <div class="pairgrid">
+          <figure id="referenceFigure" style="display: {'block' if paired else 'none'};">
+            <figcaption>Reference</figcaption>
+            <img id="referenceImage" alt="Reference frame">
+            <div class="path" id="referencePath"></div>
+          </figure>
           <figure>
             <figcaption>Query</figcaption>
             <div class="imagewrap">
@@ -459,6 +463,18 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
       qs('pairTitle').textContent = `${{manifest.scene_id}} · frame ${{currentIndex + 1}}`;
       qs('pairMeta').textContent = `${{frame.query_frame}}`;
       qs('progressMeta').textContent = `${{currentIndex + 1}} / ${{manifest.frames.length}}`;
+      const referenceFigure = qs('referenceFigure');
+      if (referenceFigure) {{
+        if (frame.reference_rel) {{
+          referenceFigure.style.display = 'block';
+          qs('referenceImage').src = frame.reference_rel;
+          qs('referencePath').textContent = frame.reference_image || '';
+        }} else {{
+          referenceFigure.style.display = 'none';
+          qs('referenceImage').removeAttribute('src');
+          qs('referencePath').textContent = '';
+        }}
+      }}
       qs('queryImage').src = frame.query_rel;
       qs('queryPath').textContent = frame.query_image;
       for (const box of qs('checkboxGrid').querySelectorAll('input[type=checkbox]')) {{

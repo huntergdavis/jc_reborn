@@ -21,6 +21,18 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
+def resolve_report_path(path_value: str | None, base_dir: Path) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path if path.exists() else None
+    candidate = (base_dir / path).resolve()
+    if candidate.exists():
+        return candidate
+    return None
+
+
 def normalize_label(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", value.lower())
 
@@ -85,7 +97,7 @@ def challenge_risk_status(challenges: dict) -> tuple[str, str]:
     return "normal", "metric-safe"
 
 
-def build_scene_index(manifest: dict) -> dict[str, dict]:
+def build_scene_index(manifest: dict, manifest_base_dir: Path) -> dict[str, dict]:
     index = {}
     for scene in manifest.get("scenes", []):
         scene_label = str(scene.get("scene_label") or "")
@@ -93,7 +105,7 @@ def build_scene_index(manifest: dict) -> dict[str, dict]:
         rows = scene.get("rows") or []
         frame_index = {}
         for row in rows:
-            image_path = row.get("image_path")
+            image_path = resolve_report_path(row.get("image_path"), manifest_base_dir)
             if image_path:
                 frame_index[int(row.get("frame_number"))] = Path(image_path)
         entry = {
@@ -410,11 +422,12 @@ def build_html(
     challenges: dict,
     temporal: dict,
     manifest: dict,
+    manifest_base_dir: Path,
     semantic_truth: dict,
     output_path: Path,
     title: str,
 ) -> str:
-    scene_index = build_scene_index(manifest)
+    scene_index = build_scene_index(manifest, manifest_base_dir)
     semantic_index = build_semantic_index(semantic_truth)
     challenge_risk_label, challenge_risk_class = challenge_risk_status(challenges)
     top_links = " ".join(
@@ -610,7 +623,17 @@ def main() -> int:
 
     args.out_html.parent.mkdir(parents=True, exist_ok=True)
     args.out_html.write_text(
-        build_html(summary, partials, challenges, temporal, manifest, semantic_truth, args.out_html, args.title),
+        build_html(
+            summary,
+            partials,
+            challenges,
+            temporal,
+            manifest,
+            args.manifest_json.parent,
+            semantic_truth,
+            args.out_html,
+            args.title,
+        ),
         encoding="utf-8",
     )
     return 0

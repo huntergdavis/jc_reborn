@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-PROJECT_ROOT="/home/hunter/workspace/jc_reborn"
+PROJECT_ROOT="$ROOT"
 REFDIR="$PROJECT_ROOT/regtest-references"
 OUTROOT_DEFAULT="$PROJECT_ROOT/vision-artifacts/vision-reference-pipeline-$(date +%Y%m%d-%H%M%S)"
 OUTROOT="${1:-$OUTROOT_DEFAULT}"

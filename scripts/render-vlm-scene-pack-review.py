@@ -45,7 +45,7 @@ def render_case(case: dict[str, Any], analysis: dict[str, Any], analysis_path: P
     expected = case["expected_label"]
     actual = case["actual_label"]
     missing = case.get("missing_characters", [])
-    analysis_link_path = (out_html.parent / case["analysis_json"]).resolve()
+    analysis_link_path = resolve_capture_path(case["analysis_json"], analysis_path.parent.parent)
     passed = bool(case.get("passed"))
     header_class = "pass" if passed else "fail"
     human_status = case.get("human_review_status") or "unreviewed"
@@ -110,11 +110,10 @@ def render_case(case: dict[str, Any], analysis: dict[str, Any], analysis_path: P
 """
 
 
-def build_html(title: str, summary: dict[str, Any], out_html: Path) -> str:
-    summary_path = out_html.parent / "validation-summary.json"
+def build_html(title: str, summary: dict[str, Any], summary_path: Path, out_html: Path) -> str:
     cards = []
     for case in summary.get("cases", []):
-        analysis_path = (out_html.parent / case["analysis_json"]).resolve()
+        analysis_path = resolve_capture_path(case["analysis_json"], summary_path.parent)
         analysis = load(analysis_path)
         cards.append(render_case(case, analysis, analysis_path, out_html))
 
@@ -230,7 +229,10 @@ def main() -> None:
 
     summary = load(args.summary_json.resolve())
     args.out_html.parent.mkdir(parents=True, exist_ok=True)
-    args.out_html.write_text(build_html(args.title, summary, args.out_html.resolve()), encoding="utf-8")
+    args.out_html.write_text(
+        build_html(args.title, summary, args.summary_json.resolve(), args.out_html.resolve()),
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":

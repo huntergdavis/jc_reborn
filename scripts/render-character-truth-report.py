@@ -16,6 +16,19 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
+def resolve_root_path(path_value: str | None, report_path: Path) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    for base in [report_path.parent, *report_path.parents]:
+        candidate = (base / path).resolve()
+        if candidate.exists():
+            return candidate
+    return (report_path.parent / path).resolve()
+
+
 def resolve_truth_frame_path(path_value: str | None, root: Path | None) -> Path | None:
     if not path_value:
         return None
@@ -51,11 +64,11 @@ def format_character_diff(item: dict) -> str:
     )
 
 
-def build_html(report: dict, output_path: Path, title: str) -> str:
+def build_html(report: dict, report_path: Path, output_path: Path, title: str) -> str:
     expected_root_value = report.get("expected_root")
     actual_root_value = report.get("actual_root")
-    expected_root = Path(expected_root_value) if expected_root_value else None
-    actual_root = Path(actual_root_value) if actual_root_value else None
+    expected_root = resolve_root_path(expected_root_value, report_path)
+    actual_root = resolve_root_path(actual_root_value, report_path)
     rows_html = []
     for row in report.get("rows", []):
         status = row.get("status", "unknown")
@@ -151,7 +164,7 @@ def main() -> int:
 
     report = json.loads(args.report_json.read_text(encoding="utf-8"))
     args.out_html.parent.mkdir(parents=True, exist_ok=True)
-    args.out_html.write_text(build_html(report, args.out_html, args.title), encoding="utf-8")
+    args.out_html.write_text(build_html(report, args.report_json, args.out_html, args.title), encoding="utf-8")
     return 0
 
 

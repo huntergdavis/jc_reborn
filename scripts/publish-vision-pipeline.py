@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
 import csv
@@ -16,10 +17,23 @@ def rel_to(root: Path, target: Path) -> str:
 
 
 def main() -> None:
-    project_root = Path("/home/hunter/workspace/jc_reborn")
-    bankdir = Path("/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329")
-    selfcheckdir = project_root / "vision-artifacts" / "vision-reference-selfcheck-20260329-v4"
-    outroot = project_root / "vision-artifacts" / "vision-reference-pipeline-current"
+    parser = argparse.ArgumentParser(description="Publish a portable vision pipeline bundle.")
+    parser.add_argument("--bankdir", type=Path, default=Path("/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329"))
+    parser.add_argument(
+        "--selfcheckdir",
+        type=Path,
+        default=Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4"),
+    )
+    parser.add_argument(
+        "--outroot",
+        type=Path,
+        default=Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current"),
+    )
+    args = parser.parse_args()
+
+    bankdir = args.bankdir.resolve()
+    selfcheckdir = args.selfcheckdir.resolve()
+    outroot = args.outroot.resolve()
 
     outroot.mkdir(parents=True, exist_ok=True)
 

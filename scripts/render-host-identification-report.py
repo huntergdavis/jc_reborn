@@ -427,6 +427,7 @@ def build_html(
     manifest: dict,
     manifest_base_dir: Path,
     semantic_truth: dict,
+    bundle_dir: Path,
     output_path: Path,
     title: str,
 ) -> str:
@@ -435,20 +436,20 @@ def build_html(
     challenge_risk_label, challenge_risk_class = challenge_risk_status(challenges)
     top_links = " ".join(
         [
-            '<a href="index.html">index.html</a>',
-            '<a href="capture-regression-review.html">capture-regression-review.html</a>',
-            '<a href="capture-regression-report.json">capture-regression-report.json</a>',
-            '<a href="verification-summary.json">verification-summary.json</a>',
-            '<a href="verification-summary.txt">verification-summary.txt</a>',
-            '<a href="frame-image-regression-report.json">frame-image-regression-report.json</a>',
-            '<a href="frame-meta-regression-report.json">frame-meta-regression-report.json</a>',
-            '<a href="semantic-regression-report.json">semantic-regression-report.json</a>',
-            '<a href="identification-selfcheck.json">identification-selfcheck.json</a>',
-            '<a href="identification-eval.json">identification-eval.json</a>',
-            '<a href="identification-partials.json">identification-partials.json</a>',
-            '<a href="identification-challenges.json">identification-challenges.json</a>',
-            '<a href="identification-temporal.json">identification-temporal.json</a>',
-            '<a href="semantic-truth.json">semantic-truth.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "index.html", output_path.parent))}">index.html</a>',
+            f'<a href="{esc(rel(bundle_dir / "capture-regression-review.html", output_path.parent))}">capture-regression-review.html</a>',
+            f'<a href="{esc(rel(bundle_dir / "capture-regression-report.json", output_path.parent))}">capture-regression-report.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "verification-summary.json", output_path.parent))}">verification-summary.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "verification-summary.txt", output_path.parent))}">verification-summary.txt</a>',
+            f'<a href="{esc(rel(bundle_dir / "frame-image-regression-report.json", output_path.parent))}">frame-image-regression-report.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "frame-meta-regression-report.json", output_path.parent))}">frame-meta-regression-report.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "semantic-regression-report.json", output_path.parent))}">semantic-regression-report.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "identification-selfcheck.json", output_path.parent))}">identification-selfcheck.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "identification-eval.json", output_path.parent))}">identification-eval.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "identification-partials.json", output_path.parent))}">identification-partials.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "identification-challenges.json", output_path.parent))}">identification-challenges.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "identification-temporal.json", output_path.parent))}">identification-temporal.json</a>',
+            f'<a href="{esc(rel(bundle_dir / "semantic-truth.json", output_path.parent))}">semantic-truth.json</a>',
         ]
     )
     return f"""<!doctype html>
@@ -634,6 +635,7 @@ def main() -> int:
             manifest,
             args.manifest_json.parent,
             semantic_truth,
+            args.selfcheck_json.parent,
             args.out_html,
             args.title,
         ),

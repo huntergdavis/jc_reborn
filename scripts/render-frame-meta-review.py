@@ -251,7 +251,7 @@ def main() -> int:
     parser.add_argument("--image-height", type=int, default=480)
     args = parser.parse_args()
 
-    meta_paths = sorted(args.meta_dir.glob("frame_*.json"))
+    meta_paths = sorted(args.meta_dir.glob("**/frame_*.json"))
     rows = load_rows(meta_paths, args.image_width, args.image_height)
     args.out_html.parent.mkdir(parents=True, exist_ok=True)
     args.out_html.write_text(build_html(rows, args.title, args.out_html), encoding="utf-8")

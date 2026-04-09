@@ -16,25 +16,47 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
+def resolve_report_path(path_value: str | None, root_value: str | None) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path if path.exists() else None
+    if not root_value:
+        return None
+    candidate = (Path(root_value) / path).resolve()
+    if candidate.exists():
+        return candidate
+    return None
+
+
 def build_frame_link(row: dict, which: str, output_path: Path) -> str:
     entry = row.get(which) or {}
     image_path = entry.get("image_path")
     frame_name = entry.get("frame_name") or "missing"
     if not image_path:
         return esc(frame_name)
-    path = Path(image_path)
-    if not path.exists():
+    root_value = row.get(f"{which}_root")
+    path = resolve_report_path(image_path, root_value)
+    if path is None:
         return esc(frame_name)
     return f'<a href="{esc(rel(path, output_path.parent))}">{esc(frame_name)}</a>'
 
 
 def build_html(report: dict, output_path: Path, title: str) -> str:
     rows_html = []
+    base_root = report.get("base_root")
+    other_root = report.get("other_root")
     for row in report.get("rows", []):
         status = row.get("status", "ok")
         row_class = "mismatch" if status == "mismatch" else "ok"
         base = row.get("base") or {}
         other = row.get("other") or {}
+        row = {
+            **row,
+            "base_root": base_root,
+            "other_root": other_root,
+        }
         rows_html.append(
             f"""
 <tr class="{esc(row_class)}">

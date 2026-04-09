@@ -52,7 +52,13 @@ def compare(base: dict, other: dict) -> dict:
             }
         )
     mismatches = [row for row in rows if row["status"] == "mismatch"]
-    return {"rows": rows, "mismatch_count": len(mismatches), "mismatches": mismatches}
+    return {
+        "base_root": base.get("root"),
+        "other_root": other.get("root"),
+        "rows": rows,
+        "mismatch_count": len(mismatches),
+        "mismatches": mismatches,
+    }
 
 
 def main() -> int:

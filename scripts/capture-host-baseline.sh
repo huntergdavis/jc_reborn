@@ -115,9 +115,9 @@ for raw in scene_list.read_text(encoding="utf-8").splitlines():
         "boot_mode": " ".join(boot_tokens),
         "capture_mode": "engine-truth scene-end",
         "slug": slug,
-        "output_dir": str((output_root / slug).resolve()),
-        "review_html": str((output_root / slug / "review.html").resolve()),
-        "result_json": str((output_root / slug / "result.json").resolve()),
+        "output_dir": slug,
+        "review_html": f"{slug}/review.html",
+        "result_json": f"{slug}/result.json",
     })
     if limit is not None and len(rows) >= limit:
         break

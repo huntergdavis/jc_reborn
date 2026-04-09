@@ -23,6 +23,12 @@ def missing_keys(mapping: object, required_keys: tuple[str, ...]) -> list[str]:
     return [key for key in required_keys if key not in mapping]
 
 
+def read_json_or_default(path: Path, default: object) -> object:
+    if not path.exists():
+        return default
+    return json.loads(path.read_text())
+
+
 def main() -> None:
     project_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Validate a published vision pipeline bundle.")
@@ -50,10 +56,17 @@ def main() -> None:
     def add_check(name: str, ok: bool, detail: str) -> None:
         checks.append({"name": name, "ok": ok, "detail": detail})
 
-    bank_index = json.loads((bankdir / "index.json").read_text())
-    selfcheck_index = json.loads((selfcheckdir / "index.json").read_text())
+    bank_index_path = bankdir / "index.json"
+    selfcheck_index_path = selfcheckdir / "index.json"
     inventory_path = root / "scene-inventory.json"
-    inventory = json.loads(inventory_path.read_text())
+
+    add_check("bank_index_json_exists", bank_index_path.exists(), str(bank_index_path))
+    add_check("selfcheck_index_json_exists", selfcheck_index_path.exists(), str(selfcheck_index_path))
+    add_check("scene_inventory_json_exists", inventory_path.exists(), str(inventory_path))
+
+    bank_index = read_json_or_default(bank_index_path, {"scenes": [], "frame_count": 0})
+    selfcheck_index = read_json_or_default(selfcheck_index_path, {"scene_count": 0, "scenes": []})
+    inventory = read_json_or_default(inventory_path, {"scene_count": 0, "scenes": []})
     catalog_path = root / "artifact-catalog.json"
     catalog = json.loads(catalog_path.read_text()) if catalog_path.exists() else None
     strongest_scenes_path = root / "strongest-scenes.json"

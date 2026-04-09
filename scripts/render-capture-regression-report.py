@@ -47,17 +47,20 @@ def render_html(payload: dict) -> str:
         text = "" if label in (None, "") else str(label)
         return text if label_key == "scene" else text.lower().replace(" ", "")
 
-    def asset_root(scene_slug: str, failure: dict) -> str:
-        frame_path = failure.get("frame_path")
-        if frame_path:
-            try:
-                return str(Path(frame_path).parent)
-            except TypeError:
-                pass
+    def meta_root(scene_slug: str, failure: dict) -> str:
         meta_path = failure.get("meta_path")
         if meta_path:
             try:
                 return str(Path(meta_path).parent)
+            except TypeError:
+                pass
+        frame_path = failure.get("frame_path")
+        if frame_path:
+            try:
+                parent = Path(frame_path).parent
+                if parent.name == "frames":
+                    return str(parent.parent / "frame-meta")
+                return str(parent)
             except TypeError:
                 pass
         return f"{scene_slug}/frame-meta"
@@ -105,7 +108,7 @@ def render_html(payload: dict) -> str:
                 )
                 frame_name = first_failure.get("frame")
                 if frame_name:
-                    root_dir = asset_root(scene_slug, first_failure)
+                    root_dir = meta_root(scene_slug, first_failure)
                     links = []
                     frame_href = first_failure.get("frame_path") or f"{scene_slug}/frames/{frame_name}.bmp"
                     links.append(f'<a href="{html.escape(frame_href)}">frame</a>')
@@ -146,7 +149,7 @@ def render_html(payload: dict) -> str:
         frame_name = tightest.get("frame") or ""
         drift_links = ""
         if frame_name and scene_slug:
-            root_dir = asset_root(scene_slug, tightest)
+            root_dir = meta_root(scene_slug, tightest)
             frame_href = tightest.get("frame_path") or f"{scene_slug}/frames/{frame_name}.bmp"
             meta_href = tightest.get("meta_path") or f"{root_dir}/{frame_name}.json"
             drift_links = (

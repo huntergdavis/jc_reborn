@@ -39,7 +39,7 @@ def main() -> None:
         if path.exists():
             rows.append(
                 {
-                    "path": str(path),
+                    "path": path.relative_to(root).as_posix(),
                     "sha256": sha256_file(path),
                     "size": path.stat().st_size,
                 }

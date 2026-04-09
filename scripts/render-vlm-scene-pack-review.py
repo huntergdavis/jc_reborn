@@ -36,7 +36,13 @@ def pill_class(label: str) -> str:
     return "neutral"
 
 
-def render_case(case: dict[str, Any], analysis: dict[str, Any], analysis_path: Path, out_html: Path) -> str:
+def render_case(
+    case: dict[str, Any],
+    analysis: dict[str, Any],
+    analysis_path: Path,
+    summary_path: Path,
+    out_html: Path,
+) -> str:
     meta = analysis.get("_meta", {})
     reference_image = resolve_capture_path(meta["reference_image"], analysis_path.parent)
     query_image = resolve_capture_path(meta["query_image"], analysis_path.parent)
@@ -45,7 +51,7 @@ def render_case(case: dict[str, Any], analysis: dict[str, Any], analysis_path: P
     expected = case["expected_label"]
     actual = case["actual_label"]
     missing = case.get("missing_characters", [])
-    analysis_link_path = resolve_capture_path(case["analysis_json"], analysis_path.parent.parent)
+    analysis_link_path = resolve_capture_path(case["analysis_json"], summary_path.parent)
     passed = bool(case.get("passed"))
     header_class = "pass" if passed else "fail"
     human_status = case.get("human_review_status") or "unreviewed"
@@ -115,7 +121,7 @@ def build_html(title: str, summary: dict[str, Any], summary_path: Path, out_html
     for case in summary.get("cases", []):
         analysis_path = resolve_capture_path(case["analysis_json"], summary_path.parent)
         analysis = load(analysis_path)
-        cards.append(render_case(case, analysis, analysis_path, out_html))
+        cards.append(render_case(case, analysis, analysis_path, summary_path, out_html))
 
     family_rows = []
     for family, stats in summary.get("family_stats", {}).items():

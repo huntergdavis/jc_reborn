@@ -16,12 +16,16 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
-def resolve_report_path(path_value: str | None, report_path: Path) -> Path | None:
+def resolve_report_path(path_value: str | None, report_path: Path, root_value: str | None = None) -> Path | None:
     if not path_value:
         return None
     path = Path(path_value)
     if path.is_absolute():
         return path if path.exists() else None
+    if root_value:
+        candidate = (Path(root_value) / path).resolve()
+        if candidate.exists():
+            return candidate
     candidate = (report_path.parent / path).resolve()
     if candidate.exists():
         return candidate
@@ -31,10 +35,11 @@ def resolve_report_path(path_value: str | None, report_path: Path) -> Path | Non
 def build_html(report: dict, report_path: Path, output_path: Path, title: str) -> str:
     rows_html = []
     report_root = report_path.parent
+    manifest_root = report.get("manifest_root")
     for row in report.get("rows", []):
         status = row["status"]
         row_class = "mismatch" if status == "mismatch" else "ok"
-        image_path = resolve_report_path(row.get("image_path"), report_path)
+        image_path = resolve_report_path(row.get("image_path"), report_path, manifest_root)
         if image_path is None:
             image_path = report_root / "host-script-review" / row["scene_label"].lower().replace(" ", "") / row["frame_name"]
             if not image_path.exists():

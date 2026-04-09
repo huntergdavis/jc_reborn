@@ -77,6 +77,7 @@ def compare(manifest: dict, expectations: dict[str, dict]) -> dict:
             )
     mismatches = [row for row in rows if row["status"] == "mismatch"]
     return {
+        "manifest_root": manifest.get("root"),
         "rows": rows,
         "mismatch_count": len(mismatches),
         "mismatches": mismatches,

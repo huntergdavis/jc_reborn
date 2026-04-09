@@ -707,6 +707,8 @@ def main() -> int:
     parser.add_argument("--title", type=str, default="PS1 Scene Annotation Review")
     parser.add_argument("--prefer-scene-content", action="store_true", default=True)
     parser.add_argument("--all-frames", action="store_true")
+    parser.add_argument("--all-query-frames", action="store_true", help="Keep every query frame while still sampling reference frames normally")
+    parser.add_argument("--all-reference-frames", action="store_true", help="Keep every reference frame instead of sampling scene-content frames")
     parser.add_argument("--paired", action="store_true", help="Review reference/query pairs instead of single query frames")
     args = parser.parse_args()
 
@@ -716,14 +718,17 @@ def main() -> int:
     reference_frames_dir = resolve_frames_dir(args.reference)
     query_frames_dir = resolve_frames_dir(args.result)
 
-    if args.all_frames:
+    if args.all_frames or args.all_reference_frames:
         reference_frames = vv.collect_frame_paths(reference_frames_dir)
-        query_frames = vv.collect_frame_paths(query_frames_dir)
     else:
         reference_frames = sample_scene_frames(reference_frames_dir, prefer_scene_content=True, skip_front_fraction=0.2)
-        query_frames = sample_scene_frames(query_frames_dir, prefer_scene_content=True)
         if not reference_frames:
             reference_frames = vv.collect_frame_paths(reference_frames_dir)
+
+    if args.all_frames or args.all_query_frames:
+        query_frames = vv.collect_frame_paths(query_frames_dir)
+    else:
+        query_frames = sample_scene_frames(query_frames_dir, prefer_scene_content=True)
         if not query_frames:
             query_frames = vv.collect_frame_paths(query_frames_dir)
 

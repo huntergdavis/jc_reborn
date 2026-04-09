@@ -72,7 +72,7 @@ def load_optional_json(path_value: str | None):
         return None
 
 
-def render_vlm_summary(vlm_data: dict | None, output_path: Path) -> str:
+def render_vlm_summary(vlm_data: dict | None, output_path: Path, compare_path: Path) -> str:
     if not vlm_data:
         return ""
 
@@ -86,7 +86,9 @@ def render_vlm_summary(vlm_data: dict | None, output_path: Path) -> str:
         analysis_json = pair.get("analysis_json")
         analysis_href = ""
         if analysis_json:
-            analysis_href = html.escape(__import__("os").path.relpath((output_path.parent / analysis_json).resolve(), output_path.parent))
+            analysis_href = html.escape(
+                __import__("os").path.relpath(resolve_capture_path(analysis_json, compare_path.parent), output_path.parent)
+            )
         pair_rows.append(
             f"""
 <tr>
@@ -218,8 +220,8 @@ def main() -> int:
 
     cards = []
     for idx, frame in enumerate(frames, start=1):
-        result_frame = Path(frame["result_frame"]).resolve()
-        ref_frame = Path(frame["reference_frame"]).resolve()
+        result_frame = resolve_capture_path(frame["result_frame"], compare_path.parent)
+        ref_frame = resolve_capture_path(frame["reference_frame"], compare_path.parent)
         diff = frame.get("palette_index_diff_pixels")
         status = frame.get("status", "unknown")
         diff_class = "good" if diff == 0 else "bad"
@@ -364,7 +366,7 @@ def main() -> int:
       </div>
     </div>
 
-    {render_vlm_summary(vlm_data, output_path)}
+    {render_vlm_summary(vlm_data, output_path, compare_path)}
 
     {cards_html}
 

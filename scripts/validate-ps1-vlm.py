@@ -65,10 +65,12 @@ def load_scene_capture_windows() -> dict[str, Any]:
 
 
 def reviewed_scene_start(scene_id: str | None, capture_windows: dict[str, Any]) -> int:
-    default_start = int(capture_windows.get("default", {}).get("start_frame", 0) or 0)
+    default_cfg = capture_windows.get("default", {})
+    default_start = int(default_cfg.get("review_start_frame", default_cfg.get("start_frame", 0)) or 0)
     if not scene_id:
         return default_start
-    return int(capture_windows.get("scenes", {}).get(scene_id, {}).get("start_frame", default_start) or default_start)
+    scene_cfg = capture_windows.get("scenes", {}).get(scene_id, {})
+    return int(scene_cfg.get("review_start_frame", scene_cfg.get("start_frame", default_start)) or default_start)
 
 
 def frame_number_from_image_path(image_path: str | Path) -> int | None:

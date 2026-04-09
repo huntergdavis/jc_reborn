@@ -49,44 +49,44 @@
       "scene_id": "FISHING-1",
       "family": "FISHING",
       "source_kind": "ps1_broken",
-      "reference_image": "regtest-references/FISHING-1/frames/frame_00015.bmp",
-      "query_image": "regtest-results/fishing-1-raw-3600-noscr-nojohn/20260406-141856/frames/jcreborn/frame_02400.png",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00016.bmp",
+      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03590.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted to a late-window FISHING-1 PS1 sample so the pack measures in-scene breakage instead of the earlier black/title-prefix failure."
+      "human_review_notes": "Retargeted to the dense reviewed FISHING-1 Johnny window from the fixed story-scene route. This should measure the current in-scene breakage instead of earlier coarse late-window samples."
     },
     {
       "case_id": "fishing1_broken_single17",
       "scene_id": "FISHING-1",
       "family": "FISHING",
       "source_kind": "ps1_broken",
-      "reference_image": "regtest-references/FISHING-1/frames/frame_00015.bmp",
-      "query_image": "regtest-results/fishing-1-raw-3600-noscrprime/20260406-135824/frames/jcreborn/frame_02520.png",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00031.bmp",
+      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03620.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted to a late-window FISHING-1 PS1 sample so the pack stays focused on scene-rendering defects after the reviewed start window."
+      "human_review_notes": "Retargeted to a second dense FISHING-1 Johnny-window sample so the pack stays focused on the current story-scene rendering defects."
     },
     {
       "case_id": "fishing1_ps1_scene",
       "scene_id": "FISHING-1",
       "family": "FISHING",
       "source_kind": "ps1_broken",
-      "reference_image": "regtest-references/FISHING-1/frames/frame_00015.bmp",
-      "query_image": "regtest-results/fishing-1-raw-3600-current/20260406-133715/frames/jcreborn/frame_02640.png",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00046.bmp",
+      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03650.png",
       "expected_label": "broken_scene_output",
-      "human_review_status": "confirmed",
-      "human_review_notes": "Manual review: Johnny is visible behind the tree with the fishing pole, but the PS1 query also has duplicate Johnny bodies behind him. Scene is present but not correct, so count it as broken."
+      "human_review_status": "needs_refresh",
+      "human_review_notes": "Retargeted from the older coarse current sample to the dense reviewed Johnny window on the fixed story-scene route. This remains the main broken-scene case to re-confirm for duplicate-Johnny / tearing behavior."
     },
     {
       "case_id": "fishing1_host_reference",
       "scene_id": "FISHING-1",
       "family": "FISHING",
       "source_kind": "host_correct",
-      "reference_image": "regtest-references/FISHING-1/frames/frame_00015.bmp",
-      "query_image": "regtest-references/FISHING-1/frames/frame_00020.bmp",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00016.bmp",
+      "query_image": "regtest-references/FISHING-1/frames/frame_00021.bmp",
       "expected_label": "correct_scene_content",
       "human_review_status": "confirmed",
-      "human_review_notes": "Manual review: one frame off but still close enough to count as the same scene. Neither frame clearly shows Johnny behind the tree."
+      "human_review_notes": "Manual review: paired late-window reference frames from the same fishing scene. This remains a correct reference-side control."
     }
   ]
 }

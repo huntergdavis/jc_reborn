@@ -92,6 +92,30 @@ def main() -> None:
         not missing_catalog_top_level,
         ", ".join(missing_catalog_top_level[:10]) or "all present",
     )
+    missing_catalog_bank = []
+    for name, path_value in (catalog or {}).get("reference_bank", {}).items():
+        if not isinstance(path_value, str):
+            continue
+        resolved = resolve_artifact_path(path_value, root)
+        if not resolved.exists():
+            missing_catalog_bank.append(name)
+    add_check(
+        "artifact_catalog_reference_bank_exists",
+        not missing_catalog_bank,
+        ", ".join(missing_catalog_bank[:10]) or "all present",
+    )
+    missing_catalog_selfcheck = []
+    for name, path_value in (catalog or {}).get("reference_selfcheck", {}).items():
+        if not isinstance(path_value, str):
+            continue
+        resolved = resolve_artifact_path(path_value, root)
+        if not resolved.exists():
+            missing_catalog_selfcheck.append(name)
+    add_check(
+        "artifact_catalog_reference_selfcheck_exists",
+        not missing_catalog_selfcheck,
+        ", ".join(missing_catalog_selfcheck[:10]) or "all present",
+    )
     missing_manifest_bank = []
     for name, path_value in manifest.get("reference_bank", {}).items():
         if not isinstance(path_value, str) or not path_value.endswith((".html", ".json", ".npy")):

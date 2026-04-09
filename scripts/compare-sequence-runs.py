@@ -55,6 +55,31 @@ def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
     return (base_dir / path).resolve()
 
 
+def infer_scene_spec(result: dict) -> str | None:
+    scene = result.get("scene", {}) or {}
+    spec = scene.get("spec")
+    if spec:
+        return str(spec)
+    ads_name = scene.get("ads_name")
+    tag = scene.get("tag")
+    if ads_name and tag not in (None, ""):
+        return f"{ads_name} {tag}"
+    return None
+
+
+def resolve_reviewed_start(scene_spec: str | None) -> int:
+    default_start = 1680
+    if not scene_spec:
+        return default_start
+    config_path = Path(__file__).resolve().parent.parent / "config" / "ps1" / "scene-capture-windows.json"
+    try:
+        payload = json.loads(config_path.read_text(encoding="utf-8"))
+    except Exception:
+        return default_start
+    scene_key = scene_spec.strip().replace(" ", "-").upper()
+    return int(payload.get("scenes", {}).get(scene_key, {}).get("start_frame", payload.get("default", {}).get("start_frame", default_start)))
+
+
 def load_capture(path: Path) -> tuple[Path, dict]:
     resolved = resolve_result(path)
     if resolved.is_dir():
@@ -311,7 +336,7 @@ def main() -> int:
                     help="Maximum palette-index diff allowed for a result frame to qualify as a scene-entry anchor")
     ap.add_argument("--entry-reference-window", type=int, default=30,
                     help="How many early non-title reference frames to consider when validating scene-entry anchors")
-    ap.add_argument("--min-result-scene-frame", type=int, default=0,
+    ap.add_argument("--min-result-scene-frame", type=int,
                     help="Minimum result frame number eligible to become a verified scene-entry anchor")
     ap.add_argument("--min-reference-scene-frame", type=int, default=0,
                     help="Minimum reference frame number eligible to become a scene-entry anchor")
@@ -324,6 +349,11 @@ def main() -> int:
     visual_detect = load_visual_detect()
     result_path, result = load_capture(Path(args.result).resolve())
     reference_path, reference = load_capture(Path(args.reference).resolve())
+    effective_min_result_scene_frame = (
+        args.min_result_scene_frame
+        if args.min_result_scene_frame is not None
+        else resolve_reviewed_start(infer_scene_spec(result))
+    )
 
     result_frames = load_frame_map(result, result_path)
     reference_frames = load_frame_map(reference, reference_path)
@@ -353,7 +383,7 @@ def main() -> int:
             reference_thumbnail_for_key,
             args.entry_max_diff,
             args.entry_reference_window,
-            args.min_result_scene_frame,
+            effective_min_result_scene_frame,
             args.min_reference_scene_frame,
             reference_anchor,
         )
@@ -368,7 +398,7 @@ def main() -> int:
                 "alignment_mode": "scene_entry",
                 "result_entry_frame": result_anchor,
                 "reference_entry_frame": reference_anchor,
-                "min_result_scene_frame": args.min_result_scene_frame,
+                "min_result_scene_frame": effective_min_result_scene_frame,
                 "min_reference_scene_frame": args.min_reference_scene_frame,
                 "error": "missing verified scene_entry anchor",
                 "result_frame_count": len(result_frames),
@@ -499,7 +529,7 @@ def main() -> int:
         "frame_offset": frame_offset,
         "result_entry_frame": result_anchor,
         "reference_entry_frame": reference_anchor,
-        "min_result_scene_frame": args.min_result_scene_frame,
+        "min_result_scene_frame": effective_min_result_scene_frame,
         "min_reference_scene_frame": args.min_reference_scene_frame,
         "reference_scene_start_frame": reference_scene_start,
         "reference_scene_end_frame": reference_scene_end,

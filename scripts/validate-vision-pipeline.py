@@ -56,6 +56,12 @@ def main() -> None:
     inventory = json.loads(inventory_path.read_text())
     catalog_path = root / "artifact-catalog.json"
     catalog = json.loads(catalog_path.read_text()) if catalog_path.exists() else None
+    strongest_scenes_path = root / "strongest-scenes.json"
+    weakest_scenes_path = root / "weakest-scenes.json"
+    top_confusion_pairs_path = root / "top-confusion-pairs.json"
+    strongest_scenes = json.loads(strongest_scenes_path.read_text()) if strongest_scenes_path.exists() else {}
+    weakest_scenes = json.loads(weakest_scenes_path.read_text()) if weakest_scenes_path.exists() else {}
+    top_confusion_pairs = json.loads(top_confusion_pairs_path.read_text()) if top_confusion_pairs_path.exists() else {}
 
     required_bank_scene_keys = ("scene_id", "family", "frame_count", "review_html")
     required_selfcheck_scene_keys = ("scene_id",)
@@ -144,6 +150,56 @@ def main() -> None:
             if catalog is None else
             f"catalog_only={sorted(catalog_scene_ids - inventory_scene_ids)[:5]}, "
             f"inventory_only={sorted(inventory_scene_ids - catalog_scene_ids)[:5]}"
+        ),
+    )
+    strongest_scene_ids = {
+        str(row.get("scene_id"))
+        for row in strongest_scenes.get("scenes", [])
+        if isinstance(row, dict) and row.get("scene_id") is not None
+    }
+    weakest_scene_ids = {
+        str(row.get("scene_id"))
+        for row in weakest_scenes.get("scenes", [])
+        if isinstance(row, dict) and row.get("scene_id") is not None
+    }
+    confusion_source_ids = {
+        str(row.get("source_scene"))
+        for row in top_confusion_pairs.get("pairs", [])
+        if isinstance(row, dict) and row.get("source_scene") is not None
+    }
+    confusion_target_ids = {
+        str(row.get("target_scene"))
+        for row in top_confusion_pairs.get("pairs", [])
+        if isinstance(row, dict) and row.get("target_scene") is not None
+    }
+    add_check(
+        "strongest_scenes_exist_in_inventory",
+        strongest_scenes_path.exists() and strongest_scene_ids <= inventory_scene_ids,
+        (
+            "strongest-scenes.json missing"
+            if not strongest_scenes_path.exists() else
+            f"unknown={sorted(strongest_scene_ids - inventory_scene_ids)[:10]}"
+        ),
+    )
+    add_check(
+        "weakest_scenes_exist_in_inventory",
+        weakest_scenes_path.exists() and weakest_scene_ids <= inventory_scene_ids,
+        (
+            "weakest-scenes.json missing"
+            if not weakest_scenes_path.exists() else
+            f"unknown={sorted(weakest_scene_ids - inventory_scene_ids)[:10]}"
+        ),
+    )
+    add_check(
+        "top_confusion_pairs_exist_in_inventory",
+        top_confusion_pairs_path.exists()
+        and confusion_source_ids <= inventory_scene_ids
+        and confusion_target_ids <= inventory_scene_ids,
+        (
+            "top-confusion-pairs.json missing"
+            if not top_confusion_pairs_path.exists() else
+            f"source_only={sorted(confusion_source_ids - inventory_scene_ids)[:10]}, "
+            f"target_only={sorted(confusion_target_ids - inventory_scene_ids)[:10]}"
         ),
     )
     missing_catalog_top_level = []

@@ -79,6 +79,8 @@ def main() -> None:
         "scene_id",
         "family",
         "frame_count",
+        "start_frame",
+        "capture_start_frame",
         "review_html",
         "vision_analysis_json",
     )
@@ -93,7 +95,15 @@ def main() -> None:
 
     required_bank_scene_keys = ("scene_id", "family", "frame_count", "review_html")
     required_selfcheck_scene_keys = ("scene_id",)
-    required_inventory_scene_keys = ("scene_id", "family", "frame_count", "review_html", "vision_analysis_json")
+    required_inventory_scene_keys = (
+        "scene_id",
+        "family",
+        "frame_count",
+        "start_frame",
+        "capture_start_frame",
+        "review_html",
+        "vision_analysis_json",
+    )
     required_catalog_scene_keys = ("scene_id", "family", "review_html", "vision_analysis_json")
     malformed_bank_scenes = []
     for row in bank_index.get("scenes", []):

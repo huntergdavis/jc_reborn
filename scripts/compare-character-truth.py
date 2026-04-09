@@ -22,7 +22,9 @@ build_truth = load_truth_builder()
 
 
 def load_truth(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload.setdefault("root", str(path.parent.resolve()))
+    return payload
 
 
 def scene_map(truth: dict) -> dict[str, dict]:

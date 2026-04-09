@@ -98,6 +98,10 @@ def main() -> None:
         "pipeline_manifest_json": "pipeline-manifest.json",
         "scene_inventory_json": manifest.get("inventory_json"),
         "scene_inventory_html": manifest.get("inventory_html"),
+        "scene_inventory_csv": "scene-inventory.csv",
+        "strongest_scenes_json": "strongest-scenes.json",
+        "weakest_scenes_json": "weakest-scenes.json",
+        "top_confusion_pairs_json": "top-confusion-pairs.json",
         "validation_report_json": "validation-report.json",
         "validation_report_html": "validation-report.html",
     }

@@ -26,6 +26,18 @@ def parse_raw_screen_type(raw_response: str) -> str:
     return str(payload.get("screen_type", "unknown"))
 
 
+def resolve_summary_path(path_value: str | None, summary_path: Path) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path if path.exists() else None
+    candidate = (summary_path.parent / path).resolve()
+    if candidate.exists():
+        return candidate
+    return None
+
+
 def load_rows(summary_path: Path) -> list[dict[str, Any]]:
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     outdir = summary_path.parent
@@ -35,7 +47,9 @@ def load_rows(summary_path: Path) -> list[dict[str, Any]]:
         analysis = json.loads(analysis_path.read_text(encoding="utf-8"))
         scene_id = item["scene_id"]
         frame = item["frame"]
-        image_path = Path("regtest-references") / scene_id / "frames" / frame
+        image_path = resolve_summary_path(item.get("relative_frame_path"), summary_path)
+        if image_path is None:
+            image_path = Path("regtest-references") / scene_id / "frames" / frame
         meta = analysis.get("_meta", {})
         heuristic = meta.get("heuristic_state", {})
         rows.append(

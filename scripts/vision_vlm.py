@@ -912,12 +912,13 @@ def classify_state_dir(
                 "analysis": state,
             }
         )
-    summary = {
+        summary = {
         "scene_id": scene_id or scene_dir.name,
         "frame_count": len(rows),
         "frames": [
             {
                 "frame": row["frame"],
+                "relative_frame_path": row["relative_frame_path"],
                 "screen_type": row["analysis"].get("screen_type"),
                 "sprites_visible": row["analysis"].get("sprites_visible"),
                 "confidence": row["analysis"].get("confidence"),

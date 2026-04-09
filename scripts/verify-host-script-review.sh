@@ -558,11 +558,22 @@ print(
 )
 
 key_frame_meta_paths = summary.get("key_frame_meta_paths", {})
+
+def resolve_key_frame_meta(scene_slug: str, frame_name: str) -> Path:
+    meta_root = root / scene_slug / "frame-meta"
+    direct = meta_root / f"{frame_name}.json"
+    if direct.is_file():
+        return direct.resolve()
+    matches = sorted(meta_root.glob(f"**/{frame_name}.json"))
+    if matches:
+        return matches[0].resolve()
+    return direct.resolve()
+
 required_key_frame_meta_paths = {
-    "fishing_start_json": root / "fishing1" / "frame-meta" / f"{fishing_start_name}.json",
-    "fishing_late_json": root / "fishing1" / "frame-meta" / f"{fishing_late_name}.json",
-    "mary_start_json": root / "mary1" / "frame-meta" / f"{mary_start_name}.json",
-    "mary_late_json": root / "mary1" / "frame-meta" / f"{mary_late_name}.json",
+    "fishing_start_json": resolve_key_frame_meta("fishing1", fishing_start_name),
+    "fishing_late_json": resolve_key_frame_meta("fishing1", fishing_late_name),
+    "mary_start_json": resolve_key_frame_meta("mary1", mary_start_name),
+    "mary_late_json": resolve_key_frame_meta("mary1", mary_late_name),
 }
 for key, expected_path in required_key_frame_meta_paths.items():
     actual = key_frame_meta_paths.get(key)

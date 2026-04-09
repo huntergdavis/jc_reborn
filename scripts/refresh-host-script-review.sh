@@ -1061,11 +1061,22 @@ mary_start = sys.argv[4]
 mary_late = sys.argv[5]
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
 key_frame_meta_paths = summary.get("key_frame_meta_paths", {})
+
+def resolve_key_frame_meta(scene_slug: str, frame_name: str) -> Path:
+    meta_root = root / scene_slug / "frame-meta"
+    direct = meta_root / f"{frame_name}.json"
+    if direct.is_file():
+        return direct.resolve()
+    matches = sorted(meta_root.glob(f"**/{frame_name}.json"))
+    if matches:
+        return matches[0].resolve()
+    return direct.resolve()
+
 required = {
-    "fishing_start_json": root / "fishing1" / "frame-meta" / f"{fishing_start}.json",
-    "fishing_late_json": root / "fishing1" / "frame-meta" / f"{fishing_late}.json",
-    "mary_start_json": root / "mary1" / "frame-meta" / f"{mary_start}.json",
-    "mary_late_json": root / "mary1" / "frame-meta" / f"{mary_late}.json",
+    "fishing_start_json": resolve_key_frame_meta("fishing1", fishing_start),
+    "fishing_late_json": resolve_key_frame_meta("fishing1", fishing_late),
+    "mary_start_json": resolve_key_frame_meta("mary1", mary_start),
+    "mary_late_json": resolve_key_frame_meta("mary1", mary_late),
 }
 for key, expected in required.items():
     actual = key_frame_meta_paths.get(key)
@@ -2498,11 +2509,22 @@ key_frame_paths = {
     "mary_start_bmp": str((root / "mary1" / "frames" / f"{mary_start_name}.bmp").resolve()),
     "mary_late_bmp": str((root / "mary1" / "frames" / f"{mary_late_name}.bmp").resolve()),
 }
+
+def resolve_key_frame_meta(scene_slug: str, frame_name: str) -> Path:
+    meta_root = root / scene_slug / "frame-meta"
+    direct = meta_root / f"{frame_name}.json"
+    if direct.is_file():
+        return direct.resolve()
+    matches = sorted(meta_root.glob(f"**/{frame_name}.json"))
+    if matches:
+        return matches[0].resolve()
+    return direct.resolve()
+
 key_frame_meta_paths = {
-    "fishing_start_json": str((root / "fishing1" / "frame-meta" / f"{fishing_start_name}.json").resolve()),
-    "fishing_late_json": str((root / "fishing1" / "frame-meta" / f"{fishing_late_name}.json").resolve()),
-    "mary_start_json": str((root / "mary1" / "frame-meta" / f"{mary_start_name}.json").resolve()),
-    "mary_late_json": str((root / "mary1" / "frame-meta" / f"{mary_late_name}.json").resolve()),
+    "fishing_start_json": str(resolve_key_frame_meta("fishing1", fishing_start_name)),
+    "fishing_late_json": str(resolve_key_frame_meta("fishing1", fishing_late_name)),
+    "mary_start_json": str(resolve_key_frame_meta("mary1", mary_start_name)),
+    "mary_late_json": str(resolve_key_frame_meta("mary1", mary_late_name)),
 }
 
 digest_inputs = {}

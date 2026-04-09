@@ -67,6 +67,7 @@ def compare(manifest: dict, expectations: dict[str, dict]) -> dict:
                     "scene_label": scene_label,
                     "frame_number": frame_no,
                     "frame_name": row["frame_name"],
+                    "image_path": row.get("image_path"),
                     "actual_entities": actual_entities,
                     "actual_bmps": actual_bmps,
                     "expected": expected,

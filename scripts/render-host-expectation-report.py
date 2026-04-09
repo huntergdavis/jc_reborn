@@ -16,14 +16,28 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
+def resolve_report_path(path_value: str | None, report_path: Path) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path if path.exists() else None
+    candidate = (report_path.parent / path).resolve()
+    if candidate.exists():
+        return candidate
+    return None
+
+
 def build_html(report: dict, output_path: Path, title: str) -> str:
     rows_html = []
     for row in report.get("rows", []):
         status = row["status"]
         row_class = "mismatch" if status == "mismatch" else "ok"
-        image_path = Path("host-script-review") / row["scene_label"].lower().replace(" ", "") / row["frame_name"]
-        if not image_path.exists():
-            image_path = None
+        image_path = resolve_report_path(row.get("image_path"), output_path)
+        if image_path is None:
+            image_path = Path("host-script-review") / row["scene_label"].lower().replace(" ", "") / row["frame_name"]
+            if not image_path.exists():
+                image_path = None
         img_cell = (
             f'<a href="{esc(rel(image_path, output_path.parent))}">{esc(row["frame_name"])}</a>'
             if image_path else esc(row["frame_name"])

@@ -57,9 +57,54 @@ def main() -> None:
     catalog_path = root / "artifact-catalog.json"
     catalog = json.loads(catalog_path.read_text()) if catalog_path.exists() else None
 
+    required_bank_scene_keys = ("scene_id",)
+    required_selfcheck_scene_keys = ("scene_id",)
+    malformed_bank_scenes = []
+    for row in bank_index.get("scenes", []):
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        if missing_keys(row, required_bank_scene_keys):
+            malformed_bank_scenes.append(scene_id)
+    add_check(
+        "bank_scene_rows_complete",
+        not malformed_bank_scenes,
+        ", ".join(malformed_bank_scenes[:10]) or "all present",
+    )
+    malformed_selfcheck_scenes = []
+    for row in selfcheck_index.get("scenes", []):
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        if missing_keys(row, required_selfcheck_scene_keys):
+            malformed_selfcheck_scenes.append(scene_id)
+    add_check(
+        "selfcheck_scene_rows_complete",
+        not malformed_selfcheck_scenes,
+        ", ".join(malformed_selfcheck_scenes[:10]) or "all present",
+    )
+
     bank_scene_count = len(bank_index["scenes"])
     selfcheck_scene_count = int(selfcheck_index["scene_count"])
     inventory_scene_count = int(inventory["scene_count"])
+    catalog_declared_scene_count = int(
+        (catalog or {}).get("scene_count", len((catalog or {}).get("scenes", [])))
+    )
+    add_check(
+        "selfcheck_scene_count_matches_rows",
+        selfcheck_scene_count == len(selfcheck_index.get("scenes", [])),
+        f"declared={selfcheck_scene_count}, rows={len(selfcheck_index.get('scenes', []))}",
+    )
+    add_check(
+        "scene_inventory_count_matches_rows",
+        inventory_scene_count == len(inventory.get("scenes", [])),
+        f"declared={inventory_scene_count}, rows={len(inventory.get('scenes', []))}",
+    )
+    add_check(
+        "artifact_catalog_count_matches_rows",
+        catalog is not None and catalog_declared_scene_count == len((catalog or {}).get("scenes", [])),
+        (
+            "artifact-catalog.json missing"
+            if catalog is None else
+            f"declared={catalog_declared_scene_count}, rows={len((catalog or {}).get('scenes', []))}"
+        ),
+    )
     bank_scene_ids = {str(row["scene_id"]) for row in bank_index["scenes"]}
     selfcheck_scene_ids = {str(row["scene_id"]) for row in selfcheck_index.get("scenes", [])}
     inventory_scene_ids = {str(row["scene_id"]) for row in inventory.get("scenes", [])}

@@ -610,6 +610,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 review_paths = summary.get("review_paths", {})
 required = {
     "index_html": root / "index.html",
@@ -618,7 +626,7 @@ required = {
 }
 for key, expected in required.items():
     actual = review_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary review_paths.{key} mismatch")
 print("verification-summary review_paths: ok")
 PY
@@ -660,13 +668,13 @@ def check_block(name: str, value) -> None:
     if not isinstance(value, dict):
         raise SystemExit(f"verification-summary {name} must be a path map")
     for key, path_value in value.items():
-        if not isinstance(path_value, str) or not Path(path_value).is_absolute():
-            raise SystemExit(f"verification-summary {name}.{key} must be an absolute path")
+        if not isinstance(path_value, str):
+            raise SystemExit(f"verification-summary {name}.{key} must be a string path")
 
 for key, value in summary.items():
     check_block(key, value)
 
-print("verification-summary absolute paths: ok")
+print("verification-summary portable paths: ok")
 PY
 }
 
@@ -679,9 +687,12 @@ from pathlib import Path
 
 root = Path(sys.argv[1]).resolve()
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
 
 def check_path(label: str, path_value: str) -> None:
     path = Path(path_value)
+    if not path.is_absolute():
+        path = review_root / path
     if not path.exists():
         raise SystemExit(f"verification-summary {label} does not exist")
 
@@ -710,7 +721,10 @@ summary = json.loads((root / "verification-summary.json").read_text(encoding="ut
 review_root = Path(summary["review_root"]).resolve()
 
 def check_path(label: str, path_value: str) -> None:
-    path = Path(path_value).resolve()
+    path = Path(path_value)
+    if not path.is_absolute():
+        path = review_root / path
+    path = path.resolve()
     try:
         path.relative_to(review_root)
     except ValueError as exc:
@@ -737,9 +751,12 @@ from pathlib import Path
 
 root = Path(sys.argv[1]).resolve()
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
 
 def check_path(label: str, key: str, path_value: str) -> None:
     path = Path(path_value)
+    if not path.is_absolute():
+        path = review_root / path
     if key.endswith("_dir"):
         if not path.is_dir():
             raise SystemExit(f"verification-summary {label} must be a directory")
@@ -771,9 +788,13 @@ from pathlib import Path
 root = Path(sys.argv[1]).resolve()
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
 seen = {}
+review_root = Path(summary["review_root"]).resolve()
 
 def record(label: str, path_value: str) -> None:
-    path = str(Path(path_value).resolve())
+    path_obj = Path(path_value)
+    if not path_obj.is_absolute():
+        path_obj = review_root / path_obj
+    path = str(path_obj.resolve())
     prior = seen.get(path)
     if prior is not None:
         raise SystemExit(f"verification-summary duplicate path: {prior} and {label}")
@@ -799,6 +820,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 core_paths = summary.get("core_artifact_paths", {})
 required = {
     "manifest_json": root / "manifest.json",
@@ -806,7 +835,7 @@ required = {
 }
 for key, expected in required.items():
     actual = core_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary core_artifact_paths.{key} mismatch")
 print("verification-summary core_artifact_paths: ok")
 PY
@@ -821,6 +850,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 audit_paths = summary.get("identification_audit_paths", {})
 required = {
     "selfcheck_json": root / "identification-selfcheck.json",
@@ -831,7 +868,7 @@ required = {
 }
 for key, expected in required.items():
     actual = audit_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary identification_audit_paths.{key} mismatch")
 print("verification-summary identification_audit_paths: ok")
 PY
@@ -846,13 +883,21 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 floor_paths = summary.get("identification_floor_paths", {})
 required = {
     "regression_floors_json": root / "identification-regression-floors.json",
 }
 for key, expected in required.items():
     actual = floor_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary identification_floor_paths.{key} mismatch")
 print("verification-summary identification_floor_paths: ok")
 PY
@@ -867,6 +912,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 host_truth_paths = summary.get("host_truth_paths", {})
 required = {
     "baseline_json": root / "host-truth-baseline.json",
@@ -875,7 +928,7 @@ required = {
 }
 for key, expected in required.items():
     actual = host_truth_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary host_truth_paths.{key} mismatch")
 print("verification-summary host_truth_paths: ok")
 PY
@@ -890,6 +943,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 expectation_paths = summary.get("expectation_paths", {})
 required = {
     "baseline_json": root / "expectations.json",
@@ -898,7 +959,7 @@ required = {
 }
 for key, expected in required.items():
     actual = expectation_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary expectation_paths.{key} mismatch")
 print("verification-summary expectation_paths: ok")
 PY
@@ -913,6 +974,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 repro_paths = summary.get("repro_paths", {})
 required = {
     "compare_json": root / "repro-compare.json",
@@ -920,7 +989,7 @@ required = {
 }
 for key, expected in required.items():
     actual = repro_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary repro_paths.{key} mismatch")
 print("verification-summary repro_paths: ok")
 PY
@@ -935,6 +1004,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 audit_paths = summary.get("capture_audit_paths", {})
 required = {
     "image_report_json": root / "frame-image-regression-report.json",
@@ -944,7 +1021,7 @@ required = {
 }
 for key, expected in required.items():
     actual = audit_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary capture_audit_paths.{key} mismatch")
 print("verification-summary capture_audit_paths: ok")
 PY
@@ -959,6 +1036,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 baseline_paths = summary.get("regression_baseline_paths", {})
 required = {
     "image_baseline_json": root / "frame-image-regression-baseline.json",
@@ -967,7 +1052,7 @@ required = {
 }
 for key, expected in required.items():
     actual = baseline_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary regression_baseline_paths.{key} mismatch")
 print("verification-summary regression_baseline_paths: ok")
 PY
@@ -982,6 +1067,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 scene_root_paths = summary.get("scene_root_paths", {})
 required = {
     "fishing_scene_dir": root / "fishing1",
@@ -989,7 +1082,7 @@ required = {
 }
 for key, expected in required.items():
     actual = scene_root_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary scene_root_paths.{key} mismatch")
 print("verification-summary scene_root_paths: ok")
 PY
@@ -1004,6 +1097,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 asset_paths = summary.get("scene_asset_paths", {})
 required = {
     "fishing_frames_dir": root / "fishing1" / "frames",
@@ -1013,7 +1114,7 @@ required = {
 }
 for key, expected in required.items():
     actual = asset_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary scene_asset_paths.{key} mismatch")
 print("verification-summary scene_asset_paths: ok")
 PY
@@ -1032,6 +1133,14 @@ fishing_late = sys.argv[3]
 mary_start = sys.argv[4]
 mary_late = sys.argv[5]
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 key_frame_paths = summary.get("key_frame_paths", {})
 required = {
     "fishing_start_bmp": root / "fishing1" / "frames" / f"{fishing_start}.bmp",
@@ -1041,7 +1150,7 @@ required = {
 }
 for key, expected in required.items():
     actual = key_frame_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary key_frame_paths.{key} mismatch")
 print("verification-summary key_frame_paths: ok")
 PY
@@ -1060,6 +1169,14 @@ fishing_late = sys.argv[3]
 mary_start = sys.argv[4]
 mary_late = sys.argv[5]
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 key_frame_meta_paths = summary.get("key_frame_meta_paths", {})
 
 def resolve_key_frame_meta(scene_slug: str, frame_name: str) -> Path:
@@ -1080,7 +1197,7 @@ required = {
 }
 for key, expected in required.items():
     actual = key_frame_meta_paths.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected.resolve():
         raise SystemExit(f"verification-summary key_frame_meta_paths.{key} mismatch")
 print("verification-summary key_frame_meta_paths: ok")
 PY
@@ -1156,6 +1273,14 @@ from pathlib import Path
 
 root = Path(sys.argv[1]).resolve()
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
+review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 artifact_inputs = summary.get("artifact_inputs") or {}
 for key, value in summary.items():
     if not key.endswith("_paths"):
@@ -1163,7 +1288,7 @@ for key, value in summary.items():
     for path_key, path_value in value.items():
         if path_key.endswith("_dir"):
             continue
-        rel = Path(path_value).resolve().relative_to(root).as_posix()
+        rel = resolve_summary_path(path_value).relative_to(root).as_posix()
         if rel not in artifact_inputs:
             raise SystemExit(f"artifact_inputs missing summary file path: {key}.{path_key}")
 print("verification-summary artifact input coverage: ok")
@@ -1712,12 +1837,19 @@ from pathlib import Path
 root = Path(sys.argv[1]).resolve()
 summary = json.loads((root / "verification-summary.json").read_text(encoding="utf-8"))
 review_root = Path(summary["review_root"]).resolve()
+
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root / path).resolve()
+
 expected = ["."]
 for key, value in sorted(summary.items()):
     if not key.endswith("_paths") or not isinstance(value, dict):
         continue
     for path_value in value.values():
-        expected.append(Path(path_value).resolve().relative_to(review_root).as_posix())
+        expected.append(resolve_summary_path(path_value).relative_to(review_root).as_posix())
 expected = sorted(expected)
 actual = summary.get("path_relpaths")
 if actual != expected:
@@ -1896,7 +2028,14 @@ required = {
 }
 for key, expected in required.items():
     actual = extras.get(key)
-    if actual != str(expected.resolve()):
+    if actual is None:
+        raise SystemExit(f"manifest extras.{key} missing")
+    resolved = Path(actual)
+    if not resolved.is_absolute():
+        resolved = (root / resolved).resolve()
+    else:
+        resolved = resolved.resolve()
+    if resolved != expected.resolve():
         raise SystemExit(f"manifest extras.{key} mismatch")
 print("manifest dashboard links: ok")
 PY
@@ -2191,7 +2330,10 @@ def path_relpaths(summary_obj):
         if not key.endswith("_paths") or not isinstance(value, dict):
             continue
         for path_value in value.values():
-            relpaths.append(Path(path_value).resolve().relative_to(review_root).as_posix())
+            path = Path(path_value)
+            if not path.is_absolute():
+                path = review_root / path
+            relpaths.append(path.resolve().relative_to(review_root).as_posix())
     return sorted(relpaths)
 
 

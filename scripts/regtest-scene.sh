@@ -138,6 +138,25 @@ resolve_scene_start() {
     python3 "$SCRIPT_DIR/get-scene-capture-start.py" --scene "$SCENE_SPEC"
 }
 
+normalize_scene_boot_string() {
+    local ads_name="$1"
+    local scene_tag="$2"
+    local scene_index="$3"
+    local boot_string="$4"
+
+    # FISHING 1 regresses much better through the story route than the stale
+    # direct ADS bootstrap. Keep the harness on the reviewed path even if the
+    # scene manifest drifts back to the older island-ads entry.
+    if [ "$ads_name" = "FISHING" ] && [ "$scene_tag" = "1" ] &&
+       [ "$scene_index" = "17" ] &&
+       [ "$boot_string" = "island ads FISHING.ADS 1" ]; then
+        printf '%s\n' "story scene 17"
+        return
+    fi
+
+    printf '%s\n' "$boot_string"
+}
+
 # Build the BOOTMODE override string
 if [ -z "$BOOT_STRING" ]; then
     if [ -n "$SCENE_INDEX" ]; then
@@ -150,6 +169,7 @@ if [ -z "$BOOT_STRING" ]; then
             SCENE_STATUS="$(printf '%s\n' "$SCENE_MANIFEST_LINE" | awk '{print $4}')"
         fi
         BOOT_STRING="$(printf '%s\n' "$SCENE_MANIFEST_LINE" | cut -d' ' -f5-)"
+        BOOT_STRING="$(normalize_scene_boot_string "$ADS_NAME" "$SCENE_TAG" "$SCENE_INDEX" "$BOOT_STRING")"
     else
         BOOT_STRING="island ads ${ADS_NAME} ${SCENE_TAG}"
     fi

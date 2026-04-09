@@ -19,8 +19,9 @@ def sha256_file(path: Path) -> str:
 
 
 def main() -> None:
+    project_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Write checksums for a published vision pipeline bundle.")
-    parser.add_argument("--root", type=Path, default=Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current"))
+    parser.add_argument("--root", type=Path, default=project_root / "vision-artifacts" / "vision-reference-pipeline-current")
     args = parser.parse_args()
 
     root = args.root.resolve()

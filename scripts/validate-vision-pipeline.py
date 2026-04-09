@@ -102,6 +102,40 @@ def main() -> None:
     add_check("per_scene_reviews_exist", not missing_reviews, ", ".join(missing_reviews[:10]) or "all present")
     add_check("per_scene_analysis_exist", not missing_json, ", ".join(missing_json[:10]) or "all present")
 
+    missing_catalog_reviews = []
+    missing_catalog_json = []
+    catalog_scene_map = {str(row["scene_id"]): row for row in (catalog or {}).get("scenes", [])}
+    inventory_scene_map = {str(row["scene_id"]): row for row in inventory.get("scenes", [])}
+    mismatched_catalog_paths = []
+    for scene_id, row in catalog_scene_map.items():
+        review = resolve_artifact_path(row["review_html"], root)
+        analysis = resolve_artifact_path(row["vision_analysis_json"], root)
+        if not review.exists():
+            missing_catalog_reviews.append(scene_id)
+        if not analysis.exists():
+            missing_catalog_json.append(scene_id)
+        inventory_row = inventory_scene_map.get(scene_id)
+        if inventory_row and (
+            row.get("review_html") != inventory_row.get("review_html")
+            or row.get("vision_analysis_json") != inventory_row.get("vision_analysis_json")
+        ):
+            mismatched_catalog_paths.append(scene_id)
+    add_check(
+        "artifact_catalog_reviews_exist",
+        not missing_catalog_reviews,
+        ", ".join(missing_catalog_reviews[:10]) or "all present",
+    )
+    add_check(
+        "artifact_catalog_analysis_exist",
+        not missing_catalog_json,
+        ", ".join(missing_catalog_json[:10]) or "all present",
+    )
+    add_check(
+        "artifact_catalog_paths_match_inventory",
+        not mismatched_catalog_paths,
+        ", ".join(mismatched_catalog_paths[:10]) or "all present",
+    )
+
     passed = sum(1 for c in checks if c["ok"])
     overall_ok = passed == len(checks)
     result = {

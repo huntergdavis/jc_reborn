@@ -607,19 +607,23 @@ def main() -> None:
         not mismatched_catalog_manifest_top_level,
         ", ".join(mismatched_catalog_manifest_top_level[:10]) or "all present",
     )
-    required_catalog_bank_keys = ("index_html", "metadata_json", "features_npy")
+    required_catalog_bank_keys = ("index_html", "index_json", "metadata_json", "features_npy")
     required_catalog_selfcheck_keys = (
         "index_html",
+        "index_json",
         "quality_report_html",
+        "quality_report_json",
         "confusion_report_html",
+        "confusion_report_json",
         "family_report_html",
+        "family_report_json",
     )
-    required_manifest_bank_keys = ("index_html", "metadata_json", "features_npy", "scene_count", "frame_count")
+    required_manifest_bank_keys = ("index_html", "index_json", "metadata_json", "features_npy", "scene_count", "frame_count")
     required_manifest_selfcheck_keys = (
         "index_html",
-        "quality_report_html",
-        "confusion_report_html",
-        "family_report_html",
+        "index_json",
+        "quality_html",
+        "quality_json",
         "scene_count",
     )
 
@@ -673,19 +677,31 @@ def main() -> None:
         not missing_catalog_selfcheck,
         ", ".join(missing_catalog_selfcheck[:10]) or "all present",
     )
+    bank_key_map = {
+        "index_html": "index_html",
+        "index_json": "index_json",
+        "metadata_json": "metadata_json",
+        "features_npy": "features_npy",
+    }
     mismatched_catalog_manifest_bank = []
-    for name, path_value in catalog_bank.items():
-        if path_value != manifest_bank.get(name):
-            mismatched_catalog_manifest_bank.append(name)
+    for catalog_key, manifest_key in bank_key_map.items():
+        if catalog_bank.get(catalog_key) != manifest_bank.get(manifest_key):
+            mismatched_catalog_manifest_bank.append(catalog_key)
     add_check(
         "artifact_catalog_reference_bank_matches_manifest",
         not mismatched_catalog_manifest_bank,
         ", ".join(mismatched_catalog_manifest_bank[:10]) or "all present",
     )
+    selfcheck_key_map = {
+        "index_html": "index_html",
+        "index_json": "index_json",
+        "quality_report_html": "quality_html",
+        "quality_report_json": "quality_json",
+    }
     mismatched_catalog_manifest_selfcheck = []
-    for name, path_value in catalog_selfcheck.items():
-        if path_value != manifest_selfcheck.get(name):
-            mismatched_catalog_manifest_selfcheck.append(name)
+    for catalog_key, manifest_key in selfcheck_key_map.items():
+        if catalog_selfcheck.get(catalog_key) != manifest_selfcheck.get(manifest_key):
+            mismatched_catalog_manifest_selfcheck.append(catalog_key)
     add_check(
         "artifact_catalog_reference_selfcheck_matches_manifest",
         not mismatched_catalog_manifest_selfcheck,

@@ -8,10 +8,18 @@ PORT="${SCENE_REVIEW_PORT:-8123}"
 FILTERED_RESULT_DIR="$OUTDIR/filtered-result"
 GENERATED_RUN_DIR="$OUTDIR/regtest-run"
 SOURCE_RESULT="${FISHING1_REVIEW_RESULT:-}"
-CAPTURE_START_FRAME="${FISHING1_REVIEW_CAPTURE_START_FRAME:-3480}"
-CAPTURE_FRAMES="${FISHING1_REVIEW_CAPTURE_FRAMES:-3720}"
-CAPTURE_INTERVAL="${FISHING1_REVIEW_CAPTURE_INTERVAL:-10}"
-START_FRAME="${FISHING1_REVIEW_START_FRAME:-3580}"
+resolve_scene_value() {
+  local field="$1"
+  local fallback="$2"
+  python3 "$PROJECT_ROOT/scripts/get-scene-capture-start.py" \
+    --scene "FISHING 1" \
+    --field "$field" \
+    --default "$fallback"
+}
+CAPTURE_START_FRAME="${FISHING1_REVIEW_CAPTURE_START_FRAME:-$(resolve_scene_value review_capture_start_frame 3480)}"
+CAPTURE_FRAMES="${FISHING1_REVIEW_CAPTURE_FRAMES:-$(resolve_scene_value review_capture_frames 3720)}"
+CAPTURE_INTERVAL="${FISHING1_REVIEW_CAPTURE_INTERVAL:-$(resolve_scene_value review_capture_interval 10)}"
+START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(resolve_scene_value review_start_frame 3580)}"
 
 if [ -z "$SOURCE_RESULT" ]; then
   "$PROJECT_ROOT/scripts/regtest-scene.sh" \

@@ -5,6 +5,10 @@
   "scenes": {
     "FISHING-1": {
       "start_frame": 2400,
+      "review_start_frame": 3580,
+      "review_capture_start_frame": 3480,
+      "review_capture_frames": 3720,
+      "review_capture_interval": 10,
       "source": "human review 2026-04-08 near-correct late-frame focus"
     },
     "STAND-1": {

@@ -69,13 +69,34 @@ def find_project_root() -> Path:
     return Path.cwd()
 
 
+def candidate_pipeline_manifest_paths(root: Path) -> list[Path]:
+    candidates = [root / "vision-artifacts" / "vision-reference-pipeline-current" / "pipeline-manifest.json"]
+    worktrees_dir = root / ".claude" / "worktrees"
+    if worktrees_dir.is_dir():
+        candidates.extend(
+            sorted(worktrees_dir.glob("*/vision-artifacts/vision-reference-pipeline-current/pipeline-manifest.json"))
+        )
+    return candidates
+
+
+def candidate_reference_bank_dirs(root: Path) -> list[Path]:
+    candidates = [root / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-bank"]
+    worktrees_dir = root / ".claude" / "worktrees"
+    if worktrees_dir.is_dir():
+        candidates.extend(
+            sorted(worktrees_dir.glob("*/vision-artifacts/vision-reference-pipeline-current/reference-bank"))
+        )
+    return candidates
+
+
 def resolve_reference_bank(bank_dir: Path | None) -> Path | None:
     if bank_dir is not None and (bank_dir / "features.npy").is_file() and (bank_dir / "metadata.json").is_file():
         return bank_dir
 
     root = find_project_root()
-    manifest_path = root / "vision-artifacts" / "vision-reference-pipeline-current" / "pipeline-manifest.json"
-    if manifest_path.is_file():
+    for manifest_path in candidate_pipeline_manifest_paths(root):
+        if not manifest_path.is_file():
+            continue
         try:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
             ref_bank = manifest.get("reference_bank", {})
@@ -90,9 +111,9 @@ def resolve_reference_bank(bank_dir: Path | None) -> Path | None:
         except (OSError, json.JSONDecodeError, TypeError, ValueError):
             pass
 
-    fallback = root / ".claude" / "worktrees" / "vlm-classifier-20260330-wt" / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-bank"
-    if (fallback / "features.npy").is_file() and (fallback / "metadata.json").is_file():
-        return fallback
+    for fallback in candidate_reference_bank_dirs(root):
+        if (fallback / "features.npy").is_file() and (fallback / "metadata.json").is_file():
+            return fallback
     return None
 
 

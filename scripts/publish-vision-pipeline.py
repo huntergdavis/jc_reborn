@@ -206,6 +206,8 @@ def main() -> None:
                 "ratio": alt["ratio"],
                 "family_source": row["family"],
                 "family_target": alt["scene_id"].split("-", 1)[0],
+                "start_frame": row.get("start_frame"),
+                "capture_start_frame": row.get("capture_start_frame"),
                 "source_review_html": row["review_html"],
             }
     confusion_pairs = sorted(pair_map.values(), key=lambda r: (-float(r["ratio"]), str(r["source_scene"]), str(r["target_scene"])))

@@ -90,6 +90,8 @@ def main() -> None:
         "ratio",
         "family_source",
         "family_target",
+        "start_frame",
+        "capture_start_frame",
         "source_review_html",
     )
 

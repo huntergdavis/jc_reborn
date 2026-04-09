@@ -219,14 +219,18 @@ def main() -> None:
     )
     malformed_strongest_scenes = []
     strongest_review_missing = []
+    strongest_analysis_missing = []
     for row in strongest_scenes.get("scenes", []):
         scene_id = str(row.get("scene_id", "<missing-scene-id>"))
         if missing_keys(row, required_summary_scene_keys):
             malformed_strongest_scenes.append(scene_id)
             continue
         review_path = resolve_artifact_path(row["review_html"], strongest_scenes_path.parent)
+        analysis_path = resolve_artifact_path(row["vision_analysis_json"], strongest_scenes_path.parent)
         if not review_path.exists():
             strongest_review_missing.append(scene_id)
+        if not analysis_path.exists():
+            strongest_analysis_missing.append(scene_id)
     add_check(
         "strongest_scenes_rows_complete",
         not malformed_strongest_scenes,
@@ -241,16 +245,34 @@ def main() -> None:
             ", ".join(strongest_review_missing[:10]) or "all present"
         ),
     )
+    add_check(
+        "strongest_scenes_analysis_paths_exist",
+        strongest_scenes_path.exists() and not strongest_analysis_missing,
+        (
+            "strongest-scenes.json missing"
+            if not strongest_scenes_path.exists() else
+            ", ".join(strongest_analysis_missing[:10]) or "all present"
+        ),
+    )
     malformed_weakest_scenes = []
     weakest_review_missing = []
+    weakest_analysis_missing = []
+    weakest_unknown_alternates = []
     for row in weakest_scenes.get("scenes", []):
         scene_id = str(row.get("scene_id", "<missing-scene-id>"))
         if missing_keys(row, required_summary_scene_keys):
             malformed_weakest_scenes.append(scene_id)
             continue
         review_path = resolve_artifact_path(row["review_html"], weakest_scenes_path.parent)
+        analysis_path = resolve_artifact_path(row["vision_analysis_json"], weakest_scenes_path.parent)
         if not review_path.exists():
             weakest_review_missing.append(scene_id)
+        if not analysis_path.exists():
+            weakest_analysis_missing.append(scene_id)
+        for alt in row.get("top_alternates", []):
+            alt_scene_id = alt.get("scene_id") if isinstance(alt, dict) else None
+            if alt_scene_id is not None and str(alt_scene_id) not in inventory_scene_ids:
+                weakest_unknown_alternates.append(f"{scene_id}->{alt_scene_id}")
     add_check(
         "weakest_scenes_rows_complete",
         not malformed_weakest_scenes,
@@ -263,6 +285,24 @@ def main() -> None:
             "weakest-scenes.json missing"
             if not weakest_scenes_path.exists() else
             ", ".join(weakest_review_missing[:10]) or "all present"
+        ),
+    )
+    add_check(
+        "weakest_scenes_analysis_paths_exist",
+        weakest_scenes_path.exists() and not weakest_analysis_missing,
+        (
+            "weakest-scenes.json missing"
+            if not weakest_scenes_path.exists() else
+            ", ".join(weakest_analysis_missing[:10]) or "all present"
+        ),
+    )
+    add_check(
+        "weakest_scene_alternates_exist_in_inventory",
+        weakest_scenes_path.exists() and not weakest_unknown_alternates,
+        (
+            "weakest-scenes.json missing"
+            if not weakest_scenes_path.exists() else
+            ", ".join(weakest_unknown_alternates[:10]) or "all present"
         ),
     )
     malformed_confusion_pairs = []

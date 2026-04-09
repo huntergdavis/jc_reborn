@@ -158,6 +158,25 @@ def main() -> None:
         not missing_manifest_selfcheck,
         ", ".join(missing_manifest_selfcheck[:10]) or "all present",
     )
+    add_check(
+        "manifest_reference_bank_counts_match",
+        manifest.get("reference_bank", {}).get("scene_count") == bank_scene_count
+        and manifest.get("reference_bank", {}).get("frame_count") == bank_index.get("frame_count"),
+        (
+            f"manifest_scene_count={manifest.get('reference_bank', {}).get('scene_count')}, "
+            f"index_scene_count={bank_scene_count}, "
+            f"manifest_frame_count={manifest.get('reference_bank', {}).get('frame_count')}, "
+            f"index_frame_count={bank_index.get('frame_count')}"
+        ),
+    )
+    add_check(
+        "manifest_reference_selfcheck_counts_match",
+        manifest.get("reference_selfcheck", {}).get("scene_count") == selfcheck_scene_count,
+        (
+            f"manifest_scene_count={manifest.get('reference_selfcheck', {}).get('scene_count')}, "
+            f"index_scene_count={selfcheck_scene_count}"
+        ),
+    )
     missing_manifest_top_level = []
     for name in ("inventory_json", "inventory_html", "artifact_catalog_json"):
         path_value = manifest.get(name)

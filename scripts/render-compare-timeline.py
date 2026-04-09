@@ -22,6 +22,37 @@ def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
     return (base_dir / path).resolve()
 
 
+def discover_leaf_frame_dir(frame_dir: Path) -> Path | None:
+    if any(frame_dir.glob("**/frame_*.*")):
+        return frame_dir
+    child_dirs = sorted(child for child in frame_dir.iterdir() if child.is_dir())
+    for child in child_dirs:
+        nested = discover_leaf_frame_dir(child)
+        if nested is not None:
+            return nested
+    return None
+
+
+def find_best_frame_dir(root: Path) -> Path:
+    direct_candidates = [root / "frames", root / "frames-png", root / "filtered-frames"]
+    for candidate in direct_candidates:
+        if candidate.is_dir():
+            nested = discover_leaf_frame_dir(candidate)
+            if nested is not None:
+                return nested
+            return candidate
+
+    recursive: list[Path] = []
+    for pattern in ("**/frames", "**/frames-png", "**/filtered-frames"):
+        recursive.extend(path for path in root.glob(pattern) if path.is_dir())
+    recursive = sorted(set(path.resolve() for path in recursive))
+    for candidate in recursive:
+        nested = discover_leaf_frame_dir(candidate)
+        if nested is not None:
+            return nested
+    return root / "frames"
+
+
 def fmt_int(value):
     if value is None:
         return "n/a"
@@ -179,8 +210,8 @@ def main() -> int:
     vlm_data = load_optional_json(args.vlm_json)
 
     frames = data.get("frames", [])
-    result_json_path = Path(data["result"]).resolve() if data.get("result") else None
-    reference_json_path = Path(data["reference"]).resolve() if data.get("reference") else None
+    result_json_path = resolve_capture_path(data["result"], compare_path.parent) if data.get("result") else None
+    reference_json_path = resolve_capture_path(data["reference"], compare_path.parent) if data.get("reference") else None
     result_run_frames = load_run_frames(result_json_path) if result_json_path else []
     reference_run_frames = load_run_frames(reference_json_path) if reference_json_path else []
     output_path.parent.mkdir(parents=True, exist_ok=True)

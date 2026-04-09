@@ -237,6 +237,7 @@ frame_entry = {
     "frame": frame_path.name,
     "frame_path": rel_to_output(frame_path),
     "frame_scene_path": rel_to_output(scene_png_path),
+    "frame_meta_path": rel_to_output(frame_meta_path) if frame_meta_path.exists() else None,
     "frame_sha256": raw_sha,
     "frame_pixel_sha256": pixel_sha,
     "frame_scene_pixel_sha256": scene_pixel_sha,

@@ -295,7 +295,7 @@ scene_result = int(sys.argv[9])
 
 # List actual frame files
 frame_files = sorted(
-    os.path.basename(f) for f in glob.glob(os.path.join(scene_dir, "frame_*.png"))
+    os.path.relpath(f, scene_dir) for f in glob.glob(os.path.join(scene_dir, "**", "frame_*.png"), recursive=True)
 )
 
 metadata = {
@@ -467,7 +467,7 @@ cap_frames = int(sys.argv[5])
 cap_interval = int(sys.argv[6])
 
 frame_files = sorted(
-    os.path.basename(f) for f in glob.glob(os.path.join(title_dir, "frame_*.png"))
+    os.path.relpath(f, title_dir) for f in glob.glob(os.path.join(title_dir, "**", "frame_*.png"), recursive=True)
 )
 
 metadata = {
@@ -552,7 +552,7 @@ capture_ts = sys.argv[3]
 result = int(sys.argv[4])
 
 frame_files = sorted(
-    os.path.basename(f) for f in glob.glob(os.path.join(tdir, "frame_*.png"))
+    os.path.relpath(f, tdir) for f in glob.glob(os.path.join(tdir, "**", "frame_*.png"), recursive=True)
 )
 
 metadata = {

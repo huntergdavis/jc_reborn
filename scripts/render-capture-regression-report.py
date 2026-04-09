@@ -43,6 +43,10 @@ def render_html(payload: dict) -> str:
             return text[:117] + "..."
         return text
 
+    def slugify_scene(label: object, label_key: str) -> str:
+        text = "" if label in (None, "") else str(label)
+        return text if label_key == "scene" else text.lower().replace(" ", "")
+
     report_links = (
         '<div class="links">'
         '<a href="index.html">index.html</a> '
@@ -67,7 +71,7 @@ def render_html(payload: dict) -> str:
             status = fmt_status(bool(row.get("passed", False)))
             failure_count = row.get("failure_count", 0)
             first_failure = row.get("first_failure") or {}
-            scene_slug = label if label_key == "scene" else label.lower().replace(" ", "")
+            scene_slug = slugify_scene(label, label_key)
             frame_href = f"{scene_slug}/frames/"
             meta_href = f"{scene_slug}/frame-meta/"
             drift_links = ""

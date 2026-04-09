@@ -57,8 +57,10 @@ def main() -> None:
     catalog_path = root / "artifact-catalog.json"
     catalog = json.loads(catalog_path.read_text()) if catalog_path.exists() else None
 
-    required_bank_scene_keys = ("scene_id",)
+    required_bank_scene_keys = ("scene_id", "family", "frame_count", "review_html")
     required_selfcheck_scene_keys = ("scene_id",)
+    required_inventory_scene_keys = ("scene_id", "family", "frame_count", "review_html", "vision_analysis_json")
+    required_catalog_scene_keys = ("scene_id", "family", "review_html", "vision_analysis_json")
     malformed_bank_scenes = []
     for row in bank_index.get("scenes", []):
         scene_id = str(row.get("scene_id", "<missing-scene-id>"))
@@ -104,6 +106,17 @@ def main() -> None:
             if catalog is None else
             f"declared={catalog_declared_scene_count}, rows={len((catalog or {}).get('scenes', []))}"
         ),
+    )
+    bank_total_frame_count = int(bank_index.get("frame_count", -1))
+    bank_row_frame_total = sum(
+        int(row.get("frame_count", 0))
+        for row in bank_index.get("scenes", [])
+        if isinstance(row.get("frame_count"), int)
+    )
+    add_check(
+        "bank_frame_count_matches_rows",
+        bank_total_frame_count == bank_row_frame_total,
+        f"declared={bank_total_frame_count}, rows={bank_row_frame_total}",
     )
     bank_scene_ids = {str(row["scene_id"]) for row in bank_index["scenes"]}
     selfcheck_scene_ids = {str(row["scene_id"]) for row in selfcheck_index.get("scenes", [])}
@@ -328,7 +341,7 @@ def main() -> None:
         scene_id = str(scene.get("scene_id", "<missing-scene-id>"))
         review_value = scene.get("review_html")
         analysis_value = scene.get("vision_analysis_json")
-        if not isinstance(review_value, str) or not isinstance(analysis_value, str):
+        if missing_keys(scene, required_inventory_scene_keys):
             malformed_inventory_scenes.append(scene_id)
             continue
         review = resolve_artifact_path(review_value, inventory_path.parent)
@@ -354,7 +367,7 @@ def main() -> None:
     for scene_id, row in catalog_scene_map.items():
         review_value = row.get("review_html")
         analysis_value = row.get("vision_analysis_json")
-        if not isinstance(review_value, str) or not isinstance(analysis_value, str):
+        if missing_keys(row, required_catalog_scene_keys):
             malformed_catalog_scenes.append(scene_id)
             continue
         review = resolve_artifact_path(review_value, root)

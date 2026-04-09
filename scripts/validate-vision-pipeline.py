@@ -366,6 +366,23 @@ def main() -> None:
             ", ".join(strongest_inventory_mismatches[:10]) or "all present"
         ),
     )
+    strongest_full_row_mismatches = []
+    for row in strongest_rows:
+        if not isinstance(row, dict):
+            continue
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        inventory_row = inventory_scene_map.get(scene_id)
+        if inventory_row and row != inventory_row:
+            strongest_full_row_mismatches.append(scene_id)
+    add_check(
+        "strongest_scenes_fully_match_inventory_rows",
+        strongest_scenes_path.exists() and not strongest_full_row_mismatches,
+        (
+            "strongest-scenes.json missing"
+            if not strongest_scenes_path.exists() else
+            ", ".join(strongest_full_row_mismatches[:10]) or "all present"
+        ),
+    )
     weakest_inventory_mismatches = []
     for row in weakest_rows:
         if not isinstance(row, dict):
@@ -384,6 +401,23 @@ def main() -> None:
             "weakest-scenes.json missing"
             if not weakest_scenes_path.exists() else
             ", ".join(weakest_inventory_mismatches[:10]) or "all present"
+        ),
+    )
+    weakest_full_row_mismatches = []
+    for row in weakest_rows:
+        if not isinstance(row, dict):
+            continue
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        inventory_row = inventory_scene_map.get(scene_id)
+        if inventory_row and row != inventory_row:
+            weakest_full_row_mismatches.append(scene_id)
+    add_check(
+        "weakest_scenes_fully_match_inventory_rows",
+        weakest_scenes_path.exists() and not weakest_full_row_mismatches,
+        (
+            "weakest-scenes.json missing"
+            if not weakest_scenes_path.exists() else
+            ", ".join(weakest_full_row_mismatches[:10]) or "all present"
         ),
     )
     confusion_review_mismatches = []

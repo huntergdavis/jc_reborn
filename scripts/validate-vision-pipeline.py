@@ -142,6 +142,7 @@ def main() -> None:
     bank_scene_ids = {str(row["scene_id"]) for row in bank_index["scenes"]}
     selfcheck_scene_ids = {str(row["scene_id"]) for row in selfcheck_index.get("scenes", [])}
     inventory_scene_ids = {str(row["scene_id"]) for row in inventory.get("scenes", [])}
+    inventory_scene_map = {str(row["scene_id"]): row for row in inventory.get("scenes", [])}
     catalog_scene_ids = {str(row["scene_id"]) for row in (catalog or {}).get("scenes", [])}
     add_check(
         "scene_count_consistent",
@@ -215,6 +216,57 @@ def main() -> None:
             if not top_confusion_pairs_path.exists() else
             f"source_only={sorted(confusion_source_ids - inventory_scene_ids)[:10]}, "
             f"target_only={sorted(confusion_target_ids - inventory_scene_ids)[:10]}"
+        ),
+    )
+    strongest_rows = strongest_scenes.get("scenes", [])
+    weakest_rows = weakest_scenes.get("scenes", [])
+    confusion_rows = top_confusion_pairs.get("pairs", [])
+    strongest_sorted_expected = sorted(
+        strongest_rows,
+        key=lambda r: (-float(r.get("global_top1_ratio", float("-inf"))), str(r.get("scene_id", ""))),
+    )
+    weakest_sorted_expected = sorted(
+        weakest_rows,
+        key=lambda r: (float(r.get("global_top1_ratio", float("inf"))), str(r.get("scene_id", ""))),
+    )
+    confusion_sorted_expected = sorted(
+        confusion_rows,
+        key=lambda r: (-float(r.get("ratio", float("-inf"))), str(r.get("source_scene", "")), str(r.get("target_scene", ""))),
+    )
+    add_check(
+        "strongest_scenes_sorted",
+        strongest_scenes_path.exists() and strongest_rows == strongest_sorted_expected,
+        "sorted descending by global_top1_ratio, scene_id",
+    )
+    add_check(
+        "weakest_scenes_sorted",
+        weakest_scenes_path.exists() and weakest_rows == weakest_sorted_expected,
+        "sorted ascending by global_top1_ratio, scene_id",
+    )
+    add_check(
+        "top_confusion_pairs_sorted",
+        top_confusion_pairs_path.exists() and confusion_rows == confusion_sorted_expected,
+        "sorted descending by ratio, source_scene, target_scene",
+    )
+    bad_confusion_families = []
+    for row in confusion_rows:
+        if not isinstance(row, dict):
+            continue
+        source_scene = row.get("source_scene")
+        target_scene = row.get("target_scene")
+        source_row = inventory_scene_map.get(str(source_scene))
+        target_row = inventory_scene_map.get(str(target_scene))
+        if source_row and row.get("family_source") != source_row.get("family"):
+            bad_confusion_families.append(f"{source_scene}:source")
+        if target_row and row.get("family_target") != target_row.get("family"):
+            bad_confusion_families.append(f"{target_scene}:target")
+    add_check(
+        "top_confusion_pairs_families_match_inventory",
+        top_confusion_pairs_path.exists() and not bad_confusion_families,
+        (
+            "top-confusion-pairs.json missing"
+            if not top_confusion_pairs_path.exists() else
+            ", ".join(bad_confusion_families[:10]) or "all present"
         ),
     )
     malformed_strongest_scenes = []
@@ -544,7 +596,6 @@ def main() -> None:
     missing_catalog_reviews = []
     missing_catalog_json = []
     catalog_scene_map = {str(row["scene_id"]): row for row in (catalog or {}).get("scenes", [])}
-    inventory_scene_map = {str(row["scene_id"]): row for row in inventory.get("scenes", [])}
     mismatched_catalog_paths = []
     malformed_catalog_scenes = []
     for scene_id, row in catalog_scene_map.items():

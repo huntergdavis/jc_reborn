@@ -50,10 +50,10 @@
       "family": "FISHING",
       "source_kind": "ps1_broken",
       "reference_image": "regtest-references/FISHING-1/frames/frame_00016.bmp",
-      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03590.png",
+      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03480.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted to the dense reviewed FISHING-1 Johnny window from the fixed story-scene route. This should measure the current in-scene breakage instead of earlier coarse late-window samples."
+      "human_review_notes": "Retargeted to the start of the dense reviewed FISHING-1 Johnny window from the fixed story-scene route so the pack covers Johnny emerging from behind the tree instead of a later shoe-only phase."
     },
     {
       "case_id": "fishing1_broken_single17",
@@ -61,10 +61,10 @@
       "family": "FISHING",
       "source_kind": "ps1_broken",
       "reference_image": "regtest-references/FISHING-1/frames/frame_00031.bmp",
-      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03620.png",
+      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03520.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted to a second dense FISHING-1 Johnny-window sample so the pack stays focused on the current story-scene rendering defects."
+      "human_review_notes": "Retargeted to an earlier dense FISHING-1 Johnny-window sample so the pack stays focused on the walk-out and fishing setup, not a much later scene phase."
     },
     {
       "case_id": "fishing1_ps1_scene",
@@ -72,10 +72,10 @@
       "family": "FISHING",
       "source_kind": "ps1_broken",
       "reference_image": "regtest-references/FISHING-1/frames/frame_00046.bmp",
-      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03650.png",
+      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03560.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted from the older coarse current sample to the dense reviewed Johnny window on the fixed story-scene route. This remains the main broken-scene case to re-confirm for duplicate-Johnny / tearing behavior."
+      "human_review_notes": "Retargeted from the older coarse current sample to an earlier dense reviewed Johnny window frame on the fixed story-scene route. This remains the main broken-scene case to re-confirm for duplicate-Johnny / tearing behavior."
     },
     {
       "case_id": "fishing1_host_reference",

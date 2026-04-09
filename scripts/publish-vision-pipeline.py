@@ -5,6 +5,7 @@ import argparse
 import json
 from pathlib import Path
 import csv
+import os
 
 
 def write_json(path: Path, data: object) -> None:
@@ -14,6 +15,10 @@ def write_json(path: Path, data: object) -> None:
 
 def rel_to(root: Path, target: Path) -> str:
     return target.resolve().relative_to(root.resolve()).as_posix() if target.resolve().is_relative_to(root.resolve()) else target.resolve().as_posix()
+
+
+def href_from(html_path: Path, target: Path) -> str:
+    return os.path.relpath(target.resolve(), html_path.parent.resolve())
 
 
 def main() -> None:
@@ -224,6 +229,7 @@ def main() -> None:
             f"<td>{row['dominant_failure_mode']}</td></tr>"
         )
 
+    index_html_path = outroot / "index.html"
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -239,20 +245,20 @@ def main() -> None:
 <body>
   <h1>Vision Reference Pipeline</h1>
   <div class="links">
-    <a href="{bankdir / 'index.html'}">Reference bank index</a>
-    <a href="{selfcheckdir / 'index.html'}">Reference self-check index</a>
-    <a href="{selfcheckdir / 'quality-report.html'}">Quality report</a>
-    <a href="{selfcheckdir / 'confusion-report.html'}">Confusion report</a>
-    <a href="{selfcheckdir / 'family-report.html'}">Family report</a>
-    <a href="{outroot / 'scene-inventory.html'}">Scene inventory</a>
-    <a href="{outroot / 'scene-inventory.csv'}">Scene inventory CSV</a>
-    <a href="{outroot / 'family-summary.csv'}">Family summary CSV</a>
-    <a href="{outroot / 'strongest-scenes.json'}">Strongest scenes JSON</a>
-    <a href="{outroot / 'weakest-scenes.json'}">Weakest scenes JSON</a>
-    <a href="{outroot / 'top-confusion-pairs.json'}">Top confusion pairs JSON</a>
-    <a href="{outroot / 'artifact-catalog.json'}">Artifact catalog JSON</a>
-    <a href="{outroot / 'artifact-catalog.html'}">Artifact catalog HTML</a>
-    <a href="{outroot / 'pipeline-manifest.json'}">Manifest JSON</a>
+    <a href="{href_from(index_html_path, bankdir / 'index.html')}">Reference bank index</a>
+    <a href="{href_from(index_html_path, selfcheckdir / 'index.html')}">Reference self-check index</a>
+    <a href="{href_from(index_html_path, selfcheckdir / 'quality-report.html')}">Quality report</a>
+    <a href="{href_from(index_html_path, selfcheckdir / 'confusion-report.html')}">Confusion report</a>
+    <a href="{href_from(index_html_path, selfcheckdir / 'family-report.html')}">Family report</a>
+    <a href="{href_from(index_html_path, outroot / 'scene-inventory.html')}">Scene inventory</a>
+    <a href="{href_from(index_html_path, outroot / 'scene-inventory.csv')}">Scene inventory CSV</a>
+    <a href="{href_from(index_html_path, outroot / 'family-summary.csv')}">Family summary CSV</a>
+    <a href="{href_from(index_html_path, outroot / 'strongest-scenes.json')}">Strongest scenes JSON</a>
+    <a href="{href_from(index_html_path, outroot / 'weakest-scenes.json')}">Weakest scenes JSON</a>
+    <a href="{href_from(index_html_path, outroot / 'top-confusion-pairs.json')}">Top confusion pairs JSON</a>
+    <a href="{href_from(index_html_path, outroot / 'artifact-catalog.json')}">Artifact catalog JSON</a>
+    <a href="{href_from(index_html_path, outroot / 'artifact-catalog.html')}">Artifact catalog HTML</a>
+    <a href="{href_from(index_html_path, outroot / 'pipeline-manifest.json')}">Manifest JSON</a>
   </div>
   <p>Reference scenes: {len(bank['scenes'])}. Reference frames: {bank['frame_count']}.</p>
   <h2>Top Global Self-Matches</h2>
@@ -278,7 +284,7 @@ def main() -> None:
 </body>
 </html>
 """
-    (outroot / "index.html").write_text(html, encoding="utf-8")
+    index_html_path.write_text(html, encoding="utf-8")
 
     catalog_html = f"""<!doctype html>
 <html lang="en">

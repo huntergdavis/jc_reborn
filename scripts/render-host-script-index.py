@@ -65,7 +65,7 @@ def scene_rows(scene_dir: Path) -> tuple[dict, list[dict]]:
             {
                 "frame_number": summary["frame_number"],
                 "frame_name": image_path.name,
-                "image_path": str(image_path),
+                "image_path": portable_path(image_path, scene_dir.parent),
                 "actor_summary": summary["actor_summary"],
                 "actor_candidate_draw_count": summary["actor_candidate_draw_count"],
                 "visible_unique_draw_count": summary["visible_unique_draw_count"],
@@ -132,7 +132,7 @@ def build_html(manifest: dict, output_path: Path, title: str) -> str:
         review_href = rel(review_path, output_path.parent) if review_path.exists() else None
         rows_html = []
         for row in scene["rows"]:
-            image_rel = rel(Path(row["image_path"]), output_path.parent)
+            image_rel = rel(resolve_manifest_path(row["image_path"], Path(manifest["root"])), output_path.parent)
             actor_summary = ", ".join(f"{k}={v}" for k, v in sorted(row["actor_summary"].items())) or "none"
             bmp_names = ", ".join(row["bmp_names"]) or "none"
             rows_html.append(

@@ -32,7 +32,7 @@ def main() -> None:
     parser.add_argument(
         "--selfcheckdir",
         type=Path,
-        default=project_root / "vision-artifacts" / "vision-reference-selfcheck-20260329-v4",
+        default=project_root / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-selfcheck",
     )
     parser.add_argument(
         "--outroot",

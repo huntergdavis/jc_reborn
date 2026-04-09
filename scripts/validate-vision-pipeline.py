@@ -62,6 +62,21 @@ def main() -> None:
     strongest_scenes = json.loads(strongest_scenes_path.read_text()) if strongest_scenes_path.exists() else {}
     weakest_scenes = json.loads(weakest_scenes_path.read_text()) if weakest_scenes_path.exists() else {}
     top_confusion_pairs = json.loads(top_confusion_pairs_path.read_text()) if top_confusion_pairs_path.exists() else {}
+    required_summary_scene_keys = (
+        "scene_id",
+        "family",
+        "frame_count",
+        "review_html",
+        "vision_analysis_json",
+    )
+    required_confusion_pair_keys = (
+        "source_scene",
+        "target_scene",
+        "ratio",
+        "family_source",
+        "family_target",
+        "source_review_html",
+    )
 
     required_bank_scene_keys = ("scene_id", "family", "frame_count", "review_html")
     required_selfcheck_scene_keys = ("scene_id",)
@@ -200,6 +215,78 @@ def main() -> None:
             if not top_confusion_pairs_path.exists() else
             f"source_only={sorted(confusion_source_ids - inventory_scene_ids)[:10]}, "
             f"target_only={sorted(confusion_target_ids - inventory_scene_ids)[:10]}"
+        ),
+    )
+    malformed_strongest_scenes = []
+    strongest_review_missing = []
+    for row in strongest_scenes.get("scenes", []):
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        if missing_keys(row, required_summary_scene_keys):
+            malformed_strongest_scenes.append(scene_id)
+            continue
+        review_path = resolve_artifact_path(row["review_html"], strongest_scenes_path.parent)
+        if not review_path.exists():
+            strongest_review_missing.append(scene_id)
+    add_check(
+        "strongest_scenes_rows_complete",
+        not malformed_strongest_scenes,
+        ", ".join(malformed_strongest_scenes[:10]) or "all present",
+    )
+    add_check(
+        "strongest_scenes_review_paths_exist",
+        strongest_scenes_path.exists() and not strongest_review_missing,
+        (
+            "strongest-scenes.json missing"
+            if not strongest_scenes_path.exists() else
+            ", ".join(strongest_review_missing[:10]) or "all present"
+        ),
+    )
+    malformed_weakest_scenes = []
+    weakest_review_missing = []
+    for row in weakest_scenes.get("scenes", []):
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        if missing_keys(row, required_summary_scene_keys):
+            malformed_weakest_scenes.append(scene_id)
+            continue
+        review_path = resolve_artifact_path(row["review_html"], weakest_scenes_path.parent)
+        if not review_path.exists():
+            weakest_review_missing.append(scene_id)
+    add_check(
+        "weakest_scenes_rows_complete",
+        not malformed_weakest_scenes,
+        ", ".join(malformed_weakest_scenes[:10]) or "all present",
+    )
+    add_check(
+        "weakest_scenes_review_paths_exist",
+        weakest_scenes_path.exists() and not weakest_review_missing,
+        (
+            "weakest-scenes.json missing"
+            if not weakest_scenes_path.exists() else
+            ", ".join(weakest_review_missing[:10]) or "all present"
+        ),
+    )
+    malformed_confusion_pairs = []
+    confusion_review_missing = []
+    for row in top_confusion_pairs.get("pairs", []):
+        source_scene = str(row.get("source_scene", "<missing-source-scene>"))
+        if missing_keys(row, required_confusion_pair_keys):
+            malformed_confusion_pairs.append(source_scene)
+            continue
+        review_path = resolve_artifact_path(row["source_review_html"], top_confusion_pairs_path.parent)
+        if not review_path.exists():
+            confusion_review_missing.append(source_scene)
+    add_check(
+        "top_confusion_pairs_rows_complete",
+        not malformed_confusion_pairs,
+        ", ".join(malformed_confusion_pairs[:10]) or "all present",
+    )
+    add_check(
+        "top_confusion_pairs_review_paths_exist",
+        top_confusion_pairs_path.exists() and not confusion_review_missing,
+        (
+            "top-confusion-pairs.json missing"
+            if not top_confusion_pairs_path.exists() else
+            ", ".join(confusion_review_missing[:10]) or "all present"
         ),
     )
     missing_catalog_top_level = []

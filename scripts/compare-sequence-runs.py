@@ -55,7 +55,7 @@ def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
     return (base_dir / path).resolve()
 
 
-def infer_scene_spec(result: dict) -> str | None:
+def infer_scene_spec(result: dict, source_path: Path | None = None) -> str | None:
     scene = result.get("scene", {}) or {}
     spec = scene.get("spec")
     if spec:
@@ -64,6 +64,12 @@ def infer_scene_spec(result: dict) -> str | None:
     tag = scene.get("tag")
     if ads_name and tag not in (None, ""):
         return f"{ads_name} {tag}"
+    if source_path is not None:
+        name = source_path.name
+        if "-" in name:
+            parts = name.rsplit("-", 1)
+            if len(parts) == 2 and parts[1].isdigit():
+                return f"{parts[0]} {parts[1]}"
     return None
 
 
@@ -352,7 +358,7 @@ def main() -> int:
     effective_min_result_scene_frame = (
         args.min_result_scene_frame
         if args.min_result_scene_frame is not None
-        else resolve_reviewed_start(infer_scene_spec(result))
+        else resolve_reviewed_start(infer_scene_spec(result, result_path.parent if result_path.is_file() else result_path))
     )
 
     result_frames = load_frame_map(result, result_path)

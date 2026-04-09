@@ -127,13 +127,13 @@ def build_scene_truth(scene_dir: Path, meta_paths: list[Path]) -> dict | None:
 def build_truth(root: Path) -> dict:
     scenes = []
     direct_meta_dir = root / "frame-meta"
-    direct_meta_paths = sorted(direct_meta_dir.glob("frame_*.json")) if direct_meta_dir.is_dir() else []
+    direct_meta_paths = sorted(direct_meta_dir.glob("**/frame_*.json")) if direct_meta_dir.is_dir() else []
     if direct_meta_paths:
         scene = build_scene_truth(root, direct_meta_paths)
         if scene is not None:
             scenes.append(scene)
     else:
-        direct_meta_paths = sorted(root.glob("frame_*.json"))
+        direct_meta_paths = sorted(root.glob("**/frame_*.json"))
         if direct_meta_paths:
             scene = build_scene_truth(root, direct_meta_paths)
             if scene is not None:
@@ -142,9 +142,9 @@ def build_truth(root: Path) -> dict:
             for scene_dir in sorted(path for path in root.iterdir() if path.is_dir()):
                 meta_dir = scene_dir / "frame-meta"
                 if meta_dir.is_dir():
-                    meta_paths = sorted(meta_dir.glob("frame_*.json"))
+                    meta_paths = sorted(meta_dir.glob("**/frame_*.json"))
                 else:
-                    meta_paths = sorted(scene_dir.glob("frame_*.json"))
+                    meta_paths = sorted(scene_dir.glob("**/frame_*.json"))
                 if not meta_paths:
                     continue
                 scene = build_scene_truth(scene_dir, meta_paths)

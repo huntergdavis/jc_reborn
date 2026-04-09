@@ -755,12 +755,12 @@ if tightest:
     frame = tightest.get("frame")
     if frame:
         scene_slug = str(scene).lower().replace(" ", "")
-        for href in (
-            f"{scene_slug}/frames/{frame}.bmp",
-            f"{scene_slug}/frame-meta/{frame}.json",
-        ):
-            if href not in capture_html:
-                raise SystemExit(f"capture-regression-review.html tightest drift asset missing: {href}")
+        frame_href = f"{scene_slug}/frames/{frame}.bmp"
+        if frame_href not in capture_html:
+            raise SystemExit(f"capture-regression-review.html tightest drift asset missing: {frame_href}")
+        meta_pattern = rf'{re.escape(scene_slug)}/frame-meta/(?:[^"<>]+/)?{re.escape(frame)}\.json'
+        if not re.search(meta_pattern, capture_html):
+            raise SystemExit(f"capture-regression-review.html tightest drift asset missing: {scene_slug}/frame-meta/.../{frame}.json")
 
 identification_html = (root / "identification-review.html").read_text(encoding="utf-8")
 for href in (

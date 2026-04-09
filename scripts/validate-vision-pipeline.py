@@ -48,6 +48,8 @@ def main() -> None:
     selfcheck_index = json.loads((selfcheckdir / "index.json").read_text())
     inventory_path = root / "scene-inventory.json"
     inventory = json.loads(inventory_path.read_text())
+    catalog_path = root / "artifact-catalog.json"
+    catalog = json.loads(catalog_path.read_text()) if catalog_path.exists() else None
 
     bank_scene_count = len(bank_index["scenes"])
     selfcheck_scene_count = int(selfcheck_index["scene_count"])
@@ -55,6 +57,7 @@ def main() -> None:
     bank_scene_ids = {str(row["scene_id"]) for row in bank_index["scenes"]}
     selfcheck_scene_ids = {str(row["scene_id"]) for row in selfcheck_index.get("scenes", [])}
     inventory_scene_ids = {str(row["scene_id"]) for row in inventory.get("scenes", [])}
+    catalog_scene_ids = {str(row["scene_id"]) for row in (catalog or {}).get("scenes", [])}
     add_check(
         "scene_count_consistent",
         bank_scene_count == selfcheck_scene_count == inventory_scene_count,
@@ -67,6 +70,16 @@ def main() -> None:
             f"bank_only={sorted(bank_scene_ids - selfcheck_scene_ids - inventory_scene_ids)[:5]}, "
             f"selfcheck_only={sorted(selfcheck_scene_ids - bank_scene_ids - inventory_scene_ids)[:5]}, "
             f"inventory_only={sorted(inventory_scene_ids - bank_scene_ids - selfcheck_scene_ids)[:5]}"
+        ),
+    )
+    add_check(
+        "artifact_catalog_scene_ids_consistent",
+        catalog is not None and catalog_scene_ids == inventory_scene_ids,
+        (
+            "artifact-catalog.json missing"
+            if catalog is None else
+            f"catalog_only={sorted(catalog_scene_ids - inventory_scene_ids)[:5]}, "
+            f"inventory_only={sorted(inventory_scene_ids - catalog_scene_ids)[:5]}"
         ),
     )
     add_check("bank_features_exists", (bankdir / "features.npy").exists(), str(bankdir / "features.npy"))

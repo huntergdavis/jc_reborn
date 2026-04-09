@@ -261,7 +261,7 @@ payload = {
     "scene": scene_label,
     "result": result_path,
     "reference": reference_path,
-    "alignment_mode": "scene-entry-align",
+    "alignment_mode": "scene_entry",
     "frame_offset": None,
     "result_entry_frame": None,
     "reference_entry_frame": None,

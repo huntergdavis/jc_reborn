@@ -52,6 +52,13 @@ def get_nested(d: dict, *keys, default=None):
     return cur
 
 
+def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    return (base_dir / path).resolve()
+
+
 def scene_hash(d: dict, section: str) -> str:
     return (
         get_nested(d, section, "frame_scene_pixel_sha256", default="")
@@ -83,8 +90,11 @@ def build_frame_result(frame_path_value: str) -> dict:
     }
 
 
-def frame_path(d: dict, section: str) -> str:
-    return get_nested(d, section, "frame_path", default="") or ""
+def frame_path(d: dict, section: str, base_dir: Path) -> str:
+    value = get_nested(d, section, "frame_path", default="") or ""
+    if not value:
+        return ""
+    return str(resolve_capture_path(value, base_dir))
 
 
 def masked_scene_rgb(path: Path):
@@ -140,9 +150,12 @@ def main() -> int:
 
     if result_path is not None:
         result = load_json(result_path)
+        result_base_dir = result_path.parent
     else:
         result = build_frame_result(args.result_frame)
+        result_base_dir = Path.cwd()
     reference = load_json(reference_path)
+    reference_base_dir = reference_path.parent
 
     result_outcome = result.get("outcome", {})
 
@@ -150,8 +163,8 @@ def main() -> int:
     for section in ("visual_best", "visual_entry_scene", "visual_last_scene"):
         result_hash = scene_hash(result_outcome, section)
         reference_hash = scene_hash(reference, section)
-        result_frame = frame_path(result_outcome, section)
-        reference_frame = frame_path(reference, section)
+        result_frame = frame_path(result_outcome, section, result_base_dir)
+        reference_frame = frame_path(reference, section, reference_base_dir)
         comparisons[section] = {
             "result": result_hash,
             "reference": reference_hash,

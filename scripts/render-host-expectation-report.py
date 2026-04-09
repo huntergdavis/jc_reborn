@@ -30,12 +30,13 @@ def resolve_report_path(path_value: str | None, report_path: Path) -> Path | Non
 
 def build_html(report: dict, output_path: Path, title: str) -> str:
     rows_html = []
+    report_root = output_path.parent
     for row in report.get("rows", []):
         status = row["status"]
         row_class = "mismatch" if status == "mismatch" else "ok"
         image_path = resolve_report_path(row.get("image_path"), output_path)
         if image_path is None:
-            image_path = Path("host-script-review") / row["scene_label"].lower().replace(" ", "") / row["frame_name"]
+            image_path = report_root / "host-script-review" / row["scene_label"].lower().replace(" ", "") / row["frame_name"]
             if not image_path.exists():
                 image_path = None
         img_cell = (

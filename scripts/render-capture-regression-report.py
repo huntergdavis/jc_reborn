@@ -9,6 +9,17 @@ def load(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def resolve_report_path(path_value: str | None, base_dir: Path | None) -> str | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return str(path.resolve())
+    if base_dir is None:
+        return path_value
+    return str((base_dir / path).resolve())
+
+
 def summarize(report: dict, label_key: str) -> list[dict]:
     rows = []
     for scene in report.get("scenes", []):
@@ -65,6 +76,19 @@ def render_html(payload: dict) -> str:
                 pass
         return f"{scene_slug}/frame-meta"
 
+    def normalize_failure_paths(failure: dict, check_name: str) -> dict:
+        if not failure:
+            return {}
+        source_roots = payload.get("source_roots", {})
+        base_dir_value = source_roots.get(check_name)
+        base_dir = Path(base_dir_value) if base_dir_value else None
+        out = dict(failure)
+        if "frame_path" in out:
+            out["frame_path"] = resolve_report_path(out.get("frame_path"), base_dir)
+        if "meta_path" in out:
+            out["meta_path"] = resolve_report_path(out.get("meta_path"), base_dir)
+        return out
+
     report_links = (
         '<div class="links">'
         '<a href="index.html">index.html</a> '
@@ -88,7 +112,7 @@ def render_html(payload: dict) -> str:
             label = row.get(label_key, "")
             status = fmt_status(bool(row.get("passed", False)))
             failure_count = row.get("failure_count", 0)
-            first_failure = row.get("first_failure") or {}
+            first_failure = normalize_failure_paths(row.get("first_failure") or {}, name.lower().replace(" ", "-"))
             scene_slug = slugify_scene(label, label_key)
             frame_href = f"{scene_slug}/frames/"
             meta_href = f"{scene_slug}/frame-meta/"
@@ -144,6 +168,7 @@ def render_html(payload: dict) -> str:
     overall = fmt_status(bool(payload.get("passed", False)))
     tightest_html = ""
     if tightest:
+        tightest = normalize_failure_paths(tightest, str(tightest.get("check") or ""))
         scene_name = tightest.get("scene") or tightest.get("scene_label") or ""
         scene_slug = str(scene_name).lower().replace(" ", "")
         frame_name = tightest.get("frame") or ""
@@ -235,6 +260,11 @@ def main() -> int:
             report.get("passed", False)
             for report in (frame_image, frame_meta, semantic)
         ),
+        "source_roots": {
+            "frame-image": str(Path(args.frame_image).resolve().parent),
+            "frame-meta": str(Path(args.frame_meta).resolve().parent),
+            "semantic": str(Path(args.semantic).resolve().parent),
+        },
         "checks": {
             "frame-image": {
                 "passed": frame_image.get("passed", False),

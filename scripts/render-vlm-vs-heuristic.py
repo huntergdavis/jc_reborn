@@ -49,7 +49,7 @@ def load_rows(summary_path: Path) -> list[dict[str, Any]]:
         frame = item["frame"]
         image_path = resolve_summary_path(item.get("relative_frame_path"), summary_path)
         if image_path is None:
-            image_path = Path("regtest-references") / scene_id / "frames" / frame
+            image_path = summary_path.parent / "regtest-references" / scene_id / "frames" / frame
         meta = analysis.get("_meta", {})
         heuristic = meta.get("heuristic_state", {})
         rows.append(

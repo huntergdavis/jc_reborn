@@ -89,17 +89,28 @@ def render_html(payload: dict) -> str:
             out["meta_path"] = resolve_report_path(out.get("meta_path"), base_dir)
         return out
 
+    def bundle_href(name: str) -> str:
+        source_roots = payload.get("source_roots", {})
+        candidates = [source_roots.get("frame-image"), source_roots.get("frame-meta"), source_roots.get("semantic")]
+        for root_value in candidates:
+            if not root_value:
+                continue
+            candidate = (Path(root_value) / name).resolve()
+            if candidate.exists():
+                return html.escape(str(candidate))
+        return html.escape(name)
+
     report_links = (
         '<div class="links">'
-        '<a href="index.html">index.html</a> '
-        '<a href="identification-review.html">identification-review.html</a> '
-        '<a href="verification-summary.json">verification-summary.json</a> '
-        '<a href="verification-summary.txt">verification-summary.txt</a> '
-        '<a href="semantic-truth.json">semantic-truth.json</a> '
-        '<a href="frame-image-regression-report.json">frame-image-regression-report.json</a> '
-        '<a href="frame-meta-regression-report.json">frame-meta-regression-report.json</a> '
-        '<a href="semantic-regression-report.json">semantic-regression-report.json</a> '
-        '<a href="capture-regression-report.json">capture-regression-report.json</a>'
+        f'<a href="{bundle_href("index.html")}">index.html</a> '
+        f'<a href="{bundle_href("identification-review.html")}">identification-review.html</a> '
+        f'<a href="{bundle_href("verification-summary.json")}">verification-summary.json</a> '
+        f'<a href="{bundle_href("verification-summary.txt")}">verification-summary.txt</a> '
+        f'<a href="{bundle_href("semantic-truth.json")}">semantic-truth.json</a> '
+        f'<a href="{bundle_href("frame-image-regression-report.json")}">frame-image-regression-report.json</a> '
+        f'<a href="{bundle_href("frame-meta-regression-report.json")}">frame-meta-regression-report.json</a> '
+        f'<a href="{bundle_href("semantic-regression-report.json")}">semantic-regression-report.json</a> '
+        f'<a href="{bundle_href("capture-regression-report.json")}">capture-regression-report.json</a>'
         "</div>"
     )
 

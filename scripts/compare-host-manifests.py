@@ -7,7 +7,9 @@ from pathlib import Path
 
 
 def load_manifest(path: Path) -> dict:
-    return json.loads(path.read_text(encoding="utf-8"))
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload.setdefault("root", str(path.parent.resolve()))
+    return payload
 
 
 def index_manifest(manifest: dict) -> dict[tuple[str, int], dict]:

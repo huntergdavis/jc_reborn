@@ -30,11 +30,26 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
+def portable_path(path: Path, root: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(root.resolve()))
+    except ValueError:
+        return str(resolved)
+
+
 def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
     path = Path(path_value)
     if path.is_absolute():
         return path.resolve()
     return (base_dir / path).resolve()
+
+
+def resolve_manifest_path(path_value: str, root: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (root / path).resolve()
 
 
 def scene_rows(scene_dir: Path) -> tuple[dict, list[dict]]:
@@ -63,7 +78,7 @@ def scene_rows(scene_dir: Path) -> tuple[dict, list[dict]]:
         "scene_dir": scene_dir.name,
         "scene_label": scene_label,
         "frame_count": len(rows),
-        "review_html": str((scene_dir / "review.html").resolve()),
+        "review_html": portable_path(scene_dir / "review.html", scene_dir.parent),
         "rows": rows,
     }
     return info, rows
@@ -86,7 +101,7 @@ def build_manifest(root: Path) -> dict:
         path = root / name
         if not path.is_file():
             raise FileNotFoundError(f"required dashboard missing: {path}")
-        extras[name] = str(path.resolve())
+        extras[name] = portable_path(path, root)
     return {"root": str(root.resolve()), "scenes": scenes, "extras": extras}
 
 
@@ -107,11 +122,13 @@ def build_html(manifest: dict, output_path: Path, title: str) -> str:
     ):
         path = extras.get(name)
         if path:
-            top_links.append(f'<a href="{esc(rel(Path(path), output_path.parent))}">{esc(label)}</a>')
+            top_links.append(
+                f'<a href="{esc(rel(resolve_manifest_path(path, Path(manifest["root"])), output_path.parent))}">{esc(label)}</a>'
+            )
 
     cards = []
     for scene in manifest["scenes"]:
-        review_path = Path(scene["review_html"])
+        review_path = resolve_manifest_path(scene["review_html"], Path(manifest["root"]))
         review_href = rel(review_path, output_path.parent) if review_path.exists() else None
         rows_html = []
         for row in scene["rows"]:

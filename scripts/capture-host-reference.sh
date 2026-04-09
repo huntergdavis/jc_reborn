@@ -191,6 +191,11 @@ scene_png_path = Path(sys.argv[14])
 frame_meta_path = Path(sys.argv[15])
 capture_overlay = int(sys.argv[16]) != 0
 
+output_dir = meta_path.parent
+
+def rel_to_output(path: Path) -> str:
+    return path.resolve().relative_to(output_dir.resolve()).as_posix()
+
 visual = json.loads(visual_path.read_text(encoding="utf-8"))
 raw_sha = hashlib.sha256(frame_path.read_bytes()).hexdigest()
 scene_png_sha = hashlib.sha256(scene_png_path.read_bytes()).hexdigest()
@@ -230,8 +235,8 @@ if scene_list_path.is_file():
 
 frame_entry = {
     "frame": frame_path.name,
-    "frame_path": str(frame_path),
-    "frame_scene_path": str(scene_png_path),
+    "frame_path": rel_to_output(frame_path),
+    "frame_scene_path": rel_to_output(scene_png_path),
     "frame_sha256": raw_sha,
     "frame_pixel_sha256": pixel_sha,
     "frame_scene_pixel_sha256": scene_pixel_sha,
@@ -255,8 +260,8 @@ metadata = {
     "capture_date": capture_date,
     "capture_overlay": capture_overlay,
     "frame_count": 1,
-    "frames": [frame_path.name],
-    "frame_meta_files": [frame_meta_path.name] if frame_meta_path.exists() else [],
+    "frames": [rel_to_output(frame_path)],
+    "frame_meta_files": [rel_to_output(frame_meta_path)] if frame_meta_path.exists() else [],
     "image_size": visual.get("image_size"),
     "visual_last": visual,
     "visual_best": frame_entry,

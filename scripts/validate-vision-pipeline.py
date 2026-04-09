@@ -17,6 +17,12 @@ def resolve_artifact_path(path_value: str, base_dir: Path) -> Path:
     return (base_dir / path).resolve()
 
 
+def missing_keys(mapping: object, required_keys: tuple[str, ...]) -> list[str]:
+    if not isinstance(mapping, dict):
+        return list(required_keys)
+    return [key for key in required_keys if key not in mapping]
+
+
 def main() -> None:
     project_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Validate a published vision pipeline bundle.")
@@ -121,8 +127,50 @@ def main() -> None:
         not mismatched_catalog_manifest_top_level,
         ", ".join(mismatched_catalog_manifest_top_level[:10]) or "all present",
     )
+    required_catalog_bank_keys = ("index_html", "metadata_json", "features_npy")
+    required_catalog_selfcheck_keys = (
+        "index_html",
+        "quality_report_html",
+        "confusion_report_html",
+        "family_report_html",
+    )
+    required_manifest_bank_keys = ("index_html", "metadata_json", "features_npy", "scene_count", "frame_count")
+    required_manifest_selfcheck_keys = (
+        "index_html",
+        "quality_report_html",
+        "confusion_report_html",
+        "family_report_html",
+        "scene_count",
+    )
+
+    catalog_bank = (catalog or {}).get("reference_bank", {})
+    catalog_selfcheck = (catalog or {}).get("reference_selfcheck", {})
+    manifest_bank = manifest.get("reference_bank", {})
+    manifest_selfcheck = manifest.get("reference_selfcheck", {})
+
+    add_check(
+        "artifact_catalog_reference_bank_complete",
+        not missing_keys(catalog_bank, required_catalog_bank_keys),
+        ", ".join(missing_keys(catalog_bank, required_catalog_bank_keys)[:10]) or "all present",
+    )
+    add_check(
+        "artifact_catalog_reference_selfcheck_complete",
+        not missing_keys(catalog_selfcheck, required_catalog_selfcheck_keys),
+        ", ".join(missing_keys(catalog_selfcheck, required_catalog_selfcheck_keys)[:10]) or "all present",
+    )
+    add_check(
+        "manifest_reference_bank_complete",
+        not missing_keys(manifest_bank, required_manifest_bank_keys),
+        ", ".join(missing_keys(manifest_bank, required_manifest_bank_keys)[:10]) or "all present",
+    )
+    add_check(
+        "manifest_reference_selfcheck_complete",
+        not missing_keys(manifest_selfcheck, required_manifest_selfcheck_keys),
+        ", ".join(missing_keys(manifest_selfcheck, required_manifest_selfcheck_keys)[:10]) or "all present",
+    )
+
     missing_catalog_bank = []
-    for name, path_value in (catalog or {}).get("reference_bank", {}).items():
+    for name, path_value in catalog_bank.items():
         if not isinstance(path_value, str):
             continue
         resolved = resolve_artifact_path(path_value, root)
@@ -134,7 +182,7 @@ def main() -> None:
         ", ".join(missing_catalog_bank[:10]) or "all present",
     )
     missing_catalog_selfcheck = []
-    for name, path_value in (catalog or {}).get("reference_selfcheck", {}).items():
+    for name, path_value in catalog_selfcheck.items():
         if not isinstance(path_value, str):
             continue
         resolved = resolve_artifact_path(path_value, root)
@@ -146,8 +194,8 @@ def main() -> None:
         ", ".join(missing_catalog_selfcheck[:10]) or "all present",
     )
     mismatched_catalog_manifest_bank = []
-    for name, path_value in (catalog or {}).get("reference_bank", {}).items():
-        if path_value != manifest.get("reference_bank", {}).get(name):
+    for name, path_value in catalog_bank.items():
+        if path_value != manifest_bank.get(name):
             mismatched_catalog_manifest_bank.append(name)
     add_check(
         "artifact_catalog_reference_bank_matches_manifest",
@@ -155,8 +203,8 @@ def main() -> None:
         ", ".join(mismatched_catalog_manifest_bank[:10]) or "all present",
     )
     mismatched_catalog_manifest_selfcheck = []
-    for name, path_value in (catalog or {}).get("reference_selfcheck", {}).items():
-        if path_value != manifest.get("reference_selfcheck", {}).get(name):
+    for name, path_value in catalog_selfcheck.items():
+        if path_value != manifest_selfcheck.get(name):
             mismatched_catalog_manifest_selfcheck.append(name)
     add_check(
         "artifact_catalog_reference_selfcheck_matches_manifest",
@@ -164,7 +212,7 @@ def main() -> None:
         ", ".join(mismatched_catalog_manifest_selfcheck[:10]) or "all present",
     )
     missing_manifest_bank = []
-    for name, path_value in manifest.get("reference_bank", {}).items():
+    for name, path_value in manifest_bank.items():
         if not isinstance(path_value, str) or not path_value.endswith((".html", ".json", ".npy")):
             continue
         resolved = resolve_artifact_path(path_value, manifest_path.parent)
@@ -176,7 +224,7 @@ def main() -> None:
         ", ".join(missing_manifest_bank[:10]) or "all present",
     )
     missing_manifest_selfcheck = []
-    for name, path_value in manifest.get("reference_selfcheck", {}).items():
+    for name, path_value in manifest_selfcheck.items():
         if not isinstance(path_value, str) or not path_value.endswith((".html", ".json", ".npy")):
             continue
         resolved = resolve_artifact_path(path_value, manifest_path.parent)
@@ -189,20 +237,20 @@ def main() -> None:
     )
     add_check(
         "manifest_reference_bank_counts_match",
-        manifest.get("reference_bank", {}).get("scene_count") == bank_scene_count
-        and manifest.get("reference_bank", {}).get("frame_count") == bank_index.get("frame_count"),
+        manifest_bank.get("scene_count") == bank_scene_count
+        and manifest_bank.get("frame_count") == bank_index.get("frame_count"),
         (
-            f"manifest_scene_count={manifest.get('reference_bank', {}).get('scene_count')}, "
+            f"manifest_scene_count={manifest_bank.get('scene_count')}, "
             f"index_scene_count={bank_scene_count}, "
-            f"manifest_frame_count={manifest.get('reference_bank', {}).get('frame_count')}, "
+            f"manifest_frame_count={manifest_bank.get('frame_count')}, "
             f"index_frame_count={bank_index.get('frame_count')}"
         ),
     )
     add_check(
         "manifest_reference_selfcheck_counts_match",
-        manifest.get("reference_selfcheck", {}).get("scene_count") == selfcheck_scene_count,
+        manifest_selfcheck.get("scene_count") == selfcheck_scene_count,
         (
-            f"manifest_scene_count={manifest.get('reference_selfcheck', {}).get('scene_count')}, "
+            f"manifest_scene_count={manifest_selfcheck.get('scene_count')}, "
             f"index_scene_count={selfcheck_scene_count}"
         ),
     )

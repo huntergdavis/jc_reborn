@@ -82,6 +82,16 @@ def main() -> None:
             f"inventory_only={sorted(inventory_scene_ids - catalog_scene_ids)[:5]}"
         ),
     )
+    missing_catalog_top_level = []
+    for name, path_value in (catalog or {}).get("top_level", {}).items():
+        resolved = resolve_artifact_path(path_value, root)
+        if not resolved.exists():
+            missing_catalog_top_level.append(name)
+    add_check(
+        "artifact_catalog_top_level_exists",
+        not missing_catalog_top_level,
+        ", ".join(missing_catalog_top_level[:10]) or "all present",
+    )
     add_check("bank_features_exists", (bankdir / "features.npy").exists(), str(bankdir / "features.npy"))
     add_check("bank_metadata_exists", (bankdir / "metadata.json").exists(), str(bankdir / "metadata.json"))
     add_check("quality_report_exists", (selfcheckdir / "quality-report.html").exists(), str(selfcheckdir / "quality-report.html"))

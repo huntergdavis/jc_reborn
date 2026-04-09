@@ -245,7 +245,7 @@ for scene in "${SCENES[@]}"; do
     compare_rc=$?
     set -e
     if [ "$compare_rc" -ne 0 ]; then
-        COMPARE_JSON="$(python3 - <<'PY' "$RESULT_DIR.result.json" "$REFERENCE_DIR/${ADS_NAME}-${TAG}/result.json" "$MIN_RESULT_SCENE_FRAME" "$MIN_REFERENCE_SCENE_FRAME" "$scene" "$compare_rc"
+        COMPARE_JSON="$(python3 - <<'PY' "$RESULT_DIR.result.json" "$REFERENCE_DIR/${ADS_NAME}-${TAG}/result.json" "$SCENE_MIN_RESULT_SCENE_FRAME" "$MIN_REFERENCE_SCENE_FRAME" "$scene" "$compare_rc"
 import json
 import sys
 

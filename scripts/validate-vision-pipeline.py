@@ -248,6 +248,24 @@ def main() -> None:
         top_confusion_pairs_path.exists() and confusion_rows == confusion_sorted_expected,
         "sorted descending by ratio, source_scene, target_scene",
     )
+    strongest_expected_rows = sorted(
+        inventory.get("scenes", []),
+        key=lambda r: (-float(r.get("global_top1_ratio", float("-inf"))), str(r.get("scene_id", ""))),
+    )[:20]
+    weakest_expected_rows = sorted(
+        inventory.get("scenes", []),
+        key=lambda r: (float(r.get("global_top1_ratio", float("inf"))), str(r.get("scene_id", ""))),
+    )[:20]
+    add_check(
+        "strongest_scenes_match_inventory_selection",
+        strongest_scenes_path.exists() and strongest_rows == strongest_expected_rows,
+        f"rows={len(strongest_rows)}, expected={len(strongest_expected_rows)}",
+    )
+    add_check(
+        "weakest_scenes_match_inventory_selection",
+        weakest_scenes_path.exists() and weakest_rows == weakest_expected_rows,
+        f"rows={len(weakest_rows)}, expected={len(weakest_expected_rows)}",
+    )
     bad_confusion_families = []
     for row in confusion_rows:
         if not isinstance(row, dict):

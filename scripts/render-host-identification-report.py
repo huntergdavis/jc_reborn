@@ -99,18 +99,20 @@ def challenge_risk_status(challenges: dict) -> tuple[str, str]:
 
 def build_scene_index(manifest: dict, manifest_base_dir: Path) -> dict[str, dict]:
     index = {}
+    manifest_root = manifest.get("root")
+    manifest_root_dir = Path(manifest_root).resolve() if manifest_root else manifest_base_dir.resolve()
     for scene in manifest.get("scenes", []):
         scene_label = str(scene.get("scene_label") or "")
         scene_dir = str(scene.get("scene_dir") or "")
         rows = scene.get("rows") or []
         frame_index = {}
         for row in rows:
-            image_path = resolve_report_path(row.get("image_path"), manifest_base_dir)
+            image_path = resolve_report_path(row.get("image_path"), manifest_root_dir)
             if image_path:
                 frame_index[int(row.get("frame_number"))] = Path(image_path)
         entry = {
             "scene_dir": scene_dir,
-            "scene_path": str((manifest_base_dir / scene_dir).resolve()) if scene_dir else "",
+            "scene_path": str((manifest_root_dir / scene_dir).resolve()) if scene_dir else "",
             "frame_index": frame_index,
         }
         index[scene_label] = entry

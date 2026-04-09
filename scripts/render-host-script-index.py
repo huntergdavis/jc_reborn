@@ -40,7 +40,7 @@ def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
 def scene_rows(scene_dir: Path) -> tuple[dict, list[dict]]:
     rows = []
     scene_label = scene_dir.name
-    for meta_path in sorted((scene_dir / "frame-meta").glob("frame_*.json")):
+    for meta_path in sorted((scene_dir / "frame-meta").glob("**/frame_*.json")):
         summary = summarize(meta_path)
         image_path = resolve_capture_path(
             json.loads(meta_path.read_text(encoding="utf-8"))["image_path"],

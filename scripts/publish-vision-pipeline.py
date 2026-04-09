@@ -22,17 +22,22 @@ def href_from(html_path: Path, target: Path) -> str:
 
 
 def main() -> None:
+    project_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Publish a portable vision pipeline bundle.")
-    parser.add_argument("--bankdir", type=Path, default=Path("/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329"))
+    parser.add_argument(
+        "--bankdir",
+        type=Path,
+        default=project_root / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-bank",
+    )
     parser.add_argument(
         "--selfcheckdir",
         type=Path,
-        default=Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-selfcheck-20260329-v4"),
+        default=project_root / "vision-artifacts" / "vision-reference-selfcheck-20260329-v4",
     )
     parser.add_argument(
         "--outroot",
         type=Path,
-        default=Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current"),
+        default=project_root / "vision-artifacts" / "vision-reference-pipeline-current",
     )
     args = parser.parse_args()
 

@@ -9,6 +9,7 @@ import argparse
 import json
 import math
 import os
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -54,6 +55,51 @@ def resolve_model_dir(model_dir: Path | None) -> Path:
 
 def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+FRAME_STEM_RE = re.compile(r"frame_(\d+)$", re.IGNORECASE)
+
+
+def load_scene_capture_windows() -> dict[str, Any]:
+    return load_json(project_root() / "config" / "ps1" / "scene-capture-windows.json")
+
+
+def reviewed_scene_start(scene_id: str | None, capture_windows: dict[str, Any]) -> int:
+    default_start = int(capture_windows.get("default", {}).get("start_frame", 0) or 0)
+    if not scene_id:
+        return default_start
+    return int(capture_windows.get("scenes", {}).get(scene_id, {}).get("start_frame", default_start) or default_start)
+
+
+def frame_number_from_image_path(image_path: str | Path) -> int | None:
+    match = FRAME_STEM_RE.match(Path(image_path).stem)
+    if not match:
+        return None
+    return int(match.group(1))
+
+
+def stale_pack_query_cases(manifest: dict[str, Any]) -> list[dict[str, Any]]:
+    capture_windows = load_scene_capture_windows()
+    issues: list[dict[str, Any]] = []
+    for case in manifest.get("cases", []):
+        query_image = str(case.get("query_image", ""))
+        if "regtest-results/" not in query_image:
+            continue
+        frame_number = frame_number_from_image_path(query_image)
+        if frame_number is None:
+            continue
+        start_frame = reviewed_scene_start(case.get("scene_id"), capture_windows)
+        if frame_number < start_frame:
+            issues.append(
+                {
+                    "case_id": case.get("case_id"),
+                    "scene_id": case.get("scene_id"),
+                    "query_image": query_image,
+                    "frame_number": frame_number,
+                    "reviewed_start_frame": start_frame,
+                }
+            )
+    return issues
 
 
 def resolve_frames_dir(path: Path) -> Path:
@@ -130,6 +176,13 @@ def ratio(part: int, total: int) -> float:
 def run_pack(args: argparse.Namespace) -> int:
     root = project_root()
     manifest = load_json(args.manifest)
+    stale_cases = stale_pack_query_cases(manifest)
+    if stale_cases:
+        detail = ", ".join(
+            f"{row['case_id']}:{row['frame_number']}<reviewed:{row['reviewed_start_frame']}"
+            for row in stale_cases
+        )
+        raise SystemExit(f"Scene-pack manifest uses stale pre-window PS1 query frames: {detail}")
     outdir = args.outdir.resolve()
     outdir.mkdir(parents=True, exist_ok=True)
     model_dir = resolve_model_dir(args.model_dir)

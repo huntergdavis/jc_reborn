@@ -1256,7 +1256,6 @@ def compare_scene_dirs(
 
 
 def parse_args() -> argparse.Namespace:
-    root = find_project_root()
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest="cmd", required=True)
 
@@ -1294,7 +1293,7 @@ def parse_args() -> argparse.Namespace:
     p4.add_argument("--model-dir", type=Path, required=True)
     p4.add_argument("--scene-dir", type=Path, required=True)
     p4.add_argument("--outdir", type=Path, required=True)
-    p4.add_argument("--bank-dir", type=Path, default=root / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-bank")
+    p4.add_argument("--bank-dir", type=Path)
     p4.add_argument("--scene-id", type=str)
     p4.add_argument("--samples", type=int, default=8)
     p4.add_argument("--topk", type=int, default=3)

@@ -269,6 +269,43 @@ def main() -> None:
             ", ".join(bad_confusion_families[:10]) or "all present"
         ),
     )
+    strongest_scene_id_list = [str(row.get("scene_id")) for row in strongest_rows if isinstance(row, dict)]
+    weakest_scene_id_list = [str(row.get("scene_id")) for row in weakest_rows if isinstance(row, dict)]
+    confusion_pair_list = [
+        (str(row.get("source_scene")), str(row.get("target_scene")))
+        for row in confusion_rows
+        if isinstance(row, dict)
+    ]
+    add_check(
+        "strongest_scenes_unique",
+        strongest_scenes_path.exists() and len(strongest_scene_id_list) == len(set(strongest_scene_id_list)),
+        f"rows={len(strongest_scene_id_list)}, unique={len(set(strongest_scene_id_list))}",
+    )
+    add_check(
+        "weakest_scenes_unique",
+        weakest_scenes_path.exists() and len(weakest_scene_id_list) == len(set(weakest_scene_id_list)),
+        f"rows={len(weakest_scene_id_list)}, unique={len(set(weakest_scene_id_list))}",
+    )
+    add_check(
+        "top_confusion_pairs_unique",
+        top_confusion_pairs_path.exists() and len(confusion_pair_list) == len(set(confusion_pair_list)),
+        f"rows={len(confusion_pair_list)}, unique={len(set(confusion_pair_list))}",
+    )
+    add_check(
+        "strongest_scenes_count_capped",
+        strongest_scenes_path.exists() and len(strongest_rows) <= 20,
+        f"rows={len(strongest_rows)}, max=20",
+    )
+    add_check(
+        "weakest_scenes_count_capped",
+        weakest_scenes_path.exists() and len(weakest_rows) <= 20,
+        f"rows={len(weakest_rows)}, max=20",
+    )
+    add_check(
+        "top_confusion_pairs_count_capped",
+        top_confusion_pairs_path.exists() and len(confusion_rows) <= 50,
+        f"rows={len(confusion_rows)}, max=50",
+    )
     strongest_inventory_mismatches = []
     for row in strongest_rows:
         if not isinstance(row, dict):

@@ -269,6 +269,63 @@ def main() -> None:
             ", ".join(bad_confusion_families[:10]) or "all present"
         ),
     )
+    strongest_inventory_mismatches = []
+    for row in strongest_rows:
+        if not isinstance(row, dict):
+            continue
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        inventory_row = inventory_scene_map.get(scene_id)
+        if inventory_row and any(
+            row.get(key) != inventory_row.get(key)
+            for key in ("family", "frame_count", "review_html", "vision_analysis_json")
+        ):
+            strongest_inventory_mismatches.append(scene_id)
+    add_check(
+        "strongest_scenes_match_inventory_rows",
+        strongest_scenes_path.exists() and not strongest_inventory_mismatches,
+        (
+            "strongest-scenes.json missing"
+            if not strongest_scenes_path.exists() else
+            ", ".join(strongest_inventory_mismatches[:10]) or "all present"
+        ),
+    )
+    weakest_inventory_mismatches = []
+    for row in weakest_rows:
+        if not isinstance(row, dict):
+            continue
+        scene_id = str(row.get("scene_id", "<missing-scene-id>"))
+        inventory_row = inventory_scene_map.get(scene_id)
+        if inventory_row and any(
+            row.get(key) != inventory_row.get(key)
+            for key in ("family", "frame_count", "review_html", "vision_analysis_json")
+        ):
+            weakest_inventory_mismatches.append(scene_id)
+    add_check(
+        "weakest_scenes_match_inventory_rows",
+        weakest_scenes_path.exists() and not weakest_inventory_mismatches,
+        (
+            "weakest-scenes.json missing"
+            if not weakest_scenes_path.exists() else
+            ", ".join(weakest_inventory_mismatches[:10]) or "all present"
+        ),
+    )
+    confusion_review_mismatches = []
+    for row in confusion_rows:
+        if not isinstance(row, dict):
+            continue
+        source_scene = str(row.get("source_scene", "<missing-source-scene>"))
+        inventory_row = inventory_scene_map.get(source_scene)
+        if inventory_row and row.get("source_review_html") != inventory_row.get("review_html"):
+            confusion_review_mismatches.append(source_scene)
+    add_check(
+        "top_confusion_pairs_reviews_match_inventory",
+        top_confusion_pairs_path.exists() and not confusion_review_mismatches,
+        (
+            "top-confusion-pairs.json missing"
+            if not top_confusion_pairs_path.exists() else
+            ", ".join(confusion_review_mismatches[:10]) or "all present"
+        ),
+    )
     malformed_strongest_scenes = []
     strongest_review_missing = []
     strongest_analysis_missing = []

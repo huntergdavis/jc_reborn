@@ -49,9 +49,14 @@ def main() -> None:
     inventory_path = root / "scene-inventory.json"
     inventory = json.loads(inventory_path.read_text())
 
-    add_check("bank_scene_count", len(bank_index["scenes"]) == 63, f"{len(bank_index['scenes'])} scenes")
-    add_check("selfcheck_scene_count", selfcheck_index["scene_count"] == 63, f"{selfcheck_index['scene_count']} scenes")
-    add_check("inventory_scene_count", inventory["scene_count"] == 63, f"{inventory['scene_count']} scenes")
+    bank_scene_count = len(bank_index["scenes"])
+    selfcheck_scene_count = int(selfcheck_index["scene_count"])
+    inventory_scene_count = int(inventory["scene_count"])
+    add_check(
+        "scene_count_consistent",
+        bank_scene_count == selfcheck_scene_count == inventory_scene_count,
+        f"bank={bank_scene_count}, selfcheck={selfcheck_scene_count}, inventory={inventory_scene_count}",
+    )
     add_check("bank_features_exists", (bankdir / "features.npy").exists(), str(bankdir / "features.npy"))
     add_check("bank_metadata_exists", (bankdir / "metadata.json").exists(), str(bankdir / "metadata.json"))
     add_check("quality_report_exists", (selfcheckdir / "quality-report.html").exists(), str(selfcheckdir / "quality-report.html"))

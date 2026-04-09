@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import argparse
 import json
 from pathlib import Path
 
@@ -18,7 +19,11 @@ def sha256_file(path: Path) -> str:
 
 
 def main() -> None:
-    root = Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current")
+    parser = argparse.ArgumentParser(description="Write checksums for a published vision pipeline bundle.")
+    parser.add_argument("--root", type=Path, default=Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current"))
+    args = parser.parse_args()
+
+    root = args.root.resolve()
     targets = [
         root / "index.html",
         root / "pipeline-manifest.json",

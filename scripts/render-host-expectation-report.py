@@ -41,7 +41,8 @@ def build_html(report: dict, report_path: Path, output_path: Path, title: str) -
         row_class = "mismatch" if status == "mismatch" else "ok"
         image_path = resolve_report_path(row.get("image_path"), report_path, manifest_root)
         if image_path is None:
-            image_path = report_root / "host-script-review" / row["scene_label"].lower().replace(" ", "") / row["frame_name"]
+            fallback_root = Path(manifest_root).resolve() if manifest_root else report_root
+            image_path = fallback_root / row["scene_label"].lower().replace(" ", "") / row["frame_name"]
             if not image_path.exists():
                 image_path = None
         img_cell = (

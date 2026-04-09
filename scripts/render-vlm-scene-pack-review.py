@@ -21,6 +21,13 @@ def load(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def resolve_capture_path(path_value: str, base_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
+
+
 def pill_class(label: str) -> str:
     if label == "correct_scene_content":
         return "good"
@@ -29,18 +36,20 @@ def pill_class(label: str) -> str:
     return "neutral"
 
 
-def render_case(case: dict[str, Any], analysis: dict[str, Any], out_html: Path) -> str:
+def render_case(case: dict[str, Any], analysis: dict[str, Any], analysis_path: Path, out_html: Path) -> str:
     meta = analysis.get("_meta", {})
-    reference_image = Path(meta["reference_image"]).resolve()
-    query_image = Path(meta["query_image"]).resolve()
+    reference_image = resolve_capture_path(meta["reference_image"], analysis_path.parent)
+    query_image = resolve_capture_path(meta["query_image"], analysis_path.parent)
     reference_state = meta.get("reference_state", {})
     query_state = meta.get("query_state", {})
     expected = case["expected_label"]
     actual = case["actual_label"]
     missing = case.get("missing_characters", [])
-    analysis_path = (out_html.parent / case["analysis_json"]).resolve()
+    analysis_link_path = (out_html.parent / case["analysis_json"]).resolve()
     passed = bool(case.get("passed"))
     header_class = "pass" if passed else "fail"
+    human_status = case.get("human_review_status") or "unreviewed"
+    human_notes = case.get("human_review_notes") or ""
 
     return f"""
 <section class="card {header_class}" id="{esc(case['case_id'])}">
@@ -53,6 +62,7 @@ def render_case(case: dict[str, Any], analysis: dict[str, Any], out_html: Path) 
       <span class="pill {pill_class(expected)}">expected: {esc(expected)}</span>
       <span class="pill {pill_class(actual)}">model: {esc(actual)}</span>
       <span class="pill {'ok' if passed else 'warn'}">{'match' if passed else 'mismatch'}</span>
+      <span class="pill neutral">human: {esc(human_status)}</span>
     </div>
   </div>
   <div class="grid">
@@ -86,11 +96,15 @@ def render_case(case: dict[str, Any], analysis: dict[str, Any], out_html: Path) 
     <div class="v">{esc(case.get('summary', ''))}</div>
   </div>
   <div class="text-block">
+    <div class="k">Human Review Notes</div>
+    <div class="v">{esc(human_notes or 'none')}</div>
+  </div>
+  <div class="text-block">
     <div class="k">Raw Compare Response</div>
     <pre>{esc(meta.get('raw_response', ''))}</pre>
   </div>
   <div class="links">
-    <a href="{esc(rel(analysis_path, out_html))}">Analysis JSON</a>
+    <a href="{esc(rel(analysis_link_path, out_html))}">Analysis JSON</a>
   </div>
 </section>
 """
@@ -100,8 +114,9 @@ def build_html(title: str, summary: dict[str, Any], out_html: Path) -> str:
     summary_path = out_html.parent / "validation-summary.json"
     cards = []
     for case in summary.get("cases", []):
-        analysis = load((out_html.parent / case["analysis_json"]).resolve())
-        cards.append(render_case(case, analysis, out_html))
+        analysis_path = (out_html.parent / case["analysis_json"]).resolve()
+        analysis = load(analysis_path)
+        cards.append(render_case(case, analysis, analysis_path, out_html))
 
     family_rows = []
     for family, stats in summary.get("family_stats", {}).items():

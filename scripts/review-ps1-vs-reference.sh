@@ -124,7 +124,49 @@ if [ "$SCENE_WINDOW_ONLY" -eq 1 ]; then
     COMPARE_CMD+=(--scene-window-only)
 fi
 
-"${COMPARE_CMD[@]}" > "$COMPARE_JSON"
+set +e
+COMPARE_OUTPUT="$("${COMPARE_CMD[@]}" 2>&1)"
+compare_rc=$?
+set -e
+if [ "$compare_rc" -eq 0 ]; then
+    printf '%s\n' "$COMPARE_OUTPUT" > "$COMPARE_JSON"
+else
+    python3 - <<'PY' "$COMPARE_JSON" "$RESULT_PATH" "$REFERENCE_PATH" "$MIN_RESULT_SCENE_FRAME" "$MIN_REFERENCE_SCENE_FRAME" "$SCENE_SPEC" "$compare_rc" "$COMPARE_OUTPUT"
+import json
+import sys
+
+compare_json = sys.argv[1]
+result_path = sys.argv[2]
+reference_path = sys.argv[3]
+min_result = int(sys.argv[4]) if sys.argv[4] else None
+min_reference = int(sys.argv[5]) if sys.argv[5] else None
+scene_spec = sys.argv[6]
+rc = int(sys.argv[7])
+stderr = sys.argv[8]
+
+payload = {
+    "scene": scene_spec,
+    "result": result_path,
+    "reference": reference_path,
+    "alignment_mode": "scene_entry",
+    "frame_offset": None,
+    "result_entry_frame": None,
+    "reference_entry_frame": None,
+    "min_result_scene_frame": min_result,
+    "min_reference_scene_frame": min_reference,
+    "common_frame_count": 0,
+    "average_palette_index_diff_pixels": None,
+    "result_only_frames": [],
+    "reference_only_frames": [],
+    "frames": [],
+    "error": stderr or f"compare failed rc={rc}",
+    "verdict": "COMPARE_FAILED",
+}
+with open(compare_json, "w", encoding="utf-8") as handle:
+    json.dump(payload, handle, indent=2)
+    handle.write("\n")
+PY
+fi
 
 resolve_vlm_python() {
     if [ -x "$PROJECT_ROOT/.venv-vlm/bin/python" ]; then

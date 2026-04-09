@@ -105,9 +105,17 @@ def main() -> None:
         "validation_report_json": "validation-report.json",
         "validation_report_html": "validation-report.html",
     }
+    missing_catalog_manifest_top_level = []
     for catalog_key, expected_value in expected_top_level_pairs.items():
+        if catalog_key not in top_level:
+            missing_catalog_manifest_top_level.append(catalog_key)
         if top_level.get(catalog_key) != expected_value:
             mismatched_catalog_manifest_top_level.append(catalog_key)
+    add_check(
+        "artifact_catalog_top_level_complete",
+        not missing_catalog_manifest_top_level,
+        ", ".join(missing_catalog_manifest_top_level[:10]) or "all present",
+    )
     add_check(
         "artifact_catalog_top_level_matches_manifest",
         not mismatched_catalog_manifest_top_level,

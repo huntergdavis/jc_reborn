@@ -739,6 +739,7 @@ def main() -> int:
         "mode": "paired" if args.paired else "single_frame",
         "reference": str(args.reference.resolve()),
         "result": str(args.result.resolve()),
+        "frame_count": len(frames),
         "frames": [],
     }
     for frame in frames:
@@ -761,7 +762,17 @@ def main() -> int:
                     "scene_id": scene_id,
                     "result": str(args.result.resolve()),
                     "reference": str(args.reference.resolve()),
-                    "frames": [],
+                    "frames": [
+                        {
+                            "id": frame["id"],
+                            "reference_image": frame["reference_image"],
+                            "query_image": frame["query_image"],
+                            "labels": frame.get("labels") or {},
+                            "johnny_capture": frame.get("johnny_capture"),
+                            "notes": frame.get("notes", ""),
+                        }
+                        for frame in manifest["frames"]
+                    ],
                 },
                 indent=2,
             )

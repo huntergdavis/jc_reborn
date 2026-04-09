@@ -580,6 +580,7 @@ def main() -> None:
     top_level = (catalog or {}).get("top_level", {})
     mismatched_catalog_manifest_top_level = []
     expected_top_level_pairs = {
+        "pipeline_index_html": "index.html",
         "pipeline_manifest_json": "pipeline-manifest.json",
         "scene_inventory_json": manifest.get("inventory_json"),
         "scene_inventory_html": manifest.get("inventory_html"),

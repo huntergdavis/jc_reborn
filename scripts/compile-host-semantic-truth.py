@@ -319,9 +319,19 @@ def compile_semantic_truth(root: Path) -> dict:
             continue
         rows = []
         label = scene_dir.name
-        for meta_path in sorted(meta_dir.glob("frame_*.json")):
+        for meta_path in sorted(meta_dir.glob("**/frame_*.json")):
             summary = summarize(meta_path)
             label = summary.get("scene_label") or label
+            frame_number = summary.get("frame_number")
+            if frame_number is None:
+                stem = meta_path.stem
+                if stem.startswith("frame_"):
+                    try:
+                        frame_number = int(stem.split("_", 1)[1])
+                    except ValueError:
+                        frame_number = 0
+                else:
+                    frame_number = 0
             entities = sorted(summary.get("actor_summary", {}).keys())
             bmp_names = [row.get("bmp_name") for row in summary.get("actor_candidates", [])]
             family = scene_family(label)
@@ -331,7 +341,7 @@ def compile_semantic_truth(root: Path) -> dict:
             region = frame_region(summary)
             frame_state = classify_frame_state(entities, pose, family)
             row = {
-                "frame_number": int(summary.get("frame_number", 0)),
+                "frame_number": int(frame_number),
                 "scene_label": label,
                 "scene_family": family,
                 "entities": entities,

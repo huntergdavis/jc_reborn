@@ -104,7 +104,14 @@ def main() -> None:
         "review_html",
         "vision_analysis_json",
     )
-    required_catalog_scene_keys = ("scene_id", "family", "review_html", "vision_analysis_json")
+    required_catalog_scene_keys = (
+        "scene_id",
+        "family",
+        "start_frame",
+        "capture_start_frame",
+        "review_html",
+        "vision_analysis_json",
+    )
     malformed_bank_scenes = []
     for row in bank_index.get("scenes", []):
         scene_id = str(row.get("scene_id", "<missing-scene-id>"))

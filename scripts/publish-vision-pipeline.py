@@ -244,6 +244,8 @@ def main() -> None:
             {
                 "scene_id": row["scene_id"],
                 "family": row["family"],
+                "start_frame": row.get("start_frame"),
+                "capture_start_frame": row.get("capture_start_frame"),
                 "review_html": row["review_html"],
                 "vision_analysis_json": row["vision_analysis_json"],
             }

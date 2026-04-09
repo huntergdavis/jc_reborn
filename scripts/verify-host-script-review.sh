@@ -758,7 +758,7 @@ if tightest:
         frame_href = f"{scene_slug}/frames/{frame}.bmp"
         if frame_href not in capture_html:
             raise SystemExit(f"capture-regression-review.html tightest drift asset missing: {frame_href}")
-        meta_pattern = rf'{re.escape(scene_slug)}/frame-meta/(?:[^"<>]+/)?{re.escape(frame)}\.json'
+        meta_pattern = rf'{re.escape(scene_slug)}/frame-meta/(?:[^"<>]+/)*{re.escape(frame)}\.json'
         if not re.search(meta_pattern, capture_html):
             raise SystemExit(f"capture-regression-review.html tightest drift asset missing: {scene_slug}/frame-meta/.../{frame}.json")
 

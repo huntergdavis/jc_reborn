@@ -66,6 +66,20 @@ def load_frame_meta_sidecar(image_path: Path) -> dict | None:
         image_path.parent.parent.parent / "frame-meta" / f"{image_path.stem}.json",
         image_path.parent.parent / "frame-meta" / f"{image_path.stem}.json",
     ]
+    nested_meta_roots = [
+        image_path.parent.parent.parent / "frame-meta",
+        image_path.parent.parent / "frame-meta",
+    ]
+    seen = {path.resolve() for path in candidates if path.exists()}
+    for root in nested_meta_roots:
+        if not root.is_dir():
+            continue
+        for path in root.glob(f"**/{image_path.stem}.json"):
+            resolved = path.resolve()
+            if resolved in seen:
+                continue
+            candidates.append(path)
+            seen.add(resolved)
     for path in candidates:
         if path.is_file():
             try:

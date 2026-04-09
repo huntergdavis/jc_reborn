@@ -88,7 +88,8 @@ def render_html(payload: dict) -> str:
                 if frame_name:
                     links = []
                     links.append(f'<a href="{html.escape(scene_slug)}/frames/{html.escape(frame_name)}.bmp">frame</a>')
-                    links.append(f'<a href="{html.escape(scene_slug)}/frame-meta/{html.escape(frame_name)}.json">meta</a>')
+                    meta_href = first_failure.get("meta_path") or f"{scene_slug}/frame-meta/{frame_name}.json"
+                    links.append(f'<a href="{html.escape(meta_href)}">meta</a>')
                     drift_links = " ".join(links)
             else:
                 failure_preview = ""
@@ -124,9 +125,10 @@ def render_html(payload: dict) -> str:
         frame_name = tightest.get("frame") or ""
         drift_links = ""
         if frame_name and scene_slug:
+            meta_href = tightest.get("meta_path") or f"{scene_slug}/frame-meta/{frame_name}.json"
             drift_links = (
                 f' <a href="{html.escape(scene_slug)}/frames/{html.escape(frame_name)}.bmp">frame</a>'
-                f' <a href="{html.escape(scene_slug)}/frame-meta/{html.escape(frame_name)}.json">meta</a>'
+                f' <a href="{html.escape(meta_href)}">meta</a>'
             )
         tightest_html = (
             "<div class=\"summary\">"

@@ -54,6 +54,7 @@ def main() -> int:
                             "field": key,
                             "expected": expected.get(key),
                             "actual": current.get(key),
+                            "meta_path": path.relative_to(root).as_posix(),
                         }
                     )
         failures.extend(scene_failures)

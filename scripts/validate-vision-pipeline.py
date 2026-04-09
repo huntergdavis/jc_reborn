@@ -306,6 +306,18 @@ def main() -> None:
         top_confusion_pairs_path.exists() and len(confusion_rows) <= 50,
         f"rows={len(confusion_rows)}, max=50",
     )
+    strongest_expected_count = min(20, inventory_scene_count)
+    weakest_expected_count = min(20, inventory_scene_count)
+    add_check(
+        "strongest_scenes_count_matches_inventory_cap",
+        strongest_scenes_path.exists() and len(strongest_rows) == strongest_expected_count,
+        f"rows={len(strongest_rows)}, expected={strongest_expected_count}",
+    )
+    add_check(
+        "weakest_scenes_count_matches_inventory_cap",
+        weakest_scenes_path.exists() and len(weakest_rows) == weakest_expected_count,
+        f"rows={len(weakest_rows)}, expected={weakest_expected_count}",
+    )
     strongest_inventory_mismatches = []
     for row in strongest_rows:
         if not isinstance(row, dict):

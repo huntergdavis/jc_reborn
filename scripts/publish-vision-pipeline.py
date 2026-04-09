@@ -21,18 +21,37 @@ def href_from(html_path: Path, target: Path) -> str:
     return os.path.relpath(target.resolve(), html_path.parent.resolve())
 
 
+def resolve_artifact_path(path_value: str, base_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    return (base_dir / path).resolve()
+
+
+def resolve_default_section_dir(outroot: Path, section: str, local_dir: Path) -> Path:
+    if local_dir.exists():
+        return local_dir.resolve()
+    manifest_path = outroot / "pipeline-manifest.json"
+    if manifest_path.exists():
+        manifest = json.loads(manifest_path.read_text())
+        index_html = manifest.get(section, {}).get("index_html")
+        if isinstance(index_html, str):
+            return resolve_artifact_path(index_html, manifest_path.parent).parent
+    return local_dir.resolve()
+
+
 def main() -> None:
     project_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Publish a portable vision pipeline bundle.")
     parser.add_argument(
         "--bankdir",
         type=Path,
-        default=project_root / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-bank",
+        default=None,
     )
     parser.add_argument(
         "--selfcheckdir",
         type=Path,
-        default=project_root / "vision-artifacts" / "vision-reference-pipeline-current" / "reference-selfcheck",
+        default=None,
     )
     parser.add_argument(
         "--outroot",
@@ -41,9 +60,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    bankdir = args.bankdir.resolve()
-    selfcheckdir = args.selfcheckdir.resolve()
     outroot = args.outroot.resolve()
+    default_bankdir = outroot / "reference-bank"
+    default_selfcheckdir = outroot / "reference-selfcheck"
+    bankdir = args.bankdir.resolve() if args.bankdir else resolve_default_section_dir(outroot, "reference_bank", default_bankdir)
+    selfcheckdir = args.selfcheckdir.resolve() if args.selfcheckdir else resolve_default_section_dir(outroot, "reference_selfcheck", default_selfcheckdir)
 
     outroot.mkdir(parents=True, exist_ok=True)
 

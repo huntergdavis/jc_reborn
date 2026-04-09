@@ -70,6 +70,16 @@ USAGE
     exit 0
 }
 
+find_result_frame_png() {
+    local frames_dir="$1"
+    local frame_no="${2:-}"
+    if [ -n "$frame_no" ]; then
+        find "$frames_dir" -type f -name "frame_$(printf '%05d' "$frame_no").png" | sort | head -1
+    else
+        find "$frames_dir" -type f -name 'frame_*.png' | sort | tail -1
+    fi
+}
+
 while [ $# -gt 0 ]; do
     case "$1" in
         --expected-root) EXPECTED_ROOT="$2"; shift 2 ;;
@@ -195,9 +205,9 @@ PY
             fi
 
             if [ -n "$ACTUAL_FRAME" ]; then
-                BASELINE_IMAGE_PATH="$BASELINE_FRAMES_DIR/frame_$(printf '%05d' "$ACTUAL_FRAME").png"
+                BASELINE_IMAGE_PATH="$(find_result_frame_png "$BASELINE_FRAMES_DIR" "$ACTUAL_FRAME")"
             else
-                BASELINE_IMAGE_PATH="$(find "$BASELINE_FRAMES_DIR" -maxdepth 1 -type f -name 'frame_*.png' | sort | tail -1)"
+                BASELINE_IMAGE_PATH="$(find_result_frame_png "$BASELINE_FRAMES_DIR")"
             fi
             if [ -z "$BASELINE_IMAGE_PATH" ] || [ ! -f "$BASELINE_IMAGE_PATH" ]; then
                 echo "ERROR: headless baseline regtest did not produce a usable frame PNG." >&2
@@ -234,9 +244,9 @@ PY
         fi
 
         if [ -n "$ACTUAL_FRAME" ]; then
-            SCREENSHOT_PATH="$FRAMES_DIR/frame_$(printf '%05d' "$ACTUAL_FRAME").png"
+            SCREENSHOT_PATH="$(find_result_frame_png "$FRAMES_DIR" "$ACTUAL_FRAME")"
         else
-            SCREENSHOT_PATH="$(find "$FRAMES_DIR" -maxdepth 1 -type f -name 'frame_*.png' | sort | tail -1)"
+            SCREENSHOT_PATH="$(find_result_frame_png "$FRAMES_DIR")"
         fi
         if [ -z "$SCREENSHOT_PATH" ] || [ ! -f "$SCREENSHOT_PATH" ]; then
             echo "ERROR: headless regtest did not produce a usable frame PNG." >&2

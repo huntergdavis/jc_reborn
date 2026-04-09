@@ -30,11 +30,22 @@ python3 - <<'PY' "$BANKDIR" "$SELFCHECKDIR" "$MANIFEST" "$MANIFEST_HTML"
 from pathlib import Path
 import json
 import sys
+import os
 
 bankdir = Path(sys.argv[1])
 selfcheckdir = Path(sys.argv[2])
 manifest_path = Path(sys.argv[3])
 html_path = Path(sys.argv[4])
+outroot = manifest_path.parent
+
+def rel_to(root: Path, target: Path) -> str:
+    try:
+        return target.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        return target.resolve().as_posix()
+
+def rel_href(target: Path) -> str:
+    return os.path.relpath(target.resolve(), html_path.parent.resolve())
 
 bank = json.loads((bankdir / "index.json").read_text())
 selfcheck = json.loads((selfcheckdir / "index.json").read_text())
@@ -42,18 +53,18 @@ quality = json.loads((selfcheckdir / "quality-report.json").read_text())
 
 manifest = {
     "reference_bank": {
-        "index_html": str(bankdir / "index.html"),
-        "index_json": str(bankdir / "index.json"),
-        "metadata_json": str(bankdir / "metadata.json"),
-        "features_npy": str(bankdir / "features.npy"),
+        "index_html": rel_to(outroot, bankdir / "index.html"),
+        "index_json": rel_to(outroot, bankdir / "index.json"),
+        "metadata_json": rel_to(outroot, bankdir / "metadata.json"),
+        "features_npy": rel_to(outroot, bankdir / "features.npy"),
         "scene_count": len(bank["scenes"]),
         "frame_count": bank["frame_count"],
     },
     "reference_selfcheck": {
-        "index_html": str(selfcheckdir / "index.html"),
-        "index_json": str(selfcheckdir / "index.json"),
-        "quality_html": str(selfcheckdir / "quality-report.html"),
-        "quality_json": str(selfcheckdir / "quality-report.json"),
+        "index_html": rel_to(outroot, selfcheckdir / "index.html"),
+        "index_json": rel_to(outroot, selfcheckdir / "index.json"),
+        "quality_html": rel_to(outroot, selfcheckdir / "quality-report.html"),
+        "quality_json": rel_to(outroot, selfcheckdir / "quality-report.json"),
         "scene_count": selfcheck["scene_count"],
     },
 }
@@ -63,7 +74,7 @@ best = sorted(quality["scenes"], key=lambda r: (-r["global_top1_ratio"], r["scen
 rows = []
 for row in best:
     rows.append(
-        f"<tr><td><a href=\"{Path(selfcheckdir / row['review_html']).as_posix()}\">{row['scene_id']}</a></td>"
+        f"<tr><td><a href=\"{rel_href(selfcheckdir / row['review_html'])}\">{row['scene_id']}</a></td>"
         f"<td>{row['expected_top1_ratio']:.3f}</td>"
         f"<td>{row['global_top1_ratio']:.3f}</td>"
         f"<td>{row['sprite_visible_ratio']:.3f}</td>"
@@ -87,10 +98,10 @@ html = f"""<!doctype html>
 <body>
   <h1>Vision Reference Pipeline</h1>
   <div class="links">
-    <a href="{(bankdir / 'index.html').as_posix()}">Reference bank index</a>
-    <a href="{(selfcheckdir / 'index.html').as_posix()}">Reference self-check index</a>
-    <a href="{(selfcheckdir / 'quality-report.html').as_posix()}">Quality report</a>
-    <a href="{manifest_path.as_posix()}">Manifest JSON</a>
+    <a href="{rel_href(bankdir / 'index.html')}">Reference bank index</a>
+    <a href="{rel_href(selfcheckdir / 'index.html')}">Reference self-check index</a>
+    <a href="{rel_href(selfcheckdir / 'quality-report.html')}">Quality report</a>
+    <a href="{rel_href(manifest_path)}">Manifest JSON</a>
   </div>
   <p>Reference scenes: {len(bank['scenes'])}. Reference frames: {bank['frame_count']}.</p>
   <h2>Top Global Self-Matches</h2>

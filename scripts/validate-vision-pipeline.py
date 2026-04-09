@@ -92,6 +92,23 @@ def main() -> None:
         not missing_catalog_top_level,
         ", ".join(missing_catalog_top_level[:10]) or "all present",
     )
+    top_level = (catalog or {}).get("top_level", {})
+    mismatched_catalog_manifest_top_level = []
+    expected_top_level_pairs = {
+        "pipeline_manifest_json": "pipeline-manifest.json",
+        "scene_inventory_json": manifest.get("inventory_json"),
+        "scene_inventory_html": manifest.get("inventory_html"),
+        "validation_report_json": "validation-report.json",
+        "validation_report_html": "validation-report.html",
+    }
+    for catalog_key, expected_value in expected_top_level_pairs.items():
+        if top_level.get(catalog_key) != expected_value:
+            mismatched_catalog_manifest_top_level.append(catalog_key)
+    add_check(
+        "artifact_catalog_top_level_matches_manifest",
+        not mismatched_catalog_manifest_top_level,
+        ", ".join(mismatched_catalog_manifest_top_level[:10]) or "all present",
+    )
     missing_catalog_bank = []
     for name, path_value in (catalog or {}).get("reference_bank", {}).items():
         if not isinstance(path_value, str):

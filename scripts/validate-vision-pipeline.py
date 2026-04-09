@@ -18,6 +18,7 @@ def resolve_artifact_path(path_value: str, base_dir: Path) -> Path:
 
 
 def main() -> None:
+    project_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Validate a published vision pipeline bundle.")
     parser.add_argument("--root", type=Path, help="Pipeline bundle root containing pipeline-manifest.json")
     parser.add_argument("--manifest-json", type=Path, help="Direct path to pipeline-manifest.json")
@@ -30,7 +31,7 @@ def main() -> None:
         root = args.root.resolve()
         manifest_path = root / "pipeline-manifest.json"
     else:
-        root = Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current")
+        root = project_root / "vision-artifacts" / "vision-reference-pipeline-current"
         manifest_path = root / "pipeline-manifest.json"
 
     manifest = json.loads(manifest_path.read_text())

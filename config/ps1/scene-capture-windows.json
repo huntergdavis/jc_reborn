@@ -6,6 +6,7 @@
     "FISHING-1": {
       "start_frame": 2400,
       "review_start_frame": 3590,
+      "review_end_frame": 3720,
       "review_capture_start_frame": 3480,
       "review_capture_frames": 3720,
       "review_capture_interval": 10,

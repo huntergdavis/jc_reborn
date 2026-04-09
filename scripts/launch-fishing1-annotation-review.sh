@@ -20,6 +20,7 @@ CAPTURE_START_FRAME="${FISHING1_REVIEW_CAPTURE_START_FRAME:-$(resolve_scene_valu
 CAPTURE_FRAMES="${FISHING1_REVIEW_CAPTURE_FRAMES:-$(resolve_scene_value review_capture_frames 3720)}"
 CAPTURE_INTERVAL="${FISHING1_REVIEW_CAPTURE_INTERVAL:-$(resolve_scene_value review_capture_interval 10)}"
 START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(resolve_scene_value review_start_frame 3580)}"
+END_FRAME="${FISHING1_REVIEW_END_FRAME:-$(resolve_scene_value review_end_frame 3720)}"
 
 if [ -z "$SOURCE_RESULT" ]; then
   "$PROJECT_ROOT/scripts/regtest-scene.sh" \
@@ -35,7 +36,8 @@ fi
 python3 "$PROJECT_ROOT/scripts/filter-result-frames.py" \
   --result "$SOURCE_RESULT" \
   --outdir "$FILTERED_RESULT_DIR" \
-  --start-frame "$START_FRAME" >/dev/null
+  --start-frame "$START_FRAME" \
+  --end-frame "$END_FRAME" >/dev/null
 
 python3 "$PROJECT_ROOT/scripts/generate-scene-annotation-review.py" \
   --scene-id "FISHING-1" \

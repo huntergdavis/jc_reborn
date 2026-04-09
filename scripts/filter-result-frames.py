@@ -47,6 +47,7 @@ def main() -> int:
     parser.add_argument("--result", type=Path, required=True, help="Source result.json or containing directory")
     parser.add_argument("--outdir", type=Path, required=True, help="Output directory for filtered result wrapper")
     parser.add_argument("--start-frame", type=int, default=None, help="First frame number to keep")
+    parser.add_argument("--end-frame", type=int, default=None, help="Last frame number to keep")
     args = parser.parse_args()
 
     result_path = args.result.resolve()
@@ -57,6 +58,7 @@ def main() -> int:
     outdir.mkdir(parents=True, exist_ok=True)
 
     start_frame = resolve_start_frame(result_path, payload, args.start_frame)
+    end_frame = None if args.end_frame is None else max(start_frame, int(args.end_frame))
 
     frames_dir_value = (payload.get("paths") or {}).get("frames_dir")
     if not frames_dir_value:
@@ -78,12 +80,16 @@ def main() -> int:
             continue
         if frame_no < start_frame:
             continue
+        if end_frame is not None and frame_no > end_frame:
+            continue
         shutil.copy2(frame_path, filtered_dir / frame_path.name)
         kept += 1
 
     output = json.loads(json.dumps(payload))
     output.setdefault("config", {})
     output["config"]["start_frame"] = start_frame
+    if end_frame is not None:
+        output["config"]["end_frame"] = end_frame
     output["config"]["frames_dir_layout"] = "flat"
     output.setdefault("paths", {})
     output["paths"]["output_dir"] = str(outdir)

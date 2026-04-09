@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import csv
 import os
+import shutil
 
 
 def write_json(path: Path, data: object) -> None:
@@ -40,6 +41,17 @@ def resolve_default_section_dir(outroot: Path, section: str, local_dir: Path) ->
     return local_dir.resolve()
 
 
+def stage_section_dir(source_dir: Path, target_dir: Path) -> Path:
+    source_dir = source_dir.resolve()
+    target_dir = target_dir.resolve()
+    if source_dir == target_dir:
+        return source_dir
+    if target_dir.exists():
+        shutil.rmtree(target_dir)
+    shutil.copytree(source_dir, target_dir)
+    return target_dir
+
+
 def main() -> None:
     project_root = Path(__file__).resolve().parent.parent
     parser = argparse.ArgumentParser(description="Publish a portable vision pipeline bundle.")
@@ -67,6 +79,9 @@ def main() -> None:
     selfcheckdir = args.selfcheckdir.resolve() if args.selfcheckdir else resolve_default_section_dir(outroot, "reference_selfcheck", default_selfcheckdir)
 
     outroot.mkdir(parents=True, exist_ok=True)
+
+    bankdir = stage_section_dir(bankdir, default_bankdir)
+    selfcheckdir = stage_section_dir(selfcheckdir, default_selfcheckdir)
 
     bank = json.loads((bankdir / "index.json").read_text())
     selfcheck = json.loads((selfcheckdir / "index.json").read_text())

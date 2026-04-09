@@ -306,6 +306,34 @@ def main() -> None:
         top_confusion_pairs_path.exists() and len(confusion_rows) <= 50,
         f"rows={len(confusion_rows)}, max=50",
     )
+    expected_confusion_pair_map: dict[tuple[str, str], dict[str, object]] = {}
+    for inventory_row in inventory.get("scenes", []):
+        if not isinstance(inventory_row, dict):
+            continue
+        source_scene = str(inventory_row.get("scene_id", ""))
+        source_family = inventory_row.get("family")
+        source_review_html = inventory_row.get("review_html")
+        for alt in inventory_row.get("top_alternates", []):
+            if not isinstance(alt, dict) or alt.get("scene_id") is None:
+                continue
+            target_scene = str(alt["scene_id"])
+            expected_confusion_pair_map[(source_scene, target_scene)] = {
+                "source_scene": source_scene,
+                "target_scene": target_scene,
+                "ratio": alt.get("ratio"),
+                "family_source": source_family,
+                "family_target": target_scene.split("-", 1)[0],
+                "source_review_html": source_review_html,
+            }
+    expected_confusion_rows = sorted(
+        expected_confusion_pair_map.values(),
+        key=lambda r: (-float(r.get("ratio", float("-inf"))), str(r.get("source_scene", "")), str(r.get("target_scene", ""))),
+    )[:50]
+    add_check(
+        "top_confusion_pairs_match_inventory",
+        top_confusion_pairs_path.exists() and confusion_rows == expected_confusion_rows,
+        f"rows={len(confusion_rows)}, expected={len(expected_confusion_rows)}",
+    )
     strongest_expected_count = min(20, inventory_scene_count)
     weakest_expected_count = min(20, inventory_scene_count)
     add_check(

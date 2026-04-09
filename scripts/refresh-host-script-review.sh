@@ -2449,65 +2449,71 @@ if capture_regression_path.is_file():
     )
 checks["capture-regression"] = capture_regression
 
+def rel_to_root(path: Path) -> str:
+    try:
+        return path.resolve().relative_to(root).as_posix()
+    except ValueError:
+        return str(path.resolve())
+
 review_paths = {
-    "index_html": str((root / "index.html").resolve()),
-    "identification_review_html": str((root / "identification-review.html").resolve()),
-    "capture_regression_review_html": str((root / "capture-regression-review.html").resolve()),
+    "index_html": rel_to_root(root / "index.html"),
+    "identification_review_html": rel_to_root(root / "identification-review.html"),
+    "capture_regression_review_html": rel_to_root(root / "capture-regression-review.html"),
 }
 core_artifact_paths = {
-    "manifest_json": str((root / "manifest.json").resolve()),
-    "semantic_truth_json": str((root / "semantic-truth.json").resolve()),
+    "manifest_json": rel_to_root(root / "manifest.json"),
+    "semantic_truth_json": rel_to_root(root / "semantic-truth.json"),
 }
 identification_audit_paths = {
-    "selfcheck_json": str((root / "identification-selfcheck.json").resolve()),
-    "eval_json": str((root / "identification-eval.json").resolve()),
-    "partials_json": str((root / "identification-partials.json").resolve()),
-    "challenges_json": str((root / "identification-challenges.json").resolve()),
-    "temporal_json": str((root / "identification-temporal.json").resolve()),
+    "selfcheck_json": rel_to_root(root / "identification-selfcheck.json"),
+    "eval_json": rel_to_root(root / "identification-eval.json"),
+    "partials_json": rel_to_root(root / "identification-partials.json"),
+    "challenges_json": rel_to_root(root / "identification-challenges.json"),
+    "temporal_json": rel_to_root(root / "identification-temporal.json"),
 }
 identification_floor_paths = {
-    "regression_floors_json": str((root / "identification-regression-floors.json").resolve()),
+    "regression_floors_json": rel_to_root(root / "identification-regression-floors.json"),
 }
 host_truth_paths = {
-    "baseline_json": str((root / "host-truth-baseline.json").resolve()),
-    "compare_json": str((root / "host-truth-compare.json").resolve()),
-    "compare_html": str((root / "host-truth-compare.html").resolve()),
+    "baseline_json": rel_to_root(root / "host-truth-baseline.json"),
+    "compare_json": rel_to_root(root / "host-truth-compare.json"),
+    "compare_html": rel_to_root(root / "host-truth-compare.html"),
 }
 expectation_paths = {
-    "baseline_json": str((root / "expectations.json").resolve()),
-    "report_json": str((root / "expectation-report.json").resolve()),
-    "report_html": str((root / "expectation-report.html").resolve()),
+    "baseline_json": rel_to_root(root / "expectations.json"),
+    "report_json": rel_to_root(root / "expectation-report.json"),
+    "report_html": rel_to_root(root / "expectation-report.html"),
 }
 repro_paths = {
-    "compare_json": str((root / "repro-compare.json").resolve()),
-    "compare_html": str((root / "repro-compare.html").resolve()),
+    "compare_json": rel_to_root(root / "repro-compare.json"),
+    "compare_html": rel_to_root(root / "repro-compare.html"),
 }
 capture_audit_paths = {
-    "image_report_json": str((root / "frame-image-regression-report.json").resolve()),
-    "meta_report_json": str((root / "frame-meta-regression-report.json").resolve()),
-    "semantic_report_json": str((root / "semantic-regression-report.json").resolve()),
-    "capture_report_json": str((root / "capture-regression-report.json").resolve()),
+    "image_report_json": rel_to_root(root / "frame-image-regression-report.json"),
+    "meta_report_json": rel_to_root(root / "frame-meta-regression-report.json"),
+    "semantic_report_json": rel_to_root(root / "semantic-regression-report.json"),
+    "capture_report_json": rel_to_root(root / "capture-regression-report.json"),
 }
 regression_baseline_paths = {
-    "image_baseline_json": str((root / "frame-image-regression-baseline.json").resolve()),
-    "meta_baseline_json": str((root / "frame-meta-regression-baseline.json").resolve()),
-    "semantic_baseline_json": str((root / "semantic-regression-baseline.json").resolve()),
+    "image_baseline_json": rel_to_root(root / "frame-image-regression-baseline.json"),
+    "meta_baseline_json": rel_to_root(root / "frame-meta-regression-baseline.json"),
+    "semantic_baseline_json": rel_to_root(root / "semantic-regression-baseline.json"),
 }
 scene_root_paths = {
-    "fishing_scene_dir": str((root / "fishing1").resolve()),
-    "mary_scene_dir": str((root / "mary1").resolve()),
+    "fishing_scene_dir": rel_to_root(root / "fishing1"),
+    "mary_scene_dir": rel_to_root(root / "mary1"),
 }
 scene_asset_paths = {
-    "fishing_frames_dir": str((root / "fishing1" / "frames").resolve()),
-    "fishing_meta_dir": str((root / "fishing1" / "frame-meta").resolve()),
-    "mary_frames_dir": str((root / "mary1" / "frames").resolve()),
-    "mary_meta_dir": str((root / "mary1" / "frame-meta").resolve()),
+    "fishing_frames_dir": rel_to_root(root / "fishing1" / "frames"),
+    "fishing_meta_dir": rel_to_root(root / "fishing1" / "frame-meta"),
+    "mary_frames_dir": rel_to_root(root / "mary1" / "frames"),
+    "mary_meta_dir": rel_to_root(root / "mary1" / "frame-meta"),
 }
 key_frame_paths = {
-    "fishing_start_bmp": str((root / "fishing1" / "frames" / f"{fishing_start_name}.bmp").resolve()),
-    "fishing_late_bmp": str((root / "fishing1" / "frames" / f"{fishing_late_name}.bmp").resolve()),
-    "mary_start_bmp": str((root / "mary1" / "frames" / f"{mary_start_name}.bmp").resolve()),
-    "mary_late_bmp": str((root / "mary1" / "frames" / f"{mary_late_name}.bmp").resolve()),
+    "fishing_start_bmp": rel_to_root(root / "fishing1" / "frames" / f"{fishing_start_name}.bmp"),
+    "fishing_late_bmp": rel_to_root(root / "fishing1" / "frames" / f"{fishing_late_name}.bmp"),
+    "mary_start_bmp": rel_to_root(root / "mary1" / "frames" / f"{mary_start_name}.bmp"),
+    "mary_late_bmp": rel_to_root(root / "mary1" / "frames" / f"{mary_late_name}.bmp"),
 }
 
 def resolve_key_frame_meta(scene_slug: str, frame_name: str) -> Path:
@@ -2521,10 +2527,10 @@ def resolve_key_frame_meta(scene_slug: str, frame_name: str) -> Path:
     return direct.resolve()
 
 key_frame_meta_paths = {
-    "fishing_start_json": str(resolve_key_frame_meta("fishing1", fishing_start_name)),
-    "fishing_late_json": str(resolve_key_frame_meta("fishing1", fishing_late_name)),
-    "mary_start_json": str(resolve_key_frame_meta("mary1", mary_start_name)),
-    "mary_late_json": str(resolve_key_frame_meta("mary1", mary_late_name)),
+    "fishing_start_json": rel_to_root(resolve_key_frame_meta("fishing1", fishing_start_name)),
+    "fishing_late_json": rel_to_root(resolve_key_frame_meta("fishing1", fishing_late_name)),
+    "mary_start_json": rel_to_root(resolve_key_frame_meta("mary1", mary_start_name)),
+    "mary_late_json": rel_to_root(resolve_key_frame_meta("mary1", mary_late_name)),
 }
 
 digest_inputs = {}

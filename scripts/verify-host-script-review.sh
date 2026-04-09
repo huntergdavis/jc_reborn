@@ -103,6 +103,12 @@ if review_root != str(root.resolve()):
 review_root_path = Path(review_root).resolve()
 print(f"review-root: ok root={review_root}")
 
+def resolve_summary_path(path_value: str) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (review_root_path / path).resolve()
+
 path_map_count = sum(
     1
     for key, value in summary.items()
@@ -346,7 +352,7 @@ for key, value in summary.items():
     if not key.endswith("_paths"):
         continue
     for path_key, path_value in value.items():
-        resolved = str(Path(path_value).resolve())
+        resolved = str(resolve_summary_path(path_value))
         prior = seen_paths.get(resolved)
         if prior is not None:
             raise SystemExit(f"verification-summary duplicate path: {prior} and {key}.{path_key}")
@@ -361,7 +367,7 @@ required_review_paths = {
 }
 for key, expected_path in required_review_paths.items():
     actual = review_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary review_paths.{key} mismatch")
 print(
     "review-paths: ok "
@@ -377,7 +383,7 @@ required_core_artifact_paths = {
 }
 for key, expected_path in required_core_artifact_paths.items():
     actual = core_artifact_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary core_artifact_paths.{key} mismatch")
 print(
     "core-artifact-paths: ok "
@@ -395,7 +401,7 @@ required_identification_audit_paths = {
 }
 for key, expected_path in required_identification_audit_paths.items():
     actual = identification_audit_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary identification_audit_paths.{key} mismatch")
 print(
     "identification-audit-paths: ok "
@@ -412,7 +418,7 @@ required_identification_floor_paths = {
 }
 for key, expected_path in required_identification_floor_paths.items():
     actual = identification_floor_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary identification_floor_paths.{key} mismatch")
 print(
     "identification-floor-paths: ok "
@@ -427,7 +433,7 @@ required_host_truth_paths = {
 }
 for key, expected_path in required_host_truth_paths.items():
     actual = host_truth_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary host_truth_paths.{key} mismatch")
 print(
     "host-truth-paths: ok "
@@ -444,7 +450,7 @@ required_expectation_paths = {
 }
 for key, expected_path in required_expectation_paths.items():
     actual = expectation_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary expectation_paths.{key} mismatch")
 print(
     "expectation-paths: ok "
@@ -460,7 +466,7 @@ required_repro_paths = {
 }
 for key, expected_path in required_repro_paths.items():
     actual = repro_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary repro_paths.{key} mismatch")
 print(
     "repro-paths: ok "
@@ -477,7 +483,7 @@ required_capture_audit_paths = {
 }
 for key, expected_path in required_capture_audit_paths.items():
     actual = capture_audit_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary capture_audit_paths.{key} mismatch")
 print(
     "capture-audit-paths: ok "
@@ -495,7 +501,7 @@ required_regression_baseline_paths = {
 }
 for key, expected_path in required_regression_baseline_paths.items():
     actual = regression_baseline_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary regression_baseline_paths.{key} mismatch")
 print(
     "regression-baseline-paths: ok "
@@ -511,7 +517,7 @@ required_scene_root_paths = {
 }
 for key, expected_path in required_scene_root_paths.items():
     actual = scene_root_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary scene_root_paths.{key} mismatch")
 print(
     "scene-root-paths: ok "
@@ -528,7 +534,7 @@ required_scene_asset_paths = {
 }
 for key, expected_path in required_scene_asset_paths.items():
     actual = scene_asset_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary scene_asset_paths.{key} mismatch")
 print(
     "scene-asset-paths: ok "
@@ -547,7 +553,7 @@ required_key_frame_paths = {
 }
 for key, expected_path in required_key_frame_paths.items():
     actual = key_frame_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary key_frame_paths.{key} mismatch")
 print(
     "key-frame-paths: ok "
@@ -577,7 +583,7 @@ required_key_frame_meta_paths = {
 }
 for key, expected_path in required_key_frame_meta_paths.items():
     actual = key_frame_meta_paths.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None or resolve_summary_path(actual) != expected_path.resolve():
         raise SystemExit(f"verification-summary key_frame_meta_paths.{key} mismatch")
 print(
     "key-frame-meta-paths: ok "

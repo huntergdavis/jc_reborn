@@ -11,6 +11,10 @@ def write_json(path: Path, data: object) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
+def rel_to(root: Path, target: Path) -> str:
+    return target.resolve().relative_to(root.resolve()).as_posix() if target.resolve().is_relative_to(root.resolve()) else target.resolve().as_posix()
+
+
 def main() -> None:
     project_root = Path("/home/hunter/workspace/jc_reborn")
     bankdir = Path("/tmp/jc_reborn_ps1_debug/artifacts/vision-reference-bank-20260329")
@@ -38,8 +42,8 @@ def main() -> None:
                 "scene_id": scene_id,
                 "family": row["family"],
                 "frame_count": row["frame_count"],
-                "review_html": str(selfcheckdir / row["review_html"]),
-                "vision_analysis_json": str(selfcheckdir / "scenes" / scene_id / "vision-analysis.json"),
+                "review_html": rel_to(outroot, selfcheckdir / row["review_html"]),
+                "vision_analysis_json": rel_to(outroot, selfcheckdir / "scenes" / scene_id / "vision-analysis.json"),
                 "expected_top1_ratio": q["expected_top1_ratio"],
                 "global_top1_ratio": q["global_top1_ratio"],
                 "sprite_visible_ratio": q["sprite_visible_ratio"],
@@ -52,27 +56,27 @@ def main() -> None:
 
     manifest = {
         "reference_bank": {
-            "index_html": str(bankdir / "index.html"),
-            "index_json": str(bankdir / "index.json"),
-            "metadata_json": str(bankdir / "metadata.json"),
-            "features_npy": str(bankdir / "features.npy"),
+            "index_html": rel_to(outroot, bankdir / "index.html"),
+            "index_json": rel_to(outroot, bankdir / "index.json"),
+            "metadata_json": rel_to(outroot, bankdir / "metadata.json"),
+            "features_npy": rel_to(outroot, bankdir / "features.npy"),
             "scene_count": len(bank["scenes"]),
             "frame_count": bank["frame_count"],
         },
         "reference_selfcheck": {
-            "index_html": str(selfcheckdir / "index.html"),
-            "index_json": str(selfcheckdir / "index.json"),
-            "quality_html": str(selfcheckdir / "quality-report.html"),
-            "quality_json": str(selfcheckdir / "quality-report.json"),
-            "confusion_html": str(selfcheckdir / "confusion-report.html"),
-            "confusion_json": str(selfcheckdir / "confusion-report.json"),
-            "family_html": str(selfcheckdir / "family-report.html"),
-            "family_json": str(selfcheckdir / "family-report.json"),
+            "index_html": rel_to(outroot, selfcheckdir / "index.html"),
+            "index_json": rel_to(outroot, selfcheckdir / "index.json"),
+            "quality_html": rel_to(outroot, selfcheckdir / "quality-report.html"),
+            "quality_json": rel_to(outroot, selfcheckdir / "quality-report.json"),
+            "confusion_html": rel_to(outroot, selfcheckdir / "confusion-report.html"),
+            "confusion_json": rel_to(outroot, selfcheckdir / "confusion-report.json"),
+            "family_html": rel_to(outroot, selfcheckdir / "family-report.html"),
+            "family_json": rel_to(outroot, selfcheckdir / "family-report.json"),
             "scene_count": selfcheck["scene_count"],
         },
-        "inventory_json": str(outroot / "scene-inventory.json"),
-        "inventory_html": str(outroot / "scene-inventory.html"),
-        "artifact_catalog_json": str(outroot / "artifact-catalog.json"),
+        "inventory_json": "scene-inventory.json",
+        "inventory_html": "scene-inventory.html",
+        "artifact_catalog_json": "artifact-catalog.json",
     }
     write_json(outroot / "pipeline-manifest.json", manifest)
     write_json(outroot / "scene-inventory.json", {"scenes": inventory_rows, "scene_count": len(inventory_rows)})
@@ -145,32 +149,32 @@ def main() -> None:
 
     artifact_catalog = {
         "top_level": {
-            "pipeline_index_html": str(outroot / "index.html"),
-            "pipeline_manifest_json": str(outroot / "pipeline-manifest.json"),
-            "scene_inventory_html": str(outroot / "scene-inventory.html"),
-            "scene_inventory_json": str(outroot / "scene-inventory.json"),
-            "scene_inventory_csv": str(outroot / "scene-inventory.csv"),
-            "strongest_scenes_json": str(outroot / "strongest-scenes.json"),
-            "weakest_scenes_json": str(outroot / "weakest-scenes.json"),
-            "top_confusion_pairs_json": str(outroot / "top-confusion-pairs.json"),
-            "validation_report_html": str(outroot / "validation-report.html"),
-            "validation_report_json": str(outroot / "validation-report.json"),
+            "pipeline_index_html": "index.html",
+            "pipeline_manifest_json": "pipeline-manifest.json",
+            "scene_inventory_html": "scene-inventory.html",
+            "scene_inventory_json": "scene-inventory.json",
+            "scene_inventory_csv": "scene-inventory.csv",
+            "strongest_scenes_json": "strongest-scenes.json",
+            "weakest_scenes_json": "weakest-scenes.json",
+            "top_confusion_pairs_json": "top-confusion-pairs.json",
+            "validation_report_html": "validation-report.html",
+            "validation_report_json": "validation-report.json",
         },
         "reference_bank": {
-            "index_html": str(bankdir / "index.html"),
-            "index_json": str(bankdir / "index.json"),
-            "metadata_json": str(bankdir / "metadata.json"),
-            "features_npy": str(bankdir / "features.npy"),
+            "index_html": rel_to(outroot, bankdir / "index.html"),
+            "index_json": rel_to(outroot, bankdir / "index.json"),
+            "metadata_json": rel_to(outroot, bankdir / "metadata.json"),
+            "features_npy": rel_to(outroot, bankdir / "features.npy"),
         },
         "reference_selfcheck": {
-            "index_html": str(selfcheckdir / "index.html"),
-            "index_json": str(selfcheckdir / "index.json"),
-            "quality_report_html": str(selfcheckdir / "quality-report.html"),
-            "quality_report_json": str(selfcheckdir / "quality-report.json"),
-            "confusion_report_html": str(selfcheckdir / "confusion-report.html"),
-            "confusion_report_json": str(selfcheckdir / "confusion-report.json"),
-            "family_report_html": str(selfcheckdir / "family-report.html"),
-            "family_report_json": str(selfcheckdir / "family-report.json"),
+            "index_html": rel_to(outroot, selfcheckdir / "index.html"),
+            "index_json": rel_to(outroot, selfcheckdir / "index.json"),
+            "quality_report_html": rel_to(outroot, selfcheckdir / "quality-report.html"),
+            "quality_report_json": rel_to(outroot, selfcheckdir / "quality-report.json"),
+            "confusion_report_html": rel_to(outroot, selfcheckdir / "confusion-report.html"),
+            "confusion_report_json": rel_to(outroot, selfcheckdir / "confusion-report.json"),
+            "family_report_html": rel_to(outroot, selfcheckdir / "family-report.html"),
+            "family_report_json": rel_to(outroot, selfcheckdir / "family-report.json"),
         },
         "scenes": [
             {

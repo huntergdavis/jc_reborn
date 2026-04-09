@@ -11,6 +11,12 @@ def load_expectations(path: Path) -> dict[str, dict]:
     return {scene["scene_label"]: scene for scene in payload.get("scenes", [])}
 
 
+def load_manifest(path: Path) -> dict:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload.setdefault("root", str(path.parent.resolve()))
+    return payload
+
+
 def compare(manifest: dict, expectations: dict[str, dict]) -> dict:
     rows = []
     for scene in manifest.get("scenes", []):
@@ -91,7 +97,7 @@ def main() -> int:
     parser.add_argument("--out-json", type=Path)
     args = parser.parse_args()
 
-    manifest = json.loads(args.manifest_json.read_text(encoding="utf-8"))
+    manifest = load_manifest(args.manifest_json)
     expectations = load_expectations(args.expectations_json)
     result = compare(manifest, expectations)
     payload = json.dumps(result, indent=2) + "\n"

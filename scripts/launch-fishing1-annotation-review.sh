@@ -8,6 +8,8 @@ PORT="${SCENE_REVIEW_PORT:-8123}"
 FILTERED_RESULT_DIR="$OUTDIR/filtered-result"
 GENERATED_RUN_DIR="$OUTDIR/regtest-run"
 SOURCE_RESULT="${FISHING1_REVIEW_RESULT:-}"
+STABLE_RESULT_DIR="${FISHING1_REVIEW_STABLE_RESULT_DIR:-$PROJECT_ROOT/regtest-results/fishing-1-story17-dense-v2-current}"
+STABLE_RESULT="$STABLE_RESULT_DIR/result.json"
 resolve_scene_value() {
   local field="$1"
   local fallback="$2"
@@ -23,14 +25,21 @@ START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(resolve_scene_value review_start_f
 END_FRAME="${FISHING1_REVIEW_END_FRAME:-$(resolve_scene_value review_end_frame 3720)}"
 
 if [ -z "$SOURCE_RESULT" ]; then
-  "$PROJECT_ROOT/scripts/regtest-scene.sh" \
-    --scene "FISHING 1" \
-    --frames "$CAPTURE_FRAMES" \
-    --start-frame "$CAPTURE_START_FRAME" \
-    --interval "$CAPTURE_INTERVAL" \
-    --output "$GENERATED_RUN_DIR" \
-    --quiet >/dev/null
-  SOURCE_RESULT="$GENERATED_RUN_DIR/result.json"
+  if [ -f "$STABLE_RESULT" ]; then
+    SOURCE_RESULT="$STABLE_RESULT"
+  else
+    "$PROJECT_ROOT/scripts/regtest-scene.sh" \
+      --scene "FISHING 1" \
+      --frames "$CAPTURE_FRAMES" \
+      --start-frame "$CAPTURE_START_FRAME" \
+      --interval "$CAPTURE_INTERVAL" \
+      --output "$GENERATED_RUN_DIR" \
+      --quiet >/dev/null
+    python3 "$PROJECT_ROOT/scripts/materialize-result-bundle.py" \
+      --result "$GENERATED_RUN_DIR/result.json" \
+      --outdir "$STABLE_RESULT_DIR" >/dev/null
+    SOURCE_RESULT="$STABLE_RESULT"
+  fi
 fi
 
 python3 "$PROJECT_ROOT/scripts/filter-result-frames.py" \

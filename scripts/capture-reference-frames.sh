@@ -345,6 +345,7 @@ PYEOF
     fi
 
     if [ -f "$scene_dir/.regtest-result.json" ]; then
+        SCENE_CAPTURE_FRAMES="$scene_capture_frames" SCENE_START_FRAME="$scene_start_frame" \
         python3 - "$scene_dir/.regtest-result.json" "$scene_dir/result.json" "$scene_dir" "$capture_ts" "$telemetry_copy" "$printf_copy" "$raw_hashes_copy" "$build_log_copy" <<'PYEOF'
 import json, os, sys
 from pathlib import Path
@@ -360,6 +361,12 @@ build_log_copy = sys.argv[8]
 
 payload = json.loads(source_path.read_text(encoding="utf-8"))
 payload["capture_date"] = capture_date
+config = payload.setdefault("config", {})
+config["frames"] = int(os.environ["SCENE_CAPTURE_FRAMES"])
+config["start_frame"] = int(os.environ["SCENE_START_FRAME"])
+config["frames_dir_layout"] = "flat"
+scene = payload.setdefault("scene", {})
+scene["capture_start_frame"] = int(os.environ["SCENE_START_FRAME"])
 paths = payload.setdefault("paths", {})
 paths["output_dir"] = str(scene_dir)
 paths["frames_dir"] = str(scene_dir)
@@ -379,8 +386,6 @@ if build_log_copy:
     paths["build_log"] = build_log_copy
 else:
     paths.pop("build_log", None)
-payload.setdefault("config", {})
-payload["config"]["frames_dir_layout"] = "flat"
 dest_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 PYEOF
     fi

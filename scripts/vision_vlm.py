@@ -81,6 +81,10 @@ def resolve_reference_bank(bank_dir: Path | None) -> Path | None:
             ref_bank = manifest.get("reference_bank", {})
             features_path = Path(ref_bank.get("features_npy", ""))
             metadata_path = Path(ref_bank.get("metadata_json", ""))
+            if features_path and not features_path.is_absolute():
+                features_path = (manifest_path.parent / features_path).resolve()
+            if metadata_path and not metadata_path.is_absolute():
+                metadata_path = (manifest_path.parent / metadata_path).resolve()
             if features_path.is_file() and metadata_path.is_file():
                 return features_path.parent
         except (OSError, json.JSONDecodeError, TypeError, ValueError):

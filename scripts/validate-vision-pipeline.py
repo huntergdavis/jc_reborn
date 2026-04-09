@@ -157,6 +157,7 @@ def main() -> None:
     inventory_scene_ids = {str(row["scene_id"]) for row in inventory.get("scenes", [])}
     inventory_scene_map = {str(row["scene_id"]): row for row in inventory.get("scenes", [])}
     catalog_scene_ids = {str(row["scene_id"]) for row in (catalog or {}).get("scenes", [])}
+    union_scene_ids = bank_scene_ids | selfcheck_scene_ids | inventory_scene_ids
     add_check(
         "scene_count_consistent",
         bank_scene_count == selfcheck_scene_count == inventory_scene_count,
@@ -166,9 +167,9 @@ def main() -> None:
         "scene_ids_consistent",
         bank_scene_ids == selfcheck_scene_ids == inventory_scene_ids,
         (
-            f"bank_only={sorted(bank_scene_ids - selfcheck_scene_ids - inventory_scene_ids)[:5]}, "
-            f"selfcheck_only={sorted(selfcheck_scene_ids - bank_scene_ids - inventory_scene_ids)[:5]}, "
-            f"inventory_only={sorted(inventory_scene_ids - bank_scene_ids - selfcheck_scene_ids)[:5]}"
+            f"bank_missing={sorted(union_scene_ids - bank_scene_ids)[:5]}, "
+            f"selfcheck_missing={sorted(union_scene_ids - selfcheck_scene_ids)[:5]}, "
+            f"inventory_missing={sorted(union_scene_ids - inventory_scene_ids)[:5]}"
         ),
     )
     add_check(

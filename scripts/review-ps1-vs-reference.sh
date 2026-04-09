@@ -94,10 +94,6 @@ fi
 if [ -z "$VLM_OUT_JSON" ]; then
     VLM_OUT_JSON="${OUTPUT_HTML%.html}-vlm.json"
 fi
-if [ -z "$VLM_BANK_DIR" ] && [ -d "$PROJECT_ROOT/vision-artifacts/vision-reference-pipeline-current/reference-bank" ]; then
-    VLM_BANK_DIR="$PROJECT_ROOT/vision-artifacts/vision-reference-pipeline-current/reference-bank"
-fi
-
 mkdir -p "$(dirname "$OUTPUT_HTML")"
 mkdir -p "$(dirname "$COMPARE_JSON")"
 mkdir -p "$(dirname "$VLM_OUT_JSON")"
@@ -180,8 +176,31 @@ if [ -n "$VLM_MODEL_DIR" ]; then
     VLM_ENABLE=1
 fi
 
-if [ "$VLM_ENABLE" -eq 1 ]; then
+if [ -z "$VLM_BANK_DIR" ]; then
     VLM_PYTHON="$(resolve_vlm_python)"
+    set +e
+    VLM_BANK_DIR="$("$VLM_PYTHON" - <<'PY' "$PROJECT_ROOT" 2>/dev/null
+import sys
+from pathlib import Path
+
+project_root = Path(sys.argv[1])
+sys.path.insert(0, str(project_root / "scripts"))
+import vision_vlm as vv
+
+bank = vv.resolve_reference_bank(None)
+if bank is not None:
+    print(bank)
+PY
+)"
+    rc=$?
+    set -e
+    if [ "$rc" -ne 0 ]; then
+        VLM_BANK_DIR=""
+    fi
+fi
+
+if [ "$VLM_ENABLE" -eq 1 ]; then
+    VLM_PYTHON="${VLM_PYTHON:-$(resolve_vlm_python)}"
     VLM_CMD=(
         "$VLM_PYTHON" "$SCRIPT_DIR/validate-ps1-vlm.py"
         scene-fix

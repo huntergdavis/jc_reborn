@@ -52,10 +52,22 @@ def main() -> None:
     bank_scene_count = len(bank_index["scenes"])
     selfcheck_scene_count = int(selfcheck_index["scene_count"])
     inventory_scene_count = int(inventory["scene_count"])
+    bank_scene_ids = {str(row["scene_id"]) for row in bank_index["scenes"]}
+    selfcheck_scene_ids = {str(row["scene_id"]) for row in selfcheck_index.get("scenes", [])}
+    inventory_scene_ids = {str(row["scene_id"]) for row in inventory.get("scenes", [])}
     add_check(
         "scene_count_consistent",
         bank_scene_count == selfcheck_scene_count == inventory_scene_count,
         f"bank={bank_scene_count}, selfcheck={selfcheck_scene_count}, inventory={inventory_scene_count}",
+    )
+    add_check(
+        "scene_ids_consistent",
+        bank_scene_ids == selfcheck_scene_ids == inventory_scene_ids,
+        (
+            f"bank_only={sorted(bank_scene_ids - selfcheck_scene_ids - inventory_scene_ids)[:5]}, "
+            f"selfcheck_only={sorted(selfcheck_scene_ids - bank_scene_ids - inventory_scene_ids)[:5]}, "
+            f"inventory_only={sorted(inventory_scene_ids - bank_scene_ids - selfcheck_scene_ids)[:5]}"
+        ),
     )
     add_check("bank_features_exists", (bankdir / "features.npy").exists(), str(bankdir / "features.npy"))
     add_check("bank_metadata_exists", (bankdir / "metadata.json").exists(), str(bankdir / "metadata.json"))

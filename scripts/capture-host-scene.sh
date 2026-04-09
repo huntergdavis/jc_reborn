@@ -404,15 +404,21 @@ frame_list_raw = sys.argv[21].strip()
 frames_dir = output_dir / "frames"
 frame_meta_dir = output_dir / "frame-meta"
 
+def list_frame_files() -> list[Path]:
+    return sorted(frames_dir.glob("**/frame_*.bmp"))
+
+def list_meta_files() -> list[Path]:
+    return sorted(frame_meta_dir.glob("**/frame_*.json"))
+
 frame_list = []
 if frame_list_raw:
     frame_list = [int(part) for part in frame_list_raw.split(",") if part]
     keep_frame_names = {f"frame_{frame_no:05d}.bmp" for frame_no in frame_list}
     keep_meta_names = {f"frame_{frame_no:05d}.json" for frame_no in frame_list}
-    for frame_path in sorted(frames_dir.glob("frame_*.bmp")):
+    for frame_path in list_frame_files():
         if frame_path.name not in keep_frame_names:
             frame_path.unlink()
-    for meta_path in sorted(frame_meta_dir.glob("frame_*.json")):
+    for meta_path in list_meta_files():
         if meta_path.name not in keep_meta_names:
             meta_path.unlink()
 
@@ -420,7 +426,7 @@ if frame_list_raw:
 def rel_to_output(path: Path) -> str:
     return path.resolve().relative_to(output_dir.resolve()).as_posix()
 
-frame_files = sorted(frames_dir.glob("frame_*.bmp"))
+frame_files = list_frame_files()
 png_dir = output_dir / "frames-png"
 png_dir.mkdir(exist_ok=True)
 visual_entries = []
@@ -449,7 +455,7 @@ for frame_path in frame_files:
             img.save(png_path)
     png_files.append(png_path)
 
-for meta_path in sorted(frame_meta_dir.glob("frame_*.json")):
+for meta_path in list_meta_files():
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
     image_path = meta.get("image_path")
     if image_path:
@@ -704,8 +710,8 @@ result = {
     "forced_low_tide": forced_low_tide,
     "capture_overlay": capture_overlay,
     "frame_count": len(frame_files),
-    "frames": [p.name for p in frame_files],
-    "frame_meta_files": [p.name for p in sorted(frame_meta_dir.glob("frame_*.json"))],
+    "frames": [p.relative_to(output_dir).as_posix() for p in frame_files],
+    "frame_meta_files": [p.relative_to(output_dir).as_posix() for p in list_meta_files()],
     "visual_last": outcome["visual_last"],
     "visual_best": outcome.get("visual_best"),
     "visual_entry_scene": outcome.get("visual_entry_scene"),

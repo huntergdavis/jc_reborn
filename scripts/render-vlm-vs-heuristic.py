@@ -32,9 +32,10 @@ def resolve_summary_path(path_value: str | None, summary_path: Path) -> Path | N
     path = Path(path_value)
     if path.is_absolute():
         return path if path.exists() else None
-    candidate = (summary_path.parent / path).resolve()
-    if candidate.exists():
-        return candidate
+    for base in [summary_path.parent, *summary_path.parents]:
+        candidate = (base / path).resolve()
+        if candidate.exists():
+            return candidate
     return None
 
 
@@ -49,7 +50,7 @@ def load_rows(summary_path: Path) -> list[dict[str, Any]]:
         frame = item["frame"]
         image_path = resolve_summary_path(item.get("relative_frame_path"), summary_path)
         if image_path is None:
-            image_path = summary_path.parent / "regtest-references" / scene_id / "frames" / frame
+            image_path = resolve_summary_path(f"regtest-references/{scene_id}/frames/{frame}", summary_path)
         meta = analysis.get("_meta", {})
         heuristic = meta.get("heuristic_state", {})
         rows.append(
@@ -76,7 +77,14 @@ def load_rows(summary_path: Path) -> list[dict[str, Any]]:
 def build_html(title: str, rows: list[dict[str, Any]], out_html: Path) -> str:
     body_rows: list[str] = []
     for row in rows:
-        rel_image = os.path.relpath(row["image_path"], out_html.parent)
+        image_path = row.get("image_path")
+        image_block = '<div class="meta">image missing</div>'
+        if image_path:
+            rel_image = os.path.relpath(image_path, out_html.parent)
+            image_block = (
+                f'<img src="{html_escape(rel_image)}" alt="{html_escape(row["frame"])}">'
+                f'<div class="meta">{html_escape(row["scene_id"])} / {html_escape(row["frame"])}</div>'
+            )
         analysis_name = row["analysis_path"].name
         mismatch = row["raw_screen_type"] != row["heuristic_screen_type"]
         row_class = "mismatch" if mismatch else "agree"
@@ -84,8 +92,7 @@ def build_html(title: str, rows: list[dict[str, Any]], out_html: Path) -> str:
             f"""
             <tr class="{row_class}">
               <td class="image-cell">
-                <img src="{html_escape(rel_image)}" alt="{html_escape(row['frame'])}">
-                <div class="meta">{html_escape(row['scene_id'])} / {html_escape(row['frame'])}</div>
+                {image_block}
                 <div class="meta">{html_escape(analysis_name)}</div>
               </td>
               <td>

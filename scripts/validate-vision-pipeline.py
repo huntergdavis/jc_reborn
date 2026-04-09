@@ -92,6 +92,30 @@ def main() -> None:
         not missing_catalog_top_level,
         ", ".join(missing_catalog_top_level[:10]) or "all present",
     )
+    missing_manifest_bank = []
+    for name, path_value in manifest.get("reference_bank", {}).items():
+        if not isinstance(path_value, str) or not path_value.endswith((".html", ".json", ".npy")):
+            continue
+        resolved = resolve_artifact_path(path_value, manifest_path.parent)
+        if not resolved.exists():
+            missing_manifest_bank.append(name)
+    add_check(
+        "manifest_reference_bank_exists",
+        not missing_manifest_bank,
+        ", ".join(missing_manifest_bank[:10]) or "all present",
+    )
+    missing_manifest_selfcheck = []
+    for name, path_value in manifest.get("reference_selfcheck", {}).items():
+        if not isinstance(path_value, str) or not path_value.endswith((".html", ".json", ".npy")):
+            continue
+        resolved = resolve_artifact_path(path_value, manifest_path.parent)
+        if not resolved.exists():
+            missing_manifest_selfcheck.append(name)
+    add_check(
+        "manifest_reference_selfcheck_exists",
+        not missing_manifest_selfcheck,
+        ", ".join(missing_manifest_selfcheck[:10]) or "all present",
+    )
     add_check("bank_features_exists", (bankdir / "features.npy").exists(), str(bankdir / "features.npy"))
     add_check("bank_metadata_exists", (bankdir / "metadata.json").exists(), str(bankdir / "metadata.json"))
     add_check("quality_report_exists", (selfcheckdir / "quality-report.html").exists(), str(selfcheckdir / "quality-report.html"))

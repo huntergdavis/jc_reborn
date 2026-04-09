@@ -110,6 +110,7 @@ def build_scene_index(manifest: dict, manifest_base_dir: Path) -> dict[str, dict
                 frame_index[int(row.get("frame_number"))] = Path(image_path)
         entry = {
             "scene_dir": scene_dir,
+            "scene_path": str((manifest_base_dir / scene_dir).resolve()) if scene_dir else "",
             "frame_index": frame_index,
         }
         index[scene_label] = entry
@@ -309,10 +310,10 @@ def build_scene_review_link(scene_index: dict[str, dict], output_path: Path, que
     scene = scene_index.get(base_label) or scene_index.get(normalize_label(base_label))
     if not scene:
         return ""
-    scene_dir = scene.get("scene_dir")
-    if not scene_dir:
+    scene_path = scene.get("scene_path")
+    if not scene_path:
         return ""
-    review_path = output_path.parent / scene_dir / "review.html"
+    review_path = Path(scene_path) / "review.html"
     if not review_path.exists():
         return ""
     return f'<div class="query-meta"><a href="{esc(rel(review_path, output_path.parent))}">scene review</a></div>'

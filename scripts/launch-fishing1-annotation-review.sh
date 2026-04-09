@@ -6,8 +6,23 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 OUTDIR="${1:-$PROJECT_ROOT/vision-artifacts/fishing1-annotation-review}"
 PORT="${SCENE_REVIEW_PORT:-8123}"
 FILTERED_RESULT_DIR="$OUTDIR/filtered-result"
-SOURCE_RESULT="${FISHING1_REVIEW_RESULT:-$PROJECT_ROOT/regtest-results/fishing-1-raw-3600-current/result.json}"
-START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(python3 "$PROJECT_ROOT/scripts/get-scene-capture-start.py" --scene "FISHING 1")}"
+GENERATED_RUN_DIR="$OUTDIR/regtest-run"
+SOURCE_RESULT="${FISHING1_REVIEW_RESULT:-}"
+CAPTURE_START_FRAME="${FISHING1_REVIEW_CAPTURE_START_FRAME:-3480}"
+CAPTURE_FRAMES="${FISHING1_REVIEW_CAPTURE_FRAMES:-3720}"
+CAPTURE_INTERVAL="${FISHING1_REVIEW_CAPTURE_INTERVAL:-10}"
+START_FRAME="${FISHING1_REVIEW_START_FRAME:-3580}"
+
+if [ -z "$SOURCE_RESULT" ]; then
+  "$PROJECT_ROOT/scripts/regtest-scene.sh" \
+    --scene "FISHING 1" \
+    --frames "$CAPTURE_FRAMES" \
+    --start-frame "$CAPTURE_START_FRAME" \
+    --interval "$CAPTURE_INTERVAL" \
+    --output "$GENERATED_RUN_DIR" \
+    --quiet >/dev/null
+  SOURCE_RESULT="$GENERATED_RUN_DIR/result.json"
+fi
 
 python3 "$PROJECT_ROOT/scripts/filter-result-frames.py" \
   --result "$SOURCE_RESULT" \

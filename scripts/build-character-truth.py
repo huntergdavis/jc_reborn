@@ -20,6 +20,15 @@ def load_summarize():
 summarize = load_summarize()
 
 
+def resolve_capture_path(path_value: str | None, base_dir: Path) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
+
+
 def aggregate_character(draws: list[dict]) -> dict:
     if not draws:
         raise ValueError("aggregate_character requires at least one draw")
@@ -71,6 +80,7 @@ def build_frame_truth_from_actor_candidates(
     frame_number: int,
     frame_name: str,
     scene_label: str | None,
+    frame_path: str | None = None,
 ) -> dict:
     by_character: dict[str, list[dict]] = {}
     for draw in actor_candidates:
@@ -85,6 +95,7 @@ def build_frame_truth_from_actor_candidates(
     return {
         "frame_number": int(frame_number),
         "frame_name": frame_name,
+        "frame_path": frame_path,
         "scene_label": scene_label,
         "character_count": len(characters),
         "visible_characters": [item["character"] for item in characters],
@@ -92,8 +103,9 @@ def build_frame_truth_from_actor_candidates(
     }
 
 
-def build_frame_truth(meta_path: Path) -> dict:
+def build_frame_truth(meta_path: Path, scene_dir: Path, root: Path) -> dict:
     summary = summarize(meta_path)
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
     frame_number = summary.get("frame_number")
     if frame_number is None:
         stem = meta_path.stem
@@ -104,16 +116,24 @@ def build_frame_truth(meta_path: Path) -> dict:
                 frame_number = 0
         else:
             frame_number = 0
+    image_path = resolve_capture_path(meta.get("image_path"), scene_dir)
+    frame_path = None
+    if image_path is not None:
+        try:
+            frame_path = image_path.relative_to(root.resolve()).as_posix()
+        except ValueError:
+            frame_path = str(image_path)
     return build_frame_truth_from_actor_candidates(
         summary.get("actor_candidates", []),
         int(frame_number),
         meta_path.stem,
         summary.get("scene_label"),
+        frame_path,
     )
 
 
-def build_scene_truth(scene_dir: Path, meta_paths: list[Path]) -> dict | None:
-    frames = [build_frame_truth(meta_path) for meta_path in meta_paths]
+def build_scene_truth(root: Path, scene_dir: Path, meta_paths: list[Path]) -> dict | None:
+    frames = [build_frame_truth(meta_path, scene_dir, root) for meta_path in meta_paths]
     if not frames:
         return None
     return {
@@ -129,13 +149,13 @@ def build_truth(root: Path) -> dict:
     direct_meta_dir = root / "frame-meta"
     direct_meta_paths = sorted(direct_meta_dir.glob("**/frame_*.json")) if direct_meta_dir.is_dir() else []
     if direct_meta_paths:
-        scene = build_scene_truth(root, direct_meta_paths)
+        scene = build_scene_truth(root, root, direct_meta_paths)
         if scene is not None:
             scenes.append(scene)
     else:
         direct_meta_paths = sorted(root.glob("**/frame_*.json"))
         if direct_meta_paths:
-            scene = build_scene_truth(root, direct_meta_paths)
+            scene = build_scene_truth(root, root, direct_meta_paths)
             if scene is not None:
                 scenes.append(scene)
         else:
@@ -147,7 +167,7 @@ def build_truth(root: Path) -> dict:
                     meta_paths = sorted(scene_dir.glob("**/frame_*.json"))
                 if not meta_paths:
                     continue
-                scene = build_scene_truth(scene_dir, meta_paths)
+                scene = build_scene_truth(root, scene_dir, meta_paths)
                 if scene is not None:
                     scenes.append(scene)
     return {

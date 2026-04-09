@@ -16,6 +16,20 @@ def rel(path: Path, dst_dir: Path) -> str:
     return os.path.relpath(path.resolve(), dst_dir.resolve())
 
 
+def resolve_truth_frame_path(path_value: str | None, root: Path | None) -> Path | None:
+    if not path_value:
+        return None
+    path = Path(path_value)
+    if path.is_absolute():
+        return path if path.exists() else None
+    if root is None:
+        return None
+    candidate = (root / path).resolve()
+    if candidate.exists():
+        return candidate
+    return None
+
+
 def frame_image_path(actual_root: Path, scene_label: str, frame_name: str) -> Path | None:
     scene_dir_name = scene_label.lower().replace(" ", "")
     for suffix in (".bmp", ".png"):
@@ -38,15 +52,19 @@ def format_character_diff(item: dict) -> str:
 
 
 def build_html(report: dict, output_path: Path, title: str) -> str:
-    expected_root = Path(report.get("expected_root", "."))
-    actual_root = Path(report.get("actual_root", "."))
+    expected_root_value = report.get("expected_root")
+    actual_root_value = report.get("actual_root")
+    expected_root = Path(expected_root_value) if expected_root_value else None
+    actual_root = Path(actual_root_value) if actual_root_value else None
     rows_html = []
     for row in report.get("rows", []):
         status = row.get("status", "unknown")
         row_class = "ok" if status == "ok" else "mismatch"
         frame_name = row.get("frame_name") or "n/a"
         image_path = None
-        if row.get("scene_label") and row.get("frame_name"):
+        if row.get("frame_path"):
+            image_path = resolve_truth_frame_path(row.get("frame_path"), actual_root or expected_root)
+        if image_path is None and actual_root is not None and row.get("scene_label") and row.get("frame_name"):
             image_path = frame_image_path(actual_root, row["scene_label"], row["frame_name"])
         frame_cell = (
             f'<a href="{esc(rel(image_path, output_path.parent))}">{esc(frame_name)}</a>'
@@ -101,7 +119,7 @@ def build_html(report: dict, output_path: Path, title: str) -> str:
 <body>
   <main>
     <h1>{esc(title)}</h1>
-    <div class="meta">expected_root={esc(expected_root)} actual_root={esc(actual_root)} mismatch_count={esc(report.get('mismatch_count', 0))} position_tolerance={esc(report.get('position_tolerance'))}</div>
+    <div class="meta">expected_root={esc(expected_root or '.')} actual_root={esc(actual_root or '.')} mismatch_count={esc(report.get('mismatch_count', 0))} position_tolerance={esc(report.get('position_tolerance'))}</div>
     <table>
       <thead>
         <tr>

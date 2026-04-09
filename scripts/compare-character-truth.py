@@ -133,6 +133,7 @@ def compare(expected_truth: dict, actual_truth: dict, position_tolerance: float)
                     "scene_label": scene_label,
                     "frame_number": frame_number,
                     "frame_name": expected_frame.get("frame_name"),
+                    "frame_path": actual_frame.get("frame_path") or expected_frame.get("frame_path"),
                     "status": status,
                     "problems": problems,
                     "missing_characters": missing,

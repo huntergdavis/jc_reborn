@@ -146,6 +146,10 @@ if [ "$FRAMES" -lt "$START_FRAME" ]; then
     exit 1
 fi
 
+if [ -z "$COMPARE_MIN_RESULT_SCENE_FRAME" ]; then
+    COMPARE_MIN_RESULT_SCENE_FRAME="$START_FRAME"
+fi
+
 INDEX_JSON="$LIBRARY_DIR/index.json"
 if [ ! -f "$INDEX_JSON" ]; then
     echo "ERROR: Missing binary library index: $INDEX_JSON" >&2
@@ -512,9 +516,7 @@ PY
             --result "$out_dir"
             --reference "$REFERENCE_PATH"
         )
-        if [ -n "$COMPARE_MIN_RESULT_SCENE_FRAME" ]; then
-            compare_args+=(--min-result-scene-frame "$COMPARE_MIN_RESULT_SCENE_FRAME")
-        fi
+        compare_args+=(--min-result-scene-frame "$COMPARE_MIN_RESULT_SCENE_FRAME")
         if [ -n "$COMPARE_MIN_REFERENCE_SCENE_FRAME" ]; then
             compare_args+=(--min-reference-scene-frame "$COMPARE_MIN_REFERENCE_SCENE_FRAME")
         fi

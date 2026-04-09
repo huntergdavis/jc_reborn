@@ -82,6 +82,41 @@ def sample_frame_paths(scene_dir: Path) -> list[Path]:
     return frames
 
 
+def load_scene_capture_metadata(scene_dir: Path) -> dict[str, Any]:
+    metadata: dict[str, Any] = {}
+
+    metadata_path = scene_dir / "metadata.json"
+    if metadata_path.is_file():
+        try:
+            payload = json.loads(metadata_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            payload = {}
+        if isinstance(payload, dict):
+            for key in ("capture_start_frame", "capture_frames", "capture_interval"):
+                if key in payload:
+                    metadata[key] = payload[key]
+
+    result_path = scene_dir / "result.json"
+    if result_path.is_file():
+        try:
+            payload = json.loads(result_path.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, OSError):
+            payload = {}
+        if isinstance(payload, dict):
+            config = payload.get("config") or {}
+            scene = payload.get("scene") or {}
+            if "start_frame" in config:
+                metadata["start_frame"] = config["start_frame"]
+            if "frames" in config and "capture_frames" not in metadata:
+                metadata["capture_frames"] = config["frames"]
+            if "capture_start_frame" in scene and "capture_start_frame" not in metadata:
+                metadata["capture_start_frame"] = scene["capture_start_frame"]
+            if "frames_dir_layout" in config:
+                metadata["frames_dir_layout"] = config["frames_dir_layout"]
+
+    return metadata
+
+
 def evenly_sample(items: list[Path], cap: int) -> list[Path]:
     if len(items) <= cap:
         return items
@@ -548,6 +583,7 @@ def build_reference_bank(refdir: Path, outdir: Path) -> None:
         print(f"[{index}/{len(by_scene)}] rendering {scene_id}", file=sys.stderr, flush=True)
         idxs = by_scene[scene_id]
         scene_meta = [metadata[i] for i in idxs]
+        capture_meta = load_scene_capture_metadata(scene_dir)
         label_counter = Counter(m["labels"]["screen_type"] for m in scene_meta)
         sprites_visible_ratio = float(np.mean([1.0 if m["labels"]["sprites_visible"] else 0.0 for m in scene_meta]))
         scene_summary = {
@@ -556,6 +592,7 @@ def build_reference_bank(refdir: Path, outdir: Path) -> None:
             "frame_count": len(scene_meta),
             "sprites_visible_ratio": sprites_visible_ratio,
             "dominant_screen_type": label_counter.most_common(1)[0][0],
+            **capture_meta,
         }
 
         sample_local = evenly_sample([Path(m["path"]) for m in scene_meta], min(12, len(scene_meta)))
@@ -597,6 +634,8 @@ def build_reference_bank(refdir: Path, outdir: Path) -> None:
                 "frame_count": scene_summary["frame_count"],
                 "sprites_visible_ratio": scene_summary["sprites_visible_ratio"],
                 "dominant_screen_type": scene_summary["dominant_screen_type"],
+                "start_frame": scene_summary.get("start_frame"),
+                "capture_start_frame": scene_summary.get("capture_start_frame"),
                 "review_html": f"scenes/{scene_id}/review.html",
             }
         )
@@ -655,6 +694,7 @@ def analyze_run(scene_dir: Path, bank_dir: Path, outdir: Path, expected_scene: s
     ocean_ratio = float(np.mean([1.0 if row["labels"]["screen_type"] == "ocean" else 0.0 for row in output_frames])) if output_frames else 0.0
     sprite_ratio = float(np.mean([1.0 if row["labels"]["sprites_visible"] else 0.0 for row in output_frames])) if output_frames else 0.0
     global_scene_counter = Counter(row["best_global_match"]["scene_id"] for row in output_frames)
+    capture_meta = load_scene_capture_metadata(scene_dir)
     if ocean_ratio > 0.5 and sprite_ratio < 0.2:
         dominant_failure_mode = "background_only_missing_sprites"
     elif global_scene_counter and global_scene_counter.most_common(1)[0][0] != expected_scene:
@@ -667,6 +707,7 @@ def analyze_run(scene_dir: Path, bank_dir: Path, outdir: Path, expected_scene: s
         "ocean_ratio": ocean_ratio,
         "dominant_global_match_scene": global_scene_counter.most_common(1)[0][0] if global_scene_counter else None,
         "dominant_failure_mode": dominant_failure_mode,
+        **capture_meta,
     }
     write_json(outdir / "vision-analysis.json", {"summary": summary, "frames": output_frames})
 
@@ -724,6 +765,8 @@ def analyze_reference_set(refdir: Path, bank_dir: Path, outdir: Path) -> None:
                 ).most_common(1)[0][0]
                 if data["frames"]
                 else "unknown",
+                "start_frame": summary.get("start_frame"),
+                "capture_start_frame": summary.get("capture_start_frame"),
                 "review_html": f"scenes/{scene_dir.name}/review.html",
             }
         )
@@ -763,6 +806,8 @@ def generate_quality_report(outdir: Path) -> None:
                 "ocean_ratio": data["summary"]["ocean_ratio"],
                 "dominant_global_match_scene": data["summary"]["dominant_global_match_scene"],
                 "dominant_failure_mode": data["summary"]["dominant_failure_mode"],
+                "start_frame": data["summary"].get("start_frame"),
+                "capture_start_frame": data["summary"].get("capture_start_frame"),
                 "review_html": f"scenes/{expected}/review.html",
             }
         )
@@ -839,6 +884,8 @@ def generate_confusion_report(outdir: Path) -> None:
                 "dominant_global_match_scene": data["summary"]["dominant_global_match_scene"],
                 "global_top1_ratio": max((counter.get(expected, 0) / total), 0.0),
                 "alternates": alternates,
+                "start_frame": data["summary"].get("start_frame"),
+                "capture_start_frame": data["summary"].get("capture_start_frame"),
                 "review_html": f"scenes/{expected}/review.html",
             }
         )

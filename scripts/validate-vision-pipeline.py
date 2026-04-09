@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import argparse
 from pathlib import Path
 
 
@@ -17,8 +18,21 @@ def resolve_artifact_path(path_value: str, base_dir: Path) -> Path:
 
 
 def main() -> None:
-    root = Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current")
-    manifest_path = root / "pipeline-manifest.json"
+    parser = argparse.ArgumentParser(description="Validate a published vision pipeline bundle.")
+    parser.add_argument("--root", type=Path, help="Pipeline bundle root containing pipeline-manifest.json")
+    parser.add_argument("--manifest-json", type=Path, help="Direct path to pipeline-manifest.json")
+    args = parser.parse_args()
+
+    if args.manifest_json:
+        manifest_path = args.manifest_json.resolve()
+        root = manifest_path.parent
+    elif args.root:
+        root = args.root.resolve()
+        manifest_path = root / "pipeline-manifest.json"
+    else:
+        root = Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current")
+        manifest_path = root / "pipeline-manifest.json"
+
     manifest = json.loads(manifest_path.read_text())
 
     bankdir = resolve_artifact_path(manifest["reference_bank"]["index_html"], manifest_path.parent).parent

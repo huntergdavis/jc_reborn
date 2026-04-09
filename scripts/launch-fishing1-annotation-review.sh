@@ -24,8 +24,37 @@ CAPTURE_INTERVAL="${FISHING1_REVIEW_CAPTURE_INTERVAL:-$(resolve_scene_value revi
 START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(resolve_scene_value review_start_frame 3580)}"
 END_FRAME="${FISHING1_REVIEW_END_FRAME:-$(resolve_scene_value review_end_frame 3720)}"
 
+stable_result_matches_profile() {
+  python3 - "$STABLE_RESULT" "$CAPTURE_START_FRAME" "$CAPTURE_FRAMES" "$CAPTURE_INTERVAL" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+result_path = Path(sys.argv[1])
+expected_start = int(sys.argv[2])
+expected_frames = int(sys.argv[3])
+expected_interval = int(sys.argv[4])
+
+if not result_path.is_file():
+    raise SystemExit(1)
+
+payload = json.loads(result_path.read_text(encoding="utf-8"))
+config = payload.get("config") or {}
+scene = payload.get("scene") or {}
+
+if int(config.get("start_frame", -1)) != expected_start:
+    raise SystemExit(1)
+if int(config.get("frames", -1)) != expected_frames:
+    raise SystemExit(1)
+if int(config.get("interval", -1)) != expected_interval:
+    raise SystemExit(1)
+if scene.get("boot_string") != "story scene 17 seed 1":
+    raise SystemExit(1)
+PY
+}
+
 if [ -z "$SOURCE_RESULT" ]; then
-  if [ -f "$STABLE_RESULT" ]; then
+  if stable_result_matches_profile; then
     SOURCE_RESULT="$STABLE_RESULT"
   else
     "$PROJECT_ROOT/scripts/regtest-scene.sh" \

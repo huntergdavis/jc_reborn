@@ -703,7 +703,14 @@ required_manifest_extras = {
 }
 for key, expected_path in required_manifest_extras.items():
     actual = manifest_extras.get(key)
-    if actual != str(expected_path.resolve()):
+    if actual is None:
+        raise SystemExit(f"manifest extras.{key} missing")
+    resolved = Path(actual)
+    if not resolved.is_absolute():
+        resolved = (root / resolved).resolve()
+    else:
+        resolved = resolved.resolve()
+    if resolved != expected_path.resolve():
         raise SystemExit(f"manifest extras.{key} mismatch")
 
 index_html = (root / "index.html").read_text(encoding="utf-8")

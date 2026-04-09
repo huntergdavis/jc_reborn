@@ -722,7 +722,14 @@ def main() -> None:
     }
     mismatched_catalog_manifest_bank = []
     for catalog_key, manifest_key in bank_key_map.items():
-        if catalog_bank.get(catalog_key) != manifest_bank.get(manifest_key):
+        catalog_value = catalog_bank.get(catalog_key)
+        manifest_value = manifest_bank.get(manifest_key)
+        if not isinstance(catalog_value, str) or not isinstance(manifest_value, str):
+            mismatched_catalog_manifest_bank.append(catalog_key)
+            continue
+        catalog_path = resolve_artifact_path(catalog_value, root)
+        manifest_ref_path = resolve_artifact_path(manifest_value, manifest_path.parent)
+        if catalog_path != manifest_ref_path:
             mismatched_catalog_manifest_bank.append(catalog_key)
     add_check(
         "artifact_catalog_reference_bank_matches_manifest",
@@ -737,7 +744,14 @@ def main() -> None:
     }
     mismatched_catalog_manifest_selfcheck = []
     for catalog_key, manifest_key in selfcheck_key_map.items():
-        if catalog_selfcheck.get(catalog_key) != manifest_selfcheck.get(manifest_key):
+        catalog_value = catalog_selfcheck.get(catalog_key)
+        manifest_value = manifest_selfcheck.get(manifest_key)
+        if not isinstance(catalog_value, str) or not isinstance(manifest_value, str):
+            mismatched_catalog_manifest_selfcheck.append(catalog_key)
+            continue
+        catalog_path = resolve_artifact_path(catalog_value, root)
+        manifest_ref_path = resolve_artifact_path(manifest_value, manifest_path.parent)
+        if catalog_path != manifest_ref_path:
             mismatched_catalog_manifest_selfcheck.append(catalog_key)
     add_check(
         "artifact_catalog_reference_selfcheck_matches_manifest",

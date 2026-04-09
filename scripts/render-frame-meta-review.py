@@ -45,6 +45,13 @@ def resolve_capture_path(path_value: str, scene_dir: Path) -> Path:
     return (scene_dir / path).resolve()
 
 
+def scene_root_for_meta(meta_path: Path) -> Path:
+    for parent in meta_path.parents:
+        if parent.name == "frame-meta":
+            return parent.parent
+    return meta_path.parent
+
+
 def box_style(draw: dict, image_size: tuple[int, int]) -> str:
     width, height = image_size
     left = max(0.0, min(100.0, (float(draw["x"]) / width) * 100.0))
@@ -60,7 +67,7 @@ def load_rows(meta_paths: list[Path], image_width: int, image_height: int) -> li
     for meta_path in meta_paths:
         summary = summarize(meta_path)
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        image_path = resolve_capture_path(meta["image_path"], meta_path.parent.parent)
+        image_path = resolve_capture_path(meta["image_path"], scene_root_for_meta(meta_path))
         rows.append(
             {
                 "meta_path": meta_path,

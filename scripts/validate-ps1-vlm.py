@@ -64,13 +64,18 @@ def load_scene_capture_windows() -> dict[str, Any]:
     return load_json(project_root() / "config" / "ps1" / "scene-capture-windows.json")
 
 
-def reviewed_scene_start(scene_id: str | None, capture_windows: dict[str, Any]) -> int:
+def reviewed_scene_window(scene_id: str | None, capture_windows: dict[str, Any]) -> tuple[int, int | None]:
     default_cfg = capture_windows.get("default", {})
     default_start = int(default_cfg.get("review_start_frame", default_cfg.get("start_frame", 0)) or 0)
+    default_end_raw = default_cfg.get("review_end_frame")
+    default_end = None if default_end_raw in (None, "") else int(default_end_raw)
     if not scene_id:
-        return default_start
+        return default_start, default_end
     scene_cfg = capture_windows.get("scenes", {}).get(scene_id, {})
-    return int(scene_cfg.get("review_start_frame", scene_cfg.get("start_frame", default_start)) or default_start)
+    start_frame = int(scene_cfg.get("review_start_frame", scene_cfg.get("start_frame", default_start)) or default_start)
+    end_raw = scene_cfg.get("review_end_frame", default_end)
+    end_frame = None if end_raw in (None, "") else int(end_raw)
+    return start_frame, end_frame
 
 
 def frame_number_from_image_path(image_path: str | Path) -> int | None:
@@ -90,7 +95,7 @@ def stale_pack_query_cases(manifest: dict[str, Any]) -> list[dict[str, Any]]:
         frame_number = frame_number_from_image_path(query_image)
         if frame_number is None:
             continue
-        start_frame = reviewed_scene_start(case.get("scene_id"), capture_windows)
+        start_frame, end_frame = reviewed_scene_window(case.get("scene_id"), capture_windows)
         if frame_number < start_frame:
             issues.append(
                 {
@@ -99,6 +104,17 @@ def stale_pack_query_cases(manifest: dict[str, Any]) -> list[dict[str, Any]]:
                     "query_image": query_image,
                     "frame_number": frame_number,
                     "reviewed_start_frame": start_frame,
+                }
+            )
+            continue
+        if end_frame is not None and frame_number > end_frame:
+            issues.append(
+                {
+                    "case_id": case.get("case_id"),
+                    "scene_id": case.get("scene_id"),
+                    "query_image": query_image,
+                    "frame_number": frame_number,
+                    "reviewed_end_frame": end_frame,
                 }
             )
     return issues
@@ -181,7 +197,11 @@ def run_pack(args: argparse.Namespace) -> int:
     stale_cases = stale_pack_query_cases(manifest)
     if stale_cases:
         detail = ", ".join(
-            f"{row['case_id']}:{row['frame_number']}<reviewed:{row['reviewed_start_frame']}"
+            (
+                f"{row['case_id']}:{row['frame_number']}<reviewed:{row['reviewed_start_frame']}"
+                if 'reviewed_start_frame' in row
+                else f"{row['case_id']}:{row['frame_number']}>reviewed:{row['reviewed_end_frame']}"
+            )
             for row in stale_cases
         )
         raise SystemExit(f"Scene-pack manifest uses stale pre-window PS1 query frames: {detail}")

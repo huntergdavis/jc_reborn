@@ -592,11 +592,13 @@ def main() -> None:
     )
     top_level = (catalog or {}).get("top_level", {})
     mismatched_catalog_manifest_top_level = []
-    expected_top_level_pairs = {
-        "pipeline_index_html": "index.html",
+    shared_top_level_pairs = {
         "pipeline_manifest_json": "pipeline-manifest.json",
         "scene_inventory_json": manifest.get("inventory_json"),
         "scene_inventory_html": manifest.get("inventory_html"),
+    }
+    expected_catalog_only_top_level = {
+        "pipeline_index_html": "index.html",
         "scene_inventory_csv": "scene-inventory.csv",
         "strongest_scenes_json": "strongest-scenes.json",
         "weakest_scenes_json": "weakest-scenes.json",
@@ -605,11 +607,28 @@ def main() -> None:
         "validation_report_html": "validation-report.html",
     }
     missing_catalog_manifest_top_level = []
-    for catalog_key, expected_value in expected_top_level_pairs.items():
+    for catalog_key, expected_value in {**shared_top_level_pairs, **expected_catalog_only_top_level}.items():
         if catalog_key not in top_level:
             missing_catalog_manifest_top_level.append(catalog_key)
-        if top_level.get(catalog_key) != expected_value:
+    for catalog_key, expected_value in shared_top_level_pairs.items():
+        actual_value = top_level.get(catalog_key)
+        if not isinstance(actual_value, str) or not isinstance(expected_value, str):
             mismatched_catalog_manifest_top_level.append(catalog_key)
+            continue
+        actual_path = resolve_artifact_path(actual_value, root)
+        expected_path = resolve_artifact_path(expected_value, manifest_path.parent)
+        if actual_path != expected_path:
+            mismatched_catalog_manifest_top_level.append(catalog_key)
+    mismatched_catalog_literal_top_level = []
+    for catalog_key, expected_value in expected_catalog_only_top_level.items():
+        actual_value = top_level.get(catalog_key)
+        if not isinstance(actual_value, str):
+            mismatched_catalog_literal_top_level.append(catalog_key)
+            continue
+        actual_path = resolve_artifact_path(actual_value, root)
+        expected_path = (root / expected_value).resolve()
+        if actual_path != expected_path:
+            mismatched_catalog_literal_top_level.append(catalog_key)
     add_check(
         "artifact_catalog_top_level_complete",
         not missing_catalog_manifest_top_level,
@@ -619,6 +638,11 @@ def main() -> None:
         "artifact_catalog_top_level_matches_manifest",
         not mismatched_catalog_manifest_top_level,
         ", ".join(mismatched_catalog_manifest_top_level[:10]) or "all present",
+    )
+    add_check(
+        "artifact_catalog_top_level_literals",
+        not mismatched_catalog_literal_top_level,
+        ", ".join(mismatched_catalog_literal_top_level[:10]) or "all present",
     )
     required_catalog_bank_keys = ("index_html", "index_json", "metadata_json", "features_npy")
     required_catalog_selfcheck_keys = (

@@ -9,6 +9,13 @@ def write_json(path: Path, data: object) -> None:
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
 
 
+def resolve_artifact_path(path_value: str, base_dir: Path) -> Path:
+    path = Path(path_value)
+    if path.is_absolute():
+        return path
+    return (base_dir / path).resolve()
+
+
 def main() -> None:
     root = Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current")
     manifest = json.loads((root / "pipeline-manifest.json").read_text())
@@ -23,7 +30,8 @@ def main() -> None:
 
     bank_index = json.loads((bankdir / "index.json").read_text())
     selfcheck_index = json.loads((selfcheckdir / "index.json").read_text())
-    inventory = json.loads((root / "scene-inventory.json").read_text())
+    inventory_path = root / "scene-inventory.json"
+    inventory = json.loads(inventory_path.read_text())
 
     add_check("bank_scene_count", len(bank_index["scenes"]) == 63, f"{len(bank_index['scenes'])} scenes")
     add_check("selfcheck_scene_count", selfcheck_index["scene_count"] == 63, f"{selfcheck_index['scene_count']} scenes")
@@ -39,8 +47,8 @@ def main() -> None:
     missing_reviews = []
     missing_json = []
     for scene in inventory["scenes"]:
-        review = Path(scene["review_html"])
-        analysis = Path(scene["vision_analysis_json"])
+        review = resolve_artifact_path(scene["review_html"], inventory_path.parent)
+        analysis = resolve_artifact_path(scene["vision_analysis_json"], inventory_path.parent)
         if not review.exists():
             missing_reviews.append(scene["scene_id"])
         if not analysis.exists():

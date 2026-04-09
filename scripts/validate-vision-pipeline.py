@@ -18,10 +18,11 @@ def resolve_artifact_path(path_value: str, base_dir: Path) -> Path:
 
 def main() -> None:
     root = Path("/home/hunter/workspace/jc_reborn/vision-artifacts/vision-reference-pipeline-current")
-    manifest = json.loads((root / "pipeline-manifest.json").read_text())
+    manifest_path = root / "pipeline-manifest.json"
+    manifest = json.loads(manifest_path.read_text())
 
-    bankdir = Path(manifest["reference_bank"]["index_html"]).parent
-    selfcheckdir = Path(manifest["reference_selfcheck"]["index_html"]).parent
+    bankdir = resolve_artifact_path(manifest["reference_bank"]["index_html"], manifest_path.parent).parent
+    selfcheckdir = resolve_artifact_path(manifest["reference_selfcheck"]["index_html"], manifest_path.parent).parent
 
     checks = []
 

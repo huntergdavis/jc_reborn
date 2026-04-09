@@ -16,6 +16,14 @@ def summarize_frame(path: Path) -> dict:
     }
 
 
+def resolve_frame_meta_path(scene_dir: Path, frame_name: str) -> Path | None:
+    direct = scene_dir / f"{frame_name}.json"
+    if direct.is_file():
+        return direct
+    matches = sorted(scene_dir.glob(f"**/{frame_name}.json"))
+    return matches[0] if matches else None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Compare canonical frame-meta outputs against a published baseline.")
     ap.add_argument("--baseline", required=True)
@@ -32,8 +40,8 @@ def main() -> int:
         scene_dir = root / scene_name / "frame-meta"
         for expected in expected_rows:
             frame_name = expected["frame"]
-            path = scene_dir / f"{frame_name}.json"
-            if not path.is_file():
+            path = resolve_frame_meta_path(scene_dir, frame_name)
+            if path is None:
                 scene_failures.append({"scene": scene_name, "frame": frame_name, "field": "missing_frame_meta", "expected": True, "actual": False})
                 continue
             current = summarize_frame(path)

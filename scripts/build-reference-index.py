@@ -19,6 +19,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 
+def read_json_file(path: Path) -> dict | None:
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+
+
 def find_project_root() -> Path:
     """Walk up from script location to find the project root."""
     here = Path(__file__).resolve().parent
@@ -61,6 +68,7 @@ def load_scene_list(project_root: Path) -> dict:
 def scan_scene_dir(scene_dir: Path) -> dict | None:
     """Read a scene reference directory and return its index entry."""
     metadata_file = scene_dir / "metadata.json"
+    result_file = scene_dir / "result.json"
 
     # List frame PNGs
     frame_files = sorted(f.name for f in scene_dir.glob("**/frame_*.png"))
@@ -73,19 +81,39 @@ def scan_scene_dir(scene_dir: Path) -> dict | None:
         "path": str(scene_dir.name),
     }
 
-    # Merge metadata if available
-    if metadata_file.is_file():
-        try:
-            meta = json.loads(metadata_file.read_text(encoding="utf-8"))
-            for key in (
-                "ads_name", "ads_file", "tag", "scene_index", "status",
-                "boot_string", "capture_date", "capture_frames",
-                "capture_interval", "regtest_exit_code",
-            ):
-                if key in meta:
-                    entry[key] = meta[key]
-        except (json.JSONDecodeError, OSError):
-            pass
+    # Merge metadata if available.
+    meta = read_json_file(metadata_file) if metadata_file.is_file() else None
+    if meta:
+        for key in (
+            "ads_name",
+            "ads_file",
+            "tag",
+            "scene_index",
+            "status",
+            "boot_string",
+            "capture_date",
+            "capture_frames",
+            "capture_start_frame",
+            "capture_interval",
+            "regtest_exit_code",
+        ):
+            if key in meta:
+                entry[key] = meta[key]
+
+    # Carry the normalized published result metadata too, so downstream tools can
+    # tell whether a reference bundle reflects a reviewed late-window capture.
+    result = read_json_file(result_file) if result_file.is_file() else None
+    if result:
+        config = result.get("config") or {}
+        scene = result.get("scene") or {}
+        if "start_frame" in config:
+            entry["start_frame"] = config["start_frame"]
+        if "frames" in config and "capture_frames" not in entry:
+            entry["capture_frames"] = config["frames"]
+        if "capture_start_frame" in scene and "capture_start_frame" not in entry:
+            entry["capture_start_frame"] = scene["capture_start_frame"]
+        if "frames_dir_layout" in config:
+            entry["frames_dir_layout"] = config["frames_dir_layout"]
 
     return entry
 

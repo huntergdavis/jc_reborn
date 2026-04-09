@@ -47,6 +47,21 @@ def render_html(payload: dict) -> str:
         text = "" if label in (None, "") else str(label)
         return text if label_key == "scene" else text.lower().replace(" ", "")
 
+    def asset_root(scene_slug: str, failure: dict) -> str:
+        frame_path = failure.get("frame_path")
+        if frame_path:
+            try:
+                return str(Path(frame_path).parent)
+            except TypeError:
+                pass
+        meta_path = failure.get("meta_path")
+        if meta_path:
+            try:
+                return str(Path(meta_path).parent)
+            except TypeError:
+                pass
+        return f"{scene_slug}/frame-meta"
+
     report_links = (
         '<div class="links">'
         '<a href="index.html">index.html</a> '
@@ -90,9 +105,11 @@ def render_html(payload: dict) -> str:
                 )
                 frame_name = first_failure.get("frame")
                 if frame_name:
+                    root_dir = asset_root(scene_slug, first_failure)
                     links = []
-                    links.append(f'<a href="{html.escape(scene_slug)}/frames/{html.escape(frame_name)}.bmp">frame</a>')
-                    meta_href = first_failure.get("meta_path") or f"{scene_slug}/frame-meta/{frame_name}.json"
+                    frame_href = first_failure.get("frame_path") or f"{scene_slug}/frames/{frame_name}.bmp"
+                    links.append(f'<a href="{html.escape(frame_href)}">frame</a>')
+                    meta_href = first_failure.get("meta_path") or f"{root_dir}/{frame_name}.json"
                     links.append(f'<a href="{html.escape(meta_href)}">meta</a>')
                     drift_links = " ".join(links)
             else:
@@ -129,9 +146,11 @@ def render_html(payload: dict) -> str:
         frame_name = tightest.get("frame") or ""
         drift_links = ""
         if frame_name and scene_slug:
-            meta_href = tightest.get("meta_path") or f"{scene_slug}/frame-meta/{frame_name}.json"
+            root_dir = asset_root(scene_slug, tightest)
+            frame_href = tightest.get("frame_path") or f"{scene_slug}/frames/{frame_name}.bmp"
+            meta_href = tightest.get("meta_path") or f"{root_dir}/{frame_name}.json"
             drift_links = (
-                f' <a href="{html.escape(scene_slug)}/frames/{html.escape(frame_name)}.bmp">frame</a>'
+                f' <a href="{html.escape(frame_href)}">frame</a>'
                 f' <a href="{html.escape(meta_href)}">meta</a>'
             )
         tightest_html = (

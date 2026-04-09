@@ -222,13 +222,25 @@ def main() -> None:
 
     missing_reviews = []
     missing_json = []
+    malformed_inventory_scenes = []
     for scene in inventory["scenes"]:
-        review = resolve_artifact_path(scene["review_html"], inventory_path.parent)
-        analysis = resolve_artifact_path(scene["vision_analysis_json"], inventory_path.parent)
+        scene_id = str(scene.get("scene_id", "<missing-scene-id>"))
+        review_value = scene.get("review_html")
+        analysis_value = scene.get("vision_analysis_json")
+        if not isinstance(review_value, str) or not isinstance(analysis_value, str):
+            malformed_inventory_scenes.append(scene_id)
+            continue
+        review = resolve_artifact_path(review_value, inventory_path.parent)
+        analysis = resolve_artifact_path(analysis_value, inventory_path.parent)
         if not review.exists():
-            missing_reviews.append(scene["scene_id"])
+            missing_reviews.append(scene_id)
         if not analysis.exists():
-            missing_json.append(scene["scene_id"])
+            missing_json.append(scene_id)
+    add_check(
+        "inventory_scene_rows_complete",
+        not malformed_inventory_scenes,
+        ", ".join(malformed_inventory_scenes[:10]) or "all present",
+    )
     add_check("per_scene_reviews_exist", not missing_reviews, ", ".join(missing_reviews[:10]) or "all present")
     add_check("per_scene_analysis_exist", not missing_json, ", ".join(missing_json[:10]) or "all present")
 
@@ -237,9 +249,15 @@ def main() -> None:
     catalog_scene_map = {str(row["scene_id"]): row for row in (catalog or {}).get("scenes", [])}
     inventory_scene_map = {str(row["scene_id"]): row for row in inventory.get("scenes", [])}
     mismatched_catalog_paths = []
+    malformed_catalog_scenes = []
     for scene_id, row in catalog_scene_map.items():
-        review = resolve_artifact_path(row["review_html"], root)
-        analysis = resolve_artifact_path(row["vision_analysis_json"], root)
+        review_value = row.get("review_html")
+        analysis_value = row.get("vision_analysis_json")
+        if not isinstance(review_value, str) or not isinstance(analysis_value, str):
+            malformed_catalog_scenes.append(scene_id)
+            continue
+        review = resolve_artifact_path(review_value, root)
+        analysis = resolve_artifact_path(analysis_value, root)
         if not review.exists():
             missing_catalog_reviews.append(scene_id)
         if not analysis.exists():
@@ -250,6 +268,11 @@ def main() -> None:
             or row.get("vision_analysis_json") != inventory_row.get("vision_analysis_json")
         ):
             mismatched_catalog_paths.append(scene_id)
+    add_check(
+        "artifact_catalog_scene_rows_complete",
+        not malformed_catalog_scenes,
+        ", ".join(malformed_catalog_scenes[:10]) or "all present",
+    )
     add_check(
         "artifact_catalog_reviews_exist",
         not missing_catalog_reviews,

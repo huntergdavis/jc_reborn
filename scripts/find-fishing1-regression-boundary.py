@@ -13,6 +13,14 @@ def parse_args():
         description="Find the last healthy and first degraded FISHING 1 build in a scan summary."
     )
     parser.add_argument("--summary-json", required=True, help="Path to fishing1-binary-regression-summary.json")
+    parser.add_argument(
+        "--startup-regime",
+        help=(
+            "Optional startup regime to search for, e.g. "
+            "'top_only_then_full_height_startup'. When set, report the last "
+            "build before that regime and the first build in that regime."
+        ),
+    )
     parser.add_argument("--min-correct", type=int, default=11, help="Minimum unique correct hashes for healthy")
     parser.add_argument("--min-shoe", type=int, default=2, help="Minimum unique shoe hashes for healthy")
     parser.add_argument("--min-midgap", type=int, default=5, help="Minimum unique post-correct-pre-shoe hashes for healthy")
@@ -46,12 +54,38 @@ def is_healthy(row, args):
     )
 
 
+def infer_startup_regime(row):
+    startup_regime = row.get("startup_regime")
+    if startup_regime:
+        return startup_regime
+
+    cov = row.get("coverage") or {}
+    first_visible = cov.get("first_visible_frame")
+    first_lower_half = cov.get("first_lower_half_visible_frame")
+    first_full_height = cov.get("first_full_height_visible_frame")
+
+    if first_visible is None:
+        return "never_visible"
+    if first_full_height == first_visible:
+        return "full_height_visible_immediately"
+    if first_lower_half == first_visible:
+        return "boxed_or_partial_full_scene_startup"
+    return "top_only_then_full_height_startup"
+
+
 def compact(row):
     cov = row.get("coverage") or {}
     result = row.get("result") or {}
+    result_ref = row.get("result_json") or row.get("result_path")
     return {
-        "result_json": row.get("result_json"),
+        "result_json": result_ref,
         "state_hash": result.get("state_hash"),
+        "startup_regime": infer_startup_regime(row),
+        "first_visible": cov.get("first_visible_frame"),
+        "first_lower_half_visible": cov.get("first_lower_half_visible_frame"),
+        "first_full_height_visible": cov.get("first_full_height_visible_frame"),
+        "last_partial_height_visible": cov.get("last_partial_height_visible_frame"),
+        "last_black": cov.get("last_black_frame"),
         "black": cov.get("unique_black_hashes", 0),
         "ocean": cov.get("unique_ocean_only_hashes", 0),
         "island": cov.get("unique_island_only_hashes", 0),
@@ -66,6 +100,24 @@ def main():
     payload = json.loads(Path(args.summary_json).read_text(encoding="utf-8"))
     rows = list(payload.get("rows") or [])
     rows.sort(key=lambda row: extract_sort_key(row.get("result_json", "")))
+
+    if args.startup_regime:
+        last_before_target = None
+        first_target = None
+        for row in rows:
+            if infer_startup_regime(row) == args.startup_regime:
+                first_target = row
+                break
+            last_before_target = row
+
+        report = {
+            "summary_json": str(Path(args.summary_json).resolve()),
+            "startup_regime": args.startup_regime,
+            "last_before_target": compact(last_before_target) if last_before_target else None,
+            "first_target": compact(first_target) if first_target else None,
+        }
+        print(json.dumps(report, indent=2))
+        return
 
     last_healthy = None
     first_degraded = None

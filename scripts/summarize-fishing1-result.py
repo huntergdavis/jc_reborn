@@ -30,6 +30,9 @@ def load_annotations(path):
     rows = payload.get("frames") if isinstance(payload, dict) else payload
     labeled = []
     shoe_only = []
+    black_frames = []
+    ocean_only = []
+    island_only = []
     for row in rows:
         frame_no = frame_no_from_text(row.get("query_image") or row.get("query_rel") or row.get("image_path", ""))
         if frame_no is None:
@@ -39,8 +42,17 @@ def load_annotations(path):
             labeled.append(frame_no)
         if bool(labels.get("other_sprites_visible")) and not bool(labels.get("johnny_visible")):
             shoe_only.append(frame_no)
+        if bool(labels.get("black_screen")):
+            black_frames.append(frame_no)
+        if bool(labels.get("only_ocean")):
+            ocean_only.append(frame_no)
+        if bool(labels.get("only_island")):
+            island_only.append(frame_no)
     labeled.sort()
     shoe_only.sort()
+    black_frames.sort()
+    ocean_only.sort()
+    island_only.sort()
     runs = []
     start = prev = labeled[0]
     for frame_no in labeled[1:]:
@@ -56,6 +68,9 @@ def load_annotations(path):
         "correct_run_end": best_run[1],
         "correct_frames": labeled,
         "shoe_only_frames": shoe_only,
+        "black_frames": black_frames,
+        "ocean_only_frames": ocean_only,
+        "island_only_frames": island_only,
     }
 
 
@@ -86,8 +101,14 @@ def main():
 
     correct_present = [f for f in truth["correct_frames"] if f in hashes]
     shoe_present = [f for f in truth["shoe_only_frames"] if f in hashes]
+    black_present = [f for f in truth["black_frames"] if f in hashes]
+    ocean_present = [f for f in truth["ocean_only_frames"] if f in hashes]
+    island_present = [f for f in truth["island_only_frames"] if f in hashes]
     correct_hashes = {hashes[f] for f in correct_present}
     shoe_hashes = {hashes[f] for f in shoe_present}
+    black_hashes = {hashes[f] for f in black_present}
+    ocean_hashes = {hashes[f] for f in ocean_present}
+    island_hashes = {hashes[f] for f in island_present}
     first_shoe_only = truth["shoe_only_frames"][0] if truth["shoe_only_frames"] else None
     post_correct_pre_shoe_present = []
     if first_shoe_only is not None:
@@ -119,11 +140,20 @@ def main():
             "correct_run_start": truth["correct_run_start"],
             "correct_run_end": truth["correct_run_end"],
             "first_shoe_only_frame": first_shoe_only,
+            "first_black_frame": truth["black_frames"][0] if truth["black_frames"] else None,
+            "first_ocean_only_frame": truth["ocean_only_frames"][0] if truth["ocean_only_frames"] else None,
+            "first_island_only_frame": truth["island_only_frames"][0] if truth["island_only_frames"] else None,
         },
         "coverage": {
+            "black_frames_present": black_present,
+            "ocean_only_frames_present": ocean_present,
+            "island_only_frames_present": island_present,
             "correct_frames_present": correct_present,
             "shoe_only_frames_present": shoe_present,
             "post_correct_pre_shoe_frames_present": post_correct_pre_shoe_present,
+            "unique_black_hashes": len(black_hashes),
+            "unique_ocean_only_hashes": len(ocean_hashes),
+            "unique_island_only_hashes": len(island_hashes),
             "unique_correct_hashes": len(correct_hashes),
             "unique_shoe_hashes": len(shoe_hashes),
             "unique_post_correct_pre_shoe_hashes": len(post_correct_pre_shoe_hashes),

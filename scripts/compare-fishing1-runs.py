@@ -89,7 +89,7 @@ def main():
         out_path = Path(args.json_out)
         out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
-    print("label\tregime\tcorrect\tshoe\tmidgap\tstate_hash")
+    print("label\tregime\tblack\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash")
     for row in rows:
         cov = row.get("coverage") or {}
         result = row.get("result") or {}
@@ -98,6 +98,9 @@ def main():
                 [
                     row["label"],
                     row.get("regime", ""),
+                    str(cov.get("unique_black_hashes", 0)),
+                    str(cov.get("unique_ocean_only_hashes", 0)),
+                    str(cov.get("unique_island_only_hashes", 0)),
                     str(cov.get("unique_correct_hashes", 0)),
                     str(cov.get("unique_shoe_hashes", 0)),
                     str(cov.get("unique_post_correct_pre_shoe_hashes", 0)),
@@ -108,13 +111,18 @@ def main():
 
     if deltas:
         print("")
-        print("delta_from\tto\td_correct\td_shoe\td_midgap")
+        print("delta_from\tto\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap")
         for delta in deltas:
+            prev_row = next(row for row in rows if row["label"] == delta["from"])
+            cur_row = next(row for row in rows if row["label"] == delta["to"])
             print(
                 "\t".join(
                     [
                         delta["from"],
                         delta["to"],
+                        str(metric_delta(prev_row, cur_row, "unique_black_hashes")),
+                        str(metric_delta(prev_row, cur_row, "unique_ocean_only_hashes")),
+                        str(metric_delta(prev_row, cur_row, "unique_island_only_hashes")),
                         str(delta["delta_unique_correct_hashes"]),
                         str(delta["delta_unique_shoe_hashes"]),
                         str(delta["delta_unique_post_correct_pre_shoe_hashes"]),

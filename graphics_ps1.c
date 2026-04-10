@@ -3603,12 +3603,53 @@ static PS1Surface *createBgTileRAM(uint8 *src, uint16 srcWidth,
                                    srcStartX, srcStartY, tileWidth);
 }
 
+static void grCompositeScrRowsOntoBgTile(PS1Surface *tile, uint8 *src,
+                                         uint16 srcWidth, uint16 srcYStart,
+                                         uint16 rowCount, uint16 srcStartX)
+{
+    if (!tile || !tile->pixels || !src || rowCount == 0)
+        return;
+
+    for (uint16 y = 0; y < rowCount && y < 240; y++) {
+        uint16 srcY = srcYStart + y;
+        uint16 *dstRow = tile->pixels + (uint32)y * (uint32)tile->width;
+        uint32 srcOff = (uint32)srcY * (uint32)srcWidth + srcStartX;
+        uint16 x = 0;
+
+        /* Match createBgTileRAMPartial(): Sierra SCR data uses high nibble for
+         * the even pixel and low nibble for the odd pixel. The preserve/
+         * composite path must decode rows identically to the fresh-tile path
+         * or island ADS boots will keep the old ocean baseline instead of the
+         * intended partial-height screen contents. */
+        if ((srcStartX & 1) && x < tile->width) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[0] = ttmPalette[packed & 0x0F];
+            x = 1;
+            srcOff++;
+        }
+
+        for (; x + 1 < tile->width; x += 2, srcOff += 2) {
+            uint32 pair = palLutSierra[src[srcOff >> 1]];
+            dstRow[x] = (uint16)pair;
+            dstRow[x + 1] = (uint16)(pair >> 16);
+        }
+
+        if (x < tile->width) {
+            uint8 packed = src[srcOff >> 1];
+            dstRow[x] = ttmPalette[(packed >> 4) & 0x0F];
+        }
+    }
+}
+
 /*
  * Load background screen
  */
 void grLoadScreen(char *strArg)
 {
     struct TScrResource *scrResource = findScrResource(strArg);
+    int preserveTopTiles;
+    int preserveBottomTiles;
+    int forceTopReload;
     if (scrResource == NULL) return;
 
     /* Determine partial height from metadata (available without loading data) */
@@ -3620,15 +3661,27 @@ void grLoadScreen(char *strArg)
      * and the SCR load needs ~300KB temporarily. */
     grFreeCleanBgTiles();
 
-    /* Free top tiles always */
-    freeBgTile(&bgTile0);
-    freeBgTile(&bgTile1);
-    freeBgTile(&bgTile2a);
-    freeBgTile(&bgTile2b);
+    /* ISLETEMP owns the visible scene top-half. Reusing the already-drawn
+     * island bootstrap tiles here can leave the user-facing island ADS path
+     * stuck on the ocean baseline instead of transitioning into the scene.
+     * Keep preserving the bottom ocean rows for partial-height screens, but
+     * reload the top tiles outright for ISLETEMP. */
+    forceTopReload = (strArg != NULL && strcmp(strArg, "ISLETEMP.SCR") == 0);
+    preserveTopTiles = (!forceTopReload &&
+                        isPartialHeight &&
+                        bgTile0 != NULL && bgTile1 != NULL);
+    preserveBottomTiles = (isPartialHeight && bgTile3 != NULL && bgTile4 != NULL);
+
+    if (!preserveTopTiles) {
+        freeBgTile(&bgTile0);
+        freeBgTile(&bgTile1);
+        freeBgTile(&bgTile2a);
+        freeBgTile(&bgTile2b);
+    }
 
     /* Only free bottom tiles if new image is full height
      * This preserves ocean background for scenes like ISLETEMP (640x350) */
-    if (!isPartialHeight) {
+    if (!preserveBottomTiles) {
         freeBgTile(&bgTile3);
         freeBgTile(&bgTile4);
         freeBgTile(&bgTile5a);
@@ -3671,18 +3724,20 @@ void grLoadScreen(char *strArg)
     uint16 srcWidth  = scrResource->width;
     uint8 *src = scrResource->uncompressedData;
 
-    /* Create tiles for top row (y=0-239)
-     * VRAM layout:
-     * - Tile 0  (256x240) at VRAM(640, 4)   - srcX=0,   y=4-243
-     * - Tile 1  (256x240) at VRAM(640, 244) - srcX=256, y=244-483
-     * DEBUG: Test single 64px tile at x=896 to isolate VRAM issue
-     */
-    /* Top row: LoadImage directly to framebuffer at init
-     * Use 2 tiles of 320px each to cover 640px total */
-    bgTile0  = createBgTileRAM(src, srcWidth, 0,   0, 320);   /* top row, x=0-319 */
-    bgTile1  = createBgTileRAM(src, srcWidth, 320, 0, 320);   /* top row, x=320-639 */
-    bgTile2a = NULL;
-    bgTile2b = NULL;
+    if (preserveTopTiles) {
+        uint16 topRowLines = (srcHeight < 240) ? srcHeight : 240;
+        grCompositeScrRowsOntoBgTile(bgTile0, src, srcWidth, 0, topRowLines, 0);
+        grCompositeScrRowsOntoBgTile(bgTile1, src, srcWidth, 0, topRowLines, 320);
+        bgTile2a = NULL;
+        bgTile2b = NULL;
+    } else {
+        /* Top row: LoadImage directly to framebuffer at init
+         * Use 2 tiles of 320px each to cover 640px total */
+        bgTile0  = createBgTileRAM(src, srcWidth, 0,   0, 320);
+        bgTile1  = createBgTileRAM(src, srcWidth, 320, 0, 320);
+        bgTile2a = NULL;
+        bgTile2b = NULL;
+    }
 
     /* LoadImage top row directly to framebuffer
      * Use separate RECTs - LoadImage is async and may read RECT after return */
@@ -3709,36 +3764,11 @@ void grLoadScreen(char *strArg)
         bgTile4  = createBgTileRAMPartial(src, srcWidth, srcHeight, 320, 240, 320);
         bgTile5a = NULL;
         bgTile5b = NULL;
-    } else if (isPartialHeight && bgTile3 != NULL && bgTile4 != NULL && bottomRowLines > 0) {
+    } else if (preserveBottomTiles && bottomRowLines > 0) {
         /* Partial height image with existing bottom tiles (ocean) - composite on top!
          * Copy the available rows (240 to srcHeight-1) onto existing tiles */
-        uint16 *dst3 = bgTile3->pixels;
-        uint16 *dst4 = bgTile4->pixels;
-
-        for (uint16 y = 0; y < bottomRowLines && y < 240; y++) {
-            uint16 srcY = 240 + y;
-            for (uint16 x = 0; x < 320; x++) {
-                /* Left tile (bgTile3) */
-                uint32 srcOffset = (srcY * srcWidth + x) / 2;
-                uint8 palIndex;
-                if (x & 1) {
-                    palIndex = src[srcOffset] & 0x0F;
-                } else {
-                    palIndex = (src[srcOffset] >> 4) & 0x0F;
-                }
-                dst3[y * 320 + x] = ttmPalette[palIndex & 0x0F];
-
-                /* Right tile (bgTile4) */
-                uint16 srcX = 320 + x;
-                srcOffset = (srcY * srcWidth + srcX) / 2;
-                if (srcX & 1) {
-                    palIndex = src[srcOffset] & 0x0F;
-                } else {
-                    palIndex = (src[srcOffset] >> 4) & 0x0F;
-                }
-                dst4[y * 320 + x] = ttmPalette[palIndex & 0x0F];
-            }
-        }
+        grCompositeScrRowsOntoBgTile(bgTile3, src, srcWidth, 240, bottomRowLines, 0);
+        grCompositeScrRowsOntoBgTile(bgTile4, src, srcWidth, 240, bottomRowLines, 320);
     } else if (bottomRowLines > 0) {
         /* Partial bottom row with no existing tiles - create with partial data */
         bgTile3  = createBgTileRAMPartial(src, srcWidth, srcHeight, 0,   240, 320);

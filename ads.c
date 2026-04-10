@@ -719,8 +719,16 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
     adsSeedFromHandoffReplay(ttmThread);
 #endif
 
-    if (ttmSlotNo)
-        ttmThread->ip = ttmFindTag(&ttmSlots[ttmSlotNo], ttmTag);
+    if (ttmSlotNo) {
+        struct TTtmSlot *slot = &ttmSlots[ttmSlotNo];
+        if (slot->numTags > 0 && slot->tags && slot->tags[0].id == ttmTag)
+            ttmThread->ip = 0;
+        else {
+            ttmThread->ip = ttmFindTag(slot, ttmTag);
+            if (ttmTag && ttmThread->ip == 0)
+                ttmThread->isRunning = 0;
+        }
+    }
     else
         ttmThread->ip = 0;
 

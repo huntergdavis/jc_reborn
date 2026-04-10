@@ -16,6 +16,7 @@ END_SEQ=""
 DIR_NAMES=()
 SKIPPED_NAMES=()
 BOUNDARY_STARTUP_REGIME=""
+STOP_AFTER_FIRST_STARTUP_REGIME=""
 
 usage() {
   cat <<'USAGE'
@@ -38,6 +39,9 @@ Options:
   --boundary-startup-regime NAME
                        Also write a startup-regime boundary report using
                        find-fishing1-regression-boundary.py
+  --stop-after-first-startup-regime NAME
+                       Stop the exact dir-name scan once the summary first
+                       reaches the requested startup regime.
   -h, --help           Show this help
 USAGE
 }
@@ -54,6 +58,7 @@ while [ $# -gt 0 ]; do
     --dir-name) DIR_NAMES+=("$2"); shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
     --boundary-startup-regime) BOUNDARY_STARTUP_REGIME="$2"; shift 2 ;;
+    --stop-after-first-startup-regime) STOP_AFTER_FIRST_STARTUP_REGIME="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -93,6 +98,25 @@ run_one() {
     "$@"
 }
 
+startup_regime_seen() {
+  local target="$1"
+  python3 - "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" "$target" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+summary_path = Path(sys.argv[1])
+target = sys.argv[2]
+if not summary_path.exists():
+    raise SystemExit(1)
+payload = json.loads(summary_path.read_text(encoding="utf-8"))
+for row in payload.get("rows") or []:
+    if row.get("startup_regime") == target:
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
 if [ "${#DIR_NAMES[@]}" -gt 0 ]; then
   for dir_name in "${DIR_NAMES[@]}"; do
     slug="$(printf '%s' "$dir_name" | tr '/ ' '__')"
@@ -101,6 +125,10 @@ if [ "${#DIR_NAMES[@]}" -gt 0 ]; then
       SKIPPED_NAMES+=("$dir_name")
     fi
     refresh_reports >/dev/null
+    if [ -n "$STOP_AFTER_FIRST_STARTUP_REGIME" ] && startup_regime_seen "$STOP_AFTER_FIRST_STARTUP_REGIME"; then
+      echo "STOP: found startup regime $STOP_AFTER_FIRST_STARTUP_REGIME" >&2
+      break
+    fi
   done
 else
   extra=()

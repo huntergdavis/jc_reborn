@@ -151,12 +151,13 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
     .pairhead {{ display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }}
     .pairhead .meta {{ color: var(--muted); }}
     .pairgrid {{ display: grid; grid-template-columns: {pair_columns}; gap: 16px; }}
-    figure {{ margin: 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }}
+    figure {{ margin: 0; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; text-align: center; }}
     figcaption {{ padding: 10px 12px; border-bottom: 1px solid var(--line); color: var(--accent); font-weight: 600; }}
     img {{ display: block; width: auto; max-width: 100%; max-height: 34vh; height: auto; margin: 0 auto; image-rendering: pixelated; background: #000; }}
+    figcaption, .path {{ text-align: left; }}
     .path {{ padding: 10px 12px 12px; font-family: ui-monospace, monospace; color: var(--muted); word-break: break-all; font-size: 12px; }}
     .controls {{ margin-top: 16px; display: grid; gap: 14px; }}
-    .imagewrap {{ position: relative; }}
+    .imagewrap {{ position: relative; display: inline-block; line-height: 0; max-width: 100%; }}
     .capture-marker {{
       position: absolute;
       width: 18px;

@@ -10,6 +10,7 @@ GENERATED_RUN_DIR="$OUTDIR/regtest-run"
 SOURCE_RESULT="${FISHING1_REVIEW_RESULT:-}"
 STABLE_RESULT_DIR="${FISHING1_REVIEW_STABLE_RESULT_DIR:-$PROJECT_ROOT/regtest-results/fishing-1-story17-dense-v3-current}"
 STABLE_RESULT="$STABLE_RESULT_DIR/result.json"
+FULL_REVIEW_ANNOTATIONS="${FISHING1_FULL_REVIEW_ANNOTATIONS:-$PROJECT_ROOT/vision-artifacts/fishing1-full-annotation-review/annotations.json}"
 resolve_scene_value() {
   local field="$1"
   local fallback="$2"
@@ -51,6 +52,11 @@ if int(config.get("interval", -1)) != expected_interval:
 if scene.get("boot_string") != "story scene 17 seed 1":
     raise SystemExit(1)
 PY
+  if [ -f "$FULL_REVIEW_ANNOTATIONS" ]; then
+    python3 "$PROJECT_ROOT/scripts/validate-fishing1-stable-result.py" \
+      --annotations "$FULL_REVIEW_ANNOTATIONS" \
+      --result "$STABLE_RESULT" >/dev/null
+  fi
 }
 
 if [ -z "$SOURCE_RESULT" ]; then

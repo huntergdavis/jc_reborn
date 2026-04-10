@@ -547,6 +547,94 @@ out_path.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
 PY
 
 # ---------------------------------------------------------------------------
+# Capture local build provenance
+# ---------------------------------------------------------------------------
+BUILD_PROVENANCE_FILE="$OUTPUT_DIR/build-provenance.json"
+python3 - <<'PY' "$PROJECT_ROOT" "$BOOTMODE_FILE" "$EMBEDDED_BOOTMODE_HEADER" "$BUILD_PROVENANCE_FILE"
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+project_root = Path(sys.argv[1])
+bootmode_file = Path(sys.argv[2])
+embedded_header = Path(sys.argv[3])
+out_path = Path(sys.argv[4])
+
+
+def run_git(*args):
+    proc = subprocess.run(
+        ["git", *args],
+        cwd=project_root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        return []
+    return [line for line in proc.stdout.splitlines() if line.strip()]
+
+
+def is_build_affecting(path_str):
+    path = Path(path_str)
+    if path == Path("config/ps1/BOOTMODE.TXT"):
+        return False
+    if path == Path("config/ps1/bootmode_embedded.h"):
+        return False
+    if path.suffix in {".c", ".h"}:
+        return True
+    if len(path.parts) >= 2 and path.parts[0] == "config" and path.parts[1] == "ps1":
+        return True
+    if path.parts and path.parts[0] == "scripts":
+        return path.name in {
+            "build-ps1.sh",
+            "build-regtest-image.sh",
+            "make-cd-image.sh",
+            "regtest-scene.sh",
+        }
+    if path.name in {"CMakeLists.txt", "Makefile"}:
+        return True
+    return False
+
+
+embedded_boot_override = ""
+if embedded_header.is_file():
+    for line in embedded_header.read_text(encoding="utf-8", errors="ignore").splitlines():
+        marker = "#define PS1_EMBEDDED_BOOT_OVERRIDE "
+        if line.startswith(marker):
+            embedded_boot_override = line[len(marker):].strip().strip('"')
+            break
+
+bootmode_text = ""
+if bootmode_file.is_file():
+    bootmode_text = bootmode_file.read_text(encoding="utf-8", errors="ignore").strip()
+
+tracked_dirty = run_git("diff", "--name-only", "HEAD", "--")
+
+payload = {
+    "git_head": "\n".join(run_git("rev-parse", "HEAD")),
+    "bootmode_txt": bootmode_text,
+    "embedded_boot_override": embedded_boot_override,
+    "tracked_dirty_files": tracked_dirty,
+    "tracked_dirty_build_inputs": [path for path in tracked_dirty if is_build_affecting(path)],
+}
+payload["has_dirty_build_inputs"] = bool(payload["tracked_dirty_build_inputs"])
+out_path.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
+PY
+
+DIRTY_BUILD_INPUTS=0
+if python3 - <<'PY' "$BUILD_PROVENANCE_FILE"
+import json
+import sys
+payload = json.load(open(sys.argv[1], encoding='utf-8'))
+raise SystemExit(0 if payload.get('has_dirty_build_inputs') else 1)
+PY
+then
+    DIRTY_BUILD_INPUTS=1
+    log "WARNING: local regtest built from dirty PS1 build inputs; see $BUILD_PROVENANCE_FILE"
+fi
+
+# ---------------------------------------------------------------------------
 # Build structured JSON result
 # ---------------------------------------------------------------------------
 # Check for crash indicators in printf log
@@ -588,6 +676,7 @@ result = {
         'telemetry': os.path.abspath('$TELEMETRY_FILE'),
         'printf_log': os.path.abspath('$PRINTF_FILE'),
         'raw_hashes': os.path.abspath('$RAW_HASHES_FILE'),
+        'build_provenance': os.path.abspath('$BUILD_PROVENANCE_FILE'),
         'build_log': os.path.abspath('$OUTPUT_DIR/build.log'),
     },
 }
@@ -618,6 +707,17 @@ if os.path.isfile(raw_hashes_path):
             raw_hashes = json.load(f)
         if isinstance(raw_hashes, dict) and raw_hashes:
             result['outcome']['raw_hashes'] = raw_hashes
+    except Exception:
+        pass
+
+build_provenance_path = '$BUILD_PROVENANCE_FILE'
+if os.path.isfile(build_provenance_path):
+    try:
+        with open(build_provenance_path) as f:
+            build_provenance = json.load(f)
+        if isinstance(build_provenance, dict) and build_provenance:
+            result['build_provenance'] = build_provenance
+            result['outcome']['dirty_build_inputs'] = bool(build_provenance.get('has_dirty_build_inputs'))
     except Exception:
         pass
 

@@ -11,9 +11,12 @@ TARGET_STARTUP_REGIME="top_only_then_full_height_startup"
 CHUNK_SIZE="${FISHING1_STARTUP_ONSET_CHUNK_SIZE:-10}"
 START_SEQ=""
 END_SEQ=""
+START_SEQ_EXPLICIT=0
+END_SEQ_EXPLICIT=0
 CONTINUE_THROUGH_TARGETS=0
 RESUME=0
 MAX_CHUNKS=""
+CONTINUE_EARLIER=0
 
 usage() {
   cat <<'USAGE'
@@ -36,6 +39,8 @@ Options:
   --resume            Reuse existing chunk boundary reports under --output
                       instead of rerunning those chunk scans.
   --max-chunks N      Stop after scanning at most N chunks in this run.
+  --continue-earlier  Reuse the current earliest target chunk under --output
+                      and continue scanning from the chunk immediately before it.
   -h, --help           Show this help
 USAGE
 }
@@ -46,11 +51,12 @@ while [ $# -gt 0 ]; do
     --output) OUTPUT_ROOT="$2"; shift 2 ;;
     --target-regime) TARGET_STARTUP_REGIME="$2"; shift 2 ;;
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
-    --start-seq) START_SEQ="$2"; shift 2 ;;
-    --end-seq) END_SEQ="$2"; shift 2 ;;
+    --start-seq) START_SEQ="$2"; START_SEQ_EXPLICIT=1; shift 2 ;;
+    --end-seq) END_SEQ="$2"; END_SEQ_EXPLICIT=1; shift 2 ;;
     --continue-through-targets) CONTINUE_THROUGH_TARGETS=1; shift ;;
     --resume) RESUME=1; shift ;;
     --max-chunks) MAX_CHUNKS="$2"; shift 2 ;;
+    --continue-earlier) CONTINUE_EARLIER=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -96,6 +102,41 @@ fi
 
 mkdir -p "$OUTPUT_ROOT"
 
+if [ "$CONTINUE_EARLIER" -eq 1 ]; then
+  RESUME=1
+  CONTINUE_THROUGH_TARGETS=1
+  onset_path="$OUTPUT_ROOT/fishing1-startup-onset.json"
+  if [ ! -f "$onset_path" ]; then
+    echo "ERROR: --continue-earlier requires existing $onset_path" >&2
+    exit 1
+  fi
+  read -r continued_start continued_end < <(python3 - "$onset_path" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+chunk_dir = (
+    payload.get("earliest_target_chunk_dir")
+    or payload.get("onset_boundary_report")
+    or payload.get("earliest_target_boundary_report")
+    or ""
+)
+match = re.search(r"seq_(\d+)_to_(\d+)", chunk_dir)
+if not match:
+    raise SystemExit(1)
+chunk_start = int(match.group(1))
+end_seq = int(payload.get("end_seq"))
+print(chunk_start - 1, end_seq)
+PY
+  )
+  START_SEQ="$continued_start"
+  if [ "$END_SEQ_EXPLICIT" -eq 0 ]; then
+    END_SEQ="${SUCCESS_SEQS[0]}"
+  fi
+fi
+
 current_high="$START_SEQ"
 chunk_index=0
 found_report=""
@@ -104,7 +145,11 @@ earliest_target_chunk_dir=""
 last_non_target_report=""
 last_non_target_chunk_dir=""
 chunk_history_path="$OUTPUT_ROOT/fishing1-startup-onset-chunks.jsonl"
-: > "$chunk_history_path"
+if [ "$RESUME" -eq 1 ] && [ -f "$chunk_history_path" ]; then
+  :
+else
+  : > "$chunk_history_path"
+fi
 
 while [ "$current_high" -ge "$END_SEQ" ]; do
   if [ -n "$MAX_CHUNKS" ] && [ "$chunk_index" -ge "$MAX_CHUNKS" ]; then
@@ -195,7 +240,7 @@ PY
   chunk_index=$((chunk_index + 1))
 done
 
-python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" <<'PY'
+python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -219,6 +264,7 @@ report = {
     "continue_through_targets": continue_through_targets,
     "resume": sys.argv[11] == "1",
     "max_chunks": int(sys.argv[12]) if sys.argv[12] else None,
+    "continue_earlier": sys.argv[13] == "1",
     "chunk_history_jsonl": str(output_root / "fishing1-startup-onset-chunks.jsonl"),
     "onset_boundary_report": found_report or None,
     "earliest_target_boundary_report": earliest_target_report or None,

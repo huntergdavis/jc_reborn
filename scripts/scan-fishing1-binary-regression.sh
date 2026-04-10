@@ -66,42 +66,8 @@ fi
 
 mkdir -p "$OUTPUT_ROOT"
 
-run_one() {
-  local outdir="$1"
-  shift
-  "$PROJECT_ROOT/scripts/regtest-binary-library-scene.sh" \
-    --scene "FISHING 1" \
-    --frames "$FRAMES" \
-    --start-frame "$START_FRAME" \
-    --interval "$INTERVAL" \
-    --output "$outdir" \
-    --resume \
-    "$@"
-}
-
-if [ "${#DIR_NAMES[@]}" -gt 0 ]; then
-  for dir_name in "${DIR_NAMES[@]}"; do
-    slug="$(printf '%s' "$dir_name" | tr '/ ' '__')"
-    if ! run_one "$OUTPUT_ROOT/$slug" --dir-name "$dir_name"; then
-      echo "SKIP: no runnable build matched $dir_name" >&2
-      SKIPPED_NAMES+=("$dir_name")
-    fi
-  done
-else
-  extra=()
-  if [ -n "$START_SEQ" ]; then
-    extra+=(--start-seq "$START_SEQ")
-  fi
-  if [ -n "$END_SEQ" ]; then
-    extra+=(--end-seq "$END_SEQ")
-  fi
-  if [ -n "$LIMIT" ]; then
-    extra+=(--limit "$LIMIT")
-  fi
-  run_one "$OUTPUT_ROOT/range" "${extra[@]}"
-fi
-
-python3 - "$PROJECT_ROOT" "$OUTPUT_ROOT" "$ANNOTATIONS" "${SKIPPED_NAMES[@]}" <<'PY'
+refresh_reports() {
+  python3 - "$PROJECT_ROOT" "$OUTPUT_ROOT" "$ANNOTATIONS" "${SKIPPED_NAMES[@]}" <<'PY'
 import json
 import subprocess
 import sys
@@ -137,10 +103,90 @@ report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 print(report_path)
 PY
 
-if [ -n "$BOUNDARY_STARTUP_REGIME" ]; then
-  python3 "$PROJECT_ROOT/scripts/find-fishing1-regression-boundary.py" \
-    --summary-json "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" \
-    --startup-regime "$BOUNDARY_STARTUP_REGIME" \
-    > "$OUTPUT_ROOT/fishing1-startup-boundary.json"
-  printf '%s\n' "$OUTPUT_ROOT/fishing1-startup-boundary.json"
+  python3 - "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+summary_path = Path(sys.argv[1])
+payload = json.loads(summary_path.read_text(encoding="utf-8"))
+rows = payload.get("rows") or []
+out_path = summary_path.with_name("fishing1-startup-summary.tsv")
+
+with out_path.open("w", encoding="utf-8") as handle:
+    handle.write(
+        "build\tstartup_regime\tfirst_visible\tfirst_lower_half\tfirst_full_height\t"
+        "last_partial_height\tlast_black\tblack\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash\n"
+    )
+    for row in rows:
+        cov = row.get("coverage") or {}
+        result = row.get("result") or {}
+        build = Path(row.get("result_json", "")).parts[-2] if row.get("result_json") else ""
+        fields = [
+            build,
+            row.get("startup_regime", ""),
+            str(cov.get("first_visible_frame", "")),
+            str(cov.get("first_lower_half_visible_frame", "")),
+            str(cov.get("first_full_height_visible_frame", "")),
+            str(cov.get("last_partial_height_visible_frame", "")),
+            str(cov.get("last_black_frame", "")),
+            str(cov.get("unique_black_hashes", "")),
+            str(cov.get("unique_ocean_only_hashes", "")),
+            str(cov.get("unique_island_only_hashes", "")),
+            str(cov.get("unique_correct_hashes", "")),
+            str(cov.get("unique_shoe_hashes", "")),
+            str(cov.get("unique_post_correct_pre_shoe_hashes", "")),
+            str(result.get("state_hash", "")),
+        ]
+        handle.write("\t".join(fields) + "\n")
+
+print(out_path)
+PY
+
+  if [ -n "$BOUNDARY_STARTUP_REGIME" ]; then
+    python3 "$PROJECT_ROOT/scripts/find-fishing1-regression-boundary.py" \
+      --summary-json "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" \
+      --startup-regime "$BOUNDARY_STARTUP_REGIME" \
+      > "$OUTPUT_ROOT/fishing1-startup-boundary.json"
+    printf '%s\n' "$OUTPUT_ROOT/fishing1-startup-boundary.json"
+  fi
+}
+
+run_one() {
+  local outdir="$1"
+  shift
+  "$PROJECT_ROOT/scripts/regtest-binary-library-scene.sh" \
+    --scene "FISHING 1" \
+    --frames "$FRAMES" \
+    --start-frame "$START_FRAME" \
+    --interval "$INTERVAL" \
+    --output "$outdir" \
+    --resume \
+    "$@"
+}
+
+if [ "${#DIR_NAMES[@]}" -gt 0 ]; then
+  for dir_name in "${DIR_NAMES[@]}"; do
+    slug="$(printf '%s' "$dir_name" | tr '/ ' '__')"
+    if ! run_one "$OUTPUT_ROOT/$slug" --dir-name "$dir_name"; then
+      echo "SKIP: no runnable build matched $dir_name" >&2
+      SKIPPED_NAMES+=("$dir_name")
+    fi
+    refresh_reports >/dev/null
+  done
+else
+  extra=()
+  if [ -n "$START_SEQ" ]; then
+    extra+=(--start-seq "$START_SEQ")
+  fi
+  if [ -n "$END_SEQ" ]; then
+    extra+=(--end-seq "$END_SEQ")
+  fi
+  if [ -n "$LIMIT" ]; then
+    extra+=(--limit "$LIMIT")
+  fi
+  run_one "$OUTPUT_ROOT/range" "${extra[@]}"
+  refresh_reports >/dev/null
 fi
+
+refresh_reports

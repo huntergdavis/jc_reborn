@@ -12,6 +12,8 @@ CHUNK_SIZE="${FISHING1_STARTUP_ONSET_CHUNK_SIZE:-10}"
 START_SEQ=""
 END_SEQ=""
 CONTINUE_THROUGH_TARGETS=0
+RESUME=0
+MAX_CHUNKS=""
 
 usage() {
   cat <<'USAGE'
@@ -31,6 +33,9 @@ Options:
                        Keep walking backward through target chunks until the
                        first non-target chunk after them, then report the
                        earliest target chunk seen.
+  --resume            Reuse existing chunk boundary reports under --output
+                      instead of rerunning those chunk scans.
+  --max-chunks N      Stop after scanning at most N chunks in this run.
   -h, --help           Show this help
 USAGE
 }
@@ -44,6 +49,8 @@ while [ $# -gt 0 ]; do
     --start-seq) START_SEQ="$2"; shift 2 ;;
     --end-seq) END_SEQ="$2"; shift 2 ;;
     --continue-through-targets) CONTINUE_THROUGH_TARGETS=1; shift ;;
+    --resume) RESUME=1; shift ;;
+    --max-chunks) MAX_CHUNKS="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -56,6 +63,10 @@ fi
 
 if ! [[ "$CHUNK_SIZE" =~ ^[0-9]+$ ]] || [ "$CHUNK_SIZE" -le 0 ]; then
   echo "ERROR: --chunk-size must be a positive integer" >&2
+  exit 1
+fi
+if [ -n "$MAX_CHUNKS" ] && { ! [[ "$MAX_CHUNKS" =~ ^[0-9]+$ ]] || [ "$MAX_CHUNKS" -le 0 ]; }; then
+  echo "ERROR: --max-chunks must be a positive integer" >&2
   exit 1
 fi
 
@@ -96,23 +107,30 @@ chunk_history_path="$OUTPUT_ROOT/fishing1-startup-onset-chunks.jsonl"
 : > "$chunk_history_path"
 
 while [ "$current_high" -ge "$END_SEQ" ]; do
+  if [ -n "$MAX_CHUNKS" ] && [ "$chunk_index" -ge "$MAX_CHUNKS" ]; then
+    break
+  fi
+
   current_low=$((current_high - CHUNK_SIZE + 1))
   if [ "$current_low" -lt "$END_SEQ" ]; then
     current_low="$END_SEQ"
   fi
 
   chunk_dir="$OUTPUT_ROOT/seq_${current_low}_to_${current_high}"
-  rm -rf "$chunk_dir"
-
-  bash "$SCRIPT_DIR/scan-fishing1-binary-regression.sh" \
-    --output "$chunk_dir" \
-    --annotations "$ANNOTATIONS" \
-    --exact-start-seq "$current_low" \
-    --exact-end-seq "$current_high" \
-    --boundary-startup-regime "$TARGET_STARTUP_REGIME" \
-    --stop-after-first-startup-regime "$TARGET_STARTUP_REGIME"
-
   boundary_path="$chunk_dir/fishing1-startup-boundary.json"
+  if [ "$RESUME" -eq 1 ] && [ -f "$boundary_path" ]; then
+    :
+  else
+    rm -rf "$chunk_dir"
+    bash "$SCRIPT_DIR/scan-fishing1-binary-regression.sh" \
+      --output "$chunk_dir" \
+      --annotations "$ANNOTATIONS" \
+      --exact-start-seq "$current_low" \
+      --exact-end-seq "$current_high" \
+      --boundary-startup-regime "$TARGET_STARTUP_REGIME" \
+      --stop-after-first-startup-regime "$TARGET_STARTUP_REGIME"
+  fi
+
   if python3 - "$boundary_path" <<'PY'
 import json
 import sys
@@ -177,7 +195,7 @@ PY
   chunk_index=$((chunk_index + 1))
 done
 
-python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" <<'PY'
+python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -199,6 +217,8 @@ report = {
     "start_seq": start_seq,
     "end_seq": end_seq,
     "continue_through_targets": continue_through_targets,
+    "resume": sys.argv[11] == "1",
+    "max_chunks": int(sys.argv[12]) if sys.argv[12] else None,
     "chunk_history_jsonl": str(output_root / "fishing1-startup-onset-chunks.jsonl"),
     "onset_boundary_report": found_report or None,
     "earliest_target_boundary_report": earliest_target_report or None,

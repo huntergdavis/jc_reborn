@@ -1443,15 +1443,6 @@ void grReplaySprite(struct TDrawnSprite *ds)
 {
     if (!ds || !ds->indexedPixels) return;
 
-    grCaptureRecordSpriteDraw(ds->bmpName,
-                              ds->x,
-                              ds->y,
-                              ds->spriteNo,
-                              ds->imageNo,
-                              ds->width,
-                              ds->height,
-                              ds->flip);
-
     PS1Surface tmpSfc = {0};
     tmpSfc.indexedPixels = ds->indexedPixels;
     tmpSfc.width = ds->width;
@@ -2683,17 +2674,6 @@ void grDrawSprite(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint16 y,
         return;
     }
 
-    grCaptureRecordSpriteDraw(
-        ttmSlot->loadedBmpNames[imageNo],
-        x,
-        y,
-        spriteNo,
-        imageNo,
-        (sprite->fullWidth ? sprite->fullWidth : sprite->width),
-        (sprite->fullHeight ? sprite->fullHeight : sprite->height),
-        0
-    );
-
     /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {
         grCompositeToBackground(sprite, x, y);
@@ -2908,17 +2888,6 @@ void grDrawSpriteFlip(PS1Surface *sfc, struct TTtmSlot *ttmSlot, sint16 x, sint1
     if (sprite == NULL) {
         return;
     }
-
-    grCaptureRecordSpriteDraw(
-        ttmSlot->loadedBmpNames[imageNo],
-        x,
-        y,
-        spriteNo,
-        imageNo,
-        (sprite->fullWidth ? sprite->fullWidth : sprite->width),
-        (sprite->fullHeight ? sprite->fullHeight : sprite->height),
-        1
-    );
 
     /* RAM-based sprites (loaded via grLoadBmpRAM) have x=0, y=0 with valid pixel data. */
     if (sprite->x == 0 && sprite->y == 0 && (sprite->pixels != NULL || sprite->indexedPixels != NULL)) {

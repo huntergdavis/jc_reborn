@@ -11,6 +11,7 @@ TARGET_STARTUP_REGIME="top_only_then_full_height_startup"
 CHUNK_SIZE="${FISHING1_STARTUP_ONSET_CHUNK_SIZE:-10}"
 START_SEQ=""
 END_SEQ=""
+CONTINUE_THROUGH_TARGETS=0
 
 usage() {
   cat <<'USAGE'
@@ -26,6 +27,10 @@ Options:
   --chunk-size N       Exact sequence width per scan chunk (default: 10)
   --start-seq N        Highest sequence to begin scanning from
   --end-seq N          Lowest sequence to include before stopping
+  --continue-through-targets
+                       Keep walking backward through target chunks until the
+                       first non-target chunk after them, then report the
+                       earliest target chunk seen.
   -h, --help           Show this help
 USAGE
 }
@@ -38,6 +43,7 @@ while [ $# -gt 0 ]; do
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; shift 2 ;;
     --end-seq) END_SEQ="$2"; shift 2 ;;
+    --continue-through-targets) CONTINUE_THROUGH_TARGETS=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -82,6 +88,10 @@ mkdir -p "$OUTPUT_ROOT"
 current_high="$START_SEQ"
 chunk_index=0
 found_report=""
+earliest_target_report=""
+earliest_target_chunk_dir=""
+last_non_target_report=""
+last_non_target_chunk_dir=""
 chunk_history_path="$OUTPUT_ROOT/fishing1-startup-onset-chunks.jsonl"
 : > "$chunk_history_path"
 
@@ -114,6 +124,8 @@ raise SystemExit(0 if payload.get("first_target") else 1)
 PY
   then
     found_report="$boundary_path"
+    earliest_target_report="$boundary_path"
+    earliest_target_chunk_dir="$chunk_dir"
     python3 - "$chunk_history_path" "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "true" <<'PY'
 import json
 import sys
@@ -130,7 +142,12 @@ entry = {
 with history_path.open("a", encoding="utf-8") as handle:
     handle.write(json.dumps(entry) + "\n")
 PY
-    break
+    if [ "$CONTINUE_THROUGH_TARGETS" -eq 0 ]; then
+      break
+    fi
+    current_high=$((current_low - 1))
+    chunk_index=$((chunk_index + 1))
+    continue
   fi
 
   python3 - "$chunk_history_path" "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "false" <<'PY'
@@ -150,11 +167,17 @@ with history_path.open("a", encoding="utf-8") as handle:
     handle.write(json.dumps(entry) + "\n")
 PY
 
+  last_non_target_report="$boundary_path"
+  last_non_target_chunk_dir="$chunk_dir"
+  if [ -n "$earliest_target_report" ]; then
+    break
+  fi
+
   current_high=$((current_low - 1))
   chunk_index=$((chunk_index + 1))
 done
 
-python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" <<'PY'
+python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -164,18 +187,28 @@ target_regime = sys.argv[2]
 start_seq = int(sys.argv[3])
 end_seq = int(sys.argv[4])
 found_report = sys.argv[5]
+earliest_target_report = sys.argv[6]
+earliest_target_chunk_dir = sys.argv[7]
+last_non_target_report = sys.argv[8]
+last_non_target_chunk_dir = sys.argv[9]
+continue_through_targets = sys.argv[10] == "1"
 
 report = {
     "output_root": str(output_root),
     "target_startup_regime": target_regime,
     "start_seq": start_seq,
     "end_seq": end_seq,
+    "continue_through_targets": continue_through_targets,
     "chunk_history_jsonl": str(output_root / "fishing1-startup-onset-chunks.jsonl"),
     "onset_boundary_report": found_report or None,
+    "earliest_target_boundary_report": earliest_target_report or None,
+    "earliest_target_chunk_dir": earliest_target_chunk_dir or None,
+    "first_non_target_before_earliest_report": last_non_target_report or None,
+    "first_non_target_before_earliest_chunk_dir": last_non_target_chunk_dir or None,
 }
 
-if found_report:
-    payload = json.loads(Path(found_report).read_text(encoding="utf-8"))
+if earliest_target_report:
+    payload = json.loads(Path(earliest_target_report).read_text(encoding="utf-8"))
     report["last_before_target"] = payload.get("last_before_target")
     report["first_target"] = payload.get("first_target")
 else:

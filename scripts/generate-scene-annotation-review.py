@@ -25,6 +25,13 @@ def rel(target: Path, base: Path) -> str:
     return os.path.relpath(target.resolve(), base.resolve())
 
 
+def review_asset_path(target: Path, base: Path) -> str:
+    relpath = rel(target, base)
+    if relpath == ".." or relpath.startswith(f"..{os.sep}"):
+        return str(target.resolve())
+    return relpath
+
+
 def resolve_frames_dir(path: Path) -> Path:
     path = path.resolve()
     if path.is_dir():
@@ -746,8 +753,8 @@ def main() -> int:
         manifest["frames"].append(
             {
                 **frame,
-                "reference_rel": rel(Path(frame["reference_image"]), outdir) if frame["reference_image"] else None,
-                "query_rel": rel(Path(frame["query_image"]), outdir),
+                "reference_rel": review_asset_path(Path(frame["reference_image"]), outdir) if frame["reference_image"] else None,
+                "query_rel": review_asset_path(Path(frame["query_image"]), outdir),
             }
         )
 

@@ -50,6 +50,7 @@ mkdir -p "$OUTPUT_ROOT"
 LOCAL_DIR="$OUTPUT_ROOT/local"
 CLEAN_DIR="$OUTPUT_ROOT/clean"
 COMPARE_JSON="$OUTPUT_ROOT/compare.json"
+VERIFY_STATUS_JSON="$OUTPUT_ROOT/verify-status.json"
 
 "$PROJECT_ROOT/scripts/regtest-scene.sh" \
   --scene "FISHING 1" \
@@ -91,6 +92,71 @@ python3 "$PROJECT_ROOT/scripts/compare-fishing1-runs.py" \
   --label clean_head \
   --json-out "$COMPARE_JSON"
 
+python3 - "$LOCAL_DIR/result.json" "$COMPARE_JSON" "$VERIFY_STATUS_JSON" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+local_result_path = Path(sys.argv[1])
+compare_path = Path(sys.argv[2])
+status_path = Path(sys.argv[3])
+
+local_result = json.loads(local_result_path.read_text(encoding="utf-8"))
+compare = json.loads(compare_path.read_text(encoding="utf-8"))
+
+rows = compare.get("rows") or []
+if len(rows) != 2:
+    status = {
+        "ok": False,
+        "reason": "unexpected_compare_shape",
+        "row_count": len(rows),
+    }
+    status_path.write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+    print(json.dumps(status, indent=2))
+    raise SystemExit(5)
+
+local_row, clean_row = rows
+local_cov = local_row.get("coverage") or {}
+clean_cov = clean_row.get("coverage") or {}
+
+dirty_build_inputs = bool((local_result.get("outcome") or {}).get("dirty_build_inputs"))
+metric_keys = [
+    "first_visible_frame",
+    "last_black_frame",
+    "unique_black_hashes",
+    "unique_ocean_only_hashes",
+    "unique_island_only_hashes",
+    "unique_correct_hashes",
+    "unique_shoe_hashes",
+    "unique_post_correct_pre_shoe_hashes",
+]
+metric_mismatches = {}
+for key in metric_keys:
+    local_value = local_cov.get(key)
+    clean_value = clean_cov.get(key)
+    if local_value != clean_value:
+        metric_mismatches[key] = {
+            "local": local_value,
+            "clean": clean_value,
+        }
+
+status = {
+    "ok": not dirty_build_inputs and not metric_mismatches,
+    "dirty_build_inputs": dirty_build_inputs,
+    "metric_mismatches": metric_mismatches,
+    "local_state_hash": (local_row.get("result") or {}).get("state_hash"),
+    "clean_state_hash": (clean_row.get("result") or {}).get("state_hash"),
+}
+status_path.write_text(json.dumps(status, indent=2) + "\n", encoding="utf-8")
+print(json.dumps(status, indent=2))
+
+if dirty_build_inputs:
+    raise SystemExit(3)
+if metric_mismatches:
+    raise SystemExit(4)
+PY
+
 echo "local:  $LOCAL_DIR/result.json"
 echo "clean:  $CLEAN_RESULT"
 echo "diff:   $COMPARE_JSON"
+echo "status: $VERIFY_STATUS_JSON"

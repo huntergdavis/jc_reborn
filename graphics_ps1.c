@@ -3820,35 +3820,11 @@ void grSaveImage1(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 heig
 }
 void grSaveZone(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 height)
 {
-    int screenX;
-    int screenY;
-
     (void)sfc;
-
-    if (width == 0 || height == 0) {
-        grPs1SavedZone.valid = 0;
-        return;
-    }
-
-    screenX = (int)x + grDx;
-    screenY = (int)y + grDy;
-    if (screenX < 0) {
-        width = (screenX + (int)width > 0) ? (uint16)(screenX + (int)width) : 0;
-        screenX = 0;
-    }
-    if (screenY < 0) {
-        height = (screenY + (int)height > 0) ? (uint16)(screenY + (int)height) : 0;
-        screenY = 0;
-    }
-    if (width == 0 || height == 0) {
-        grPs1SavedZone.valid = 0;
-        return;
-    }
-
-    grPs1SavedZone.x = (uint16)screenX;
-    grPs1SavedZone.y = (uint16)screenY;
-    grPs1SavedZone.width = width;
-    grPs1SavedZone.height = height;
+    (void)x;
+    (void)y;
+    (void)width;
+    (void)height;
     grPs1SavedZone.valid = 1;
 }
 

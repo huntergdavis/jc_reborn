@@ -965,6 +965,8 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
     newThread.fgColor         = 0x0f;
     newThread.bgColor         = 0x0f;
 #ifdef PS1_BUILD
+    if (adsStringEquals(ps1AdsCurrentName, "FISHING.ADS"))
+        newThread.delay = 2;
     newThread.sceneEpoch = ttmThreads[i].sceneEpoch + 1;
 #endif
     ttmThreads[i] = newThread;

@@ -1802,6 +1802,24 @@ void grReleaseBmp(struct TTtmSlot *ttmSlot, uint16 bmpSlotNo)
         return;
     }
 
+    /* Replay records keep raw indexedPixels pointers into BMP/PSB storage.
+     * If this slot is being replaced during the active thread's TTM tick,
+     * those records must be dropped before the backing storage is freed. */
+    if (grCurrentThread != NULL && grCurrentThread->ttmSlot == ttmSlot) {
+        uint8 writeIdx = 0;
+        for (uint8 readIdx = 0; readIdx < grCurrentThread->numDrawnSprites; readIdx++) {
+            struct TDrawnSprite *ds = &grCurrentThread->drawnSprites[readIdx];
+            if (ds->imageNo == bmpSlotNo)
+                continue;
+            if (writeIdx != readIdx)
+                grCurrentThread->drawnSprites[writeIdx] = *ds;
+            writeIdx++;
+        }
+        grCurrentThread->numDrawnSprites = writeIdx;
+        if (grCurrentThread->replayWriteCursor > writeIdx)
+            grCurrentThread->replayWriteCursor = writeIdx;
+    }
+
     /* Invalidate replay records that reference previous contents of this slot. */
     ttmSlot->spriteGen[bmpSlotNo]++;
     ttmSlot->loadedBmp[bmpSlotNo] = NULL;

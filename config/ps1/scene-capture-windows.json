@@ -5,6 +5,9 @@
   "scenes": {
     "FISHING-1": {
       "start_frame": 2400,
+      "full_review_start_frame": 0,
+      "full_review_frames": 4200,
+      "full_review_interval": 30,
       "review_start_frame": 3480,
       "review_end_frame": 3720,
       "review_capture_start_frame": 3480,

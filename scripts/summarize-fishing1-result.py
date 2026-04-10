@@ -88,6 +88,15 @@ def main():
     shoe_present = [f for f in truth["shoe_only_frames"] if f in hashes]
     correct_hashes = {hashes[f] for f in correct_present}
     shoe_hashes = {hashes[f] for f in shoe_present}
+    first_shoe_only = truth["shoe_only_frames"][0] if truth["shoe_only_frames"] else None
+    post_correct_pre_shoe_present = []
+    if first_shoe_only is not None:
+        post_correct_pre_shoe_present = [
+            frame_no
+            for frame_no in sorted(hashes)
+            if truth["correct_run_end"] < frame_no < first_shoe_only
+        ]
+    post_correct_pre_shoe_hashes = {hashes[f] for f in post_correct_pre_shoe_present}
 
     if not correct_present:
         regime = "cut_off_before_correct_window"
@@ -109,13 +118,15 @@ def main():
         "truth": {
             "correct_run_start": truth["correct_run_start"],
             "correct_run_end": truth["correct_run_end"],
-            "first_shoe_only_frame": truth["shoe_only_frames"][0] if truth["shoe_only_frames"] else None,
+            "first_shoe_only_frame": first_shoe_only,
         },
         "coverage": {
             "correct_frames_present": correct_present,
             "shoe_only_frames_present": shoe_present,
+            "post_correct_pre_shoe_frames_present": post_correct_pre_shoe_present,
             "unique_correct_hashes": len(correct_hashes),
             "unique_shoe_hashes": len(shoe_hashes),
+            "unique_post_correct_pre_shoe_hashes": len(post_correct_pre_shoe_hashes),
         },
     }
     print(json.dumps(summary, indent=2))

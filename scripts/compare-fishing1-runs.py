@@ -112,7 +112,7 @@ def main():
         out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(
-        "label\tregime\tfirst_visible\tfirst_lower_half\tfirst_full_height\tlast_partial_height\tlast_black\t"
+        "label\tregime\tstartup_regime\tfirst_visible\tfirst_lower_half\tfirst_full_height\tlast_partial_height\tlast_black\t"
         "black\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash"
     )
     for row in rows:
@@ -123,6 +123,7 @@ def main():
                 [
                     row["label"],
                     row.get("regime", ""),
+                    row.get("startup_regime", ""),
                     str(cov.get("first_visible_frame", "")),
                     str(cov.get("first_lower_half_visible_frame", "")),
                     str(cov.get("first_full_height_visible_frame", "")),

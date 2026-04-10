@@ -182,6 +182,15 @@ def main():
     )
     last_black_frame = max((frame_no for frame_no, row in nonblack.items() if not row["nonblack"]), default=None)
 
+    if first_visible_frame is None:
+        startup_regime = "never_visible"
+    elif first_full_height_visible_frame == first_visible_frame:
+        startup_regime = "full_height_visible_immediately"
+    elif first_lower_half_visible_frame == first_visible_frame:
+        startup_regime = "boxed_or_partial_full_scene_startup"
+    else:
+        startup_regime = "top_only_then_full_height_startup"
+
     if not correct_present:
         regime = "cut_off_before_correct_window"
     elif len(correct_hashes) == 1:
@@ -191,6 +200,7 @@ def main():
 
     summary = {
         "regime": regime,
+        "startup_regime": startup_regime,
         "result": {
             "start_frame": (payload.get("config") or {}).get("start_frame"),
             "frames": (payload.get("config") or {}).get("frames"),

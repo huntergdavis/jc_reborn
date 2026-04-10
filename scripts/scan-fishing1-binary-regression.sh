@@ -67,89 +67,17 @@ fi
 mkdir -p "$OUTPUT_ROOT"
 
 refresh_reports() {
-  python3 - "$PROJECT_ROOT" "$OUTPUT_ROOT" "$ANNOTATIONS" "${SKIPPED_NAMES[@]}" <<'PY'
-import json
-import subprocess
-import sys
-from pathlib import Path
-
-project_root = Path(sys.argv[1])
-output_root = Path(sys.argv[2])
-annotations = Path(sys.argv[3])
-summarizer = project_root / "scripts" / "summarize-fishing1-result.py"
-
-rows = []
-for result_path in sorted(output_root.rglob("result.json")):
-    if result_path.parent == output_root:
-        continue
-    proc = subprocess.run(
-        ["python3", str(summarizer), "--annotations", str(annotations), "--result", str(result_path)],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    summary = json.loads(proc.stdout)
-    summary["result_json"] = str(result_path)
-    rows.append(summary)
-
-report = {
-    "annotations": str(annotations),
-    "output_root": str(output_root),
-    "rows": rows,
-    "skipped_dir_names": sys.argv[4:],
-}
-report_path = output_root / "fishing1-binary-regression-summary.json"
-report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-print(report_path)
-PY
-
-  python3 - "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-summary_path = Path(sys.argv[1])
-payload = json.loads(summary_path.read_text(encoding="utf-8"))
-rows = payload.get("rows") or []
-out_path = summary_path.with_name("fishing1-startup-summary.tsv")
-
-with out_path.open("w", encoding="utf-8") as handle:
-    handle.write(
-        "build\tstartup_regime\tfirst_visible\tfirst_lower_half\tfirst_full_height\t"
-        "last_partial_height\tlast_black\tblack\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash\n"
-    )
-    for row in rows:
-        cov = row.get("coverage") or {}
-        result = row.get("result") or {}
-        build = Path(row.get("result_json", "")).parts[-2] if row.get("result_json") else ""
-        fields = [
-            build,
-            row.get("startup_regime", ""),
-            str(cov.get("first_visible_frame", "")),
-            str(cov.get("first_lower_half_visible_frame", "")),
-            str(cov.get("first_full_height_visible_frame", "")),
-            str(cov.get("last_partial_height_visible_frame", "")),
-            str(cov.get("last_black_frame", "")),
-            str(cov.get("unique_black_hashes", "")),
-            str(cov.get("unique_ocean_only_hashes", "")),
-            str(cov.get("unique_island_only_hashes", "")),
-            str(cov.get("unique_correct_hashes", "")),
-            str(cov.get("unique_shoe_hashes", "")),
-            str(cov.get("unique_post_correct_pre_shoe_hashes", "")),
-            str(result.get("state_hash", "")),
-        ]
-        handle.write("\t".join(fields) + "\n")
-
-print(out_path)
-PY
-
+  extra=()
+  for skipped_name in "${SKIPPED_NAMES[@]}"; do
+    extra+=(--skipped-dir-name "$skipped_name")
+  done
   if [ -n "$BOUNDARY_STARTUP_REGIME" ]; then
-    python3 "$PROJECT_ROOT/scripts/find-fishing1-regression-boundary.py" \
-      --summary-json "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" \
-      --startup-regime "$BOUNDARY_STARTUP_REGIME" \
-      > "$OUTPUT_ROOT/fishing1-startup-boundary.json"
-    printf '%s\n' "$OUTPUT_ROOT/fishing1-startup-boundary.json"
+    extra+=(--boundary-startup-regime "$BOUNDARY_STARTUP_REGIME")
   fi
+  python3 "$PROJECT_ROOT/scripts/summarize-fishing1-scan-output.py" \
+    --output-root "$OUTPUT_ROOT" \
+    --annotations "$ANNOTATIONS" \
+    "${extra[@]}"
 }
 
 run_one() {

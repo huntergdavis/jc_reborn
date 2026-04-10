@@ -100,6 +100,7 @@ struct TDrawnSprite {
 struct TTtmThread {
     struct TTtmSlot   *ttmSlot;
     int    isRunning;
+    char   currentStringArg[20];
     uint16 sceneSlot;
     uint16 sceneTag;
     short  sceneTimer;
@@ -202,6 +203,7 @@ void grFadeOut();
 void grPs1StatThreadDrop(void);
 void grPs1StatBmpFrameCap(uint16 requested, uint16 cap);
 void grPs1StatBmpShortLoad(uint16 requested, uint16 loaded);
+void grPs1SetLastBmpTelemetry(uint16 slot, uint16 frames, uint16 status);
 
 void grLoadPalette();
 void grLoadScreen(char *strArg);

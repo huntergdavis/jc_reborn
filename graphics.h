@@ -52,9 +52,9 @@ struct TTtmSlot {
     int         numSprites[MAX_BMP_SLOTS];
     uint16      spriteGen[MAX_BMP_SLOTS];
     struct TBmpResource *loadedBmp[MAX_BMP_SLOTS];
+    const char  *loadedBmpNames[MAX_BMP_SLOTS];
     uint8       *psbData[MAX_BMP_SLOTS];
     SDL_Surface *sprites[MAX_BMP_SLOTS][MAX_SPRITES_PER_BMP];
-    const char  *loadedBmpNames[MAX_BMP_SLOTS];
     struct TTtmResource *ttmResource;  /* For LRU cache unpinning */
 };
 
@@ -80,6 +80,7 @@ struct TDrawnSprite {
 struct TTtmThread {
     struct TTtmSlot   *ttmSlot;
     int    isRunning;
+    char   currentStringArg[20];
     uint16 sceneSlot;
     uint16 sceneTag;
     short  sceneTimer;

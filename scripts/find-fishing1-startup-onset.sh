@@ -101,11 +101,11 @@ if [ -z "$END_SEQ" ]; then
 fi
 
 mkdir -p "$OUTPUT_ROOT"
+onset_path="$OUTPUT_ROOT/fishing1-startup-onset.json"
 
 if [ "$CONTINUE_EARLIER" -eq 1 ]; then
   RESUME=1
   CONTINUE_THROUGH_TARGETS=1
-  onset_path="$OUTPUT_ROOT/fishing1-startup-onset.json"
   if [ ! -f "$onset_path" ]; then
     echo "ERROR: --continue-earlier requires existing $onset_path" >&2
     exit 1
@@ -144,6 +144,22 @@ earliest_target_report=""
 earliest_target_chunk_dir=""
 last_non_target_report=""
 last_non_target_chunk_dir=""
+if [ "$RESUME" -eq 1 ] && [ -f "$onset_path" ]; then
+  read -r earliest_target_report earliest_target_chunk_dir last_non_target_report last_non_target_chunk_dir < <(python3 - "$onset_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(
+    payload.get("earliest_target_boundary_report") or "",
+    payload.get("earliest_target_chunk_dir") or "",
+    payload.get("first_non_target_before_earliest_report") or "",
+    payload.get("first_non_target_before_earliest_chunk_dir") or "",
+)
+PY
+  )
+fi
 chunk_history_path="$OUTPUT_ROOT/fishing1-startup-onset-chunks.jsonl"
 if [ "$RESUME" -eq 1 ] && [ -f "$chunk_history_path" ]; then
   :

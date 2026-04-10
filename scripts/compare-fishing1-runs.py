@@ -49,6 +49,12 @@ def metric_delta(a, b, key):
     return (b.get("coverage") or {}).get(key, 0) - (a.get("coverage") or {}).get(key, 0)
 
 
+def nullable_int(value):
+    if value is None:
+        return 0
+    return int(value)
+
+
 def phase_mismatch_count(a, b, phase):
     a_rows = {row["frame"]: row["sha256"] for row in (a.get("phase_hashes") or {}).get(phase, [])}
     b_rows = {row["frame"]: row["sha256"] for row in (b.get("phase_hashes") or {}).get(phase, [])}
@@ -141,8 +147,14 @@ def main():
                     [
                         delta["from"],
                         delta["to"],
-                        str((cur_row.get("coverage") or {}).get("first_visible_frame", 0) - (prev_row.get("coverage") or {}).get("first_visible_frame", 0)),
-                        str((cur_row.get("coverage") or {}).get("last_black_frame", 0) - (prev_row.get("coverage") or {}).get("last_black_frame", 0)),
+                        str(
+                            nullable_int((cur_row.get("coverage") or {}).get("first_visible_frame"))
+                            - nullable_int((prev_row.get("coverage") or {}).get("first_visible_frame"))
+                        ),
+                        str(
+                            nullable_int((cur_row.get("coverage") or {}).get("last_black_frame"))
+                            - nullable_int((prev_row.get("coverage") or {}).get("last_black_frame"))
+                        ),
                         str(metric_delta(prev_row, cur_row, "unique_black_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_ocean_only_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_island_only_hashes")),

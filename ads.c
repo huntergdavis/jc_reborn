@@ -1368,6 +1368,15 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 else {
                     // Second pass (we were called directly from the scheduler)
                     // --> we launch the execution of the scene
+#ifdef PS1_BUILD
+                    if (deferredCount < ADS_DEFERRED_OP_CAP) {
+                        deferredOps[deferredCount].opcode = opcode;
+                        deferredOps[deferredCount].slot = args[1];
+                        deferredOps[deferredCount].tag = args[2];
+                        deferredOps[deferredCount].arg3 = args[3];
+                        deferredCount++;
+                    } else
+#endif
                     adsAddScene(args[1],args[2],args[3]);
                 }
 
@@ -1381,8 +1390,18 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 if (!inSkipBlock) {               // TODO - TEMPO
                     if (inRandBlock)
                         adsRandomAddScene(args[0],args[1],args[2], args[3]);
-                    else
+                    else {
+#ifdef PS1_BUILD
+                        if (deferredCount < ADS_DEFERRED_OP_CAP) {
+                            deferredOps[deferredCount].opcode = opcode;
+                            deferredOps[deferredCount].slot = args[0];
+                            deferredOps[deferredCount].tag = args[1];
+                            deferredOps[deferredCount].arg3 = args[2];
+                            deferredCount++;
+                        } else
+#endif
                         adsAddScene(args[0],args[1],args[2]);
+                    }
                 }
 
                 break;

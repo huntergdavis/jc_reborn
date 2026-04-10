@@ -111,7 +111,10 @@ def main():
         out_path = Path(args.json_out)
         out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
-    print("label\tregime\tfirst_visible\tlast_black\tblack\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash")
+    print(
+        "label\tregime\tfirst_visible\tfirst_lower_half\tfirst_full_height\tlast_partial_height\tlast_black\t"
+        "black\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash"
+    )
     for row in rows:
         cov = row.get("coverage") or {}
         result = row.get("result") or {}
@@ -121,6 +124,9 @@ def main():
                     row["label"],
                     row.get("regime", ""),
                     str(cov.get("first_visible_frame", "")),
+                    str(cov.get("first_lower_half_visible_frame", "")),
+                    str(cov.get("first_full_height_visible_frame", "")),
+                    str(cov.get("last_partial_height_visible_frame", "")),
                     str(cov.get("last_black_frame", "")),
                     str(cov.get("unique_black_hashes", 0)),
                     str(cov.get("unique_ocean_only_hashes", 0)),
@@ -136,7 +142,8 @@ def main():
     if deltas:
         print("")
         print(
-            "delta_from\tto\td_first_visible\td_last_black\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
+            "delta_from\tto\td_first_visible\td_first_lower_half\td_first_full_height\td_last_partial_height\t"
+            "d_last_black\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
             "m_black\tm_ocean\tm_island\tm_correct\tm_shoe\tm_midgap"
         )
         for delta in deltas:
@@ -150,6 +157,18 @@ def main():
                         str(
                             nullable_int((cur_row.get("coverage") or {}).get("first_visible_frame"))
                             - nullable_int((prev_row.get("coverage") or {}).get("first_visible_frame"))
+                        ),
+                        str(
+                            nullable_int((cur_row.get("coverage") or {}).get("first_lower_half_visible_frame"))
+                            - nullable_int((prev_row.get("coverage") or {}).get("first_lower_half_visible_frame"))
+                        ),
+                        str(
+                            nullable_int((cur_row.get("coverage") or {}).get("first_full_height_visible_frame"))
+                            - nullable_int((prev_row.get("coverage") or {}).get("first_full_height_visible_frame"))
+                        ),
+                        str(
+                            nullable_int((cur_row.get("coverage") or {}).get("last_partial_height_visible_frame"))
+                            - nullable_int((prev_row.get("coverage") or {}).get("last_partial_height_visible_frame"))
                         ),
                         str(
                             nullable_int((cur_row.get("coverage") or {}).get("last_black_frame"))

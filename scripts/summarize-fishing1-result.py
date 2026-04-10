@@ -103,9 +103,19 @@ def collect_nonblack_frames(frames_dir):
             continue
         with Image.open(frame_path) as image:
             bbox = image.convert("RGB").getbbox()
+        visible_height = 0
+        lower_half_visible = False
+        full_height_visible = False
+        if bbox is not None:
+            visible_height = max(0, bbox[3] - bbox[1])
+            lower_half_visible = bbox[3] > 240
+            full_height_visible = bbox[0] == 0 and bbox[1] == 0 and bbox[2] == 640 and bbox[3] == 448
         rows[frame_no] = {
             "nonblack": bbox is not None,
             "bbox": list(bbox) if bbox is not None else None,
+            "visible_height": visible_height,
+            "lower_half_visible": lower_half_visible,
+            "full_height_visible": full_height_visible,
         }
     return rows
 
@@ -153,7 +163,23 @@ def main():
         ]
     post_correct_pre_shoe_hashes = {hashes[f] for f in post_correct_pre_shoe_present}
     visible_frames = [frame_no for frame_no in sorted(nonblack) if nonblack[frame_no]["nonblack"]]
+    lower_half_visible_frames = [
+        frame_no for frame_no in sorted(nonblack) if nonblack[frame_no]["lower_half_visible"]
+    ]
+    full_height_visible_frames = [
+        frame_no for frame_no in sorted(nonblack) if nonblack[frame_no]["full_height_visible"]
+    ]
+    partial_height_visible_frames = [
+        frame_no
+        for frame_no in sorted(nonblack)
+        if nonblack[frame_no]["nonblack"] and not nonblack[frame_no]["full_height_visible"]
+    ]
     first_visible_frame = visible_frames[0] if visible_frames else None
+    first_lower_half_visible_frame = lower_half_visible_frames[0] if lower_half_visible_frames else None
+    first_full_height_visible_frame = full_height_visible_frames[0] if full_height_visible_frames else None
+    last_partial_height_visible_frame = (
+        partial_height_visible_frames[-1] if partial_height_visible_frames else None
+    )
     last_black_frame = max((frame_no for frame_no, row in nonblack.items() if not row["nonblack"]), default=None)
 
     if not correct_present:
@@ -196,6 +222,9 @@ def main():
             "unique_shoe_hashes": len(shoe_hashes),
             "unique_post_correct_pre_shoe_hashes": len(post_correct_pre_shoe_hashes),
             "first_visible_frame": first_visible_frame,
+            "first_lower_half_visible_frame": first_lower_half_visible_frame,
+            "first_full_height_visible_frame": first_full_height_visible_frame,
+            "last_partial_height_visible_frame": last_partial_height_visible_frame,
             "last_black_frame": last_black_frame,
         },
         "phase_hashes": {

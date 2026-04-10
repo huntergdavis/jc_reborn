@@ -33,6 +33,7 @@ SCENE_INDEX=""
 SCENE_STATUS=""
 START_SEQ=""
 END_SEQ=""
+DIR_NAME_FILTER=""
 LIMIT=""
 RESUME=0
 FRAMES="${REGTEST_FRAMES:-1800}"
@@ -74,6 +75,7 @@ Options:
   --output DIR      Output root (default: regtest-results/binlib-<scene>)
   --start-seq N     First binary-library sequence number to test
   --end-seq N       Last binary-library sequence number to test
+  --dir-name NAME   Exact binary-library directory name to test
   --limit N         Maximum number of matching builds to run
   --resume          Skip builds that already have result.json
   --frames N        Number of frames to run per build
@@ -104,6 +106,7 @@ while [ $# -gt 0 ]; do
         --output) OUTPUT_ROOT="$2"; shift 2 ;;
         --start-seq) START_SEQ="$2"; shift 2 ;;
         --end-seq) END_SEQ="$2"; shift 2 ;;
+        --dir-name) DIR_NAME_FILTER="$2"; shift 2 ;;
         --limit) LIMIT="$2"; shift 2 ;;
         --resume) RESUME=1; shift ;;
         --frames) FRAMES="$2"; shift 2 ;;
@@ -238,7 +241,7 @@ run_dir_for_output() {
     find "$out" -mindepth 1 -maxdepth 1 -type d -exec test -f '{}/regtest.log' ';' -print | sort | tail -1
 }
 
-python3 - "$INDEX_JSON" "$LIBRARY_DIR" "$START_SEQ" "$END_SEQ" "$LIMIT" > "$OUTPUT_ROOT/.selected-builds.jsonl" <<'PY'
+python3 - "$INDEX_JSON" "$LIBRARY_DIR" "$START_SEQ" "$END_SEQ" "$LIMIT" "$DIR_NAME_FILTER" > "$OUTPUT_ROOT/.selected-builds.jsonl" <<'PY'
 import json, sys
 from pathlib import Path
 
@@ -247,6 +250,7 @@ library_dir = Path(sys.argv[2])
 start_seq = int(sys.argv[3]) if sys.argv[3] else None
 end_seq = int(sys.argv[4]) if sys.argv[4] else None
 limit = int(sys.argv[5]) if sys.argv[5] else None
+dir_name_filter = sys.argv[6] or None
 
 entries = json.loads(index_path.read_text())
 count = 0
@@ -257,6 +261,8 @@ for entry in entries:
     cue_path = library_dir / dir_name / "jcreborn.cue"
     exe_path = library_dir / dir_name / "jcreborn.exe"
     if not build.get("iso_exists"):
+        continue
+    if dir_name_filter is not None and dir_name != dir_name_filter:
         continue
     if start_seq is not None and seq < start_seq:
         continue

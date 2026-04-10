@@ -2177,8 +2177,9 @@ void grBlitToFramebuffer(PS1Surface *sprite, sint16 screenX, sint16 screenY)
     }
 }
 
-/* Fast indexed compositing helpers using byte-pair palette LUTs.
- * 4-pixel unroll: reads 2 packed bytes per iteration, halving loop overhead. */
+/* Indexed compositing helpers: simple per-byte decode.
+ * Keep this path conservative; fishing regressions started after the later
+ * LUT/unrolled fast path landed. */
 static inline void compositeIndexedSpanFwd(uint16 *dst, const uint8 *src,
                                            uint32 pixelIdx, int count,
                                            const uint16 *pal)
@@ -2186,7 +2187,6 @@ static inline void compositeIndexedSpanFwd(uint16 *dst, const uint8 *src,
     int di = 0;
     if (count <= 0) return;
 
-    /* Handle odd start pixel */
     if (pixelIdx & 1) {
         uint8 packed = src[pixelIdx >> 1];
         uint16 p = pal[packed & 0x0F];
@@ -2196,36 +2196,19 @@ static inline void compositeIndexedSpanFwd(uint16 *dst, const uint8 *src,
         count--;
     }
 
-    /* 4-pixel unrolled loop using Sierra palette LUT */
-    while (count >= 4) {
-        uint32 pair0 = palLutSierra[src[pixelIdx >> 1]];
-        uint32 pair1 = palLutSierra[src[(pixelIdx >> 1) + 1]];
-        uint16 p0 = (uint16)pair0;
-        uint16 p1 = (uint16)(pair0 >> 16);
-        uint16 p2 = (uint16)pair1;
-        uint16 p3 = (uint16)(pair1 >> 16);
-        if (p0) dst[di]     = p0;
-        if (p1) dst[di + 1] = p1;
-        if (p2) dst[di + 2] = p2;
-        if (p3) dst[di + 3] = p3;
-        di += 4;
-        pixelIdx += 4;
-        count -= 4;
-    }
-
-    /* Handle remaining 2 pixels */
     if (count >= 2) {
-        uint32 pair = palLutSierra[src[pixelIdx >> 1]];
-        uint16 p0 = (uint16)pair;
-        uint16 p1 = (uint16)(pair >> 16);
-        if (p0) dst[di] = p0;
-        if (p1) dst[di + 1] = p1;
-        di += 2;
-        pixelIdx += 2;
-        count -= 2;
+        while (count >= 2) {
+            uint8 packed = src[pixelIdx >> 1];
+            uint16 p0 = pal[(packed >> 4) & 0x0F];
+            uint16 p1 = pal[packed & 0x0F];
+            if (p0) dst[di] = p0;
+            if (p1) dst[di + 1] = p1;
+            di += 2;
+            pixelIdx += 2;
+            count -= 2;
+        }
     }
 
-    /* Handle trailing pixel */
     if (count) {
         uint8 packed = src[pixelIdx >> 1];
         uint16 p = pal[(packed >> 4) & 0x0F];
@@ -2240,7 +2223,6 @@ static inline void compositeIndexedSpanRev(uint16 *dst, const uint8 *src,
     int di = 0;
     if (count <= 0) return;
 
-    /* Handle even start pixel (reversed iteration starts at rightmost) */
     if ((pixelIdx & 1) == 0) {
         uint8 packed = src[pixelIdx >> 1];
         uint16 p = pal[(packed >> 4) & 0x0F];
@@ -2250,32 +2232,17 @@ static inline void compositeIndexedSpanRev(uint16 *dst, const uint8 *src,
         count--;
     }
 
-    /* 4-pixel unrolled loop using PSB LUT (reversed Sierra = PSB order) */
-    while (count >= 4) {
-        uint32 pair0 = palLutPsb[src[pixelIdx >> 1]];
-        uint32 pair1 = palLutPsb[src[(pixelIdx >> 1) - 1]];
-        uint16 p0 = (uint16)pair0;
-        uint16 p1 = (uint16)(pair0 >> 16);
-        uint16 p2 = (uint16)pair1;
-        uint16 p3 = (uint16)(pair1 >> 16);
-        if (p0) dst[di]     = p0;
-        if (p1) dst[di + 1] = p1;
-        if (p2) dst[di + 2] = p2;
-        if (p3) dst[di + 3] = p3;
-        di += 4;
-        pixelIdx -= 4;
-        count -= 4;
-    }
-
     if (count >= 2) {
-        uint32 pair = palLutPsb[src[pixelIdx >> 1]];
-        uint16 p0 = (uint16)pair;
-        uint16 p1 = (uint16)(pair >> 16);
-        if (p0) dst[di] = p0;
-        if (p1) dst[di + 1] = p1;
-        di += 2;
-        pixelIdx -= 2;
-        count -= 2;
+        while (count >= 2) {
+            uint8 packed = src[pixelIdx >> 1];
+            uint16 p0 = pal[packed & 0x0F];
+            uint16 p1 = pal[(packed >> 4) & 0x0F];
+            if (p0) dst[di] = p0;
+            if (p1) dst[di + 1] = p1;
+            di += 2;
+            pixelIdx -= 2;
+            count -= 2;
+        }
     }
 
     if (count) {
@@ -2285,11 +2252,8 @@ static inline void compositeIndexedSpanRev(uint16 *dst, const uint8 *src,
     }
 }
 
-/*
- * PS1-nibble-order compositing helpers for PSB (pre-transcoded) sprites.
- * In PSB format: LOW nibble = pixel 0, HIGH nibble = pixel 1.
- * (Sierra format is the opposite: HIGH nibble = pixel 0.)
- */
+/* PS1-nibble-order compositing helpers for PSB sprites.
+ * Keep these simple as well while chasing fishing sprite loss. */
 static inline void compositePsbSpanFwd(uint16 *dst, const uint8 *src,
                                        uint32 pixelIdx, int count,
                                        const uint16 *pal)
@@ -2297,48 +2261,31 @@ static inline void compositePsbSpanFwd(uint16 *dst, const uint8 *src,
     int di = 0;
     if (count <= 0) return;
 
-    /* Handle odd start pixel */
     if (pixelIdx & 1) {
         uint8 packed = src[pixelIdx >> 1];
-        uint16 p = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel = HIGH nibble */
+        uint16 p = pal[(packed >> 4) & 0x0F];
         if (p) dst[di] = p;
         di++;
         pixelIdx++;
         count--;
     }
 
-    /* 4-pixel unrolled loop using PSB palette LUT */
-    while (count >= 4) {
-        uint32 pair0 = palLutPsb[src[pixelIdx >> 1]];
-        uint32 pair1 = palLutPsb[src[(pixelIdx >> 1) + 1]];
-        uint16 p0 = (uint16)pair0;
-        uint16 p1 = (uint16)(pair0 >> 16);
-        uint16 p2 = (uint16)pair1;
-        uint16 p3 = (uint16)(pair1 >> 16);
-        if (p0) dst[di]     = p0;
-        if (p1) dst[di + 1] = p1;
-        if (p2) dst[di + 2] = p2;
-        if (p3) dst[di + 3] = p3;
-        di += 4;
-        pixelIdx += 4;
-        count -= 4;
-    }
-
     if (count >= 2) {
-        uint32 pair = palLutPsb[src[pixelIdx >> 1]];
-        uint16 p0 = (uint16)pair;
-        uint16 p1 = (uint16)(pair >> 16);
-        if (p0) dst[di] = p0;
-        if (p1) dst[di + 1] = p1;
-        di += 2;
-        pixelIdx += 2;
-        count -= 2;
+        while (count >= 2) {
+            uint8 packed = src[pixelIdx >> 1];
+            uint16 p0 = pal[packed & 0x0F];
+            uint16 p1 = pal[(packed >> 4) & 0x0F];
+            if (p0) dst[di] = p0;
+            if (p1) dst[di + 1] = p1;
+            di += 2;
+            pixelIdx += 2;
+            count -= 2;
+        }
     }
 
-    /* Handle trailing pixel */
     if (count) {
         uint8 packed = src[pixelIdx >> 1];
-        uint16 p = pal[packed & 0x0F];  /* PSB: even pixel = LOW nibble */
+        uint16 p = pal[packed & 0x0F];
         if (p) dst[di] = p;
     }
 }
@@ -2350,48 +2297,31 @@ static inline void compositePsbSpanRev(uint16 *dst, const uint8 *src,
     int di = 0;
     if (count <= 0) return;
 
-    /* Handle even start pixel (reversed iteration starts at rightmost) */
     if ((pixelIdx & 1) == 0) {
         uint8 packed = src[pixelIdx >> 1];
-        uint16 p = pal[packed & 0x0F];  /* PSB: even pixel = LOW nibble */
+        uint16 p = pal[packed & 0x0F];
         if (p) dst[di] = p;
         di++;
         pixelIdx--;
         count--;
     }
 
-    /* 4-pixel unrolled loop using Sierra LUT (reversed PSB = Sierra order) */
-    while (count >= 4) {
-        uint32 pair0 = palLutSierra[src[pixelIdx >> 1]];
-        uint32 pair1 = palLutSierra[src[(pixelIdx >> 1) - 1]];
-        uint16 p0 = (uint16)pair0;
-        uint16 p1 = (uint16)(pair0 >> 16);
-        uint16 p2 = (uint16)pair1;
-        uint16 p3 = (uint16)(pair1 >> 16);
-        if (p0) dst[di]     = p0;
-        if (p1) dst[di + 1] = p1;
-        if (p2) dst[di + 2] = p2;
-        if (p3) dst[di + 3] = p3;
-        di += 4;
-        pixelIdx -= 4;
-        count -= 4;
-    }
-
     if (count >= 2) {
-        uint32 pair = palLutSierra[src[pixelIdx >> 1]];
-        uint16 p0 = (uint16)pair;
-        uint16 p1 = (uint16)(pair >> 16);
-        if (p0) dst[di] = p0;
-        if (p1) dst[di + 1] = p1;
-        di += 2;
-        pixelIdx -= 2;
-        count -= 2;
+        while (count >= 2) {
+            uint8 packed = src[pixelIdx >> 1];
+            uint16 p0 = pal[(packed >> 4) & 0x0F];
+            uint16 p1 = pal[packed & 0x0F];
+            if (p0) dst[di] = p0;
+            if (p1) dst[di + 1] = p1;
+            di += 2;
+            pixelIdx -= 2;
+            count -= 2;
+        }
     }
 
-    /* Handle trailing pixel */
     if (count) {
         uint8 packed = src[pixelIdx >> 1];
-        uint16 p = pal[(packed >> 4) & 0x0F];  /* PSB: odd pixel = HIGH nibble */
+        uint16 p = pal[(packed >> 4) & 0x0F];
         if (p) dst[di] = p;
     }
 }

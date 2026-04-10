@@ -1636,12 +1636,13 @@ void adsPlay(char *adsName, uint16 adsTag)
     /* Recovery: some ADS control paths can parse without launching a scene
      * (no ADD_SCENE emitted), which leaves PS1 on a static background.
      * This happens when IF_LASTPLAYED conditions don't match because no
-     * prior scene context exists (cold boot).  On story scenes like
-     * FISHING.ADS, random chunk order can jump into a later scene beat and
-     * miss the first visible window entirely, so recover in file order. */
+     * prior scene context exists (cold boot).  Try each bookmarked chunk
+     * in random order until one actually spawns a thread. */
     if (numThreads == 0 && !adsStopRequested && numAdsChunks > 0) {
+        int start = rand() % numAdsChunks;
         for (int attempt = 0; attempt < numAdsChunks && numThreads == 0; attempt++) {
-            adsPlayChunk(data, dataSize, adsChunks[attempt].offset);
+            int pick = (start + attempt) % numAdsChunks;
+            adsPlayChunk(data, dataSize, adsChunks[pick].offset);
         }
     }
 #endif

@@ -8,7 +8,7 @@ PORT="${SCENE_REVIEW_PORT:-8123}"
 FILTERED_RESULT_DIR="$OUTDIR/filtered-result"
 GENERATED_RUN_DIR="$OUTDIR/regtest-run"
 SOURCE_RESULT="${FISHING1_REVIEW_RESULT:-}"
-STABLE_RESULT_DIR="${FISHING1_REVIEW_STABLE_RESULT_DIR:-$PROJECT_ROOT/regtest-results/fishing-1-story17-dense-v2-current}"
+STABLE_RESULT_DIR="${FISHING1_REVIEW_STABLE_RESULT_DIR:-$PROJECT_ROOT/regtest-results/fishing-1-story17-dense-v3-current}"
 STABLE_RESULT="$STABLE_RESULT_DIR/result.json"
 resolve_scene_value() {
   local field="$1"
@@ -18,11 +18,11 @@ resolve_scene_value() {
     --field "$field" \
     --default "$fallback"
 }
-CAPTURE_START_FRAME="${FISHING1_REVIEW_CAPTURE_START_FRAME:-$(resolve_scene_value review_capture_start_frame 3480)}"
-CAPTURE_FRAMES="${FISHING1_REVIEW_CAPTURE_FRAMES:-$(resolve_scene_value review_capture_frames 3720)}"
+CAPTURE_START_FRAME="${FISHING1_REVIEW_CAPTURE_START_FRAME:-$(resolve_scene_value review_capture_start_frame 3000)}"
+CAPTURE_FRAMES="${FISHING1_REVIEW_CAPTURE_FRAMES:-$(resolve_scene_value review_capture_frames 3360)}"
 CAPTURE_INTERVAL="${FISHING1_REVIEW_CAPTURE_INTERVAL:-$(resolve_scene_value review_capture_interval 10)}"
-START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(resolve_scene_value review_start_frame 3580)}"
-END_FRAME="${FISHING1_REVIEW_END_FRAME:-$(resolve_scene_value review_end_frame 3720)}"
+START_FRAME="${FISHING1_REVIEW_START_FRAME:-$(resolve_scene_value review_start_frame 3060)}"
+END_FRAME="${FISHING1_REVIEW_END_FRAME:-$(resolve_scene_value review_end_frame 3360)}"
 
 stable_result_matches_profile() {
   python3 - "$STABLE_RESULT" "$CAPTURE_START_FRAME" "$CAPTURE_FRAMES" "$CAPTURE_INTERVAL" <<'PY'

@@ -49,33 +49,33 @@
       "scene_id": "FISHING-1",
       "family": "FISHING",
       "source_kind": "ps1_broken",
-      "reference_image": "regtest-references/FISHING-1/frames/frame_00016.bmp",
-      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03480.png",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00055.bmp",
+      "query_image": "regtest-results/fishing-1-story17-dense-v3-current/filtered-frames/frame_03180.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted to the start of the dense reviewed FISHING-1 Johnny window from the fixed story-scene route so the pack covers Johnny emerging from behind the tree instead of a later shoe-only phase."
+      "human_review_notes": "Retargeted from the shoe-tail window to the first labeled-correct PS1 fishing frame from the full-scene review. This is the main current broken-scene anchor."
     },
     {
       "case_id": "fishing1_broken_single17",
       "scene_id": "FISHING-1",
       "family": "FISHING",
       "source_kind": "ps1_broken",
-      "reference_image": "regtest-references/FISHING-1/frames/frame_00031.bmp",
-      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03520.png",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00058.bmp",
+      "query_image": "regtest-results/fishing-1-story17-dense-v3-current/filtered-frames/frame_03270.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted to an earlier dense FISHING-1 Johnny-window sample so the pack stays focused on the walk-out and fishing setup, not a much later scene phase."
+      "human_review_notes": "Retargeted into the sustained correct-current PS1 fishing run identified from the full-scene human labels."
     },
     {
       "case_id": "fishing1_ps1_scene",
       "scene_id": "FISHING-1",
       "family": "FISHING",
       "source_kind": "ps1_broken",
-      "reference_image": "regtest-references/FISHING-1/frames/frame_00046.bmp",
-      "query_image": "regtest-results/fishing-1-story17-dense-v2-current/filtered-frames/frame_03560.png",
+      "reference_image": "regtest-references/FISHING-1/frames/frame_00061.bmp",
+      "query_image": "regtest-results/fishing-1-story17-dense-v3-current/filtered-frames/frame_03360.png",
       "expected_label": "broken_scene_output",
       "human_review_status": "needs_refresh",
-      "human_review_notes": "Retargeted from the older coarse current sample to an earlier dense reviewed Johnny window frame on the fixed story-scene route. This remains the main broken-scene case to re-confirm for duplicate-Johnny / tearing behavior."
+      "human_review_notes": "Retargeted to the end of the current sustained correct PS1 fishing run, right before the scene falls back into island-only and shoe-only corruption."
     },
     {
       "case_id": "fishing1_host_reference",

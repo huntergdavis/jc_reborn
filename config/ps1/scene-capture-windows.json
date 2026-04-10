@@ -8,12 +8,12 @@
       "full_review_start_frame": 0,
       "full_review_frames": 4200,
       "full_review_interval": 30,
-      "review_start_frame": 3480,
-      "review_end_frame": 3720,
-      "review_capture_start_frame": 3480,
-      "review_capture_frames": 3720,
+      "review_start_frame": 3060,
+      "review_end_frame": 3360,
+      "review_capture_start_frame": 3000,
+      "review_capture_frames": 3360,
       "review_capture_interval": 10,
-      "source": "human review 2026-04-08 near-correct late-frame focus"
+      "source": "human review 2026-04-10 full-scene labels: first sustained correct Johnny run at 3180..3360, shoe-only corruption begins later"
     },
     "STAND-1": {
       "start_frame": 1890,

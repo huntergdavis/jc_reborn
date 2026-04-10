@@ -14,6 +14,7 @@ LIMIT="${FISHING1_BINLIB_SCAN_LIMIT:-}"
 START_SEQ=""
 END_SEQ=""
 DIR_NAMES=()
+SKIPPED_NAMES=()
 
 usage() {
   cat <<'USAGE'
@@ -76,7 +77,10 @@ run_one() {
 if [ "${#DIR_NAMES[@]}" -gt 0 ]; then
   for dir_name in "${DIR_NAMES[@]}"; do
     slug="$(printf '%s' "$dir_name" | tr '/ ' '__')"
-    run_one "$OUTPUT_ROOT/$slug" --dir-name "$dir_name"
+    if ! run_one "$OUTPUT_ROOT/$slug" --dir-name "$dir_name"; then
+      echo "SKIP: no runnable build matched $dir_name" >&2
+      SKIPPED_NAMES+=("$dir_name")
+    fi
   done
 else
   extra=()
@@ -92,7 +96,7 @@ else
   run_one "$OUTPUT_ROOT/range" "${extra[@]}"
 fi
 
-python3 - "$PROJECT_ROOT" "$OUTPUT_ROOT" "$ANNOTATIONS" <<'PY'
+python3 - "$PROJECT_ROOT" "$OUTPUT_ROOT" "$ANNOTATIONS" "${SKIPPED_NAMES[@]}" <<'PY'
 import json
 import subprocess
 import sys
@@ -121,6 +125,7 @@ report = {
     "annotations": str(annotations),
     "output_root": str(output_root),
     "rows": rows,
+    "skipped_dir_names": sys.argv[4:],
 }
 report_path = output_root / "fishing1-binary-regression-summary.json"
 report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

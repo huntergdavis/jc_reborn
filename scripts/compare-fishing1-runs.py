@@ -49,6 +49,16 @@ def metric_delta(a, b, key):
     return (b.get("coverage") or {}).get(key, 0) - (a.get("coverage") or {}).get(key, 0)
 
 
+def phase_mismatch_count(a, b, phase):
+    a_rows = {row["frame"]: row["sha256"] for row in (a.get("phase_hashes") or {}).get(phase, [])}
+    b_rows = {row["frame"]: row["sha256"] for row in (b.get("phase_hashes") or {}).get(phase, [])}
+    mismatches = 0
+    for frame in sorted(set(a_rows) | set(b_rows)):
+        if a_rows.get(frame) != b_rows.get(frame):
+            mismatches += 1
+    return mismatches
+
+
 def main():
     args = parse_args()
     project_root = Path(__file__).resolve().parents[1]
@@ -76,6 +86,12 @@ def main():
                 "delta_unique_post_correct_pre_shoe_hashes": metric_delta(
                     prev, cur, "unique_post_correct_pre_shoe_hashes"
                 ),
+                "black_phase_mismatches": phase_mismatch_count(prev, cur, "black"),
+                "ocean_phase_mismatches": phase_mismatch_count(prev, cur, "ocean_only"),
+                "island_phase_mismatches": phase_mismatch_count(prev, cur, "island_only"),
+                "correct_phase_mismatches": phase_mismatch_count(prev, cur, "correct"),
+                "shoe_phase_mismatches": phase_mismatch_count(prev, cur, "shoe_only"),
+                "midgap_phase_mismatches": phase_mismatch_count(prev, cur, "post_correct_pre_shoe"),
             }
         )
 
@@ -111,7 +127,10 @@ def main():
 
     if deltas:
         print("")
-        print("delta_from\tto\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap")
+        print(
+            "delta_from\tto\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
+            "m_black\tm_ocean\tm_island\tm_correct\tm_shoe\tm_midgap"
+        )
         for delta in deltas:
             prev_row = next(row for row in rows if row["label"] == delta["from"])
             cur_row = next(row for row in rows if row["label"] == delta["to"])
@@ -126,6 +145,12 @@ def main():
                         str(delta["delta_unique_correct_hashes"]),
                         str(delta["delta_unique_shoe_hashes"]),
                         str(delta["delta_unique_post_correct_pre_shoe_hashes"]),
+                        str(delta["black_phase_mismatches"]),
+                        str(delta["ocean_phase_mismatches"]),
+                        str(delta["island_phase_mismatches"]),
+                        str(delta["correct_phase_mismatches"]),
+                        str(delta["shoe_phase_mismatches"]),
+                        str(delta["midgap_phase_mismatches"]),
                     ]
                 )
             )

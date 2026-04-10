@@ -93,6 +93,22 @@ def collect_hashes(frames_dir):
     return hashes
 
 
+def phase_rows(frame_nos, hashes):
+    rows = []
+    for frame_no in frame_nos:
+        digest = hashes.get(frame_no)
+        if digest is None:
+            continue
+        rows.append(
+            {
+                "frame": frame_no,
+                "sha256": digest,
+                "short_hash": digest[:16],
+            }
+        )
+    return rows
+
+
 def main():
     args = parse_args()
     truth = load_annotations(args.annotations)
@@ -157,6 +173,14 @@ def main():
             "unique_correct_hashes": len(correct_hashes),
             "unique_shoe_hashes": len(shoe_hashes),
             "unique_post_correct_pre_shoe_hashes": len(post_correct_pre_shoe_hashes),
+        },
+        "phase_hashes": {
+            "black": phase_rows(black_present, hashes),
+            "ocean_only": phase_rows(ocean_present, hashes),
+            "island_only": phase_rows(island_present, hashes),
+            "correct": phase_rows(correct_present, hashes),
+            "shoe_only": phase_rows(shoe_present, hashes),
+            "post_correct_pre_shoe": phase_rows(post_correct_pre_shoe_present, hashes),
         },
     }
     print(json.dumps(summary, indent=2))

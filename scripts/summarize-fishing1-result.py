@@ -5,6 +5,8 @@ import json
 import re
 from pathlib import Path
 
+from PIL import Image
+
 
 FRAME_RE = re.compile(r"frame_(\d+)\.(?:png|bmp)$", re.IGNORECASE)
 
@@ -93,6 +95,21 @@ def collect_hashes(frames_dir):
     return hashes
 
 
+def collect_nonblack_frames(frames_dir):
+    rows = {}
+    for frame_path in sorted(frames_dir.rglob("frame_*.png")):
+        frame_no = frame_no_from_text(frame_path.name)
+        if frame_no is None:
+            continue
+        with Image.open(frame_path) as image:
+            bbox = image.convert("RGB").getbbox()
+        rows[frame_no] = {
+            "nonblack": bbox is not None,
+            "bbox": list(bbox) if bbox is not None else None,
+        }
+    return rows
+
+
 def phase_rows(frame_nos, hashes):
     rows = []
     for frame_no in frame_nos:
@@ -114,6 +131,7 @@ def main():
     truth = load_annotations(args.annotations)
     payload, frames_dir = load_result(args.result)
     hashes = collect_hashes(frames_dir)
+    nonblack = collect_nonblack_frames(frames_dir)
 
     correct_present = [f for f in truth["correct_frames"] if f in hashes]
     shoe_present = [f for f in truth["shoe_only_frames"] if f in hashes]
@@ -134,6 +152,9 @@ def main():
             if truth["correct_run_end"] < frame_no < first_shoe_only
         ]
     post_correct_pre_shoe_hashes = {hashes[f] for f in post_correct_pre_shoe_present}
+    visible_frames = [frame_no for frame_no in sorted(nonblack) if nonblack[frame_no]["nonblack"]]
+    first_visible_frame = visible_frames[0] if visible_frames else None
+    last_black_frame = max((frame_no for frame_no, row in nonblack.items() if not row["nonblack"]), default=None)
 
     if not correct_present:
         regime = "cut_off_before_correct_window"
@@ -159,6 +180,7 @@ def main():
             "first_black_frame": truth["black_frames"][0] if truth["black_frames"] else None,
             "first_ocean_only_frame": truth["ocean_only_frames"][0] if truth["ocean_only_frames"] else None,
             "first_island_only_frame": truth["island_only_frames"][0] if truth["island_only_frames"] else None,
+            "first_visible_target_frame": truth["ocean_only_frames"][0] if truth["ocean_only_frames"] else None,
         },
         "coverage": {
             "black_frames_present": black_present,
@@ -173,6 +195,8 @@ def main():
             "unique_correct_hashes": len(correct_hashes),
             "unique_shoe_hashes": len(shoe_hashes),
             "unique_post_correct_pre_shoe_hashes": len(post_correct_pre_shoe_hashes),
+            "first_visible_frame": first_visible_frame,
+            "last_black_frame": last_black_frame,
         },
         "phase_hashes": {
             "black": phase_rows(black_present, hashes),

@@ -105,7 +105,7 @@ def main():
         out_path = Path(args.json_out)
         out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
-    print("label\tregime\tblack\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash")
+    print("label\tregime\tfirst_visible\tlast_black\tblack\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash")
     for row in rows:
         cov = row.get("coverage") or {}
         result = row.get("result") or {}
@@ -114,6 +114,8 @@ def main():
                 [
                     row["label"],
                     row.get("regime", ""),
+                    str(cov.get("first_visible_frame", "")),
+                    str(cov.get("last_black_frame", "")),
                     str(cov.get("unique_black_hashes", 0)),
                     str(cov.get("unique_ocean_only_hashes", 0)),
                     str(cov.get("unique_island_only_hashes", 0)),
@@ -128,7 +130,7 @@ def main():
     if deltas:
         print("")
         print(
-            "delta_from\tto\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
+            "delta_from\tto\td_first_visible\td_last_black\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
             "m_black\tm_ocean\tm_island\tm_correct\tm_shoe\tm_midgap"
         )
         for delta in deltas:
@@ -139,6 +141,8 @@ def main():
                     [
                         delta["from"],
                         delta["to"],
+                        str((cur_row.get("coverage") or {}).get("first_visible_frame", 0) - (prev_row.get("coverage") or {}).get("first_visible_frame", 0)),
+                        str((cur_row.get("coverage") or {}).get("last_black_frame", 0) - (prev_row.get("coverage") or {}).get("last_black_frame", 0)),
                         str(metric_delta(prev_row, cur_row, "unique_black_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_ocean_only_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_island_only_hashes")),

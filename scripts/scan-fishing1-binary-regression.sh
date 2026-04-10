@@ -15,6 +15,7 @@ START_SEQ=""
 END_SEQ=""
 DIR_NAMES=()
 SKIPPED_NAMES=()
+BOUNDARY_STARTUP_REGIME=""
 
 usage() {
   cat <<'USAGE'
@@ -34,6 +35,9 @@ Options:
   --dir-name NAME      Exact binary-library directory name to test
                        May be repeated.
   --limit N            Limit number of matching builds
+  --boundary-startup-regime NAME
+                       Also write a startup-regime boundary report using
+                       find-fishing1-regression-boundary.py
   -h, --help           Show this help
 USAGE
 }
@@ -49,6 +53,7 @@ while [ $# -gt 0 ]; do
     --end-seq) END_SEQ="$2"; shift 2 ;;
     --dir-name) DIR_NAMES+=("$2"); shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
+    --boundary-startup-regime) BOUNDARY_STARTUP_REGIME="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -131,3 +136,11 @@ report_path = output_root / "fishing1-binary-regression-summary.json"
 report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 print(report_path)
 PY
+
+if [ -n "$BOUNDARY_STARTUP_REGIME" ]; then
+  python3 "$PROJECT_ROOT/scripts/find-fishing1-regression-boundary.py" \
+    --summary-json "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" \
+    --startup-regime "$BOUNDARY_STARTUP_REGIME" \
+    > "$OUTPUT_ROOT/fishing1-startup-boundary.json"
+  printf '%s\n' "$OUTPUT_ROOT/fishing1-startup-boundary.json"
+fi

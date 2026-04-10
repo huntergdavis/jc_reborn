@@ -1392,6 +1392,8 @@ void adsPlay(char *adsName, uint16 adsTag)
                 if (grPs1TelemetryEnabled)
                     adsDbgAddU16(&ps1AdsDbgReplayTryFrame, prevCount);
                 ttmThreads[i].numDrawnSprites = 0;
+                grDx = 0;
+                grDy = 0;
                 grCurrentThread = &ttmThreads[i];
                 if (grPs1TelemetryEnabled)
                     adsDbgAddU16(&ps1AdsDbgPlayedThreadsFrame, 1);

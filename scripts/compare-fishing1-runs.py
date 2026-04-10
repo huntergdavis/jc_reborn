@@ -143,7 +143,7 @@ def main():
     if deltas:
         print("")
         print(
-            "delta_from\tto\td_first_visible\td_first_lower_half\td_first_full_height\td_last_partial_height\t"
+            "delta_from\tto\tstartup_from\tstartup_to\tstartup_changed\td_first_visible\td_first_lower_half\td_first_full_height\td_last_partial_height\t"
             "d_last_black\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
             "m_black\tm_ocean\tm_island\tm_correct\tm_shoe\tm_midgap"
         )
@@ -155,6 +155,9 @@ def main():
                     [
                         delta["from"],
                         delta["to"],
+                        prev_row.get("startup_regime", ""),
+                        cur_row.get("startup_regime", ""),
+                        "1" if prev_row.get("startup_regime") != cur_row.get("startup_regime") else "0",
                         str(
                             nullable_int((cur_row.get("coverage") or {}).get("first_visible_frame"))
                             - nullable_int((prev_row.get("coverage") or {}).get("first_visible_frame"))

@@ -13,6 +13,8 @@ INTERVAL="${FISHING1_BINLIB_SCAN_INTERVAL:-30}"
 LIMIT="${FISHING1_BINLIB_SCAN_LIMIT:-}"
 START_SEQ=""
 END_SEQ=""
+EXACT_START_SEQ=""
+EXACT_END_SEQ=""
 DIR_NAMES=()
 SKIPPED_NAMES=()
 BOUNDARY_STARTUP_REGIME=""
@@ -33,6 +35,10 @@ Options:
   --interval N         Screenshot interval (default: 30)
   --start-seq N        First binary-library sequence to test
   --end-seq N          Last binary-library sequence to test
+  --exact-start-seq N  Expand exact runnable dir names from index.json starting
+                       at sequence N. Supports early-stop startup searches.
+  --exact-end-seq N    Expand exact runnable dir names from index.json ending
+                       at sequence N. Supports early-stop startup searches.
   --dir-name NAME      Exact binary-library directory name to test
                        May be repeated.
   --limit N            Limit number of matching builds
@@ -55,6 +61,8 @@ while [ $# -gt 0 ]; do
     --interval) INTERVAL="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; shift 2 ;;
     --end-seq) END_SEQ="$2"; shift 2 ;;
+    --exact-start-seq) EXACT_START_SEQ="$2"; shift 2 ;;
+    --exact-end-seq) EXACT_END_SEQ="$2"; shift 2 ;;
     --dir-name) DIR_NAMES+=("$2"); shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
     --boundary-startup-regime) BOUNDARY_STARTUP_REGIME="$2"; shift 2 ;;
@@ -66,6 +74,11 @@ done
 
 if [ ! -f "$ANNOTATIONS" ]; then
   echo "ERROR: annotations file not found: $ANNOTATIONS" >&2
+  exit 1
+fi
+
+if { [ -n "$EXACT_START_SEQ" ] && [ -z "$EXACT_END_SEQ" ]; } || { [ -z "$EXACT_START_SEQ" ] && [ -n "$EXACT_END_SEQ" ]; }; then
+  echo "ERROR: --exact-start-seq and --exact-end-seq must be provided together" >&2
   exit 1
 fi
 
@@ -116,6 +129,44 @@ for row in payload.get("rows") or []:
 raise SystemExit(1)
 PY
 }
+
+expand_exact_dir_names() {
+  python3 - "$PROJECT_ROOT/binary-library/index.json" "$EXACT_START_SEQ" "$EXACT_END_SEQ" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+index_path = Path(sys.argv[1])
+start_seq = int(sys.argv[2])
+end_seq = int(sys.argv[3])
+entries = json.loads(index_path.read_text(encoding="utf-8"))
+
+rows = []
+for entry in entries:
+    seq = entry.get("sequence")
+    if not isinstance(seq, int) or seq < start_seq or seq > end_seq:
+        continue
+    build = entry.get("build") or {}
+    if build.get("status") != "success":
+        continue
+    dir_name = entry.get("dir_name")
+    if not dir_name:
+        continue
+    commit = entry.get("commit") or {}
+    rows.append((seq, commit.get("date") or "", dir_name))
+
+rows.sort()
+for _, _, dir_name in rows:
+    print(dir_name)
+PY
+}
+
+if [ -n "$EXACT_START_SEQ" ]; then
+  while IFS= read -r dir_name; do
+    [ -n "$dir_name" ] || continue
+    DIR_NAMES+=("$dir_name")
+  done < <(expand_exact_dir_names)
+fi
 
 if [ "${#DIR_NAMES[@]}" -gt 0 ]; then
   for dir_name in "${DIR_NAMES[@]}"; do

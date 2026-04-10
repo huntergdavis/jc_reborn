@@ -82,6 +82,8 @@ mkdir -p "$OUTPUT_ROOT"
 current_high="$START_SEQ"
 chunk_index=0
 found_report=""
+chunk_history_path="$OUTPUT_ROOT/fishing1-startup-onset-chunks.jsonl"
+: > "$chunk_history_path"
 
 while [ "$current_high" -ge "$END_SEQ" ]; do
   current_low=$((current_high - CHUNK_SIZE + 1))
@@ -112,8 +114,41 @@ raise SystemExit(0 if payload.get("first_target") else 1)
 PY
   then
     found_report="$boundary_path"
+    python3 - "$chunk_history_path" "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "true" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+history_path = Path(sys.argv[1])
+entry = {
+    "chunk_start_seq": int(sys.argv[2]),
+    "chunk_end_seq": int(sys.argv[3]),
+    "chunk_dir": sys.argv[4],
+    "boundary_report": sys.argv[5],
+    "found_target": sys.argv[6] == "true",
+}
+with history_path.open("a", encoding="utf-8") as handle:
+    handle.write(json.dumps(entry) + "\n")
+PY
     break
   fi
+
+  python3 - "$chunk_history_path" "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "false" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+history_path = Path(sys.argv[1])
+entry = {
+    "chunk_start_seq": int(sys.argv[2]),
+    "chunk_end_seq": int(sys.argv[3]),
+    "chunk_dir": sys.argv[4],
+    "boundary_report": sys.argv[5],
+    "found_target": sys.argv[6] == "true",
+}
+with history_path.open("a", encoding="utf-8") as handle:
+    handle.write(json.dumps(entry) + "\n")
+PY
 
   current_high=$((current_low - 1))
   chunk_index=$((chunk_index + 1))
@@ -135,6 +170,7 @@ report = {
     "target_startup_regime": target_regime,
     "start_seq": start_seq,
     "end_seq": end_seq,
+    "chunk_history_jsonl": str(output_root / "fishing1-startup-onset-chunks.jsonl"),
     "onset_boundary_report": found_report or None,
 }
 

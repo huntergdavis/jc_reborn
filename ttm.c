@@ -31,6 +31,7 @@
 #define _FILE_DEFINED
 typedef struct _FILE FILE;
 #endif
+extern int printf(const char *format, ...);
 extern int fprintf(FILE *stream, const char *format, ...);
 #define stderr ((FILE*)2)
 #include <stdlib.h>  /* For free() */
@@ -70,6 +71,22 @@ static int ttmStringEquals(const char *a, const char *b)
     if (a == NULL || b == NULL)
         return 0;
     return strcmp(a, b) == 0;
+}
+
+static int ttmIsBuildingMjsandProbe(struct TTtmThread *ttmThread)
+{
+    const struct TTtmResource *ttmResource;
+
+    if (ttmThread == NULL || ttmThread->ttmSlot == NULL)
+        return 0;
+    if (!ttmStringEquals(ps1AdsCurrentName, "BUILDING.ADS") || ps1AdsCurrentTag != 1)
+        return 0;
+
+    ttmResource = ttmThread->ttmSlot->ttmResource;
+    if (ttmResource == NULL || ttmResource->resName == NULL)
+        return 0;
+
+    return ttmStringEquals(ttmResource->resName, "MJSAND.TTM");
 }
 
 static int ttmPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
@@ -247,6 +264,113 @@ uint32 ttmFindTag(struct TTtmSlot *ttmSlot, uint16 reqdTag)
     return 0;
 }
 
+static int ttmIsValidOffset(struct TTtmSlot *ttmSlot, uint32 offset)
+{
+    return ttmSlot != NULL &&
+           ttmSlot->data != NULL &&
+           offset < ttmSlot->dataSize;
+}
+
+static int ttmStoreTag(struct TTtmSlot *ttmSlot, int *tagNo, uint16 id, uint32 offset)
+{
+    if (ttmSlot == NULL || tagNo == NULL || ttmSlot->tags == NULL) {
+        return 0;
+    }
+
+    if (*tagNo >= ttmSlot->numTags) {
+        debugMsg("Warning : TTM tag table overflow (%u at %lu, capacity %d)",
+                 id, (unsigned long)offset, ttmSlot->numTags);
+        return 0;
+    }
+
+    ttmSlot->tags[*tagNo].id     = id;
+    ttmSlot->tags[*tagNo].offset = offset;
+    (*tagNo)++;
+    return 1;
+}
+
+#ifdef PS1_BUILD
+static void ttmDiagInvalidIp(const char *reason, struct TTtmThread *ttmThread, uint32 offset)
+{
+    static int diagCount = 0;
+    const char *name = NULL;
+
+    if (diagCount >= 16)
+        return;
+    diagCount++;
+
+    if (ttmThread != NULL && ttmThread->ttmSlot != NULL &&
+        ttmThread->ttmSlot->ttmResource != NULL) {
+        name = ttmThread->ttmSlot->ttmResource->resName;
+    }
+
+    printf("TTM_DIAG %s ads=%s:%u sceneSlot=%u sceneTag=%u ttm=%s ip=0x%08lX next=0x%08lX dataSize=%lu delay=%u timer=%u running=%d\n",
+           reason ? reason : "?",
+           ps1AdsCurrentName,
+           (unsigned int)ps1AdsCurrentTag,
+           (unsigned int)(ttmThread ? ttmThread->sceneSlot : 0),
+           (unsigned int)(ttmThread ? ttmThread->sceneTag : 0),
+           name ? name : "?",
+           (unsigned long)offset,
+           (unsigned long)(ttmThread ? ttmThread->nextGotoOffset : 0),
+           (unsigned long)((ttmThread && ttmThread->ttmSlot) ? ttmThread->ttmSlot->dataSize : 0),
+           (unsigned int)(ttmThread ? ttmThread->delay : 0),
+           (unsigned int)(ttmThread ? ttmThread->timer : 0),
+           ttmThread ? ttmThread->isRunning : -1);
+}
+
+static int ttmDiagStringOverflow(struct TTtmThread *ttmThread, uint16 opcode, uint32 startOffset, int copied)
+{
+    static int diagCount = 0;
+    const char *name = NULL;
+
+    if (diagCount >= 16)
+        return 0;
+    diagCount++;
+
+    if (ttmThread != NULL && ttmThread->ttmSlot != NULL &&
+        ttmThread->ttmSlot->ttmResource != NULL) {
+        name = ttmThread->ttmSlot->ttmResource->resName;
+    }
+
+    printf("TTM_DIAG string_overflow ads=%s:%u sceneSlot=%u sceneTag=%u ttm=%s opcode=0x%04X start=0x%08lX copied=%d\n",
+           ps1AdsCurrentName,
+           (unsigned int)ps1AdsCurrentTag,
+           (unsigned int)(ttmThread ? ttmThread->sceneSlot : 0),
+           (unsigned int)(ttmThread ? ttmThread->sceneTag : 0),
+           name ? name : "?",
+           (unsigned int)opcode,
+           (unsigned long)startOffset,
+           copied);
+    return 1;
+}
+
+static int ttmDiagArgsOverflow(struct TTtmThread *ttmThread, uint16 opcode, uint8 numArgs)
+{
+    static int diagCount = 0;
+    const char *name = NULL;
+
+    if (diagCount >= 16)
+        return 0;
+    diagCount++;
+
+    if (ttmThread != NULL && ttmThread->ttmSlot != NULL &&
+        ttmThread->ttmSlot->ttmResource != NULL) {
+        name = ttmThread->ttmSlot->ttmResource->resName;
+    }
+
+    printf("TTM_DIAG args_overflow ads=%s:%u sceneSlot=%u sceneTag=%u ttm=%s opcode=0x%04X numArgs=%u\n",
+           ps1AdsCurrentName,
+           (unsigned int)ps1AdsCurrentTag,
+           (unsigned int)(ttmThread ? ttmThread->sceneSlot : 0),
+           (unsigned int)(ttmThread ? ttmThread->sceneTag : 0),
+           name ? name : "?",
+           (unsigned int)opcode,
+           (unsigned int)numArgs);
+    return 1;
+}
+#endif
+
 
 void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
 {
@@ -315,28 +439,35 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
 
         if (opcode == 0x1111 || opcode == 0x1101) {
             uint16 arg = peekUint16(ttmSlot->data, &offset);
-            ttmSlot->tags[tagNo].id     = arg;
-            ttmSlot->tags[tagNo].offset = offset;
-            tagNo++; // TODO
+            ttmStoreTag(ttmSlot, &tagNo, arg, offset);
         }
         else {
 
             uint8 numArgs = (uint8) opcode & 0x000f;
 
             if (numArgs == 0x0f) {
-                while (ttmSlot->data[offset] != 0 && ttmSlot->data[offset+1] != 0)
+                while ((offset + 1) < ttmSlot->dataSize &&
+                       ttmSlot->data[offset] != 0 &&
+                       ttmSlot->data[offset + 1] != 0)
                     offset += 2;
+                if ((offset + 1) >= ttmSlot->dataSize)
+                    break;
                 offset += 2;
             }
             else {
+                if ((offset + ((uint32)numArgs << 1)) > ttmSlot->dataSize)
+                    break;
                 offset += (numArgs << 1);
             }
         }
     }
 
     // TODO : in SASKDATE.TTM, num SET_SCENE != ttmResource->numTags
-    while (tagNo < ttmSlot->numTags)
-        ttmSlot->tags[tagNo++].id = 0;  // TODO is this useful ?
+    while (tagNo < ttmSlot->numTags) {
+        ttmSlot->tags[tagNo].id = 0;
+        ttmSlot->tags[tagNo].offset = 0;
+        tagNo++;
+    }
 
 #ifdef PS1_BUILD
     /* (#43) One-time TTM data verification - moved from ttmPlay() to avoid
@@ -366,18 +497,18 @@ void ttmLoadTtm(struct TTtmSlot *ttmSlot, char *ttmName)     // TODO
 
 void ttmInitSlot(struct TTtmSlot *ttmSlot)
 {
-    ttmSlot->data = NULL;
-    ttmSlot->ttmResource = NULL;
-    /* (#93) Use memset instead of nested loops for sprite pointer init */
-    memset(ttmSlot->sprites, 0, sizeof(ttmSlot->sprites));
-    memset(ttmSlot->numSprites, 0, sizeof(ttmSlot->numSprites));
-    memset(ttmSlot->spriteGen, 0, sizeof(ttmSlot->spriteGen));
-    memset(ttmSlot->loadedBmp, 0, sizeof(ttmSlot->loadedBmp));
+    if (ttmSlot == NULL)
+        return;
+
+    memset(ttmSlot, 0, sizeof(*ttmSlot));
 }
 
 
 void ttmResetSlot(struct TTtmSlot *ttmSlot)
 {
+    if (ttmSlot == NULL)
+        return;
+
     if (ttmSlot->data != NULL) {
         /* Unpin TTM resource to allow LRU eviction */
         if (ttmSlot->ttmResource != NULL) {
@@ -387,12 +518,21 @@ void ttmResetSlot(struct TTtmSlot *ttmSlot)
 
         ttmSlot->data = NULL;
         free(ttmSlot->tags);
+        ttmSlot->tags = NULL;
+        ttmSlot->dataSize = 0;
+        ttmSlot->numTags = 0;
     }
 
     for (int i=0; i < MAX_BMP_SLOTS; i++) {
         if (ttmSlot->numSprites[i])
             grReleaseBmp(ttmSlot, i);
     }
+
+    memset(ttmSlot->numSprites, 0, sizeof(ttmSlot->numSprites));
+    memset(ttmSlot->loadedBmp, 0, sizeof(ttmSlot->loadedBmp));
+    memset(ttmSlot->loadedBmpNames, 0, sizeof(ttmSlot->loadedBmpNames));
+    memset(ttmSlot->psbData, 0, sizeof(ttmSlot->psbData));
+    memset(ttmSlot->sprites, 0, sizeof(ttmSlot->sprites));
 }
 
 
@@ -400,10 +540,11 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 {
     uint8 *data;
     uint32 offset;
+    uint32 opcodeOffset;
     uint16 opcode;
     uint8 numArgs;
     uint16 args[10];
-    char strArg[20];
+    char *strArg;
     int continueLoop = 1;
     struct TTtmSlot *ttmSlot;
 
@@ -414,13 +555,26 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
     ttmSlot = ttmThread->ttmSlot;
     offset = ttmThread->ip;
     data = ttmSlot->data;
+    strArg = ttmThread->currentStringArg;
+
+    if (!ttmIsValidOffset(ttmSlot, offset)) {
+#ifdef PS1_BUILD
+        ttmDiagInvalidIp("bad_entry", ttmThread, offset);
+#endif
+        ttmThread->isRunning = 2;
+        return;
+    }
 
     while (continueLoop) {
         if (offset + 1 >= ttmSlot->dataSize) {
+#ifdef PS1_BUILD
+            ttmDiagInvalidIp("past_end", ttmThread, offset);
+#endif
             ttmThread->isRunning = 2;
             break;
         }
 
+        opcodeOffset = offset;
         opcode = peekUint16(data, &offset);
 
         numArgs = (uint8) opcode & 0x0000f;
@@ -428,16 +582,55 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
         if (numArgs == 0x0f) {        // arg is a string
 
             int i=0;
+            int overflow = 0;
 
-            while (data[offset] != 0)
-                strArg[i++] = data[offset++];
+            while (offset < ttmSlot->dataSize && data[offset] != 0) {
+                if (i < (int)sizeof(ttmThread->currentStringArg) - 1) {
+                    strArg[i++] = data[offset++];
+                } else {
+                    overflow = 1;
+                    offset++;
+                }
+            }
+
+            if (offset >= ttmSlot->dataSize) {
+#ifdef PS1_BUILD
+                ttmDiagInvalidIp("string_past_end", ttmThread, opcodeOffset);
+#endif
+                ttmThread->isRunning = 2;
+                break;
+            }
 
             strArg[i++] = data[offset++];
 
             if ((i & 0x01) == 0x01)   // always read an even number of uint8s
-                strArg[i++] = data[offset++];   // TODO
+            {
+                if (offset >= ttmSlot->dataSize) {
+#ifdef PS1_BUILD
+                    ttmDiagInvalidIp("string_align_past_end", ttmThread, opcodeOffset);
+#endif
+                    ttmThread->isRunning = 2;
+                    break;
+                }
+                if (i < (int)sizeof(ttmThread->currentStringArg) - 1)
+                    strArg[i++] = data[offset++];
+                else
+                    offset++;
+            }
+            strArg[i] = '\0';
+#ifdef PS1_BUILD
+            if (overflow)
+                ttmDiagStringOverflow(ttmThread, opcode, opcodeOffset, i);
+#endif
         }
         else {                        // args are numArgs words
+            if (numArgs > (uint8)(sizeof(args) / sizeof(args[0]))) {
+#ifdef PS1_BUILD
+                ttmDiagArgsOverflow(ttmThread, opcode, numArgs);
+#endif
+                ttmThread->isRunning = 2;
+                break;
+            }
             peekUint16Block(data, &offset, args, numArgs);
         }
 
@@ -502,6 +695,16 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // ex TTM_UNKNOWN_2
                 debugMsg("    GOTO_TAG %d", args[0]);
                 ttmThread->nextGotoOffset = ttmFindTag(ttmSlot, args[0]);
+                if (args[0] != 0 &&
+                    !ttmIsValidOffset(ttmSlot, ttmThread->nextGotoOffset)) {
+#ifdef PS1_BUILD
+                    ttmDiagInvalidIp("bad_goto_tag", ttmThread, ttmThread->nextGotoOffset);
+#endif
+                    ttmThread->isRunning = 2;
+                    ttmThread->nextGotoOffset = 0;
+                    continueLoop = 0;
+                    break;
+                }
                 continueLoop = 0;  /* Exit to let main loop handle the jump */
                 break;
 
@@ -533,6 +736,10 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0x4204:
                 debugMsg("    COPY_ZONE_TO_BG %d %d %d %d", args[0], args[1], args[2], args[3]);
+#ifdef PS1_BUILD
+                if (ttmIsBuildingMjsandProbe(ttmThread))
+                    break;
+#endif
                 grCopyZoneToBg(ttmThread->ttmLayer, args[0], args[1], args[2], args[3]);
                 break;
 
@@ -541,6 +748,8 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // but seems not used in the original
                 debugMsg("    SAVE_IMAGE1 %d %d %d %d", args[0], args[1], args[2], args[3]);
  #ifdef PS1_BUILD
+                if (ttmIsBuildingMjsandProbe(ttmThread))
+                    break;
                 if (!ttmApplyRestorePilotSaveImage1(ttmThread))
                     grSaveImage1(ttmThread->ttmLayer, args[0], args[1], args[2], args[3]);
  #else
@@ -594,6 +803,8 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
                 // arg : indicates the SAVE_IMAGE1 nb to be used ?
                 debugMsg("    CLEAR_SCREEN %d", args[0]);
 #ifdef PS1_BUILD
+                if (ttmIsBuildingMjsandProbe(ttmThread))
+                    break;
                 if (ttmApplyRestorePilotClear(ttmThread, args[0]))
                     break;
 

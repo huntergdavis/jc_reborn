@@ -249,6 +249,12 @@ extern uint16 ps1AdsDbgMergeCarryFrame;
 extern uint16 ps1AdsDbgNoDrawThreadsFrame;
 extern uint16 ps1AdsDbgPlayedThreadsFrame;
 extern uint16 ps1AdsDbgRecordedSpritesFrame;
+extern uint16 ps1AdsDbgLastStopThread;
+extern uint16 ps1AdsDbgLastStopSceneSig;
+extern uint16 ps1AdsDbgLastReapThread;
+extern uint16 ps1AdsDbgLastReapSceneSig;
+extern uint16 ps1AdsDbgLastAddThread;
+extern uint16 ps1AdsDbgLastAddSceneSig;
 extern uint16 ps1PilotDbgActivePack;
 extern uint16 ps1PilotDbgHits;
 extern uint16 ps1PilotDbgFallbacks;
@@ -275,9 +281,25 @@ void grPs1StatBmpShortLoad(uint16 requested, uint16 loaded)
     if (loaded < gStatBmpMinLoaded) gStatBmpMinLoaded = loaded;
 }
 
+void grPs1SetLastBmpTelemetry(uint16 slot, uint16 frames, uint16 status)
+{
+    gStatLastBmpSlot = slot;
+    gStatLastBmpFrames = frames;
+    gStatLastBmpStatus = status;
+}
+
 static void grDrawCounterBar(int x, int y, int w, int h, uint16 color)
 {
-    grDrawRectColor15((sint16)x, (sint16)y, (uint16)w, (uint16)h, color);
+    if (!bgTile0 || !bgTile0->pixels) return;
+    if (x < 0 || y < 0 || x >= (int)bgTile0->width || y >= (int)bgTile0->height) return;
+    if (w <= 0 || h <= 0) return;
+    if (x + w > (int)bgTile0->width) w = (int)bgTile0->width - x;
+    if (y + h > (int)bgTile0->height) h = (int)bgTile0->height - y;
+
+    for (int yy = 0; yy < h; yy++) {
+        uint16 *row = bgTile0->pixels + (y + yy) * (int)bgTile0->width + x;
+        for (int xx = 0; xx < w; xx++) row[xx] = color;
+    }
 }
 
 static int grCaptureStartsWith(const char *text, const char *prefix);
@@ -956,12 +978,12 @@ static void grDrawAdsFreezeDiagnostics(void)
      * row7 green  : replay draws this frame
      * row8 magenta: merged carry-forward draws
      * row9 red    : played threads with zero draws
-     * row10 cyan  : threads played this frame
-     * row11 yellow: total recorded sprites this frame
-     * row12 red   : terminated thread count
-     * row13 white : last BMP slot loaded (+1)
-     * row14 green : last BMP frame count installed
-     * row15 magenta: last BMP load status code */
+     * row10 cyan  : last STOP_SCENE target thread index
+     * row11 yellow: last STOP_SCENE target scene signature
+     * row12 red   : last reaped thread index
+     * row13 white : last reaped scene signature
+     * row14 green : last ADD_SCENE thread index
+     * row15 magenta: last ADD_SCENE scene signature */
     int x = 2;
     int y = 90;
     int panelW = 96;
@@ -980,12 +1002,12 @@ static void grDrawAdsFreezeDiagnostics(void)
     grDrawCounterBar(x + 2, y + 22, (ps1AdsDbgReplayDrawFrame & 0x3F), rowH, 0x03E0);
     grDrawCounterBar(x + 2, y + 25, (ps1AdsDbgMergeCarryFrame & 0x3F), rowH, 0x7C1F);
     grDrawCounterBar(x + 2, y + 28, (ps1AdsDbgNoDrawThreadsFrame & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 31, (ps1AdsDbgPlayedThreadsFrame & 0x3F), rowH, 0x03FF);
-    grDrawCounterBar(x + 2, y + 34, (ps1AdsDbgRecordedSpritesFrame & 0x3F), rowH, 0x7FE0);
-    grDrawCounterBar(x + 2, y + 37, (ps1AdsDbgTerminatedThreads & 0x3F), rowH, 0x001F);
-    grDrawCounterBar(x + 2, y + 40, (gStatLastBmpSlot & 0x3F), rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 43, (gStatLastBmpFrames & 0x3F), rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 46, (gStatLastBmpStatus & 0x3F), rowH, 0x7C1F);
+    grDrawCounterBar(x + 2, y + 31, (ps1AdsDbgLastStopThread & 0x3F), rowH, 0x03FF);
+    grDrawCounterBar(x + 2, y + 34, (ps1AdsDbgLastStopSceneSig & 0x3F), rowH, 0x7FE0);
+    grDrawCounterBar(x + 2, y + 37, (ps1AdsDbgLastReapThread & 0x3F), rowH, 0x001F);
+    grDrawCounterBar(x + 2, y + 40, (ps1AdsDbgLastReapSceneSig & 0x3F), rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 43, (ps1AdsDbgLastAddThread & 0x3F), rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 46, (ps1AdsDbgLastAddSceneSig & 0x3F), rowH, 0x7C1F);
 }
 
 /* VRAM allocation tracking
@@ -1781,7 +1803,7 @@ void grLoadBmp(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
     }
 
     ttmSlot->numSprites[slotNo] = numToLoad;
-    ttmSlot->loadedBmpNames[slotNo] = strArg;
+    ttmSlot->loadedBmpNames[slotNo] = bmpResource->resName;
 }
 
 /*
@@ -2006,7 +2028,7 @@ static int grTryLoadPsb(struct TTtmSlot *ttmSlot, uint16 slotNo,
     /* Dedup: store the BMP resource pointer so repeated loads of the same
      * BMP into the same slot are detected and skipped by grLoadBmpRAM. */
     ttmSlot->loadedBmp[slotNo] = bmpResource;
-    ttmSlot->loadedBmpNames[slotNo] = strArg;
+    ttmSlot->loadedBmpNames[slotNo] = bmpResource->resName;
 
     return 1;
 }
@@ -2112,7 +2134,7 @@ void grLoadBmpRAM(struct TTtmSlot *ttmSlot, uint16 slotNo, char *strArg)
 
         ttmSlot->numSprites[slotNo] = framesLoaded;
         ttmSlot->loadedBmp[slotNo] = bmpResource;
-        ttmSlot->loadedBmpNames[slotNo] = strArg;
+        ttmSlot->loadedBmpNames[slotNo] = bmpResource->resName;
         gStatLastBmpFrames = (uint16)framesLoaded;
         gStatLastBmpStatus = (framesLoaded == numToLoad) ? 7 : 8;  /* ok / short install */
         if (framesLoaded < numToLoad) {
@@ -3798,35 +3820,11 @@ void grSaveImage1(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 heig
 }
 void grSaveZone(PS1Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 height)
 {
-    int screenX;
-    int screenY;
-
     (void)sfc;
-
-    if (width == 0 || height == 0) {
-        grPs1SavedZone.valid = 0;
-        return;
-    }
-
-    screenX = (int)x + grDx;
-    screenY = (int)y + grDy;
-    if (screenX < 0) {
-        width = (screenX + (int)width > 0) ? (uint16)(screenX + (int)width) : 0;
-        screenX = 0;
-    }
-    if (screenY < 0) {
-        height = (screenY + (int)height > 0) ? (uint16)(screenY + (int)height) : 0;
-        screenY = 0;
-    }
-    if (width == 0 || height == 0) {
-        grPs1SavedZone.valid = 0;
-        return;
-    }
-
-    grPs1SavedZone.x = (uint16)screenX;
-    grPs1SavedZone.y = (uint16)screenY;
-    grPs1SavedZone.width = width;
-    grPs1SavedZone.height = height;
+    (void)x;
+    (void)y;
+    (void)width;
+    (void)height;
     grPs1SavedZone.valid = 1;
 }
 

@@ -28,6 +28,7 @@
 #include <string.h>
 #else
 #include <stddef.h>
+#include <string.h>
 #include <psxgpu.h>  /* For RECT, LoadImage, setRECT */
 #ifndef _FILE_DEFINED
 #define _FILE_DEFINED
@@ -108,6 +109,7 @@ static struct TAdsChunk adsChunks[MAX_ADS_CHUNKS];
 
 static struct TTtmTag *adsTags;
 static int    adsNumTags = 0;
+static int    adsTagCapacity = 0;
 
 static struct TAdsRandOp adsRandOps[MAX_RANDOM_OPS];
 static int    adsNumRandOps    = 0;
@@ -118,12 +120,54 @@ int ps1AdsLastPlayLaunched = 0;
 char ps1AdsCurrentName[16] = "";
 uint16 ps1AdsCurrentTag = 0;
 
+static const char *adsStabilizeName(const char *adsName, char *buffer, size_t bufferSize)
+{
+    size_t i;
+
+    if (buffer == NULL || bufferSize == 0)
+        return adsName;
+
+    if (adsName == NULL) {
+        buffer[0] = '\0';
+        return buffer;
+    }
+
+    for (i = 0; i + 1 < bufferSize && adsName[i] != '\0'; i++)
+        buffer[i] = adsName[i];
+    buffer[i] = '\0';
+    return buffer;
+}
+
+static int adsIsValidTtmSlot(uint16 slot)
+{
+    return slot < MAX_TTM_SLOTS;
+}
+
 static void adsStopScene(int sceneNo);
 
 #ifdef PS1_BUILD
 static const struct TPs1RestorePilot *cachedPilot = NULL;
 static char cachedPilotAdsName[16] = {0};
 static uint16 cachedPilotAdsTag = 0xFFFF;
+extern uint16 ps1AdsDbgActiveThreads;
+extern uint16 ps1AdsDbgMini;
+extern uint16 ps1AdsDbgRunningThreads;
+extern uint16 ps1AdsDbgTerminatedThreads;
+extern uint16 ps1AdsDbgSceneSlot;
+extern uint16 ps1AdsDbgSceneTag;
+extern uint16 ps1AdsDbgReplayCount;
+extern uint16 ps1AdsDbgReplayTryFrame;
+extern uint16 ps1AdsDbgReplayDrawFrame;
+extern uint16 ps1AdsDbgMergeCarryFrame;
+extern uint16 ps1AdsDbgNoDrawThreadsFrame;
+extern uint16 ps1AdsDbgPlayedThreadsFrame;
+extern uint16 ps1AdsDbgRecordedSpritesFrame;
+extern uint16 ps1AdsDbgLastStopThread;
+extern uint16 ps1AdsDbgLastStopSceneSig;
+extern uint16 ps1AdsDbgLastReapThread;
+extern uint16 ps1AdsDbgLastReapSceneSig;
+extern uint16 ps1AdsDbgLastAddThread;
+extern uint16 ps1AdsDbgLastAddSceneSig;
 #endif
 
 static void adsSetCurrentScene(char *adsName, uint16 adsTag)
@@ -198,6 +242,126 @@ static int adsUseRestorePilotReplayPolicy(void)
     return adsFindActiveRestorePilot() != NULL;
 }
 
+static int adsUseReplayRecovery(void)
+{
+    return 0;
+}
+
+#ifdef PS1_BUILD
+static int adsDiagTrackCurrentTtmPlay(void)
+{
+    if (adsStringEquals(ps1AdsCurrentName, "BUILDING.ADS") &&
+        ps1AdsCurrentTag == 1)
+        return 1;
+
+    return 0;
+}
+
+static uint16 adsDiagSceneSigFor(uint16 sceneSlot, uint16 sceneTag)
+{
+    return (uint16)((((sceneSlot & 0x7) << 3) | (sceneTag & 0x7)) & 0x3F);
+}
+
+static void adsDiagNoteStop(int threadIndex, uint16 sceneSlot, uint16 sceneTag)
+{
+    if (!adsDiagTrackCurrentTtmPlay())
+        return;
+    ps1AdsDbgLastStopThread = (uint16)(threadIndex & 0x3F);
+    ps1AdsDbgLastStopSceneSig = adsDiagSceneSigFor(sceneSlot, sceneTag);
+}
+
+static void adsDiagNoteReap(int threadIndex, uint16 sceneSlot, uint16 sceneTag)
+{
+    if (!adsDiagTrackCurrentTtmPlay())
+        return;
+    ps1AdsDbgLastReapThread = (uint16)(threadIndex & 0x3F);
+    ps1AdsDbgLastReapSceneSig = adsDiagSceneSigFor(sceneSlot, sceneTag);
+}
+
+static void adsDiagNoteAdd(int threadIndex, uint16 sceneSlot, uint16 sceneTag)
+{
+    if (!adsDiagTrackCurrentTtmPlay())
+        return;
+    ps1AdsDbgLastAddThread = (uint16)(threadIndex & 0x3F);
+    ps1AdsDbgLastAddSceneSig = adsDiagSceneSigFor(sceneSlot, sceneTag);
+}
+
+static void adsDiagStoreDispatch(int phase, int threadIndex, struct TTtmThread *ttmThread)
+{
+    uint32 ip = 0;
+    uint32 next = 0;
+    uint16 sceneSig = 0;
+
+    if (!adsDiagTrackCurrentTtmPlay() || ttmThread == NULL)
+        return;
+
+    ip = ttmThread->ip & 0x3FFFFFFFul;
+    next = ttmThread->nextGotoOffset & 0x3FFFFu;
+    sceneSig = (uint16)((((ttmThread->sceneSlot & 0x7) << 3) |
+                         (ttmThread->sceneTag & 0x7)) & 0x3F);
+
+    /* Reuse ADS telemetry rows as a persistent last-dispatch dump.
+     * active_threads is a marker:
+     *   61 => before ttmPlay()
+     *   62 => after ttmPlay() */
+    ps1AdsDbgActiveThreads = (uint16)(phase ? 62 : 61);
+    ps1AdsDbgMini = (uint16)(threadIndex & 0x3F);
+    ps1AdsDbgSceneSlot = ttmThread->sceneSlot;
+    ps1AdsDbgSceneTag = ttmThread->sceneTag;
+    ps1AdsDbgReplayCount = (uint16)(ttmThread->selectedBmpSlot & 0x3F);
+    ps1AdsDbgRunningThreads = (uint16)(ttmThread->currentRegionId & 0x3F);
+    ps1AdsDbgReplayTryFrame = (uint16)(ttmThread->timer & 0x3F);
+    ps1AdsDbgReplayDrawFrame = (uint16)(ip & 0x3F);
+    ps1AdsDbgMergeCarryFrame = (uint16)((ip >> 6) & 0x3F);
+    ps1AdsDbgNoDrawThreadsFrame = (uint16)((ip >> 12) & 0x3F);
+    ps1AdsDbgPlayedThreadsFrame = (uint16)((ip >> 18) & 0x3F);
+    ps1AdsDbgRecordedSpritesFrame = (uint16)((ip >> 24) & 0x3F);
+    ps1AdsDbgTerminatedThreads = (uint16)(next & 0x3F);
+    grPs1SetLastBmpTelemetry((uint16)((next >> 6) & 0x3F),
+                             (uint16)((next >> 12) & 0x3F),
+                             (uint16)(((ttmThread->isRunning & 0x0F) |
+                                       ((phase & 0x01) << 4) |
+                                       ((sceneSig & 0x03) << 5)) & 0x3F));
+}
+
+static void adsDiagTtmDispatch(const char *phase, int threadIndex, struct TTtmThread *ttmThread)
+{
+    static int diagCount = 0;
+    const char *ttmName = NULL;
+
+    if (!adsDiagTrackCurrentTtmPlay())
+        return;
+    adsDiagStoreDispatch((phase && phase[0] == 'a') ? 1 : 0, threadIndex, ttmThread);
+    if (diagCount >= 128)
+        return;
+    diagCount++;
+
+    if (ttmThread != NULL && ttmThread->ttmSlot != NULL &&
+        ttmThread->ttmSlot->ttmResource != NULL) {
+        ttmName = ttmThread->ttmSlot->ttmResource->resName;
+    }
+
+    printf("ADS_DIAG %s idx=%d ads=%s:%u sceneSlot=%u sceneTag=%u ttm=%s ip=0x%08lX next=0x%08lX delay=%u timer=%u running=%d sceneTimer=%d sceneIterations=%d currentRegion=%u bmpSlot=%u drawn=%u\n",
+           phase ? phase : "?",
+           threadIndex,
+           ps1AdsCurrentName,
+           (unsigned int)ps1AdsCurrentTag,
+           (unsigned int)(ttmThread ? ttmThread->sceneSlot : 0),
+           (unsigned int)(ttmThread ? ttmThread->sceneTag : 0),
+           ttmName ? ttmName : "?",
+           (unsigned long)(ttmThread ? ttmThread->ip : 0),
+           (unsigned long)(ttmThread ? ttmThread->nextGotoOffset : 0),
+           (unsigned int)(ttmThread ? ttmThread->delay : 0),
+           (unsigned int)(ttmThread ? ttmThread->timer : 0),
+           ttmThread ? ttmThread->isRunning : -1,
+           ttmThread ? ttmThread->sceneTimer : 0,
+           ttmThread ? ttmThread->sceneIterations : 0,
+           (unsigned int)(ttmThread ? ttmThread->currentRegionId : 0),
+           (unsigned int)(ttmThread ? ttmThread->selectedBmpSlot : 0),
+           (unsigned int)(ttmThread ? ttmThread->numDrawnSprites : 0));
+}
+#endif
+
 #ifdef PS1_BUILD
 static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
 {
@@ -234,11 +398,15 @@ static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
     }
 
     for (i = 0; i < pilot->bmpCount; i++) {
-        if (adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP"))
+        if (adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP")) {
             continue;
-        struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
-        if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
-            ps1_loadBmpData(bmpResource);
+        }
+
+        {
+            struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
+            if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
+                ps1_loadBmpData(bmpResource);
+        }
     }
 }
 #endif
@@ -261,6 +429,12 @@ uint16 ps1AdsDbgMergeCarryFrame = 0;
 uint16 ps1AdsDbgNoDrawThreadsFrame = 0;
 uint16 ps1AdsDbgPlayedThreadsFrame = 0;
 uint16 ps1AdsDbgRecordedSpritesFrame = 0;
+uint16 ps1AdsDbgLastStopThread = 0;
+uint16 ps1AdsDbgLastStopSceneSig = 0;
+uint16 ps1AdsDbgLastReapThread = 0;
+uint16 ps1AdsDbgLastReapSceneSig = 0;
+uint16 ps1AdsDbgLastAddThread = 0;
+uint16 ps1AdsDbgLastAddSceneSig = 0;
 static struct TDrawnSprite gPrevReplayScratch[MAX_DRAWN_SPRITES];
 /* One-shot carry used to bridge scene/thread handoff gaps. */
 static struct TDrawnSprite gHandoffReplay[MAX_DRAWN_SPRITES];
@@ -301,6 +475,7 @@ static int adsActorNearMatch(const struct TDrawnSprite *a, const struct TDrawnSp
 static uint8 adsCaptureReplayRecords(struct TTtmThread *thread)
 {
     uint8 count;
+    if (!adsUseReplayRecovery()) return 0;
     if (!thread) return 0;
     count = thread->numDrawnSprites;
     if (count > 0) {
@@ -352,6 +527,7 @@ static uint8 adsMergeReplayByProximity(struct TTtmThread *thread,
                                        uint8 prevCount)
 {
     uint8 carried = 0;
+    if (!adsUseReplayRecovery()) return 0;
     if (!thread || !prevRecords || prevCount == 0) return 0;
 
     for (uint8 p = 0; p < prevCount; p++) {
@@ -417,6 +593,7 @@ static uint8 adsMergeReplayByProximity(struct TTtmThread *thread,
 static void adsCaptureHandoffReplay(struct TTtmThread *thread)
 {
     int bestArea = -1;
+    if (!adsUseReplayRecovery()) return;
     if (!thread || thread->numDrawnSprites == 0) return;
 
     if (adsUseRestorePilotReplayPolicy()) {
@@ -449,6 +626,7 @@ static void adsCaptureHandoffReplay(struct TTtmThread *thread)
 
 static void adsSeedFromHandoffReplay(struct TTtmThread *thread)
 {
+    if (!adsUseReplayRecovery()) return;
     if (!thread || !gHandoffReplayValid || gHandoffReplayCount == 0) return;
     if (adsUseRestorePilotReplayPolicy()) return;
     if (thread->numDrawnSprites != 0) return;
@@ -477,6 +655,7 @@ static void adsRecoverMissingActor(struct TTtmThread *thread,
     int bestArea = -1;
     uint8 haveCandidate = 0;
 
+    if (!adsUseReplayRecovery()) return;
     if (!thread) return;
 
     for (uint8 i = 0; i < thread->numDrawnSprites; i++) {
@@ -530,6 +709,78 @@ static void adsReapTerminatedThreads(void)
     }
 }
 
+static int adsStoreChunk(uint16 slot, uint16 tag, uint32 offset)
+{
+    if (numAdsChunks >= MAX_ADS_CHUNKS) {
+        debugMsg("Warning : ADS chunk table overflow (%d,%d) at %lu", slot, tag, (unsigned long)offset);
+        return 0;
+    }
+
+    adsChunks[numAdsChunks].scene.slot = slot;
+    adsChunks[numAdsChunks].scene.tag  = tag;
+    adsChunks[numAdsChunks].offset     = offset;
+    numAdsChunks++;
+    return 1;
+}
+
+static int adsStoreLocalChunk(uint16 slot, uint16 tag, uint32 offset)
+{
+    if (numAdsChunksLocal >= MAX_ADS_CHUNKS_LOCAL) {
+        debugMsg("Warning : ADS local chunk table overflow (%d,%d) at %lu", slot, tag, (unsigned long)offset);
+        return 0;
+    }
+
+    adsChunksLocal[numAdsChunksLocal].scene.slot = slot;
+    adsChunksLocal[numAdsChunksLocal].scene.tag  = tag;
+    adsChunksLocal[numAdsChunksLocal].offset     = offset;
+    numAdsChunksLocal++;
+    return 1;
+}
+
+static int adsStoreTag(uint16 id, uint32 offset)
+{
+    if (adsTags == NULL || adsNumTags >= adsTagCapacity) {
+        debugMsg("Warning : ADS tag table overflow (tag=%u offset=%lu)", id, (unsigned long)offset);
+        return 0;
+    }
+
+    adsTags[adsNumTags].id     = id;
+    adsTags[adsNumTags].offset = offset;
+    adsNumTags++;
+    return 1;
+}
+
+static int adsEnsureWordArgs(uint32 dataSize, uint32 offset, uint8 numArgs)
+{
+    if (numArgs > 10)
+        return 0;
+    if (offset > dataSize)
+        return 0;
+    if ((uint32)numArgs > ((dataSize - offset) >> 1))
+        return 0;
+    return 1;
+}
+
+static int adsPeekWordArgs(uint8 *data, uint32 dataSize, uint32 *offset, uint16 *args, uint8 numArgs)
+{
+    if (data == NULL || offset == NULL || args == NULL)
+        return 0;
+    if (!adsEnsureWordArgs(dataSize, *offset, numArgs))
+        return 0;
+    peekUint16Block(data, offset, args, numArgs);
+    return 1;
+}
+
+static int adsSkipWordArgs(uint32 dataSize, uint32 *offset, uint8 numArgs)
+{
+    if (offset == NULL)
+        return 0;
+    if (!adsEnsureWordArgs(dataSize, *offset, numArgs))
+        return 0;
+    *offset += ((uint32)numArgs << 1);
+    return 1;
+}
+
 
 static void adsLoad(uint8 *data, uint32 dataSize, uint16 numTags, uint16 tag, uint32 *tagOffset)
 {
@@ -542,6 +793,7 @@ static void adsLoad(uint8 *data, uint32 dataSize, uint16 numTags, uint16 tag, ui
     numAdsChunksLocal = 0;
     *tagOffset        = 0;
     adsNumTags        = 0;
+    adsTagCapacity    = numTags;
     adsTags           = safe_malloc(numTags * sizeof(struct TTtmTag));
 
 
@@ -555,14 +807,13 @@ static void adsLoad(uint8 *data, uint32 dataSize, uint16 numTags, uint16 tag, ui
 
                 if (bookmarkingChunks) {
                     bookmarkingIfNotRunnings = 0;
-                    peekUint16Block(data, &offset, args, 2);
-                    adsChunks[numAdsChunks].scene.slot = args[0];
-                    adsChunks[numAdsChunks].scene.tag  = args[1];
-                    adsChunks[numAdsChunks].offset     = offset;
-                    numAdsChunks++;
+                    if (!adsPeekWordArgs(data, dataSize, &offset, args, 2))
+                        goto done;
+                    adsStoreChunk(args[0], args[1], offset);
                 }
                 else {
-                    offset += 2<<1;
+                    if (!adsSkipWordArgs(dataSize, &offset, 2))
+                        goto done;
                 }
 
                 break;
@@ -573,45 +824,43 @@ static void adsLoad(uint8 *data, uint32 dataSize, uint16 numTags, uint16 tag, ui
                 // preceding the first IF_LAST_PLAYED or IF_IS_RUNNING
 
                 if (bookmarkingChunks && bookmarkingIfNotRunnings) {
-                    peekUint16Block(data, &offset, args, 2);
-                    adsChunks[numAdsChunks].scene.slot = args[0];
-                    adsChunks[numAdsChunks].scene.tag  = args[1];
-                    adsChunks[numAdsChunks].offset     = offset;
-                    numAdsChunks++;
+                    if (!adsPeekWordArgs(data, dataSize, &offset, args, 2))
+                        goto done;
+                    adsStoreChunk(args[0], args[1], offset);
                 }
                 else {
-                    offset += 2<<1;
+                    if (!adsSkipWordArgs(dataSize, &offset, 2))
+                        goto done;
                 }
 
                 break;
 
             case 0x1370:     // IF_IS_RUNNING
                 bookmarkingIfNotRunnings = 0;
-                offset += 2<<1;
+                if (!adsSkipWordArgs(dataSize, &offset, 2))
+                    goto done;
                 break;
 
-            case 0x1070: offset += 2<<1; break;
-            case 0x1330: offset += 2<<1; break;
-            case 0x1420: offset += 0<<1; break;
-            case 0x1430: offset += 0<<1; break; // OR   // TODO : manage here if_lastplayed OK tags ?
-            case 0x1510: offset += 0<<1; break;
-            case 0x1520: offset += 5<<1; break;
-            case 0x2005: offset += 4<<1; break;
-            case 0x2010: offset += 3<<1; break;
-            case 0x2014: offset += 0<<1; break;
-            case 0x3010: offset += 0<<1; break;
-            case 0x3020: offset += 1<<1; break;
-            case 0x30ff: offset += 0<<1; break;
-            case 0x4000: offset += 3<<1; break;
-            case 0xf010: offset += 0<<1; break;
-            case 0xf200: offset += 1<<1; break;
-            case 0xffff: offset += 0<<1; break;
-            case 0xfff0: offset += 0<<1; break;
+            case 0x1070: if (!adsSkipWordArgs(dataSize, &offset, 2)) goto done; break;
+            case 0x1330: if (!adsSkipWordArgs(dataSize, &offset, 2)) goto done; break;
+            case 0x1420: break;
+            case 0x1430: break; // OR   // TODO : manage here if_lastplayed OK tags ?
+            case 0x1510: break;
+            case 0x1520: if (!adsSkipWordArgs(dataSize, &offset, 5)) goto done; break;
+            case 0x2005: if (!adsSkipWordArgs(dataSize, &offset, 4)) goto done; break;
+            case 0x2010: if (!adsSkipWordArgs(dataSize, &offset, 3)) goto done; break;
+            case 0x2014: break;
+            case 0x3010: break;
+            case 0x3020: if (!adsSkipWordArgs(dataSize, &offset, 1)) goto done; break;
+            case 0x30ff: break;
+            case 0x4000: if (!adsSkipWordArgs(dataSize, &offset, 3)) goto done; break;
+            case 0xf010: break;
+            case 0xf200: if (!adsSkipWordArgs(dataSize, &offset, 1)) goto done; break;
+            case 0xffff: break;
+            case 0xfff0: break;
 
             default:
-                adsTags[adsNumTags].id     = opcode;
-                adsTags[adsNumTags].offset = offset;
-                adsNumTags++;
+                adsStoreTag(opcode, offset);
 
                 if (opcode == tag) {
                     *tagOffset = offset;
@@ -627,6 +876,7 @@ static void adsLoad(uint8 *data, uint32 dataSize, uint16 numTags, uint16 tag, ui
         }
     }
 
+done:
     if (adsNumTags != numTags)
         debugMsg("Warning : didn't find every tag in ADS data");
 
@@ -666,8 +916,15 @@ static uint32 adsFindTag(uint16 reqdTag)
 
 static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 {
-    /* Reclaim any terminated threads before attempting to add a new one. */
+    if (!adsIsValidTtmSlot(ttmSlotNo))
+        return;
+
+    /* On PS1, STOP_SCENE may mark a thread terminated earlier in the same ADS
+     * chunk. Do not reap here or ADD_SCENE can immediately recycle that slot
+     * before the current handoff finishes. */
+#ifndef PS1_BUILD
     adsReapTerminatedThreads();
+#endif
 
     for (int i=0; i < MAX_TTM_THREADS; i++) {
 
@@ -696,28 +953,23 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 #endif
     }
 
-    struct TTtmThread *ttmThread = &ttmThreads[i];
+    struct TTtmThread newThread;
+    struct TTtmThread *ttmThread;
 
-    ttmThread->ttmSlot         = &ttmSlots[ttmSlotNo];
-    ttmThread->isRunning       = 1;
-    ttmThread->sceneSlot       = ttmSlotNo;
-    ttmThread->sceneTag        = ttmTag;
-    ttmThread->sceneTimer      = 0;
-    ttmThread->sceneIterations = 0;
-    ttmThread->delay           = 4;
-    ttmThread->timer           = 0;
-    ttmThread->nextGotoOffset  = 0;
-    ttmThread->selectedBmpSlot = 0;
-    ttmThread->fgColor         = 0x0f;
-    ttmThread->bgColor         = 0x0f;
-    ttmThread->currentRegionId = 0;
+    memset(&newThread, 0, sizeof(newThread));
+    newThread.ttmSlot         = &ttmSlots[ttmSlotNo];
+    newThread.isRunning       = 1;
+    newThread.sceneSlot       = ttmSlotNo;
+    newThread.sceneTag        = ttmTag;
+    newThread.delay           = 4;
+    newThread.fgColor         = 0x0f;
+    newThread.bgColor         = 0x0f;
 #ifdef PS1_BUILD
-    ttmThread->sceneEpoch++;
-    ttmThread->numDrawnSprites = 0;
-    ttmThread->replayWriteCursor = 0;
-    ttmThread->lastActorReplayValid = 0;
-    adsSeedFromHandoffReplay(ttmThread);
+    newThread.sceneEpoch = ttmThreads[i].sceneEpoch + 1;
 #endif
+    ttmThreads[i] = newThread;
+    ttmThread = &ttmThreads[i];
+    adsDiagNoteAdd(i, ttmSlotNo, ttmTag);
 
     if (ttmSlotNo) {
         struct TTtmSlot *slot = &ttmSlots[ttmSlotNo];
@@ -725,11 +977,12 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
             ttmThread->ip = 0;
         else {
             ttmThread->ip = ttmFindTag(slot, ttmTag);
-            if (ttmTag && ttmThread->ip == 0)
+            if (ttmTag && ttmThread->ip == 0) {
                 ttmThread->isRunning = 0;
+                return;
+            }
         }
-    }
-    else
+    } else
         ttmThread->ip = 0;
 
     if (((short)arg3) < 0) {
@@ -744,6 +997,7 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
      * scene restore ops must target that same surface instead of an empty
      * side layer that never reaches the framebuffer. */
     ttmThread->ttmLayer = grBackgroundSfc;
+    adsSeedFromHandoffReplay(ttmThread);
 #else
     ttmThread->ttmLayer = grNewLayer();
 #endif
@@ -756,6 +1010,9 @@ static void adsAddScene(uint16 ttmSlotNo, uint16 ttmTag, uint16 arg3)
 static void adsStopScene(int sceneNo)
 {
 #ifdef PS1_BUILD
+    adsDiagNoteReap(sceneNo, ttmThreads[sceneNo].sceneSlot, ttmThreads[sceneNo].sceneTag);
+#endif
+#ifdef PS1_BUILD
     adsCaptureHandoffReplay(&ttmThreads[sceneNo]);
 #endif
 #ifdef PS1_BUILD
@@ -764,11 +1021,8 @@ static void adsStopScene(int sceneNo)
 #else
     grFreeLayer(ttmThreads[sceneNo].ttmLayer);
 #endif
-    ttmThreads[sceneNo].isRunning = 0;
+    memset(&ttmThreads[sceneNo], 0, sizeof(ttmThreads[sceneNo]));
 #ifdef PS1_BUILD
-    ttmThreads[sceneNo].numDrawnSprites = 0;
-    ttmThreads[sceneNo].replayWriteCursor = 0;
-    ttmThreads[sceneNo].lastActorReplayValid = 0;
 #endif
     if (numThreads > 0)
         numThreads--;
@@ -785,8 +1039,21 @@ static void adsStopSceneByTtmTag(uint16 ttmSlotNo, uint16 ttmTag)
 
         if (ttmThread->isRunning) {
 
-            if (ttmThread->sceneSlot == ttmSlotNo && ttmThread->sceneTag == ttmTag)
+            if (ttmThread->sceneSlot == ttmSlotNo && ttmThread->sceneTag == ttmTag) {
+#ifdef PS1_BUILD
+                /* Defer cleanup to the main ADS loop so STOP_SCENE does not
+                 * zero another live thread while we are still parsing the
+                 * current ADS chunk. */
+                adsDiagNoteStop(i, ttmThread->sceneSlot, ttmThread->sceneTag);
+                ttmThread->isRunning = ADS_THREAD_TERMINATED;
+                ttmThread->timer = 0;
+                ttmThread->nextGotoOffset = 0;
+                ttmThread->sceneTimer = 0;
+                ttmThread->sceneIterations = 0;
+#else
                 adsStopScene(i);
+#endif
+            }
         }
     }
 }
@@ -930,14 +1197,7 @@ void adsInit()    // Init slots and threads for TTM scripts  // TODO : rename
         ttmInitSlot(&ttmSlots[i]);
 
     for (int i=0; i < MAX_TTM_THREADS; i++) {
-        ttmThreads[i].isRunning = 0;
-        ttmThreads[i].timer     = 0;
-#ifdef PS1_BUILD
-        ttmThreads[i].numDrawnSprites = 0;
-        ttmThreads[i].replayWriteCursor = 0;
-        ttmThreads[i].sceneEpoch = 0;
-        ttmThreads[i].lastActorReplayValid = 0;
-#endif
+        memset(&ttmThreads[i], 0, sizeof(ttmThreads[i]));
     }
 #ifdef PS1_BUILD
     ps1AdsDbgActiveThreads = 0;
@@ -997,6 +1257,17 @@ void adsPlaySingleTtm(char *ttmName, uint16 startTag)  // TODO - tempo
 
 static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
 {
+ #ifdef PS1_BUILD
+    enum { ADS_DEFERRED_OP_CAP = 16 };
+    struct TAdsDeferredOp {
+        uint16 opcode;
+        uint16 slot;
+        uint16 tag;
+        uint16 arg3;
+    };
+    struct TAdsDeferredOp deferredOps[ADS_DEFERRED_OP_CAP];
+    int deferredCount = 0;
+#endif
     uint16 opcode;
     uint16 args[10];
     int inRandBlock          = 0;
@@ -1015,13 +1286,11 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
             case 0x1070:
                 // Inside an IF_LASTPLAYED chunk, local IF_LASTPLAYED
                 // which overrides the global IF_LASTPLAYEDs.
-                peekUint16Block(data, &offset, args, 2);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 2))
+                    return;
                 debugMsg("IF_LASTPLAYED_LOCAL");
                 inIfLastplayedLocal = 1;
-                adsChunksLocal[numAdsChunksLocal].scene.slot = args[0];
-                adsChunksLocal[numAdsChunksLocal].scene.tag  = args[1];
-                adsChunksLocal[numAdsChunksLocal].offset     = offset;
-                numAdsChunksLocal++;
+                adsStoreLocalChunk(args[0], args[1], offset);
                 break;
 
             case 0x1330:
@@ -1030,12 +1299,14 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 //   - one exception: FISHING.ADS tag 3
                 //   - seems to be a synonym of "IF_NOT_RUNNING"
                 //   - if so, our implementation works fine anyway by ignoring this one...
-                peekUint16Block(data, &offset, args, 2);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 2))
+                    return;
                 debugMsg("IF_UNKNOWN_1 %d %d", args[0], args[1]);
                 break;
 
             case 0x1350:
-                peekUint16Block(data, &offset, args, 2);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 2))
+                    return;
                 debugMsg("IF_LASTPLAYED %d %d", args[0], args[1]);
 
                 if (!inOrBlock)
@@ -1046,14 +1317,16 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 break;
 
             case 0x1360:
-                peekUint16Block(data, &offset, args, 2);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 2))
+                    return;
                 debugMsg("IF_NOT_RUNNING %d %d", args[0], args[1]);
                 if (isSceneRunning(args[0], args[1]))
                     inSkipBlock = 1;
                 break;
 
             case 0x1370:
-                peekUint16Block(data, &offset, args, 2);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 2))
+                    return;
                 debugMsg("IF_IS_RUNNING %d %d", args[0], args[1]);
                 inSkipBlock = !isSceneRunning(args[0], args[1]);
                 break;
@@ -1081,7 +1354,8 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
 
             case 0x1520:
                 // Only in ACTIVITY.ADS tag 7, after IF_LASTPLAYED_LOCAL
-                peekUint16Block(data, &offset, args, 5);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 5))
+                    return;
                 debugMsg("ADD_SCENE_LOCAL");
 
                 if (inIfLastplayedLocal) {
@@ -1092,33 +1366,64 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 else {
                     // Second pass (we were called directly from the scheduler)
                     // --> we launch the execution of the scene
+#ifdef PS1_BUILD
+                    if (deferredCount < ADS_DEFERRED_OP_CAP) {
+                        deferredOps[deferredCount].opcode = opcode;
+                        deferredOps[deferredCount].slot = args[1];
+                        deferredOps[deferredCount].tag = args[2];
+                        deferredOps[deferredCount].arg3 = args[3];
+                        deferredCount++;
+                    } else
+#endif
                     adsAddScene(args[1],args[2],args[3]);
                 }
 
                 break;
 
             case 0x2005:
-                peekUint16Block(data, &offset, args, 4);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 4))
+                    return;
                 debugMsg("ADD_SCENE %d %d %d %d", args[0], args[1], args[2], args[3]);
 
                 if (!inSkipBlock) {               // TODO - TEMPO
                     if (inRandBlock)
                         adsRandomAddScene(args[0],args[1],args[2], args[3]);
-                    else
+                    else {
+#ifdef PS1_BUILD
+                        if (deferredCount < ADS_DEFERRED_OP_CAP) {
+                            deferredOps[deferredCount].opcode = opcode;
+                            deferredOps[deferredCount].slot = args[0];
+                            deferredOps[deferredCount].tag = args[1];
+                            deferredOps[deferredCount].arg3 = args[2];
+                            deferredCount++;
+                        } else
+#endif
                         adsAddScene(args[0],args[1],args[2]);
+                    }
                 }
 
                 break;
 
             case 0x2010:
-                peekUint16Block(data, &offset, args, 3);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 3))
+                    return;
                 debugMsg("STOP_SCENE %d %d %d", args[0], args[1], args[2]);
 
                 if (!inSkipBlock) {              // TODO - TEMPO
                     if (inRandBlock)
                         adsRandomStopSceneByTtmTag(args[0], args[1], args[2]);
-                    else
+                    else {
+#ifdef PS1_BUILD
+                        if (deferredCount < ADS_DEFERRED_OP_CAP) {
+                            deferredOps[deferredCount].opcode = opcode;
+                            deferredOps[deferredCount].slot = args[0];
+                            deferredOps[deferredCount].tag = args[1];
+                            deferredOps[deferredCount].arg3 = args[2];
+                            deferredCount++;
+                        } else
+#endif
                         adsStopSceneByTtmTag(args[0], args[1]);
+                    }
                 }
 
                 break;
@@ -1130,7 +1435,8 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 break;
 
             case 0x3020:
-                peekUint16Block(data, &offset, args, 1);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 1))
+                    return;
                 debugMsg("NOP");
                 if (inRandBlock)
                     adsRandomNop(args[0]);
@@ -1143,7 +1449,8 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 break;
 
             case 0x4000:
-                peekUint16Block(data, &offset, args, 3);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 3))
+                    return;
                 debugMsg("UNKNOWN_6");    // only in BUILDING.ADS tag 7
                 break;
 
@@ -1152,7 +1459,8 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
                 break;
 
             case 0xf200:
-                peekUint16Block(data, &offset, args, 1);
+                if (!adsPeekWordArgs(data, dataSize, &offset, args, 1))
+                    return;
                 debugMsg("GOSUB_TAG %d", args[0]);    // ex UNKNOWN_8
                 // "quick and dirty" implementation, sufficient for
                 // JCastaway : only encountered in STAND.ADS to tag 14
@@ -1180,6 +1488,14 @@ static void adsPlayChunk(uint8 *data, uint32 dataSize, uint32 offset)
 
         }
     }
+#ifdef PS1_BUILD
+    for (int i = 0; i < deferredCount; i++) {
+        if (deferredOps[i].opcode == 0x2010)
+            adsStopSceneByTtmTag(deferredOps[i].slot, deferredOps[i].tag);
+        else
+            adsAddScene(deferredOps[i].slot, deferredOps[i].tag, deferredOps[i].arg3);
+    }
+#endif
 }
 
 
@@ -1213,11 +1529,13 @@ void adsPlay(char *adsName, uint16 adsTag)
     uint32 offset;
     uint8  *data;
     uint32 dataSize;
+    char stableAdsName[16];
+    const char *adsNameRef = adsStabilizeName(adsName, stableAdsName, sizeof(stableAdsName));
 
-    struct TAdsResource *adsResource = findAdsResource(adsName);
+    struct TAdsResource *adsResource = findAdsResource((char *)adsNameRef);
 
 #ifdef PS1_BUILD
-    adsSetCurrentScene(adsName, adsTag);
+    adsSetCurrentScene((char *)adsNameRef, adsTag);
 #endif
 
 #ifdef PS1_BUILD
@@ -1236,7 +1554,6 @@ void adsPlay(char *adsName, uint16 adsTag)
         if (adsResource->uncompressedData == NULL) {
             return;  /* ADS data load failed - skip scene */
         }
-        adsPrimeRestorePilotResources(adsFindActiveRestorePilot());
 #else
         char extractedPath[512];
         snprintf(extractedPath, sizeof(extractedPath), "extracted/ads/%s",
@@ -1255,7 +1572,7 @@ void adsPlay(char *adsName, uint16 adsTag)
                        adsResource->resName, adsResource->uncompressedSize);
             }
         } else {
-            fatalError("ADS data not loaded and extracted file not found - cannot load %s", adsName);
+            fatalError("ADS data not loaded and extracted file not found - cannot load %s", adsNameRef);
         }
 #endif
     }
@@ -1269,22 +1586,35 @@ void adsPlay(char *adsName, uint16 adsTag)
     data = adsResource->uncompressedData;
     dataSize = adsResource->uncompressedSize;
 
-    for (int i=0; i < adsResource->numRes; i++)
-        ttmLoadTtm(&ttmSlots[adsResource->res[i].id], adsResource->res[i].name);
+    for (int i=0; i < adsResource->numRes; i++) {
+        uint16 slotId = adsResource->res[i].id;
+        if (!adsIsValidTtmSlot(slotId)) {
+            unpinResource(adsResource, "ADS");
+            return;
+        }
+        ttmResetSlot(&ttmSlots[slotId]);
+        ttmLoadTtm(&ttmSlots[slotId], adsResource->res[i].name);
+    }
 
 #ifdef PS1_BUILD
     /* If any TTM failed to load, skip this scene gracefully */
     {
         int loadOk = 1;
         for (int i=0; i < adsResource->numRes; i++) {
+            if (!adsIsValidTtmSlot(adsResource->res[i].id)) {
+                loadOk = 0;
+                break;
+            }
             if (ttmSlots[adsResource->res[i].id].data == NULL) {
                 loadOk = 0;
                 break;
             }
         }
         if (!loadOk) {
-            for (int i=0; i < adsResource->numRes; i++)
-                ttmResetSlot(&ttmSlots[adsResource->res[i].id]);
+            for (int i=0; i < adsResource->numRes; i++) {
+                if (adsIsValidTtmSlot(adsResource->res[i].id))
+                    ttmResetSlot(&ttmSlots[adsResource->res[i].id]);
+            }
             unpinResource(adsResource, "ADS");
             return;
         }
@@ -1397,19 +1727,25 @@ void adsPlay(char *adsName, uint16 adsTag)
                 grCurrentThread = &ttmThreads[i];
                 if (grPs1TelemetryEnabled)
                     adsDbgAddU16(&ps1AdsDbgPlayedThreadsFrame, 1);
+                adsDiagTtmDispatch("before", i, &ttmThreads[i]);
 #endif
                 ttmPlay(&ttmThreads[i]);
 #ifdef PS1_BUILD
+                adsDiagTtmDispatch("after", i, &ttmThreads[i]);
                 grCurrentThread = NULL;
                 if (ttmThreads[i].isRunning == ADS_THREAD_TERMINATED) {
                     ttmThreads[i].timer = 0;
-                } else if (!adsUseRestorePilotReplayPolicy()) {
-                    uint8 carried = adsMergeReplayByProximity(&ttmThreads[i],
-                                                              gPrevReplayScratch,
-                                                              prevCount);
-                    adsRecoverMissingActor(&ttmThreads[i], gPrevReplayScratch, prevCount);
-                    if (grPs1TelemetryEnabled)
-                        adsDbgAddU16(&ps1AdsDbgMergeCarryFrame, carried);
+                } else {
+                    if (!adsUseRestorePilotReplayPolicy()) {
+                        uint8 carried = adsMergeReplayByProximity(&ttmThreads[i],
+                                                                  gPrevReplayScratch,
+                                                                  prevCount);
+                        if (grPs1TelemetryEnabled)
+                            adsDbgAddU16(&ps1AdsDbgMergeCarryFrame, carried);
+                    }
+                    if (!adsUseRestorePilotReplayPolicy()) {
+                        adsRecoverMissingActor(&ttmThreads[i], gPrevReplayScratch, prevCount);
+                    }
                 }
                 if (grPs1TelemetryEnabled) {
                     if (ttmThreads[i].numDrawnSprites == 0)
@@ -1522,8 +1858,13 @@ void adsPlay(char *adsName, uint16 adsTag)
 
                 // Process jumps
                 if (ttmThreads[i].nextGotoOffset) {
-                    ttmThreads[i].ip = ttmThreads[i].nextGotoOffset;
-                    ttmThreads[i].nextGotoOffset = 0;
+                    if (ttmThreads[i].nextGotoOffset < ttmThreads[i].ttmSlot->dataSize) {
+                        ttmThreads[i].ip = ttmThreads[i].nextGotoOffset;
+                        ttmThreads[i].nextGotoOffset = 0;
+                    } else {
+                        ttmThreads[i].isRunning = ADS_THREAD_TERMINATED;
+                        ttmThreads[i].nextGotoOffset = 0;
+                    }
                 }
 
                 // Managing the timer which was indicated in ADD_SCENE arg3 (neg. value)
@@ -1545,7 +1886,11 @@ void adsPlay(char *adsName, uint16 adsTag)
                     ttmThreads[i].numDrawnSprites = 0;
                     ttmThreads[i].lastActorReplayValid = 0;
                     ttmThreads[i].ip = ttmFindTag(&ttmSlots[ttmThreads[i].sceneSlot], ttmThreads[i].sceneTag);
-                    ttmThreads[i].timer = 0;
+                    if (ttmThreads[i].sceneTag != 0 && ttmThreads[i].ip == 0) {
+                        adsStopScene(i);
+                    } else {
+                        ttmThreads[i].timer = 0;
+                    }
                 }
 
                 // Is there one (or more) IF_LASTPLAYED matching the terminated thread ?

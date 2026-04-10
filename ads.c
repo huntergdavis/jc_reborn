@@ -218,7 +218,24 @@ static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
             ps1_loadTtmData(ttmResource);
     }
 
+    /* Warm Johnny's sprite sheet first when present. Several island scenes,
+     * including FISHING 1, depend on JOHNWALK being available for the first
+     * in-scene composed frames. */
     for (i = 0; i < pilot->bmpCount; i++) {
+        if (!adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP"))
+            continue;
+
+        {
+            struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
+            if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
+                ps1_loadBmpData(bmpResource);
+        }
+        break;
+    }
+
+    for (i = 0; i < pilot->bmpCount; i++) {
+        if (adsStringEquals(pilot->bmps[i], "JOHNWALK.BMP"))
+            continue;
         struct TBmpResource *bmpResource = findBmpResource((char *)pilot->bmps[i]);
         if (bmpResource != NULL && bmpResource->uncompressedData == NULL)
             ps1_loadBmpData(bmpResource);

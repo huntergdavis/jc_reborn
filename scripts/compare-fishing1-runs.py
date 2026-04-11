@@ -65,6 +65,49 @@ def phase_mismatch_count(a, b, phase):
     return mismatches
 
 
+def estimate_timeline_offset(a, b):
+    phases = a.get("phase_hashes") or {}
+    other_phases = b.get("phase_hashes") or {}
+    candidate_offsets = set()
+    for phase in sorted(set(phases) | set(other_phases)):
+        a_rows = phases.get(phase) or []
+        b_rows = other_phases.get(phase) or []
+        a_by_hash = {}
+        b_by_hash = {}
+        for row in a_rows:
+            a_by_hash.setdefault(row["sha256"], []).append(row["frame"])
+        for row in b_rows:
+            b_by_hash.setdefault(row["sha256"], []).append(row["frame"])
+        for digest in sorted(set(a_by_hash) & set(b_by_hash)):
+            for a_frame in a_by_hash[digest]:
+                for b_frame in b_by_hash[digest]:
+                    candidate_offsets.add(b_frame - a_frame)
+
+    if not candidate_offsets:
+        return {"best_offset": None, "matching_hash_pairs": 0, "offset_candidates": []}
+
+    ranked = []
+    for offset in sorted(candidate_offsets):
+        matches = 0
+        for phase in sorted(set(phases) | set(other_phases)):
+            a_rows = {row["frame"]: row["sha256"] for row in (phases.get(phase) or [])}
+            b_rows = {row["frame"]: row["sha256"] for row in (other_phases.get(phase) or [])}
+            for frame, digest in a_rows.items():
+                if b_rows.get(frame + offset) == digest:
+                    matches += 1
+        ranked.append((offset, matches))
+
+    ranked.sort(key=lambda item: (-item[1], abs(item[0]), item[0]))
+    return {
+        "best_offset": ranked[0][0],
+        "matching_hash_pairs": ranked[0][1],
+        "offset_candidates": [
+            {"offset": offset, "matching_hash_pairs": count}
+            for offset, count in ranked[:10]
+        ],
+    }
+
+
 def main():
     args = parse_args()
     project_root = Path(__file__).resolve().parents[1]
@@ -83,10 +126,12 @@ def main():
 
     deltas = []
     for prev, cur in zip(rows, rows[1:]):
+        offset = estimate_timeline_offset(prev, cur)
         deltas.append(
             {
                 "from": prev["label"],
                 "to": cur["label"],
+                "timeline_offset": offset,
                 "delta_unique_correct_hashes": metric_delta(prev, cur, "unique_correct_hashes"),
                 "delta_unique_shoe_hashes": metric_delta(prev, cur, "unique_shoe_hashes"),
                 "delta_unique_post_correct_pre_shoe_hashes": metric_delta(
@@ -149,7 +194,7 @@ def main():
         print("")
         print(
             "delta_from\tto\tboot_changed\texe_changed\tstartup_from\tstartup_to\tstartup_changed\td_first_visible\td_first_lower_half\td_first_full_height\td_last_partial_height\t"
-            "d_last_black\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
+            "d_last_black\tbest_timeline_offset\toffset_hash_pairs\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
             "m_black\tm_ocean\tm_island\tm_correct\tm_shoe\tm_midgap"
         )
         for delta in deltas:
@@ -159,6 +204,7 @@ def main():
             cur_scene = cur_row.get("scene") or {}
             prev_artifacts = (prev_row.get("build") or {}).get("artifacts") or {}
             cur_artifacts = (cur_row.get("build") or {}).get("artifacts") or {}
+            timeline_offset = delta.get("timeline_offset") or {}
             print(
                 "\t".join(
                     [
@@ -189,6 +235,8 @@ def main():
                             nullable_int((cur_row.get("coverage") or {}).get("last_black_frame"))
                             - nullable_int((prev_row.get("coverage") or {}).get("last_black_frame"))
                         ),
+                        str(timeline_offset.get("best_offset", "")),
+                        str(timeline_offset.get("matching_hash_pairs", 0)),
                         str(metric_delta(prev_row, cur_row, "unique_black_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_ocean_only_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_island_only_hashes")),

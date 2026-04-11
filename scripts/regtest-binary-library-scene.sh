@@ -487,6 +487,17 @@ result = {
         "sequence": entry["sequence"],
         "dir_name": entry["dir_name"],
         "commit": entry["commit"],
+        "artifacts": {
+            "status": entry.get("build", {}).get("status"),
+            "exit_code": entry.get("build", {}).get("exit_code"),
+            "exe_exists": entry.get("build", {}).get("exe_exists"),
+            "exe_size_bytes": entry.get("build", {}).get("exe_size_bytes"),
+            "exe_sha256": entry.get("build", {}).get("exe_sha256"),
+            "iso_exists": entry.get("build", {}).get("iso_exists"),
+            "iso_size_bytes": entry.get("build", {}).get("iso_size_bytes"),
+            "iso_sha256": entry.get("build", {}).get("iso_sha256"),
+            "cd_layout_path": entry.get("build", {}).get("cd_layout_path"),
+        },
         "library_paths": {
             "dir": os.path.join(library_dir, entry["dir_name"]),
             "exe": os.path.join(library_dir, entry["dir_name"], "jcreborn.exe"),

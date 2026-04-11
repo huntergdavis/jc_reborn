@@ -8,6 +8,7 @@ cd "$PROJECT_ROOT"
 OUTPUT_ROOT="${FISHING1_STARTUP_ONSET_OUTPUT:-/tmp/fishing1-startup-earliest-smoke}"
 MAX_CHUNKS="${FISHING1_STARTUP_ONSET_MAX_CHUNKS:-1}"
 ANNOTATIONS="${FISHING1_FULL_REVIEW_ANNOTATIONS:-$PROJECT_ROOT/vision-artifacts/fishing1-full-annotation-review/annotations.json}"
+BOOT_STRING="${FISHING1_STARTUP_ONSET_BOOT_STRING:-}"
 UNTIL_NON_TARGET=0
 UNTIL_SEQ=""
 CONTINUE_REPORT=""
@@ -28,6 +29,7 @@ Options:
                      sequence is at or below N, or until another stop condition
                      is hit.
   --annotations PATH Full-scene fishing annotations.json
+  --boot STRING      Force one BOOTMODE string for every scanned build
   --report PATH      Optional output JSON path summarizing this continuation
                      run. Default: <output>/fishing1-startup-continue.json
   -h, --help         Show this help
@@ -41,6 +43,7 @@ while [ $# -gt 0 ]; do
     --until-non-target) UNTIL_NON_TARGET=1; shift ;;
     --until-seq) UNTIL_SEQ="$2"; shift 2 ;;
     --annotations) ANNOTATIONS="$2"; shift 2 ;;
+    --boot) BOOT_STRING="$2"; shift 2 ;;
     --report) CONTINUE_REPORT="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
@@ -92,11 +95,17 @@ if [ -n "$UNTIL_SEQ" ] && { ! [[ "$UNTIL_SEQ" =~ ^[0-9]+$ ]] || [ "$UNTIL_SEQ" -
 fi
 
 if [ "$UNTIL_NON_TARGET" -eq 0 ]; then
-  bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
-    --output "$OUTPUT_ROOT" \
-    --annotations "$ANNOTATIONS" \
-    --continue-earlier \
+  find_args=(
+    --output "$OUTPUT_ROOT"
+    --annotations "$ANNOTATIONS"
+    --continue-earlier
     --max-chunks "$MAX_CHUNKS"
+  )
+  if [ -n "$BOOT_STRING" ]; then
+    find_args+=(--boot "$BOOT_STRING")
+  fi
+  bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
+    "${find_args[@]}"
   python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" "$CONTINUE_REPORT" "single_step" "$MAX_CHUNKS" "$UNTIL_SEQ" <<'PY'
 import json
 import sys
@@ -149,11 +158,17 @@ chunks_done=0
 loop_stop_reason="max_chunks"
 last_completed_chunk_dir=""
 while [ "$chunks_done" -lt "$MAX_CHUNKS" ]; do
-  bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
-    --output "$OUTPUT_ROOT" \
-    --annotations "$ANNOTATIONS" \
-    --continue-earlier \
+  find_args=(
+    --output "$OUTPUT_ROOT"
+    --annotations "$ANNOTATIONS"
+    --continue-earlier
     --max-chunks 1
+  )
+  if [ -n "$BOOT_STRING" ]; then
+    find_args+=(--boot "$BOOT_STRING")
+  fi
+  bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
+    "${find_args[@]}"
   last_completed_chunk_dir="$(python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" <<'PY'
 import json
 import sys

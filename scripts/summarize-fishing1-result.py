@@ -201,6 +201,8 @@ def main():
     summary = {
         "regime": regime,
         "startup_regime": startup_regime,
+        "scene": payload.get("scene") or {},
+        "build": payload.get("build") or {},
         "result": {
             "start_frame": (payload.get("config") or {}).get("start_frame"),
             "frames": (payload.get("config") or {}).get("frames"),

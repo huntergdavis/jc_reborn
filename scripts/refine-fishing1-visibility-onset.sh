@@ -11,6 +11,7 @@ ANNOTATIONS="${FISHING1_FULL_REVIEW_ANNOTATIONS:-$PROJECT_ROOT/vision-artifacts/
 MIN_FIRST_VISIBLE=""
 MIN_FIRST_FULL_HEIGHT=""
 BOOT_STRING=""
+EPOCH_INDEX=""
 
 usage() {
   cat <<'USAGE'
@@ -24,6 +25,7 @@ Options:
   --output DIR               Output directory for the refined scan
   --annotations PATH         Full-scene fishing annotations.json
   --boot STRING              Force one BOOTMODE string for every scanned build
+  --epoch-index N            Restrict the refined run to one binary-library epoch
   --min-first-visible N      Override onset target first_visible threshold
   --min-first-full-height N  Override onset target first_full_height threshold
   -h, --help                 Show this help
@@ -36,6 +38,7 @@ while [ $# -gt 0 ]; do
     --output) OUTPUT_ROOT="$2"; shift 2 ;;
     --annotations) ANNOTATIONS="$2"; shift 2 ;;
     --boot) BOOT_STRING="$2"; shift 2 ;;
+    --epoch-index) EPOCH_INDEX="$2"; shift 2 ;;
     --min-first-visible) MIN_FIRST_VISIBLE="$2"; shift 2 ;;
     --min-first-full-height) MIN_FIRST_FULL_HEIGHT="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
@@ -57,7 +60,7 @@ if [ ! -f "$ANNOTATIONS" ]; then
   exit 1
 fi
 
-read -r start_seq end_seq min_first_visible min_first_full_height boot_from_report < <(
+IFS=$'\x1f' read -r start_seq end_seq min_first_visible min_first_full_height boot_from_report epoch_from_report < <(
   python3 - "$ONSET_JSON" <<'PY'
 import json
 import re
@@ -69,6 +72,7 @@ payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 earliest_dir = payload.get("earliest_target_chunk_dir") or ""
 non_target_dir = payload.get("first_non_target_before_earliest_chunk_dir") or ""
 thresholds = payload.get("target_visibility_thresholds") or {}
+epoch_index = payload.get("epoch_index")
 boot_string = ""
 first_target = payload.get("first_target") or {}
 target_result = first_target.get("result_json")
@@ -93,11 +97,12 @@ if non_target_range is not None:
     end_seq = non_target_range[0]
 
 print(
-    start_seq,
-    end_seq,
-    int(thresholds.get("min_first_visible", 1200)),
-    int(thresholds.get("min_first_full_height", 1200)),
-    boot_string,
+    f"{start_seq}\x1f"
+    f"{end_seq}\x1f"
+    f"{int(thresholds.get('min_first_visible', 1200))}\x1f"
+    f"{int(thresholds.get('min_first_full_height', 1200))}\x1f"
+    f"{boot_string}\x1f"
+    f"{'' if epoch_index is None else int(epoch_index)}"
 )
 PY
 )
@@ -110,6 +115,9 @@ if [ -z "$MIN_FIRST_FULL_HEIGHT" ]; then
 fi
 if [ -z "$BOOT_STRING" ]; then
   BOOT_STRING="$boot_from_report"
+fi
+if [ -z "$EPOCH_INDEX" ]; then
+  EPOCH_INDEX="$epoch_from_report"
 fi
 
 mkdir -p "$OUTPUT_ROOT"
@@ -127,6 +135,9 @@ args=(
 
 if [ -n "$BOOT_STRING" ]; then
   args+=(--boot "$BOOT_STRING")
+fi
+if [ -n "$EPOCH_INDEX" ]; then
+  args+=(--epoch-index "$EPOCH_INDEX")
 fi
 
 bash "$SCRIPT_DIR/find-fishing1-visibility-onset.sh" "${args[@]}"

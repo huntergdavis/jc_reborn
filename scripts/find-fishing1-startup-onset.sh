@@ -258,6 +258,7 @@ done
 
 python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" <<'PY'
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -272,6 +273,15 @@ last_non_target_report = sys.argv[8]
 last_non_target_chunk_dir = sys.argv[9]
 continue_through_targets = sys.argv[10] == "1"
 
+
+def chunk_start_seq(path_str):
+    if not path_str:
+        return None
+    match = re.search(r"seq_(\d+)_to_(\d+)", path_str)
+    if not match:
+        return None
+    return int(match.group(1))
+
 report = {
     "output_root": str(output_root),
     "target_startup_regime": target_regime,
@@ -285,9 +295,14 @@ report = {
     "onset_boundary_report": found_report or None,
     "earliest_target_boundary_report": earliest_target_report or None,
     "earliest_target_chunk_dir": earliest_target_chunk_dir or None,
+    "earliest_target_sequence": chunk_start_seq(earliest_target_chunk_dir),
+    "next_continue_start_seq": None,
     "first_non_target_before_earliest_report": last_non_target_report or None,
     "first_non_target_before_earliest_chunk_dir": last_non_target_chunk_dir or None,
 }
+
+if report["earliest_target_sequence"] is not None and report["earliest_target_sequence"] > end_seq:
+    report["next_continue_start_seq"] = report["earliest_target_sequence"] - 1
 
 if earliest_target_report:
     payload = json.loads(Path(earliest_target_report).read_text(encoding="utf-8"))

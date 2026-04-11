@@ -113,7 +113,8 @@ fi
 # ---------------------------------------------------------------------------
 # Setup worktree (sparse — only source files, not 12GB of regtest BMPs)
 # ---------------------------------------------------------------------------
-WORKTREE="/tmp/jc_reborn_binlib_$$"
+TMP_ROOT="${TMPDIR:-/tmp}"
+WORKTREE="$TMP_ROOT/jc_reborn_binlib_$$"
 cleanup_worktree() {
     echo "Cleaning up worktree..."
     # Docker creates root-owned files in build-ps1/; fix ownership first

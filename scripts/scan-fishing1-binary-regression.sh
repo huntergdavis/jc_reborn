@@ -18,7 +18,11 @@ EXACT_END_SEQ=""
 DIR_NAMES=()
 SKIPPED_NAMES=()
 BOUNDARY_STARTUP_REGIME=""
+BOUNDARY_MIN_FIRST_VISIBLE=""
+BOUNDARY_MIN_FIRST_FULL_HEIGHT=""
 STOP_AFTER_FIRST_STARTUP_REGIME=""
+STOP_AFTER_MIN_FIRST_VISIBLE=""
+STOP_AFTER_MIN_FIRST_FULL_HEIGHT=""
 
 usage() {
   cat <<'USAGE'
@@ -45,9 +49,19 @@ Options:
   --boundary-startup-regime NAME
                        Also write a startup-regime boundary report using
                        find-fishing1-regression-boundary.py
+  --boundary-min-first-visible N
+                       Also write a first-visible threshold boundary report
+  --boundary-min-first-full-height N
+                       Also write a first-full-height threshold boundary report
   --stop-after-first-startup-regime NAME
                        Stop the exact dir-name scan once the summary first
                        reaches the requested startup regime.
+  --stop-after-min-first-visible N
+                       Stop the exact dir-name scan once a row first reaches
+                       first_visible >= N.
+  --stop-after-min-first-full-height N
+                       Stop the exact dir-name scan once a row first reaches
+                       first_full_height_visible >= N.
   -h, --help           Show this help
 USAGE
 }
@@ -66,7 +80,11 @@ while [ $# -gt 0 ]; do
     --dir-name) DIR_NAMES+=("$2"); shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
     --boundary-startup-regime) BOUNDARY_STARTUP_REGIME="$2"; shift 2 ;;
+    --boundary-min-first-visible) BOUNDARY_MIN_FIRST_VISIBLE="$2"; shift 2 ;;
+    --boundary-min-first-full-height) BOUNDARY_MIN_FIRST_FULL_HEIGHT="$2"; shift 2 ;;
     --stop-after-first-startup-regime) STOP_AFTER_FIRST_STARTUP_REGIME="$2"; shift 2 ;;
+    --stop-after-min-first-visible) STOP_AFTER_MIN_FIRST_VISIBLE="$2"; shift 2 ;;
+    --stop-after-min-first-full-height) STOP_AFTER_MIN_FIRST_FULL_HEIGHT="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -91,6 +109,12 @@ refresh_reports() {
   done
   if [ -n "$BOUNDARY_STARTUP_REGIME" ]; then
     extra+=(--boundary-startup-regime "$BOUNDARY_STARTUP_REGIME")
+  fi
+  if [ -n "$BOUNDARY_MIN_FIRST_VISIBLE" ]; then
+    extra+=(--boundary-min-first-visible "$BOUNDARY_MIN_FIRST_VISIBLE")
+  fi
+  if [ -n "$BOUNDARY_MIN_FIRST_FULL_HEIGHT" ]; then
+    extra+=(--boundary-min-first-full-height "$BOUNDARY_MIN_FIRST_FULL_HEIGHT")
   fi
   python3 "$PROJECT_ROOT/scripts/summarize-fishing1-scan-output.py" \
     --output-root "$OUTPUT_ROOT" \
@@ -126,6 +150,33 @@ payload = json.loads(summary_path.read_text(encoding="utf-8"))
 for row in payload.get("rows") or []:
     if row.get("startup_regime") == target:
         raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
+visibility_threshold_seen() {
+  python3 - "$OUTPUT_ROOT/fishing1-binary-regression-summary.json" "$1" "$2" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+summary_path = Path(sys.argv[1])
+min_first_visible = int(sys.argv[2]) if sys.argv[2] else None
+min_first_full_height = int(sys.argv[3]) if sys.argv[3] else None
+if not summary_path.exists():
+    raise SystemExit(1)
+payload = json.loads(summary_path.read_text(encoding="utf-8"))
+for row in payload.get("rows") or []:
+    cov = row.get("coverage") or {}
+    first_visible = cov.get("first_visible_frame")
+    first_full_height = cov.get("first_full_height_visible_frame")
+    if min_first_visible is not None:
+        if first_visible is None or first_visible < min_first_visible:
+            continue
+    if min_first_full_height is not None:
+        if first_full_height is None or first_full_height < min_first_full_height:
+            continue
+    raise SystemExit(0)
 raise SystemExit(1)
 PY
 }
@@ -178,6 +229,11 @@ if [ "${#DIR_NAMES[@]}" -gt 0 ]; then
     refresh_reports >/dev/null
     if [ -n "$STOP_AFTER_FIRST_STARTUP_REGIME" ] && startup_regime_seen "$STOP_AFTER_FIRST_STARTUP_REGIME"; then
       echo "STOP: found startup regime $STOP_AFTER_FIRST_STARTUP_REGIME" >&2
+      break
+    fi
+    if { [ -n "$STOP_AFTER_MIN_FIRST_VISIBLE" ] || [ -n "$STOP_AFTER_MIN_FIRST_FULL_HEIGHT" ]; } &&
+       visibility_threshold_seen "$STOP_AFTER_MIN_FIRST_VISIBLE" "$STOP_AFTER_MIN_FIRST_FULL_HEIGHT"; then
+      echo "STOP: reached visibility threshold first_visible>=$STOP_AFTER_MIN_FIRST_VISIBLE first_full_height>=$STOP_AFTER_MIN_FIRST_FULL_HEIGHT" >&2
       break
     fi
   done

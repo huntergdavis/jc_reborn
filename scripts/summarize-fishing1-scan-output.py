@@ -24,6 +24,16 @@ def parse_args():
         "--boundary-startup-regime",
         help="Optional startup regime to resolve into fishing1-startup-boundary.json",
     )
+    parser.add_argument(
+        "--boundary-min-first-visible",
+        type=int,
+        help="Optional first-visible threshold to resolve into fishing1-visibility-boundary.json",
+    )
+    parser.add_argument(
+        "--boundary-min-first-full-height",
+        type=int,
+        help="Optional first-full-height threshold to resolve into fishing1-visibility-boundary.json",
+    )
     return parser.parse_args()
 
 
@@ -98,6 +108,19 @@ def write_boundary(project_root: Path, summary_path: Path, startup_regime: str):
     return boundary_path
 
 
+def write_visibility_boundary(project_root: Path, summary_path: Path, min_first_visible, min_first_full_height):
+    boundary_path = summary_path.with_name("fishing1-visibility-boundary.json")
+    finder = project_root / "scripts" / "find-fishing1-regression-boundary.py"
+    cmd = ["python3", str(finder), "--summary-json", str(summary_path)]
+    if min_first_visible is not None:
+        cmd.extend(["--min-first-visible", str(min_first_visible)])
+    if min_first_full_height is not None:
+        cmd.extend(["--min-first-full-height", str(min_first_full_height)])
+    with boundary_path.open("w", encoding="utf-8") as handle:
+        subprocess.run(cmd, check=True, text=True, stdout=handle)
+    return boundary_path
+
+
 def main():
     args = parse_args()
     project_root = Path(__file__).resolve().parent.parent
@@ -109,6 +132,15 @@ def main():
     print(write_startup_tsv(summary_path, rows))
     if args.boundary_startup_regime:
         print(write_boundary(project_root, summary_path, args.boundary_startup_regime))
+    if args.boundary_min_first_visible is not None or args.boundary_min_first_full_height is not None:
+        print(
+            write_visibility_boundary(
+                project_root,
+                summary_path,
+                args.boundary_min_first_visible,
+                args.boundary_min_first_full_height,
+            )
+        )
 
 
 if __name__ == "__main__":

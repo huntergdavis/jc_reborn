@@ -47,7 +47,7 @@ if int(config.get("frames", -1)) != expected_frames:
     raise SystemExit(1)
 if int(config.get("interval", -1)) != expected_interval:
     raise SystemExit(1)
-if scene.get("boot_string") != "story scene 17 seed 1":
+if scene.get("boot_string") != "story single 17 seed 1":
     raise SystemExit(1)
 PY
 }

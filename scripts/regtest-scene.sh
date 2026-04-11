@@ -150,7 +150,7 @@ normalize_scene_boot_string() {
     if [ "$ads_name" = "FISHING" ] && [ "$scene_tag" = "1" ] &&
        [ "$scene_index" = "17" ] &&
        [ "$boot_string" = "island ads FISHING.ADS 1" ]; then
-        printf '%s\n' "story scene 17"
+        printf '%s\n' "story single 17"
         return
     fi
 

@@ -385,7 +385,7 @@ static void ps1LoadBootOverride(void)
 
 /* Load and display title screen from raw file on CD */
 /* This runs BEFORE resource parsing for instant visual feedback */
-static void loadTitleScreenEarly(void)
+static void initTitleDisplayEarly(void)
 {
     /* Initialize graphics for 640x480 interlaced */
     ResetGraph(0);
@@ -404,6 +404,11 @@ static void loadTitleScreenEarly(void)
 
     /* Enable display */
     SetDispMask(1);
+}
+
+static void loadTitleScreenEarly(void)
+{
+    initTitleDisplayEarly();
 
     /* Allocate buffer for full title screen (640x480 x 2 bytes = 614400) */
     int totalBytes = 640 * 480 * 2;  /* 614400 bytes */
@@ -753,16 +758,16 @@ int main(int argc, char **argv)
     /* Load boot override BEFORE seeding RNG so "seed N" can override. */
     ps1LoadBootOverride();
 
-    /* For normal interactive boots, show the title screen before loading
-     * resources. For scripted/headless boots, skip it so direct scene
-     * captures start at the requested scene instead of burning hundreds of
-     * frames on startup/title artwork. */
+    /* Keep the early PS1 display init for scripted story boots, but only
+     * show the actual title artwork for normal interactive boots. */
     if (ps1BootDirectSceneIndex < 0 &&
-        !storyHasBootOverridePending() &&
         !argBench &&
         !argTtm &&
         !argAds) {
-        loadTitleScreenEarly();
+        if (storyHasBootOverridePending())
+            initTitleDisplayEarly();
+        else
+            loadTitleScreenEarly();
     }
 
     /* Parse resource files from CD - needed for background and sprites */

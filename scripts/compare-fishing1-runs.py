@@ -112,16 +112,21 @@ def main():
         out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
 
     print(
-        "label\tregime\tstartup_regime\tfirst_visible\tfirst_lower_half\tfirst_full_height\tlast_partial_height\tlast_black\t"
+        "label\tboot_string\texe_sha256\tregime\tstartup_regime\tfirst_visible\tfirst_lower_half\tfirst_full_height\tlast_partial_height\tlast_black\t"
         "black\tocean\tisland\tcorrect\tshoe\tmidgap\tstate_hash"
     )
     for row in rows:
         cov = row.get("coverage") or {}
         result = row.get("result") or {}
+        scene = row.get("scene") or {}
+        build = row.get("build") or {}
+        artifacts = build.get("artifacts") or {}
         print(
             "\t".join(
                 [
                     row["label"],
+                    str(scene.get("boot_string", "")),
+                    str(artifacts.get("exe_sha256", "")),
                     row.get("regime", ""),
                     row.get("startup_regime", ""),
                     str(cov.get("first_visible_frame", "")),
@@ -143,18 +148,24 @@ def main():
     if deltas:
         print("")
         print(
-            "delta_from\tto\tstartup_from\tstartup_to\tstartup_changed\td_first_visible\td_first_lower_half\td_first_full_height\td_last_partial_height\t"
+            "delta_from\tto\tboot_changed\texe_changed\tstartup_from\tstartup_to\tstartup_changed\td_first_visible\td_first_lower_half\td_first_full_height\td_last_partial_height\t"
             "d_last_black\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
             "m_black\tm_ocean\tm_island\tm_correct\tm_shoe\tm_midgap"
         )
         for delta in deltas:
             prev_row = next(row for row in rows if row["label"] == delta["from"])
             cur_row = next(row for row in rows if row["label"] == delta["to"])
+            prev_scene = prev_row.get("scene") or {}
+            cur_scene = cur_row.get("scene") or {}
+            prev_artifacts = (prev_row.get("build") or {}).get("artifacts") or {}
+            cur_artifacts = (cur_row.get("build") or {}).get("artifacts") or {}
             print(
                 "\t".join(
                     [
                         delta["from"],
                         delta["to"],
+                        "1" if prev_scene.get("boot_string") != cur_scene.get("boot_string") else "0",
+                        "1" if prev_artifacts.get("exe_sha256") != cur_artifacts.get("exe_sha256") else "0",
                         prev_row.get("startup_regime", ""),
                         cur_row.get("startup_regime", ""),
                         "1" if prev_row.get("startup_regime") != cur_row.get("startup_regime") else "0",

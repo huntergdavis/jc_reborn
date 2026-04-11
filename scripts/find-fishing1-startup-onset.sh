@@ -320,6 +320,9 @@ report = {
 if report["earliest_target_sequence"] is not None and report["earliest_target_sequence"] > end_seq:
     report["next_continue_start_seq"] = report["earliest_target_sequence"] - 1
 
+if report["first_non_target_before_earliest_report"]:
+    report["next_continue_start_seq"] = None
+
 if earliest_target_report:
     payload = json.loads(Path(earliest_target_report).read_text(encoding="utf-8"))
     report["last_before_target"] = payload.get("last_before_target")

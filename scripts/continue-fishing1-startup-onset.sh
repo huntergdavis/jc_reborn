@@ -63,6 +63,7 @@ import sys
 from pathlib import Path
 
 onset = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+first_target = onset.get("first_target") or {}
 report = {
     "mode": "until_non_target",
     "requested_max_chunks": int(sys.argv[4]),
@@ -72,6 +73,8 @@ report = {
     "onset_stopped_reason": onset.get("stopped_reason"),
     "chunks_scanned_this_run": int(sys.argv[6]),
     "earliest_target_sequence": onset.get("earliest_target_sequence"),
+    "first_target_state_hash": onset.get("first_target_state_hash") or first_target.get("state_hash"),
+    "first_target_result_json": onset.get("first_target_result_json") or first_target.get("result_json"),
     "next_continue_start_seq": onset.get("next_continue_start_seq"),
     "first_non_target_before_earliest_report": onset.get("first_non_target_before_earliest_report"),
     "onset_report": str(Path(sys.argv[1]).resolve()),
@@ -100,6 +103,7 @@ import sys
 from pathlib import Path
 
 onset = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+first_target = onset.get("first_target") or {}
 report = {
     "mode": sys.argv[3],
     "requested_max_chunks": int(sys.argv[4]),
@@ -108,6 +112,8 @@ report = {
     "report_state": "final",
     "chunks_scanned_this_run": onset.get("chunks_scanned_this_run"),
     "earliest_target_sequence": onset.get("earliest_target_sequence"),
+    "first_target_state_hash": onset.get("first_target_state_hash") or first_target.get("state_hash"),
+    "first_target_result_json": onset.get("first_target_result_json") or first_target.get("result_json"),
     "next_continue_start_seq": onset.get("next_continue_start_seq"),
     "first_non_target_before_earliest_report": onset.get("first_non_target_before_earliest_report"),
     "onset_report": str(Path(sys.argv[1]).resolve()),

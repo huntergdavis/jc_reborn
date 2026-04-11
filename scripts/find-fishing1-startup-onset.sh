@@ -324,9 +324,13 @@ if earliest_target_report:
     payload = json.loads(Path(earliest_target_report).read_text(encoding="utf-8"))
     report["last_before_target"] = payload.get("last_before_target")
     report["first_target"] = payload.get("first_target")
+    report["first_target_state_hash"] = (payload.get("first_target") or {}).get("state_hash")
+    report["first_target_result_json"] = (payload.get("first_target") or {}).get("result_json")
 else:
     report["last_before_target"] = None
     report["first_target"] = None
+    report["first_target_state_hash"] = None
+    report["first_target_result_json"] = None
 
 out_path = output_root / "fishing1-startup-onset.json"
 out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

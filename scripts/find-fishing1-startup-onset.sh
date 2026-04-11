@@ -9,6 +9,7 @@ ANNOTATIONS="${FISHING1_FULL_REVIEW_ANNOTATIONS:-$PROJECT_ROOT/vision-artifacts/
 OUTPUT_ROOT="${FISHING1_STARTUP_ONSET_OUTPUT:-$PROJECT_ROOT/tmp-regtests/fishing1-startup-onset}"
 TARGET_STARTUP_REGIME="top_only_then_full_height_startup"
 CHUNK_SIZE="${FISHING1_STARTUP_ONSET_CHUNK_SIZE:-10}"
+BOOT_STRING="${FISHING1_STARTUP_ONSET_BOOT_STRING:-}"
 START_SEQ=""
 END_SEQ=""
 START_SEQ_EXPLICIT=0
@@ -30,6 +31,7 @@ Options:
   --annotations PATH   Full-scene fishing annotations.json
   --output DIR         Output root for chunk scans and onset report
   --target-regime STR  Startup regime to search for
+  --boot STRING        Force one BOOTMODE string for every scanned build
   --chunk-size N       Exact sequence width per scan chunk (default: 10)
   --start-seq N        Highest sequence to begin scanning from
   --end-seq N          Lowest sequence to include before stopping
@@ -54,6 +56,7 @@ while [ $# -gt 0 ]; do
     --annotations) ANNOTATIONS="$2"; shift 2 ;;
     --output) OUTPUT_ROOT="$2"; shift 2 ;;
     --target-regime) TARGET_STARTUP_REGIME="$2"; shift 2 ;;
+    --boot) BOOT_STRING="$2"; shift 2 ;;
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; START_SEQ_EXPLICIT=1; shift 2 ;;
     --end-seq) END_SEQ="$2"; END_SEQ_EXPLICIT=1; shift 2 ;;
@@ -365,6 +368,10 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
     :
   else
     rm -rf "$chunk_dir"
+    scan_args=()
+    if [ -n "$BOOT_STRING" ]; then
+      scan_args+=(--boot "$BOOT_STRING")
+    fi
     bash "$SCRIPT_DIR/scan-fishing1-binary-regression.sh" \
       --output "$chunk_dir" \
       --annotations "$ANNOTATIONS" \
@@ -372,7 +379,8 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
       --exact-end-seq "$current_high" \
       --reverse-exact \
       --boundary-startup-regime "$TARGET_STARTUP_REGIME" \
-      --stop-after-first-startup-regime "$TARGET_STARTUP_REGIME"
+      --stop-after-first-startup-regime "$TARGET_STARTUP_REGIME" \
+      "${scan_args[@]}"
   fi
 
   if python3 - "$boundary_path" <<'PY'

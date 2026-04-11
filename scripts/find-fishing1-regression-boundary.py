@@ -21,6 +21,22 @@ def parse_args():
             "build before that regime and the first build in that regime."
         ),
     )
+    parser.add_argument(
+        "--min-first-visible",
+        type=int,
+        help=(
+            "Optional first-visible threshold. When set, report the last build "
+            "below this value and the first build at or above it."
+        ),
+    )
+    parser.add_argument(
+        "--min-first-full-height",
+        type=int,
+        help=(
+            "Optional first-full-height threshold. When set, report the last "
+            "build below this value and the first build at or above it."
+        ),
+    )
     parser.add_argument("--min-correct", type=int, default=11, help="Minimum unique correct hashes for healthy")
     parser.add_argument("--min-shoe", type=int, default=2, help="Minimum unique shoe hashes for healthy")
     parser.add_argument("--min-midgap", type=int, default=5, help="Minimum unique post-correct-pre-shoe hashes for healthy")
@@ -73,6 +89,20 @@ def infer_startup_regime(row):
     return "top_only_then_full_height_startup"
 
 
+def reaches_visibility_target(row, args):
+    cov = row.get("coverage") or {}
+    first_visible = cov.get("first_visible_frame")
+    first_full_height = cov.get("first_full_height_visible_frame")
+
+    if args.min_first_visible is not None:
+        if first_visible is None or first_visible < args.min_first_visible:
+            return False
+    if args.min_first_full_height is not None:
+        if first_full_height is None or first_full_height < args.min_first_full_height:
+            return False
+    return args.min_first_visible is not None or args.min_first_full_height is not None
+
+
 def compact(row):
     cov = row.get("coverage") or {}
     result = row.get("result") or {}
@@ -113,6 +143,27 @@ def main():
         report = {
             "summary_json": str(Path(args.summary_json).resolve()),
             "startup_regime": args.startup_regime,
+            "last_before_target": compact(last_before_target) if last_before_target else None,
+            "first_target": compact(first_target) if first_target else None,
+        }
+        print(json.dumps(report, indent=2))
+        return
+
+    if args.min_first_visible is not None or args.min_first_full_height is not None:
+        last_before_target = None
+        first_target = None
+        for row in rows:
+            if reaches_visibility_target(row, args):
+                first_target = row
+                break
+            last_before_target = row
+
+        report = {
+            "summary_json": str(Path(args.summary_json).resolve()),
+            "visibility_thresholds": {
+                "min_first_visible": args.min_first_visible,
+                "min_first_full_height": args.min_first_full_height,
+            },
             "last_before_target": compact(last_before_target) if last_before_target else None,
             "first_target": compact(first_target) if first_target else None,
         }

@@ -11,6 +11,7 @@ CHUNK_SIZE="${FISHING1_VISIBILITY_ONSET_CHUNK_SIZE:-10}"
 MIN_FIRST_VISIBLE="${FISHING1_VISIBILITY_ONSET_MIN_FIRST_VISIBLE:-1200}"
 MIN_FIRST_FULL_HEIGHT="${FISHING1_VISIBILITY_ONSET_MIN_FIRST_FULL_HEIGHT:-1200}"
 BOOT_STRING="${FISHING1_VISIBILITY_ONSET_BOOT_STRING:-}"
+EPOCH_INDEX="${FISHING1_VISIBILITY_ONSET_EPOCH_INDEX:-}"
 START_SEQ=""
 END_SEQ=""
 START_SEQ_EXPLICIT=0
@@ -36,6 +37,7 @@ Options:
                            Search target for first_full_height_visible >= N
                            (default: 1200)
   --boot STRING            Force one BOOTMODE string for every scanned build
+  --epoch-index N          Restrict the onset walk to one binary-library epoch
   --chunk-size N           Exact sequence width per scan chunk (default: 10)
   --start-seq N            Highest sequence to begin scanning from
   --end-seq N              Lowest sequence to include before stopping
@@ -63,6 +65,7 @@ while [ $# -gt 0 ]; do
     --min-first-visible) MIN_FIRST_VISIBLE="$2"; shift 2 ;;
     --min-first-full-height) MIN_FIRST_FULL_HEIGHT="$2"; shift 2 ;;
     --boot) BOOT_STRING="$2"; shift 2 ;;
+    --epoch-index) EPOCH_INDEX="$2"; shift 2 ;;
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; START_SEQ_EXPLICIT=1; shift 2 ;;
     --end-seq) END_SEQ="$2"; END_SEQ_EXPLICIT=1; shift 2 ;;
@@ -89,6 +92,10 @@ if ! [[ "$MIN_FIRST_VISIBLE" =~ ^[0-9]+$ ]] || [ "$MIN_FIRST_VISIBLE" -lt 0 ]; t
   echo "ERROR: --min-first-visible must be a non-negative integer" >&2
   exit 1
 fi
+if [ -n "$EPOCH_INDEX" ] && { ! [[ "$EPOCH_INDEX" =~ ^[0-9]+$ ]] || [ "$EPOCH_INDEX" -le 0 ]; }; then
+  echo "ERROR: --epoch-index must be a positive integer" >&2
+  exit 1
+fi
 if ! [[ "$MIN_FIRST_FULL_HEIGHT" =~ ^[0-9]+$ ]] || [ "$MIN_FIRST_FULL_HEIGHT" -lt 0 ]; then
   echo "ERROR: --min-first-full-height must be a non-negative integer" >&2
   exit 1
@@ -98,15 +105,45 @@ if [ -n "$MAX_CHUNKS" ] && { ! [[ "$MAX_CHUNKS" =~ ^[0-9]+$ ]] || [ "$MAX_CHUNKS
   exit 1
 fi
 
-readarray -t SUCCESS_SEQS < <(python3 - <<'PY'
+readarray -t SUCCESS_SEQS < <(python3 - "$EPOCH_INDEX" <<'PY'
 import json
+import sys
 from pathlib import Path
 
 entries = json.loads(Path("binary-library/index.json").read_text(encoding="utf-8"))
-seqs = sorted({entry.get("sequence") for entry in entries if (entry.get("build") or {}).get("status") == "success"})
+epoch_index = int(sys.argv[1]) if sys.argv[1] else None
+rows = []
+for entry in entries:
+    if (entry.get("build") or {}).get("status") != "success":
+        continue
+    seq = entry.get("sequence")
+    commit = entry.get("commit") or {}
+    commit_date = commit.get("date") or ""
+    if not isinstance(seq, int) or not commit_date:
+        continue
+    rows.append((commit_date, entry.get("dir_name") or "", seq))
+rows.sort()
+
+epochs = []
+current = []
+last_seq = None
+for _, _, seq in rows:
+    if last_seq is not None and seq <= last_seq:
+        epochs.append(current)
+        current = []
+    current.append(seq)
+    last_seq = seq
+if current:
+    epochs.append(current)
+
+if epoch_index is not None:
+    if epoch_index < 1 or epoch_index > len(epochs):
+        raise SystemExit(f"ERROR: --epoch-index {epoch_index} outside 1..{len(epochs)}")
+    seqs = sorted(set(epochs[epoch_index - 1]))
+else:
+    seqs = sorted({seq for _, _, seq in rows})
 for seq in seqs:
-    if isinstance(seq, int):
-        print(seq)
+    print(seq)
 PY
 )
 
@@ -193,7 +230,7 @@ PY
 }
 
 write_report() {
-  python3 - "$OUTPUT_ROOT" "$MIN_FIRST_VISIBLE" "$MIN_FIRST_FULL_HEIGHT" "$START_SEQ" "$END_SEQ" "$1" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" "$2" "$3" <<'PY'
+  python3 - "$OUTPUT_ROOT" "$MIN_FIRST_VISIBLE" "$MIN_FIRST_FULL_HEIGHT" "$START_SEQ" "$END_SEQ" "$1" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" "$2" "$3" "$EPOCH_INDEX" <<'PY'
 import json
 import re
 import sys
@@ -211,6 +248,7 @@ max_chunks = int(sys.argv[9]) if sys.argv[9] else None
 continue_earlier = sys.argv[10] == "1"
 chunks_scanned = int(sys.argv[11])
 last_boundary_report = sys.argv[12] or None
+epoch_index = int(sys.argv[13]) if sys.argv[13] else None
 
 def extract_sequence(value):
     if not value:
@@ -247,6 +285,7 @@ report = {
         "min_first_visible": min_first_visible,
         "min_first_full_height": min_first_full_height,
     },
+    "epoch_index": epoch_index,
     "start_seq": start_seq,
     "end_seq": end_seq,
     "continue_through_targets": continue_through_targets,
@@ -328,6 +367,9 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
     scan_args=()
     if [ -n "$BOOT_STRING" ]; then
       scan_args+=(--boot "$BOOT_STRING")
+    fi
+    if [ -n "$EPOCH_INDEX" ]; then
+      scan_args+=(--epoch-index "$EPOCH_INDEX")
     fi
     bash "$SCRIPT_DIR/scan-fishing1-binary-regression.sh" \
       --output "$chunk_dir" \

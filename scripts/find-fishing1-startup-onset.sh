@@ -10,6 +10,7 @@ OUTPUT_ROOT="${FISHING1_STARTUP_ONSET_OUTPUT:-$PROJECT_ROOT/tmp-regtests/fishing
 TARGET_STARTUP_REGIME="top_only_then_full_height_startup"
 CHUNK_SIZE="${FISHING1_STARTUP_ONSET_CHUNK_SIZE:-10}"
 BOOT_STRING="${FISHING1_STARTUP_ONSET_BOOT_STRING:-}"
+EPOCH_INDEX="${FISHING1_STARTUP_ONSET_EPOCH_INDEX:-}"
 START_SEQ=""
 END_SEQ=""
 START_SEQ_EXPLICIT=0
@@ -32,6 +33,7 @@ Options:
   --output DIR         Output root for chunk scans and onset report
   --target-regime STR  Startup regime to search for
   --boot STRING        Force one BOOTMODE string for every scanned build
+  --epoch-index N      Restrict the onset walk to one binary-library epoch
   --chunk-size N       Exact sequence width per scan chunk (default: 10)
   --start-seq N        Highest sequence to begin scanning from
   --end-seq N          Lowest sequence to include before stopping
@@ -57,6 +59,7 @@ while [ $# -gt 0 ]; do
     --output) OUTPUT_ROOT="$2"; shift 2 ;;
     --target-regime) TARGET_STARTUP_REGIME="$2"; shift 2 ;;
     --boot) BOOT_STRING="$2"; shift 2 ;;
+    --epoch-index) EPOCH_INDEX="$2"; shift 2 ;;
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; START_SEQ_EXPLICIT=1; shift 2 ;;
     --end-seq) END_SEQ="$2"; END_SEQ_EXPLICIT=1; shift 2 ;;
@@ -79,20 +82,54 @@ if ! [[ "$CHUNK_SIZE" =~ ^[0-9]+$ ]] || [ "$CHUNK_SIZE" -le 0 ]; then
   echo "ERROR: --chunk-size must be a positive integer" >&2
   exit 1
 fi
+if [ -n "$EPOCH_INDEX" ] && { ! [[ "$EPOCH_INDEX" =~ ^[0-9]+$ ]] || [ "$EPOCH_INDEX" -le 0 ]; }; then
+  echo "ERROR: --epoch-index must be a positive integer" >&2
+  exit 1
+fi
 if [ -n "$MAX_CHUNKS" ] && { ! [[ "$MAX_CHUNKS" =~ ^[0-9]+$ ]] || [ "$MAX_CHUNKS" -le 0 ]; }; then
   echo "ERROR: --max-chunks must be a positive integer" >&2
   exit 1
 fi
 
-readarray -t SUCCESS_SEQS < <(python3 - <<'PY'
+readarray -t SUCCESS_SEQS < <(python3 - "$EPOCH_INDEX" <<'PY'
 import json
+import sys
 from pathlib import Path
 
 entries = json.loads(Path("binary-library/index.json").read_text(encoding="utf-8"))
-seqs = sorted({entry.get("sequence") for entry in entries if (entry.get("build") or {}).get("status") == "success"})
+epoch_index = int(sys.argv[1]) if sys.argv[1] else None
+rows = []
+for entry in entries:
+    if (entry.get("build") or {}).get("status") != "success":
+        continue
+    seq = entry.get("sequence")
+    commit = entry.get("commit") or {}
+    commit_date = commit.get("date") or ""
+    if not isinstance(seq, int) or not commit_date:
+        continue
+    rows.append((commit_date, entry.get("dir_name") or "", seq))
+rows.sort()
+
+epochs = []
+current = []
+last_seq = None
+for _, _, seq in rows:
+    if last_seq is not None and seq <= last_seq:
+        epochs.append(current)
+        current = []
+    current.append(seq)
+    last_seq = seq
+if current:
+    epochs.append(current)
+
+if epoch_index is not None:
+    if epoch_index < 1 or epoch_index > len(epochs):
+        raise SystemExit(f"ERROR: --epoch-index {epoch_index} outside 1..{len(epochs)}")
+    seqs = sorted(set(epochs[epoch_index - 1]))
+else:
+    seqs = sorted({seq for _, _, seq in rows})
 for seq in seqs:
-    if isinstance(seq, int):
-        print(seq)
+    print(seq)
 PY
 )
 
@@ -372,6 +409,9 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
     if [ -n "$BOOT_STRING" ]; then
       scan_args+=(--boot "$BOOT_STRING")
     fi
+    if [ -n "$EPOCH_INDEX" ]; then
+      scan_args+=(--epoch-index "$EPOCH_INDEX")
+    fi
     bash "$SCRIPT_DIR/scan-fishing1-binary-regression.sh" \
       --output "$chunk_dir" \
       --annotations "$ANNOTATIONS" \
@@ -430,7 +470,7 @@ if [ -z "$stopped_reason" ]; then
   fi
 fi
 
-python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" "$chunk_index" "$stopped_reason" <<'PY'
+python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" "$chunk_index" "$stopped_reason" "$EPOCH_INDEX" <<'PY'
 import json
 import re
 import sys
@@ -448,6 +488,7 @@ last_non_target_chunk_dir = sys.argv[9]
 continue_through_targets = sys.argv[10] == "1"
 chunks_scanned = int(sys.argv[14])
 stopped_reason = sys.argv[15]
+epoch_index = int(sys.argv[16]) if sys.argv[16] else None
 
 
 def chunk_start_seq(path_str):
@@ -479,6 +520,7 @@ if history_target is not None:
 report = {
     "output_root": str(output_root),
     "target_startup_regime": target_regime,
+    "epoch_index": epoch_index,
     "start_seq": start_seq,
     "end_seq": end_seq,
     "continue_through_targets": continue_through_targets,

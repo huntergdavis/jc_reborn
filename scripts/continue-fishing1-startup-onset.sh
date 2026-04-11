@@ -9,6 +9,7 @@ OUTPUT_ROOT="${FISHING1_STARTUP_ONSET_OUTPUT:-/tmp/fishing1-startup-earliest-smo
 MAX_CHUNKS="${FISHING1_STARTUP_ONSET_MAX_CHUNKS:-1}"
 ANNOTATIONS="${FISHING1_FULL_REVIEW_ANNOTATIONS:-$PROJECT_ROOT/vision-artifacts/fishing1-full-annotation-review/annotations.json}"
 BOOT_STRING="${FISHING1_STARTUP_ONSET_BOOT_STRING:-}"
+EPOCH_INDEX=""
 TARGET_REGIME=""
 UNTIL_NON_TARGET=0
 UNTIL_SEQ=""
@@ -31,6 +32,7 @@ Options:
                      is hit.
   --annotations PATH Full-scene fishing annotations.json
   --boot STRING      Force one BOOTMODE string for every scanned build
+  --epoch-index N    Restrict continuation to one binary-library epoch
   --target-regime STR Override startup regime instead of reusing the onset report
   --report PATH      Optional output JSON path summarizing this continuation
                      run. Default: <output>/fishing1-startup-continue.json
@@ -46,6 +48,7 @@ while [ $# -gt 0 ]; do
     --until-seq) UNTIL_SEQ="$2"; shift 2 ;;
     --annotations) ANNOTATIONS="$2"; shift 2 ;;
     --boot) BOOT_STRING="$2"; shift 2 ;;
+    --epoch-index) EPOCH_INDEX="$2"; shift 2 ;;
     --target-regime) TARGET_REGIME="$2"; shift 2 ;;
     --report) CONTINUE_REPORT="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
@@ -70,6 +73,19 @@ from pathlib import Path
 
 payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 print(payload.get("target_startup_regime") or "")
+PY
+)"
+fi
+
+if [ -z "$EPOCH_INDEX" ]; then
+  EPOCH_INDEX="$(python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+value = payload.get("epoch_index")
+print("" if value is None else value)
 PY
 )"
 fi
@@ -118,6 +134,9 @@ if [ "$UNTIL_NON_TARGET" -eq 0 ]; then
   )
   if [ -n "$BOOT_STRING" ]; then
     find_args+=(--boot "$BOOT_STRING")
+  fi
+  if [ -n "$EPOCH_INDEX" ]; then
+    find_args+=(--epoch-index "$EPOCH_INDEX")
   fi
   if [ -n "$TARGET_REGIME" ]; then
     find_args+=(--target-regime "$TARGET_REGIME")
@@ -184,6 +203,9 @@ while [ "$chunks_done" -lt "$MAX_CHUNKS" ]; do
   )
   if [ -n "$BOOT_STRING" ]; then
     find_args+=(--boot "$BOOT_STRING")
+  fi
+  if [ -n "$EPOCH_INDEX" ]; then
+    find_args+=(--epoch-index "$EPOCH_INDEX")
   fi
   if [ -n "$TARGET_REGIME" ]; then
     find_args+=(--target-regime "$TARGET_REGIME")

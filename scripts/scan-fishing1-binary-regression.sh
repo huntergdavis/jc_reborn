@@ -11,6 +11,7 @@ FRAMES="${FISHING1_BINLIB_SCAN_FRAMES:-4200}"
 START_FRAME="${FISHING1_BINLIB_SCAN_START_FRAME:-0}"
 INTERVAL="${FISHING1_BINLIB_SCAN_INTERVAL:-30}"
 BOOT_STRING="${FISHING1_BINLIB_SCAN_BOOT_STRING:-}"
+EPOCH_INDEX="${FISHING1_BINLIB_SCAN_EPOCH_INDEX:-}"
 LIMIT="${FISHING1_BINLIB_SCAN_LIMIT:-}"
 START_SEQ=""
 END_SEQ=""
@@ -40,6 +41,8 @@ Options:
   --start-frame N      First frame to dump (default: 0)
   --interval N         Screenshot interval (default: 30)
   --boot STRING        Force one BOOTMODE string for every scanned build
+  --epoch-index N      Restrict exact sequence expansion to one binary-library
+                       sequence-reset epoch from report-binary-library-epochs.py
   --start-seq N        First binary-library sequence to test
   --end-seq N          Last binary-library sequence to test
   --exact-start-seq N  Expand exact runnable dir names from index.json starting
@@ -79,6 +82,7 @@ while [ $# -gt 0 ]; do
     --start-frame) START_FRAME="$2"; shift 2 ;;
     --interval) INTERVAL="$2"; shift 2 ;;
     --boot) BOOT_STRING="$2"; shift 2 ;;
+    --epoch-index) EPOCH_INDEX="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; shift 2 ;;
     --end-seq) END_SEQ="$2"; shift 2 ;;
     --exact-start-seq) EXACT_START_SEQ="$2"; shift 2 ;;
@@ -104,6 +108,10 @@ fi
 
 if { [ -n "$EXACT_START_SEQ" ] && [ -z "$EXACT_END_SEQ" ]; } || { [ -z "$EXACT_START_SEQ" ] && [ -n "$EXACT_END_SEQ" ]; }; then
   echo "ERROR: --exact-start-seq and --exact-end-seq must be provided together" >&2
+  exit 1
+fi
+if [ -n "$EPOCH_INDEX" ] && { ! [[ "$EPOCH_INDEX" =~ ^[0-9]+$ ]] || [ "$EPOCH_INDEX" -le 0 ]; }; then
+  echo "ERROR: --epoch-index must be a positive integer" >&2
   exit 1
 fi
 
@@ -194,7 +202,7 @@ PY
 }
 
 expand_exact_dir_names() {
-  python3 - "$PROJECT_ROOT/binary-library/index.json" "$EXACT_START_SEQ" "$EXACT_END_SEQ" "$REVERSE_EXACT" <<'PY'
+  python3 - "$PROJECT_ROOT/binary-library/index.json" "$EXACT_START_SEQ" "$EXACT_END_SEQ" "$REVERSE_EXACT" "$EPOCH_INDEX" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -203,7 +211,45 @@ index_path = Path(sys.argv[1])
 start_seq = int(sys.argv[2])
 end_seq = int(sys.argv[3])
 reverse = sys.argv[4] == "1"
+epoch_index = int(sys.argv[5]) if sys.argv[5] else None
 entries = json.loads(index_path.read_text(encoding="utf-8"))
+
+success_entries = []
+for entry in entries:
+    build = entry.get("build") or {}
+    if build.get("status") != "success":
+        continue
+    seq = entry.get("sequence")
+    dir_name = entry.get("dir_name")
+    commit = entry.get("commit") or {}
+    commit_date = commit.get("date") or ""
+    if not isinstance(seq, int) or not dir_name or not commit_date:
+        continue
+    success_entries.append({
+        "sequence": seq,
+        "dir_name": dir_name,
+        "commit_date": commit_date,
+    })
+
+success_entries.sort(key=lambda row: (row["commit_date"], row["dir_name"]))
+epochs = []
+current = []
+last_seq = None
+for row in success_entries:
+    seq = row["sequence"]
+    if last_seq is not None and seq <= last_seq:
+        epochs.append(current)
+        current = []
+    current.append(row)
+    last_seq = seq
+if current:
+    epochs.append(current)
+
+allowed_dir_names = None
+if epoch_index is not None:
+    if epoch_index < 1 or epoch_index > len(epochs):
+        raise SystemExit(f"ERROR: --epoch-index {epoch_index} outside 1..{len(epochs)}")
+    allowed_dir_names = {row["dir_name"] for row in epochs[epoch_index - 1]}
 
 rows = []
 for entry in entries:
@@ -215,6 +261,8 @@ for entry in entries:
         continue
     dir_name = entry.get("dir_name")
     if not dir_name:
+        continue
+    if allowed_dir_names is not None and dir_name not in allowed_dir_names:
         continue
     commit = entry.get("commit") or {}
     rows.append((seq, commit.get("date") or "", dir_name))

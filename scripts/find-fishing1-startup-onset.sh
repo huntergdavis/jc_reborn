@@ -17,6 +17,7 @@ CONTINUE_THROUGH_TARGETS=0
 RESUME=0
 MAX_CHUNKS=""
 CONTINUE_EARLIER=0
+REBUILD_FROM_HISTORY=0
 
 usage() {
   cat <<'USAGE'
@@ -41,6 +42,9 @@ Options:
   --max-chunks N      Stop after scanning at most N chunks in this run.
   --continue-earlier  Reuse the current earliest target chunk under --output
                       and continue scanning from the chunk immediately before it.
+  --rebuild-from-history
+                      Rebuild fishing1-startup-onset.json from the existing
+                      chunk history and boundary reports without running scans.
   -h, --help           Show this help
 USAGE
 }
@@ -57,6 +61,7 @@ while [ $# -gt 0 ]; do
     --resume) RESUME=1; shift ;;
     --max-chunks) MAX_CHUNKS="$2"; shift 2 ;;
     --continue-earlier) CONTINUE_EARLIER=1; shift ;;
+    --rebuild-from-history) REBUILD_FROM_HISTORY=1; RESUME=1; shift ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
   esac
@@ -142,19 +147,25 @@ chunk_index=0
 found_report=""
 earliest_target_report=""
 earliest_target_chunk_dir=""
+earliest_target_start_seq=""
 last_non_target_report=""
 last_non_target_chunk_dir=""
 stopped_reason=""
 if [ "$RESUME" -eq 1 ] && [ -f "$onset_path" ]; then
-  read -r earliest_target_report earliest_target_chunk_dir last_non_target_report last_non_target_chunk_dir < <(python3 - "$onset_path" <<'PY'
+  read -r earliest_target_report earliest_target_chunk_dir earliest_target_start_seq last_non_target_report last_non_target_chunk_dir < <(python3 - "$onset_path" <<'PY'
 import json
+import re
 import sys
 from pathlib import Path
 
 payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+chunk_dir = payload.get("earliest_target_chunk_dir") or ""
+match = re.search(r"seq_(\d+)_to_(\d+)", chunk_dir)
+chunk_start = match.group(1) if match else ""
 print(
     payload.get("earliest_target_boundary_report") or "",
     payload.get("earliest_target_chunk_dir") or "",
+    chunk_start,
     payload.get("first_non_target_before_earliest_report") or "",
     payload.get("first_non_target_before_earliest_chunk_dir") or "",
 )
@@ -163,7 +174,44 @@ PY
 fi
 chunk_history_path="$OUTPUT_ROOT/fishing1-startup-onset-chunks.jsonl"
 if [ "$RESUME" -eq 1 ] && [ -f "$chunk_history_path" ]; then
-  :
+  read -r history_target_report history_target_chunk_dir history_target_start history_non_target_report history_non_target_chunk_dir < <(python3 - "$chunk_history_path" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+rows = []
+for line in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines():
+    if not line.strip():
+        continue
+    row = json.loads(line)
+    if isinstance(row.get("chunk_start_seq"), int):
+        rows.append(row)
+rows.sort(key=lambda row: row["chunk_start_seq"])
+
+target = next((row for row in rows if row.get("found_target")), None)
+non_target = None
+if target is not None:
+    for row in rows:
+        if row["chunk_start_seq"] < target["chunk_start_seq"] and not row.get("found_target"):
+            non_target = row
+print(
+    (target or {}).get("boundary_report", ""),
+    (target or {}).get("chunk_dir", ""),
+    (target or {}).get("chunk_start_seq", ""),
+    (non_target or {}).get("boundary_report", ""),
+    (non_target or {}).get("chunk_dir", ""),
+)
+PY
+  )
+  if [ -n "$history_target_report" ]; then
+    earliest_target_report="$history_target_report"
+    earliest_target_chunk_dir="$history_target_chunk_dir"
+    earliest_target_start_seq="$history_target_start"
+  fi
+  if [ -n "$history_non_target_report" ]; then
+    last_non_target_report="$history_non_target_report"
+    last_non_target_chunk_dir="$history_non_target_chunk_dir"
+  fi
 else
   : > "$chunk_history_path"
 fi
@@ -197,6 +245,108 @@ if key not in existing:
         handle.write(json.dumps(entry) + "\n")
 PY
 }
+
+if [ "$REBUILD_FROM_HISTORY" -eq 1 ]; then
+  chunk_index=0
+  stopped_reason="rebuilt_from_history"
+  found_report=""
+  python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" "$chunk_index" "$stopped_reason" <<'PY'
+import json
+import re
+import sys
+from pathlib import Path
+
+output_root = Path(sys.argv[1])
+target_regime = sys.argv[2]
+start_seq = int(sys.argv[3])
+end_seq = int(sys.argv[4])
+found_report = sys.argv[5]
+earliest_target_report = sys.argv[6]
+earliest_target_chunk_dir = sys.argv[7]
+last_non_target_report = sys.argv[8]
+last_non_target_chunk_dir = sys.argv[9]
+continue_through_targets = sys.argv[10] == "1"
+chunks_scanned = int(sys.argv[14])
+stopped_reason = sys.argv[15]
+
+def chunk_start_seq(path_str):
+    if not path_str:
+        return None
+    match = re.search(r"seq_(\d+)_to_(\d+)", path_str)
+    if not match:
+        return None
+    return int(match.group(1))
+
+history_path = output_root / "fishing1-startup-onset-chunks.jsonl"
+history_rows = []
+if history_path.exists():
+    for line in history_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if isinstance(row.get("chunk_start_seq"), int):
+            history_rows.append(row)
+history_rows.sort(key=lambda row: row["chunk_start_seq"])
+
+history_target = next((row for row in history_rows if row.get("found_target")), None)
+history_non_target = None
+if history_target is not None:
+    for row in history_rows:
+        if row["chunk_start_seq"] < history_target["chunk_start_seq"] and not row.get("found_target"):
+            history_non_target = row
+
+report = {
+    "output_root": str(output_root),
+    "target_startup_regime": target_regime,
+    "start_seq": start_seq,
+    "end_seq": end_seq,
+    "continue_through_targets": continue_through_targets,
+    "resume": sys.argv[11] == "1",
+    "max_chunks": int(sys.argv[12]) if sys.argv[12] else None,
+    "continue_earlier": sys.argv[13] == "1",
+    "chunks_scanned_this_run": chunks_scanned,
+    "stopped_reason": stopped_reason,
+    "chunk_history_jsonl": str(history_path),
+    "onset_boundary_report": found_report or None,
+    "earliest_target_boundary_report": None,
+    "earliest_target_chunk_dir": None,
+    "earliest_target_sequence": None,
+    "next_continue_start_seq": None,
+    "first_non_target_before_earliest_report": None,
+    "first_non_target_before_earliest_chunk_dir": None,
+}
+
+if history_target is not None:
+    report["earliest_target_boundary_report"] = history_target.get("boundary_report")
+    report["earliest_target_chunk_dir"] = history_target.get("chunk_dir")
+    report["earliest_target_sequence"] = history_target.get("chunk_start_seq")
+if history_non_target is not None:
+    report["first_non_target_before_earliest_report"] = history_non_target.get("boundary_report")
+    report["first_non_target_before_earliest_chunk_dir"] = history_non_target.get("chunk_dir")
+
+if report["earliest_target_sequence"] is not None and report["earliest_target_sequence"] > end_seq:
+    report["next_continue_start_seq"] = report["earliest_target_sequence"] - 1
+if report["first_non_target_before_earliest_report"]:
+    report["next_continue_start_seq"] = None
+
+if report["earliest_target_boundary_report"]:
+    payload = json.loads(Path(report["earliest_target_boundary_report"]).read_text(encoding="utf-8"))
+    report["last_before_target"] = payload.get("last_before_target")
+    report["first_target"] = payload.get("first_target")
+    report["first_target_state_hash"] = (payload.get("first_target") or {}).get("state_hash")
+    report["first_target_result_json"] = (payload.get("first_target") or {}).get("result_json")
+else:
+    report["last_before_target"] = None
+    report["first_target"] = None
+    report["first_target_state_hash"] = None
+    report["first_target_result_json"] = None
+
+out_path = output_root / "fishing1-startup-onset.json"
+out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+print(out_path)
+PY
+  exit 0
+fi
 
 while [ "$current_high" -ge "$END_SEQ" ]; do
   if [ -n "$MAX_CHUNKS" ] && [ "$chunk_index" -ge "$MAX_CHUNKS" ]; then
@@ -235,8 +385,11 @@ raise SystemExit(0 if payload.get("first_target") else 1)
 PY
   then
     found_report="$boundary_path"
-    earliest_target_report="$boundary_path"
-    earliest_target_chunk_dir="$chunk_dir"
+    if [ -z "$earliest_target_start_seq" ] || [ "$current_low" -lt "$earliest_target_start_seq" ]; then
+      earliest_target_report="$boundary_path"
+      earliest_target_chunk_dir="$chunk_dir"
+      earliest_target_start_seq="$current_low"
+    fi
     append_chunk_history "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "true"
     if [ "$CONTINUE_THROUGH_TARGETS" -eq 0 ]; then
       stopped_reason="found_target"
@@ -296,6 +449,24 @@ def chunk_start_seq(path_str):
         return None
     return int(match.group(1))
 
+history_path = output_root / "fishing1-startup-onset-chunks.jsonl"
+history_rows = []
+if history_path.exists():
+    for line in history_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if isinstance(row.get("chunk_start_seq"), int):
+            history_rows.append(row)
+history_rows.sort(key=lambda row: row["chunk_start_seq"])
+
+history_target = next((row for row in history_rows if row.get("found_target")), None)
+history_non_target = None
+if history_target is not None:
+    for row in history_rows:
+        if row["chunk_start_seq"] < history_target["chunk_start_seq"] and not row.get("found_target"):
+            history_non_target = row
+
 report = {
     "output_root": str(output_root),
     "target_startup_regime": target_regime,
@@ -307,7 +478,7 @@ report = {
     "continue_earlier": sys.argv[13] == "1",
     "chunks_scanned_this_run": chunks_scanned,
     "stopped_reason": stopped_reason,
-    "chunk_history_jsonl": str(output_root / "fishing1-startup-onset-chunks.jsonl"),
+    "chunk_history_jsonl": str(history_path),
     "onset_boundary_report": found_report or None,
     "earliest_target_boundary_report": earliest_target_report or None,
     "earliest_target_chunk_dir": earliest_target_chunk_dir or None,
@@ -316,6 +487,14 @@ report = {
     "first_non_target_before_earliest_report": last_non_target_report or None,
     "first_non_target_before_earliest_chunk_dir": last_non_target_chunk_dir or None,
 }
+
+if history_target is not None:
+    report["earliest_target_boundary_report"] = history_target.get("boundary_report")
+    report["earliest_target_chunk_dir"] = history_target.get("chunk_dir")
+    report["earliest_target_sequence"] = history_target.get("chunk_start_seq")
+if history_non_target is not None:
+    report["first_non_target_before_earliest_report"] = history_non_target.get("boundary_report")
+    report["first_non_target_before_earliest_chunk_dir"] = history_non_target.get("chunk_dir")
 
 if report["earliest_target_sequence"] is not None and report["earliest_target_sequence"] > end_seq:
     report["next_continue_start_seq"] = report["earliest_target_sequence"] - 1

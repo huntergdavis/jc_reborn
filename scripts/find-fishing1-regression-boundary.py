@@ -103,6 +103,15 @@ def reaches_visibility_target(row, args):
     return args.min_first_visible is not None or args.min_first_full_height is not None
 
 
+def reaches_startup_target(row, args):
+    if args.startup_regime and infer_startup_regime(row) != args.startup_regime:
+        return False
+    if args.min_first_visible is not None or args.min_first_full_height is not None:
+        if not reaches_visibility_target(row, args):
+            return False
+    return bool(args.startup_regime) or args.min_first_visible is not None or args.min_first_full_height is not None
+
+
 def compact(row):
     cov = row.get("coverage") or {}
     result = row.get("result") or {}
@@ -131,36 +140,19 @@ def main():
     rows = list(payload.get("rows") or [])
     rows.sort(key=lambda row: extract_sort_key(row.get("result_json", "")))
 
-    if args.startup_regime:
+    if args.startup_regime or args.min_first_visible is not None or args.min_first_full_height is not None:
         last_before_target = None
         first_target = None
         for row in rows:
-            if infer_startup_regime(row) == args.startup_regime:
+            if reaches_startup_target(row, args):
                 first_target = row
                 break
             last_before_target = row
 
         report = {
             "summary_json": str(Path(args.summary_json).resolve()),
-            "startup_regime": args.startup_regime,
-            "last_before_target": compact(last_before_target) if last_before_target else None,
-            "first_target": compact(first_target) if first_target else None,
-        }
-        print(json.dumps(report, indent=2))
-        return
-
-    if args.min_first_visible is not None or args.min_first_full_height is not None:
-        last_before_target = None
-        first_target = None
-        for row in rows:
-            if reaches_visibility_target(row, args):
-                first_target = row
-                break
-            last_before_target = row
-
-        report = {
-            "summary_json": str(Path(args.summary_json).resolve()),
-            "visibility_thresholds": {
+            "startup_target": {
+                "startup_regime": args.startup_regime,
                 "min_first_visible": args.min_first_visible,
                 "min_first_full_height": args.min_first_full_height,
             },

@@ -21,15 +21,16 @@ REGTEST_INTERVAL="${REGTEST_INTERVAL:-60}"
 REGTEST_PARALLEL="${REGTEST_PARALLEL:-4}"
 
 # DuckStation log level for headless regtest runs.
-REGTEST_LOG_LEVEL="${REGTEST_LOG_LEVEL:-Info}"
+REGTEST_LOG_LEVEL="${REGTEST_LOG_LEVEL:-Warning}"
 
 # Force deterministic scene playback in paired headless runs unless the caller
 # explicitly chooses another seed.
 REGTEST_SEED="${REGTEST_SEED:-1}"
 
-# Per-scene timeout in seconds (wall-clock; kills runaway tests)
-# 9000 frames at ~470 FPS headless = ~19 sec; allow 60 sec for safety.
-REGTEST_TIMEOUT="${REGTEST_TIMEOUT:-60}"
+# Per-scene timeout in seconds (wall-clock; kills runaway tests).
+# On this Dockerized headless path, scene reaches visible content around
+# frame 2800-3300 and longer runs can exceed 60s wall-clock time.
+REGTEST_TIMEOUT="${REGTEST_TIMEOUT:-180}"
 
 # Default output root for results
 REGTEST_OUTPUT_DIR="${REGTEST_OUTPUT_DIR:-regtest-results}"

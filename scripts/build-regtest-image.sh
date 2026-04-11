@@ -14,12 +14,10 @@
 
 set -euo pipefail
 
-if [ "$(id -u)" = "0" ]; then
-    echo "ERROR: Do not run this script as root/sudo." >&2
-    exit 1
-fi
-
 cd "$(dirname "$0")/.."  # project root
+# shellcheck source=./docker-common.sh
+source "scripts/docker-common.sh"
+docker_init
 
 DOCKERFILE="config/ps1/Dockerfile.regtest"
 IMAGE_TAG="jc-reborn-regtest:latest"
@@ -69,7 +67,7 @@ echo ""
 
 BUILD_START=$(date +%s)
 
-docker build \
+"${DOCKER_CMD[@]}" build \
     --platform linux/amd64 \
     ${DOCKER_BUILD_FLAGS[@]+"${DOCKER_BUILD_FLAGS[@]}"} \
     -f "$DOCKERFILE" \
@@ -88,12 +86,12 @@ echo "======================================"
 echo ""
 echo "Image:      $IMAGE_TAG"
 echo "Build time: ${BUILD_MINUTES}m ${BUILD_SECONDS}s"
-echo "Image size: $(docker images "$IMAGE_TAG" --format '{{.Size}}')"
+echo "Image size: $("${DOCKER_CMD[@]}" images "$IMAGE_TAG" --format '{{.Size}}')"
 echo ""
 
 # Quick smoke test: print the binary's help output.
 echo "Smoke test (--help):"
-docker run --rm --platform linux/amd64 "$IMAGE_TAG" -help 2>&1 | head -5 || true
+"${DOCKER_CMD[@]}" run --rm --platform linux/amd64 "$IMAGE_TAG" -help 2>&1 | head -5 || true
 
 echo ""
 echo "Next steps:"

@@ -4,12 +4,10 @@
 
 set -e  # Exit on error
 
-if [ "$(id -u)" = "0" ]; then
-    echo "ERROR: Do not run this script as root/sudo." >&2
-    exit 1
-fi
-
 cd "$(dirname "$0")/.."  # Change to project root
+# shellcheck source=./docker-common.sh
+source "scripts/docker-common.sh"
+docker_init
 
 python3 - <<'PY'
 import json
@@ -31,19 +29,30 @@ header = (
 header_path.write_text(header, encoding="utf-8")
 PY
 
-if [ "$1" = "clean" ]; then
+if [ "${1:-}" = "clean" ]; then
     echo "=== Cleaning build directory ==="
-    docker run --rm --platform linux/amd64 \
+    "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 \
         -v "$PWD":/project \
         jc-reborn-ps1-dev:amd64 \
         bash -c "cd /project/build-ps1 && make clean"
 fi
 
 echo "=== Building PS1 executable ==="
-docker run --rm --platform linux/amd64 \
+"${DOCKER_CMD[@]}" run --rm --platform linux/amd64 \
     -v "$PWD":/project \
     jc-reborn-ps1-dev:amd64 \
-    bash -c "cd /project/build-ps1 && make jcreborn"
+    bash -lc '
+        set -e
+        cd /project/build-ps1
+        if ! make jcreborn; then
+            echo "=== Falling back to manual PS1 link ==="
+            rm -f jcreborn.elf jcreborn.map
+            LINK_CMD="$(cat CMakeFiles/jcreborn.dir/link.txt)"
+            bash -lc "$LINK_CMD"
+            /opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/elf2x -q /project/build-ps1/jcreborn.elf /project/build-ps1/jcreborn.exe
+            /opt/psn00bsdk/PSn00bSDK-0.24-Linux/bin/mipsel-none-elf-nm -f posix -l -n /project/build-ps1/jcreborn.elf >/project/build-ps1/jcreborn.map
+        fi
+    '
 
 echo ""
 echo "=== Build complete ==="

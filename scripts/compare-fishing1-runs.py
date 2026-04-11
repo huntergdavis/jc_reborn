@@ -108,6 +108,30 @@ def estimate_timeline_offset(a, b):
     }
 
 
+def estimate_phase_offset(a, b, phase):
+    a_rows = {row["frame"]: row["sha256"] for row in (a.get("phase_hashes") or {}).get(phase, [])}
+    b_rows = {row["frame"]: row["sha256"] for row in (b.get("phase_hashes") or {}).get(phase, [])}
+    candidate_offsets = set()
+    for a_frame, a_hash in a_rows.items():
+        for b_frame, b_hash in b_rows.items():
+            if a_hash == b_hash:
+                candidate_offsets.add(b_frame - a_frame)
+
+    if not candidate_offsets:
+        return {"best_offset": None, "matching_hash_pairs": 0}
+
+    ranked = []
+    for offset in sorted(candidate_offsets):
+        matches = 0
+        for frame, digest in a_rows.items():
+            if b_rows.get(frame + offset) == digest:
+                matches += 1
+        ranked.append((offset, matches))
+
+    ranked.sort(key=lambda item: (-item[1], abs(item[0]), item[0]))
+    return {"best_offset": ranked[0][0], "matching_hash_pairs": ranked[0][1]}
+
+
 def main():
     args = parse_args()
     project_root = Path(__file__).resolve().parents[1]
@@ -132,6 +156,17 @@ def main():
                 "from": prev["label"],
                 "to": cur["label"],
                 "timeline_offset": offset,
+                "phase_offsets": {
+                    phase: estimate_phase_offset(prev, cur, phase)
+                    for phase in [
+                        "black",
+                        "ocean_only",
+                        "island_only",
+                        "correct",
+                        "shoe_only",
+                        "post_correct_pre_shoe",
+                    ]
+                },
                 "delta_unique_correct_hashes": metric_delta(prev, cur, "unique_correct_hashes"),
                 "delta_unique_shoe_hashes": metric_delta(prev, cur, "unique_shoe_hashes"),
                 "delta_unique_post_correct_pre_shoe_hashes": metric_delta(
@@ -194,7 +229,7 @@ def main():
         print("")
         print(
             "delta_from\tto\tboot_changed\texe_changed\tstartup_from\tstartup_to\tstartup_changed\td_first_visible\td_first_lower_half\td_first_full_height\td_last_partial_height\t"
-            "d_last_black\tbest_timeline_offset\toffset_hash_pairs\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
+            "d_last_black\tbest_timeline_offset\toffset_hash_pairs\tblack_offset\tocean_offset\tisland_offset\tcorrect_offset\tshoe_offset\tmidgap_offset\td_black\td_ocean\td_island\td_correct\td_shoe\td_midgap\t"
             "m_black\tm_ocean\tm_island\tm_correct\tm_shoe\tm_midgap"
         )
         for delta in deltas:
@@ -205,6 +240,7 @@ def main():
             prev_artifacts = (prev_row.get("build") or {}).get("artifacts") or {}
             cur_artifacts = (cur_row.get("build") or {}).get("artifacts") or {}
             timeline_offset = delta.get("timeline_offset") or {}
+            phase_offsets = delta.get("phase_offsets") or {}
             print(
                 "\t".join(
                     [
@@ -237,6 +273,12 @@ def main():
                         ),
                         str(timeline_offset.get("best_offset", "")),
                         str(timeline_offset.get("matching_hash_pairs", 0)),
+                        str((phase_offsets.get("black") or {}).get("best_offset", "")),
+                        str((phase_offsets.get("ocean_only") or {}).get("best_offset", "")),
+                        str((phase_offsets.get("island_only") or {}).get("best_offset", "")),
+                        str((phase_offsets.get("correct") or {}).get("best_offset", "")),
+                        str((phase_offsets.get("shoe_only") or {}).get("best_offset", "")),
+                        str((phase_offsets.get("post_correct_pre_shoe") or {}).get("best_offset", "")),
                         str(metric_delta(prev_row, cur_row, "unique_black_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_ocean_only_hashes")),
                         str(metric_delta(prev_row, cur_row, "unique_island_only_hashes")),

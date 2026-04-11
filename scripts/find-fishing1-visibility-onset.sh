@@ -10,6 +10,7 @@ OUTPUT_ROOT="${FISHING1_VISIBILITY_ONSET_OUTPUT:-$PROJECT_ROOT/tmp-regtests/fish
 CHUNK_SIZE="${FISHING1_VISIBILITY_ONSET_CHUNK_SIZE:-10}"
 MIN_FIRST_VISIBLE="${FISHING1_VISIBILITY_ONSET_MIN_FIRST_VISIBLE:-1200}"
 MIN_FIRST_FULL_HEIGHT="${FISHING1_VISIBILITY_ONSET_MIN_FIRST_FULL_HEIGHT:-1200}"
+BOOT_STRING="${FISHING1_VISIBILITY_ONSET_BOOT_STRING:-}"
 START_SEQ=""
 END_SEQ=""
 START_SEQ_EXPLICIT=0
@@ -34,6 +35,7 @@ Options:
   --min-first-full-height N
                            Search target for first_full_height_visible >= N
                            (default: 1200)
+  --boot STRING            Force one BOOTMODE string for every scanned build
   --chunk-size N           Exact sequence width per scan chunk (default: 10)
   --start-seq N            Highest sequence to begin scanning from
   --end-seq N              Lowest sequence to include before stopping
@@ -60,6 +62,7 @@ while [ $# -gt 0 ]; do
     --output) OUTPUT_ROOT="$2"; shift 2 ;;
     --min-first-visible) MIN_FIRST_VISIBLE="$2"; shift 2 ;;
     --min-first-full-height) MIN_FIRST_FULL_HEIGHT="$2"; shift 2 ;;
+    --boot) BOOT_STRING="$2"; shift 2 ;;
     --chunk-size) CHUNK_SIZE="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; START_SEQ_EXPLICIT=1; shift 2 ;;
     --end-seq) END_SEQ="$2"; END_SEQ_EXPLICIT=1; shift 2 ;;
@@ -322,6 +325,10 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
     :
   else
     rm -rf "$chunk_dir"
+    scan_args=()
+    if [ -n "$BOOT_STRING" ]; then
+      scan_args+=(--boot "$BOOT_STRING")
+    fi
     bash "$SCRIPT_DIR/scan-fishing1-binary-regression.sh" \
       --output "$chunk_dir" \
       --annotations "$ANNOTATIONS" \
@@ -331,7 +338,8 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
       --boundary-min-first-visible "$MIN_FIRST_VISIBLE" \
       --boundary-min-first-full-height "$MIN_FIRST_FULL_HEIGHT" \
       --stop-after-min-first-visible "$MIN_FIRST_VISIBLE" \
-      --stop-after-min-first-full-height "$MIN_FIRST_FULL_HEIGHT"
+      --stop-after-min-first-full-height "$MIN_FIRST_FULL_HEIGHT" \
+      "${scan_args[@]}"
   fi
   last_boundary_report="$boundary_path"
 

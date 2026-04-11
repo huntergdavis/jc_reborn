@@ -9,6 +9,7 @@ OUTPUT_ROOT="${FISHING1_STARTUP_ONSET_OUTPUT:-/tmp/fishing1-startup-earliest-smo
 MAX_CHUNKS="${FISHING1_STARTUP_ONSET_MAX_CHUNKS:-1}"
 ANNOTATIONS="${FISHING1_FULL_REVIEW_ANNOTATIONS:-$PROJECT_ROOT/vision-artifacts/fishing1-full-annotation-review/annotations.json}"
 BOOT_STRING="${FISHING1_STARTUP_ONSET_BOOT_STRING:-}"
+TARGET_REGIME=""
 UNTIL_NON_TARGET=0
 UNTIL_SEQ=""
 CONTINUE_REPORT=""
@@ -30,6 +31,7 @@ Options:
                      is hit.
   --annotations PATH Full-scene fishing annotations.json
   --boot STRING      Force one BOOTMODE string for every scanned build
+  --target-regime STR Override startup regime instead of reusing the onset report
   --report PATH      Optional output JSON path summarizing this continuation
                      run. Default: <output>/fishing1-startup-continue.json
   -h, --help         Show this help
@@ -44,6 +46,7 @@ while [ $# -gt 0 ]; do
     --until-seq) UNTIL_SEQ="$2"; shift 2 ;;
     --annotations) ANNOTATIONS="$2"; shift 2 ;;
     --boot) BOOT_STRING="$2"; shift 2 ;;
+    --target-regime) TARGET_REGIME="$2"; shift 2 ;;
     --report) CONTINUE_REPORT="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "Unknown option: $1" >&2; usage >&2; exit 1 ;;
@@ -57,6 +60,18 @@ fi
 
 if [ -z "$CONTINUE_REPORT" ]; then
   CONTINUE_REPORT="$OUTPUT_ROOT/fishing1-startup-continue.json"
+fi
+
+if [ -z "$TARGET_REGIME" ]; then
+  TARGET_REGIME="$(python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(payload.get("target_startup_regime") or "")
+PY
+)"
 fi
 
 write_until_report() {
@@ -103,6 +118,9 @@ if [ "$UNTIL_NON_TARGET" -eq 0 ]; then
   )
   if [ -n "$BOOT_STRING" ]; then
     find_args+=(--boot "$BOOT_STRING")
+  fi
+  if [ -n "$TARGET_REGIME" ]; then
+    find_args+=(--target-regime "$TARGET_REGIME")
   fi
   bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
     "${find_args[@]}"
@@ -166,6 +184,9 @@ while [ "$chunks_done" -lt "$MAX_CHUNKS" ]; do
   )
   if [ -n "$BOOT_STRING" ]; then
     find_args+=(--boot "$BOOT_STRING")
+  fi
+  if [ -n "$TARGET_REGIME" ]; then
+    find_args+=(--target-regime "$TARGET_REGIME")
   fi
   bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
     "${find_args[@]}"

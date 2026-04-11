@@ -312,6 +312,7 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
       --annotations "$ANNOTATIONS" \
       --exact-start-seq "$current_low" \
       --exact-end-seq "$current_high" \
+      --reverse-exact \
       --boundary-min-first-visible "$MIN_FIRST_VISIBLE" \
       --boundary-min-first-full-height "$MIN_FIRST_FULL_HEIGHT" \
       --stop-after-min-first-visible "$MIN_FIRST_VISIBLE" \

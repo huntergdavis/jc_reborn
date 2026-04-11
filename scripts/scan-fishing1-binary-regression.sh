@@ -15,6 +15,7 @@ START_SEQ=""
 END_SEQ=""
 EXACT_START_SEQ=""
 EXACT_END_SEQ=""
+REVERSE_EXACT=0
 DIR_NAMES=()
 SKIPPED_NAMES=()
 BOUNDARY_STARTUP_REGIME=""
@@ -43,6 +44,8 @@ Options:
                        at sequence N. Supports early-stop startup searches.
   --exact-end-seq N    Expand exact runnable dir names from index.json ending
                        at sequence N. Supports early-stop startup searches.
+  --reverse-exact      Reverse the exact expanded dir-name order so higher
+                       sequence numbers run first inside the exact range.
   --dir-name NAME      Exact binary-library directory name to test
                        May be repeated.
   --limit N            Limit number of matching builds
@@ -77,6 +80,7 @@ while [ $# -gt 0 ]; do
     --end-seq) END_SEQ="$2"; shift 2 ;;
     --exact-start-seq) EXACT_START_SEQ="$2"; shift 2 ;;
     --exact-end-seq) EXACT_END_SEQ="$2"; shift 2 ;;
+    --reverse-exact) REVERSE_EXACT=1; shift ;;
     --dir-name) DIR_NAMES+=("$2"); shift 2 ;;
     --limit) LIMIT="$2"; shift 2 ;;
     --boundary-startup-regime) BOUNDARY_STARTUP_REGIME="$2"; shift 2 ;;
@@ -182,7 +186,7 @@ PY
 }
 
 expand_exact_dir_names() {
-  python3 - "$PROJECT_ROOT/binary-library/index.json" "$EXACT_START_SEQ" "$EXACT_END_SEQ" <<'PY'
+  python3 - "$PROJECT_ROOT/binary-library/index.json" "$EXACT_START_SEQ" "$EXACT_END_SEQ" "$REVERSE_EXACT" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -190,6 +194,7 @@ from pathlib import Path
 index_path = Path(sys.argv[1])
 start_seq = int(sys.argv[2])
 end_seq = int(sys.argv[3])
+reverse = sys.argv[4] == "1"
 entries = json.loads(index_path.read_text(encoding="utf-8"))
 
 rows = []
@@ -206,7 +211,7 @@ for entry in entries:
     commit = entry.get("commit") or {}
     rows.append((seq, commit.get("date") or "", dir_name))
 
-rows.sort()
+rows.sort(reverse=reverse)
 for _, _, dir_name in rows:
     print(dir_name)
 PY
@@ -217,6 +222,12 @@ if [ -n "$EXACT_START_SEQ" ]; then
     [ -n "$dir_name" ] || continue
     DIR_NAMES+=("$dir_name")
   done < <(expand_exact_dir_names)
+fi
+
+if [ -n "$EXACT_START_SEQ" ] && [ "${#DIR_NAMES[@]}" -eq 0 ]; then
+  echo "INFO: no successful exact builds matched ${EXACT_START_SEQ}..${EXACT_END_SEQ}" >&2
+  refresh_reports
+  exit 0
 fi
 
 if [ "${#DIR_NAMES[@]}" -gt 0 ]; then

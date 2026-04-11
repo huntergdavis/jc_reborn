@@ -370,6 +370,7 @@ while [ "$current_high" -ge "$END_SEQ" ]; do
       --annotations "$ANNOTATIONS" \
       --exact-start-seq "$current_low" \
       --exact-end-seq "$current_high" \
+      --reverse-exact \
       --boundary-startup-regime "$TARGET_STARTUP_REGIME" \
       --stop-after-first-startup-regime "$TARGET_STARTUP_REGIME"
   fi

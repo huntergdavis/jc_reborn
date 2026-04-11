@@ -167,6 +167,36 @@ else
   : > "$chunk_history_path"
 fi
 
+append_chunk_history() {
+  python3 - "$chunk_history_path" "$1" "$2" "$3" "$4" "$5" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+history_path = Path(sys.argv[1])
+entry = {
+    "chunk_start_seq": int(sys.argv[2]),
+    "chunk_end_seq": int(sys.argv[3]),
+    "chunk_dir": sys.argv[4],
+    "boundary_report": sys.argv[5],
+    "found_target": sys.argv[6] == "true",
+}
+
+existing = set()
+if history_path.exists():
+    for line in history_path.read_text(encoding="utf-8").splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        existing.add((row.get("chunk_start_seq"), row.get("chunk_end_seq")))
+
+key = (entry["chunk_start_seq"], entry["chunk_end_seq"])
+if key not in existing:
+    with history_path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(entry) + "\n")
+PY
+}
+
 while [ "$current_high" -ge "$END_SEQ" ]; do
   if [ -n "$MAX_CHUNKS" ] && [ "$chunk_index" -ge "$MAX_CHUNKS" ]; then
     break
@@ -205,22 +235,7 @@ PY
     found_report="$boundary_path"
     earliest_target_report="$boundary_path"
     earliest_target_chunk_dir="$chunk_dir"
-    python3 - "$chunk_history_path" "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "true" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-history_path = Path(sys.argv[1])
-entry = {
-    "chunk_start_seq": int(sys.argv[2]),
-    "chunk_end_seq": int(sys.argv[3]),
-    "chunk_dir": sys.argv[4],
-    "boundary_report": sys.argv[5],
-    "found_target": sys.argv[6] == "true",
-}
-with history_path.open("a", encoding="utf-8") as handle:
-    handle.write(json.dumps(entry) + "\n")
-PY
+    append_chunk_history "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "true"
     if [ "$CONTINUE_THROUGH_TARGETS" -eq 0 ]; then
       break
     fi
@@ -229,22 +244,7 @@ PY
     continue
   fi
 
-  python3 - "$chunk_history_path" "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "false" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-history_path = Path(sys.argv[1])
-entry = {
-    "chunk_start_seq": int(sys.argv[2]),
-    "chunk_end_seq": int(sys.argv[3]),
-    "chunk_dir": sys.argv[4],
-    "boundary_report": sys.argv[5],
-    "found_target": sys.argv[6] == "true",
-}
-with history_path.open("a", encoding="utf-8") as handle:
-    handle.write(json.dumps(entry) + "\n")
-PY
+  append_chunk_history "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "false"
 
   last_non_target_report="$boundary_path"
   last_non_target_chunk_dir="$chunk_dir"

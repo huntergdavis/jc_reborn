@@ -122,6 +122,9 @@ clean_cov = clean_row.get("coverage") or {}
 dirty_build_inputs = bool((local_result.get("outcome") or {}).get("dirty_build_inputs"))
 metric_keys = [
     "first_visible_frame",
+    "first_lower_half_visible_frame",
+    "first_full_height_visible_frame",
+    "last_partial_height_visible_frame",
     "last_black_frame",
     "unique_black_hashes",
     "unique_ocean_only_hashes",
@@ -140,10 +143,31 @@ for key in metric_keys:
             "clean": clean_value,
         }
 
+regime_mismatches = {}
+for key in ["regime", "startup_regime"]:
+    local_value = local_row.get(key)
+    clean_value = clean_row.get(key)
+    if local_value != clean_value:
+        regime_mismatches[key] = {
+            "local": local_value,
+            "clean": clean_value,
+        }
+
+deltas = compare.get("deltas") or []
+timeline_offset = None
+phase_offsets = {}
+if deltas:
+    first_delta = deltas[0]
+    timeline_offset = first_delta.get("timeline_offset")
+    phase_offsets = first_delta.get("phase_offsets") or {}
+
 status = {
-    "ok": not dirty_build_inputs and not metric_mismatches,
+    "ok": not dirty_build_inputs and not metric_mismatches and not regime_mismatches,
     "dirty_build_inputs": dirty_build_inputs,
     "metric_mismatches": metric_mismatches,
+    "regime_mismatches": regime_mismatches,
+    "timeline_offset": timeline_offset,
+    "phase_offsets": phase_offsets,
     "local_state_hash": (local_row.get("result") or {}).get("state_hash"),
     "clean_state_hash": (clean_row.get("result") or {}).get("state_hash"),
 }
@@ -152,7 +176,7 @@ print(json.dumps(status, indent=2))
 
 if dirty_build_inputs:
     raise SystemExit(3)
-if metric_mismatches:
+if metric_mismatches or regime_mismatches:
     raise SystemExit(4)
 PY
 

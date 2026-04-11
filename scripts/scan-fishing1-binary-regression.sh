@@ -10,6 +10,7 @@ OUTPUT_ROOT="${FISHING1_BINLIB_SCAN_OUTPUT:-$PROJECT_ROOT/tmp-regtests/binlib-fi
 FRAMES="${FISHING1_BINLIB_SCAN_FRAMES:-4200}"
 START_FRAME="${FISHING1_BINLIB_SCAN_START_FRAME:-0}"
 INTERVAL="${FISHING1_BINLIB_SCAN_INTERVAL:-30}"
+BOOT_STRING="${FISHING1_BINLIB_SCAN_BOOT_STRING:-}"
 LIMIT="${FISHING1_BINLIB_SCAN_LIMIT:-}"
 START_SEQ=""
 END_SEQ=""
@@ -38,6 +39,7 @@ Options:
   --frames N           Total frames to run per build (default: 4200)
   --start-frame N      First frame to dump (default: 0)
   --interval N         Screenshot interval (default: 30)
+  --boot STRING        Force one BOOTMODE string for every scanned build
   --start-seq N        First binary-library sequence to test
   --end-seq N          Last binary-library sequence to test
   --exact-start-seq N  Expand exact runnable dir names from index.json starting
@@ -76,6 +78,7 @@ while [ $# -gt 0 ]; do
     --frames) FRAMES="$2"; shift 2 ;;
     --start-frame) START_FRAME="$2"; shift 2 ;;
     --interval) INTERVAL="$2"; shift 2 ;;
+    --boot) BOOT_STRING="$2"; shift 2 ;;
     --start-seq) START_SEQ="$2"; shift 2 ;;
     --end-seq) END_SEQ="$2"; shift 2 ;;
     --exact-start-seq) EXACT_START_SEQ="$2"; shift 2 ;;
@@ -129,6 +132,10 @@ refresh_reports() {
 run_one() {
   local outdir="$1"
   shift
+  local args=()
+  if [ -n "$BOOT_STRING" ]; then
+    args+=(--boot "$BOOT_STRING")
+  fi
   "$PROJECT_ROOT/scripts/regtest-binary-library-scene.sh" \
     --scene "FISHING 1" \
     --frames "$FRAMES" \
@@ -136,6 +143,7 @@ run_one() {
     --interval "$INTERVAL" \
     --output "$outdir" \
     --resume \
+    "${args[@]}" \
     "$@"
 }
 

@@ -26,7 +26,7 @@ BUILDING 6 16 bringup island ads BUILDING.ADS 6
 BUILDING 7 15 bringup island ads BUILDING.ADS 7
 
 # --- FISHING.ADS (bringup=5, blocked=3) ---
-FISHING 1 17 blocked story single 17
+FISHING 1 17 blocked story scene 17
 FISHING 2 18 blocked island ads FISHING.ADS 2
 FISHING 3 19 bringup island ads FISHING.ADS 3
 FISHING 4 20 bringup island ads FISHING.ADS 4

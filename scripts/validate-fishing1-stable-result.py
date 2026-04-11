@@ -117,8 +117,8 @@ def main():
         )
     if int(config.get("interval", -1)) != 10:
         issues.append(f"interval {config.get('interval')} != 10")
-    if scene.get("boot_string") != "story single 17 seed 1":
-        issues.append(f"boot_string {scene.get('boot_string')!r} != 'story single 17 seed 1'")
+    if scene.get("boot_string") != "story scene 17 seed 1":
+        issues.append(f"boot_string {scene.get('boot_string')!r} != 'story scene 17 seed 1'")
 
     required = [
         truth["recommended_review_start"],

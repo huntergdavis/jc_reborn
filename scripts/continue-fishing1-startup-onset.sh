@@ -9,6 +9,7 @@ OUTPUT_ROOT="${FISHING1_STARTUP_ONSET_OUTPUT:-/tmp/fishing1-startup-earliest-smo
 MAX_CHUNKS="${FISHING1_STARTUP_ONSET_MAX_CHUNKS:-1}"
 ANNOTATIONS="${FISHING1_FULL_REVIEW_ANNOTATIONS:-$PROJECT_ROOT/vision-artifacts/fishing1-full-annotation-review/annotations.json}"
 UNTIL_NON_TARGET=0
+UNTIL_SEQ=""
 CONTINUE_REPORT=""
 
 usage() {
@@ -23,6 +24,9 @@ Options:
   --max-chunks N     Number of earlier chunks to scan in this run (default: 1)
   --until-non-target Keep stepping earlier until an earlier non-target chunk
                      is found, or until --max-chunks total chunks are used.
+  --until-seq N      Keep stepping earlier until the earliest confirmed target
+                     sequence is at or below N, or until another stop condition
+                     is hit.
   --annotations PATH Full-scene fishing annotations.json
   --report PATH      Optional output JSON path summarizing this continuation
                      run. Default: <output>/fishing1-startup-continue.json
@@ -35,6 +39,7 @@ while [ $# -gt 0 ]; do
     --output) OUTPUT_ROOT="$2"; shift 2 ;;
     --max-chunks) MAX_CHUNKS="$2"; shift 2 ;;
     --until-non-target) UNTIL_NON_TARGET=1; shift ;;
+    --until-seq) UNTIL_SEQ="$2"; shift 2 ;;
     --annotations) ANNOTATIONS="$2"; shift 2 ;;
     --report) CONTINUE_REPORT="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
@@ -51,13 +56,44 @@ if [ -z "$CONTINUE_REPORT" ]; then
   CONTINUE_REPORT="$OUTPUT_ROOT/fishing1-startup-continue.json"
 fi
 
+write_until_report() {
+  python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" "$CONTINUE_REPORT" "$1" "$MAX_CHUNKS" "$UNTIL_SEQ" "$2" "$3" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+onset = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+report = {
+    "mode": "until_non_target",
+    "requested_max_chunks": int(sys.argv[4]),
+    "requested_until_seq": int(sys.argv[5]) if sys.argv[5] else None,
+    "wrapper_stopped_reason": sys.argv[3],
+    "onset_stopped_reason": onset.get("stopped_reason"),
+    "chunks_scanned_this_run": int(sys.argv[6]),
+    "earliest_target_sequence": onset.get("earliest_target_sequence"),
+    "next_continue_start_seq": onset.get("next_continue_start_seq"),
+    "first_non_target_before_earliest_report": onset.get("first_non_target_before_earliest_report"),
+    "onset_report": str(Path(sys.argv[1]).resolve()),
+}
+if sys.argv[7]:
+    report["last_completed_chunk_dir"] = sys.argv[7]
+Path(sys.argv[2]).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+print(sys.argv[2])
+PY
+}
+
+if [ -n "$UNTIL_SEQ" ] && { ! [[ "$UNTIL_SEQ" =~ ^[0-9]+$ ]] || [ "$UNTIL_SEQ" -lt 0 ]; }; then
+  echo "ERROR: --until-seq must be a non-negative integer" >&2
+  exit 1
+fi
+
 if [ "$UNTIL_NON_TARGET" -eq 0 ]; then
   bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
     --output "$OUTPUT_ROOT" \
     --annotations "$ANNOTATIONS" \
     --continue-earlier \
     --max-chunks "$MAX_CHUNKS"
-  python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" "$CONTINUE_REPORT" "single_step" "$MAX_CHUNKS" <<'PY'
+  python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" "$CONTINUE_REPORT" "single_step" "$MAX_CHUNKS" "$UNTIL_SEQ" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -66,6 +102,7 @@ onset = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 report = {
     "mode": sys.argv[3],
     "requested_max_chunks": int(sys.argv[4]),
+    "requested_until_seq": int(sys.argv[5]) if sys.argv[5] else None,
     "stopped_reason": onset.get("stopped_reason"),
     "chunks_scanned_this_run": onset.get("chunks_scanned_this_run"),
     "earliest_target_sequence": onset.get("earliest_target_sequence"),
@@ -84,14 +121,42 @@ if ! [[ "$MAX_CHUNKS" =~ ^[0-9]+$ ]] || [ "$MAX_CHUNKS" -le 0 ]; then
   exit 1
 fi
 
+if [ -n "$UNTIL_SEQ" ] && python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" "$UNTIL_SEQ" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+earliest = payload.get("earliest_target_sequence")
+floor = int(sys.argv[2])
+raise SystemExit(0 if earliest is not None and earliest <= floor else 1)
+PY
+then
+  loop_stop_reason="already_at_or_below_until_seq"
+  write_until_report "$loop_stop_reason" 0 ""
+  exit 0
+fi
+
 chunks_done=0
 loop_stop_reason="max_chunks"
+last_completed_chunk_dir=""
 while [ "$chunks_done" -lt "$MAX_CHUNKS" ]; do
   bash "$SCRIPT_DIR/find-fishing1-startup-onset.sh" \
     --output "$OUTPUT_ROOT" \
     --annotations "$ANNOTATIONS" \
     --continue-earlier \
     --max-chunks 1
+  last_completed_chunk_dir="$(python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(payload.get("earliest_target_chunk_dir") or "")
+PY
+)"
+  chunks_done=$((chunks_done + 1))
+  write_until_report "in_progress" "$chunks_done" "$last_completed_chunk_dir" >/dev/null
 
   if python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" <<'PY'
 import json
@@ -106,26 +171,20 @@ PY
     break
   fi
 
-  chunks_done=$((chunks_done + 1))
-done
-
-python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" "$CONTINUE_REPORT" "$loop_stop_reason" "$MAX_CHUNKS" <<'PY'
+  if [ -n "$UNTIL_SEQ" ] && python3 - "$OUTPUT_ROOT/fishing1-startup-onset.json" "$UNTIL_SEQ" <<'PY'
 import json
 import sys
 from pathlib import Path
 
-onset = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-report = {
-    "mode": "until_non_target",
-    "requested_max_chunks": int(sys.argv[4]),
-    "wrapper_stopped_reason": sys.argv[3],
-    "onset_stopped_reason": onset.get("stopped_reason"),
-    "chunks_scanned_this_run": onset.get("chunks_scanned_this_run"),
-    "earliest_target_sequence": onset.get("earliest_target_sequence"),
-    "next_continue_start_seq": onset.get("next_continue_start_seq"),
-    "first_non_target_before_earliest_report": onset.get("first_non_target_before_earliest_report"),
-    "onset_report": str(Path(sys.argv[1]).resolve()),
-}
-Path(sys.argv[2]).write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
-print(sys.argv[2])
+payload = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+earliest = payload.get("earliest_target_sequence")
+floor = int(sys.argv[2])
+raise SystemExit(0 if earliest is not None and earliest <= floor else 1)
 PY
+  then
+    loop_stop_reason="reached_until_seq"
+    break
+  fi
+done
+
+write_until_report "$loop_stop_reason" "$chunks_done" "$last_completed_chunk_dir"

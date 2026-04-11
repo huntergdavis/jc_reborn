@@ -144,6 +144,7 @@ earliest_target_report=""
 earliest_target_chunk_dir=""
 last_non_target_report=""
 last_non_target_chunk_dir=""
+stopped_reason=""
 if [ "$RESUME" -eq 1 ] && [ -f "$onset_path" ]; then
   read -r earliest_target_report earliest_target_chunk_dir last_non_target_report last_non_target_chunk_dir < <(python3 - "$onset_path" <<'PY'
 import json
@@ -199,6 +200,7 @@ PY
 
 while [ "$current_high" -ge "$END_SEQ" ]; do
   if [ -n "$MAX_CHUNKS" ] && [ "$chunk_index" -ge "$MAX_CHUNKS" ]; then
+    stopped_reason="max_chunks"
     break
   fi
 
@@ -237,6 +239,7 @@ PY
     earliest_target_chunk_dir="$chunk_dir"
     append_chunk_history "$current_low" "$current_high" "$chunk_dir" "$boundary_path" "true"
     if [ "$CONTINUE_THROUGH_TARGETS" -eq 0 ]; then
+      stopped_reason="found_target"
       break
     fi
     current_high=$((current_low - 1))
@@ -249,6 +252,7 @@ PY
   last_non_target_report="$boundary_path"
   last_non_target_chunk_dir="$chunk_dir"
   if [ -n "$earliest_target_report" ]; then
+    stopped_reason="found_non_target_before_earliest"
     break
   fi
 
@@ -256,7 +260,15 @@ PY
   chunk_index=$((chunk_index + 1))
 done
 
-python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" <<'PY'
+if [ -z "$stopped_reason" ]; then
+  if [ -n "$earliest_target_report" ]; then
+    stopped_reason="reached_end_with_targets"
+  else
+    stopped_reason="reached_end_without_target"
+  fi
+fi
+
+python3 - "$OUTPUT_ROOT" "$TARGET_STARTUP_REGIME" "$START_SEQ" "$END_SEQ" "$found_report" "$earliest_target_report" "$earliest_target_chunk_dir" "$last_non_target_report" "$last_non_target_chunk_dir" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" "$chunk_index" "$stopped_reason" <<'PY'
 import json
 import re
 import sys
@@ -272,6 +284,8 @@ earliest_target_chunk_dir = sys.argv[7]
 last_non_target_report = sys.argv[8]
 last_non_target_chunk_dir = sys.argv[9]
 continue_through_targets = sys.argv[10] == "1"
+chunks_scanned = int(sys.argv[14])
+stopped_reason = sys.argv[15]
 
 
 def chunk_start_seq(path_str):
@@ -291,6 +305,8 @@ report = {
     "resume": sys.argv[11] == "1",
     "max_chunks": int(sys.argv[12]) if sys.argv[12] else None,
     "continue_earlier": sys.argv[13] == "1",
+    "chunks_scanned_this_run": chunks_scanned,
+    "stopped_reason": stopped_reason,
     "chunk_history_jsonl": str(output_root / "fishing1-startup-onset-chunks.jsonl"),
     "onset_boundary_report": found_report or None,
     "earliest_target_boundary_report": earliest_target_report or None,

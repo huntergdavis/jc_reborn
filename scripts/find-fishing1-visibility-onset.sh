@@ -192,6 +192,7 @@ PY
 write_report() {
   python3 - "$OUTPUT_ROOT" "$MIN_FIRST_VISIBLE" "$MIN_FIRST_FULL_HEIGHT" "$START_SEQ" "$END_SEQ" "$1" "$CONTINUE_THROUGH_TARGETS" "$RESUME" "$MAX_CHUNKS" "$CONTINUE_EARLIER" "$2" "$3" <<'PY'
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -207,6 +208,17 @@ max_chunks = int(sys.argv[9]) if sys.argv[9] else None
 continue_earlier = sys.argv[10] == "1"
 chunks_scanned = int(sys.argv[11])
 last_boundary_report = sys.argv[12] or None
+
+def extract_sequence(value):
+    if not value:
+        return None
+    match = re.search(r"/(\d+)_", value)
+    if match:
+        return int(match.group(1))
+    match = re.search(r"seq_(\d+)_to_(\d+)", value)
+    if match:
+        return int(match.group(1))
+    return None
 
 history_path = output_root / "fishing1-visibility-onset-chunks.jsonl"
 history_rows = []
@@ -273,6 +285,9 @@ if report["earliest_target_boundary_report"]:
     report["first_target"] = payload.get("first_target")
     report["first_target_state_hash"] = (payload.get("first_target") or {}).get("state_hash")
     report["first_target_result_json"] = (payload.get("first_target") or {}).get("result_json")
+    target_seq = extract_sequence(report["first_target_result_json"])
+    if target_seq is not None:
+        report["earliest_target_sequence"] = target_seq
 
 out_path = output_root / "fishing1-visibility-onset.json"
 out_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")

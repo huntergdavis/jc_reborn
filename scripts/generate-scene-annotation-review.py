@@ -708,7 +708,7 @@ def build_html(title: str, scene_id: str, manifest_path: Path, annotations_path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate a one-scene annotation review UI.")
-    parser.add_argument("--reference", type=Path, required=True)
+    parser.add_argument("--reference", type=Path)
     parser.add_argument("--result", type=Path, required=True)
     parser.add_argument("--outdir", type=Path, required=True)
     parser.add_argument("--scene-id", type=str)
@@ -722,11 +722,21 @@ def main() -> int:
 
     outdir = args.outdir.resolve()
     outdir.mkdir(parents=True, exist_ok=True)
-    scene_id = args.scene_id or resolve_scene_id(args.reference) or resolve_scene_id(args.result)
-    reference_frames_dir = resolve_frames_dir(args.reference)
+    if args.paired and args.reference is None:
+        raise SystemExit("--paired requires --reference")
+
+    scene_id = args.scene_id
+    if not scene_id and args.reference is not None:
+        scene_id = resolve_scene_id(args.reference)
+    if not scene_id:
+        scene_id = resolve_scene_id(args.result)
+
+    reference_frames_dir = resolve_frames_dir(args.reference) if args.reference is not None else None
     query_frames_dir = resolve_frames_dir(args.result)
 
-    if args.all_frames or args.all_reference_frames:
+    if reference_frames_dir is None:
+        reference_frames = []
+    elif args.all_frames or args.all_reference_frames:
         reference_frames = vv.collect_frame_paths(reference_frames_dir)
     else:
         reference_frames = sample_scene_frames(reference_frames_dir, prefer_scene_content=True, skip_front_fraction=0.2)
@@ -745,7 +755,7 @@ def main() -> int:
         "scene_id": scene_id,
         "title": args.title,
         "mode": "paired" if args.paired else "single_frame",
-        "reference": str(args.reference.resolve()),
+        "reference": str(args.reference.resolve()) if args.reference is not None else None,
         "result": str(args.result.resolve()),
         "frame_count": len(frames),
         "frames": [],
@@ -769,7 +779,7 @@ def main() -> int:
                 {
                     "scene_id": scene_id,
                     "result": str(args.result.resolve()),
-                    "reference": str(args.reference.resolve()),
+                    "reference": str(args.reference.resolve()) if args.reference is not None else None,
                     "frames": [
                         {
                             "id": frame["id"],

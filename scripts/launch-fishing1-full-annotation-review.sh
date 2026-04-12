@@ -9,6 +9,7 @@ GENERATED_RUN_DIR="$OUTDIR/regtest-run"
 SOURCE_RESULT="${FISHING1_FULL_REVIEW_RESULT:-}"
 STABLE_RESULT_DIR="${FISHING1_FULL_REVIEW_STABLE_RESULT_DIR:-$PROJECT_ROOT/regtest-results/fishing-1-story17-full-current}"
 STABLE_RESULT="$STABLE_RESULT_DIR/result.json"
+REFERENCE_RESULT="${FISHING1_FULL_REVIEW_REFERENCE_RESULT:-$PROJECT_ROOT/regtest-references/FISHING-1/result.json}"
 
 resolve_scene_value() {
   local field="$1"
@@ -52,6 +53,32 @@ if scene.get("boot_string") != "story scene 17 seed 1":
 PY
 }
 
+reference_is_truncated_story_single() {
+  python3 - "$REFERENCE_RESULT" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+result_path = Path(sys.argv[1])
+if not result_path.is_file():
+    raise SystemExit(0)
+
+payload = json.loads(result_path.read_text(encoding="utf-8"))
+scene = payload.get("scene") or {}
+config = payload.get("config") or {}
+outcome = payload.get("outcome") or {}
+
+boot = scene.get("boot_string") or ""
+frames_captured = int(outcome.get("frames_captured") or 0)
+until_exit = bool(config.get("until_exit"))
+
+if boot == "window nosound story single 17 seed 1" and until_exit and frames_captured <= 100:
+    raise SystemExit(0)
+
+raise SystemExit(1)
+PY
+}
+
 if [ -z "$SOURCE_RESULT" ]; then
   if stable_result_matches_profile; then
     SOURCE_RESULT="$STABLE_RESULT"
@@ -70,13 +97,22 @@ if [ -z "$SOURCE_RESULT" ]; then
   fi
 fi
 
+review_args=(
+  --scene-id "FISHING-1"
+  --title "FISHING 1 Full PS1 Review"
+  --all-query-frames
+  --result "$SOURCE_RESULT"
+  --outdir "$OUTDIR"
+)
+
+if [ -f "$REFERENCE_RESULT" ] && ! reference_is_truncated_story_single; then
+  review_args+=(--reference "$REFERENCE_RESULT")
+else
+  review_args+=(--title "FISHING 1 Full PS1 Review (No Host Reference)")
+fi
+
 python3 "$PROJECT_ROOT/scripts/generate-scene-annotation-review.py" \
-  --scene-id "FISHING-1" \
-  --title "FISHING 1 Full PS1 Review" \
-  --all-query-frames \
-  --reference "$PROJECT_ROOT/regtest-references/FISHING-1/result.json" \
-  --result "$SOURCE_RESULT" \
-  --outdir "$OUTDIR" >/dev/null
+  "${review_args[@]}" >/dev/null
 
 URL="$(python3 - <<PY
 host = "127.0.0.1"

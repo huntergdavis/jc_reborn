@@ -65,6 +65,26 @@ def compare_named_sets(base_dir: Path, overlay_dir: Path, pattern: str) -> dict:
     }
 
 
+def compare_selected_files(base_dir: Path, overlay_dir: Path, files: list[str]) -> dict:
+    first_diff = None
+    compared = 0
+    for name in files:
+        compared += 1
+        if sha256(base_dir / name) != sha256(overlay_dir / name):
+            first_diff = name
+            break
+
+    return {
+        "base_dir": str(base_dir) if base_dir else None,
+        "overlay_dir": str(overlay_dir) if overlay_dir else None,
+        "common_count": len(files),
+        "first_diff": first_diff,
+        "all_common_identical": first_diff is None,
+        "common_files": files,
+        "compared_files": compared,
+    }
+
+
 def frame_black_stats(directory: Path, pattern: str = "frame_*.png") -> dict:
     files = listed_files(directory, pattern)
     black_files: list[str] = []
@@ -112,6 +132,12 @@ def main() -> int:
     filtered_cmp = compare_named_sets(base_filtered, overlay_filtered, "frame_*.png")
     base_black = frame_black_stats(base_filtered)
     overlay_black = frame_black_stats(overlay_filtered)
+    visible_common = [
+        name for name in filtered_cmp["common_files"]
+        if base_black["max_level_by_file"].get(name, 0) > 0
+        and overlay_black["max_level_by_file"].get(name, 0) > 0
+    ]
+    visible_cmp = compare_selected_files(base_filtered, overlay_filtered, visible_common)
     vram_cmp = compare_named_sets(
         base_raw,
         overlay_raw,
@@ -151,6 +177,7 @@ def main() -> int:
             "base": base_black,
             "overlay": overlay_black,
         },
+        "filtered_visible_frames": visible_cmp,
         "cpu_to_vram_dumps": vram_cmp,
         "raw_hashes": {
             "base": base["outcome"].get("raw_hashes", {}),

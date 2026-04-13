@@ -75,11 +75,13 @@ fgpilot = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
 def classify(compare):
     outcome = compare["outcome"]
     black = compare["filtered_frame_black_stats"]
+    visible = compare["filtered_visible_frames"]
     base_all_black = black["base"]["all_black_count"] == black["base"]["frame_count"] and black["base"]["frame_count"] > 0
     overlay_all_black = black["overlay"]["all_black_count"] == black["overlay"]["frame_count"] and black["overlay"]["frame_count"] > 0
     base_has_black = black["base"]["all_black_count"] > 0
     overlay_has_black = black["overlay"]["all_black_count"] > 0
     visual_diff = not outcome["filtered_frames_equal"]
+    visible_visual_diff = not visible["all_common_identical"]
     upload_diff = not outcome["cpu_to_vram_dumps_equal"]
     vram_diff = not outcome["vram_hash_equal"]
     state_diff = (not outcome["save_state_hash_equal"]) or (not outcome["ram_hash_equal"])
@@ -90,10 +92,13 @@ def classify(compare):
         "overlay_has_black": overlay_has_black,
         "window_invalid_black": base_has_black or overlay_has_black,
         "visual_diff": visual_diff,
+        "visible_frame_count": visible["common_count"],
+        "visible_visual_diff": visible_visual_diff,
+        "visible_first_diff": visible["first_diff"],
         "upload_diff": upload_diff,
         "vram_diff": vram_diff,
         "state_diff": state_diff,
-        "nonvisual_state_only": state_diff and not visual_diff and not upload_diff and not vram_diff,
+        "nonvisual_state_only": state_diff and not visible_visual_diff and not upload_diff and not vram_diff,
     }
 
 payload = {
@@ -104,6 +109,7 @@ payload = {
         "fgpilot_adds_only_nonvisual_state_drift": classify(fgpilot)["nonvisual_state_only"],
         "window_invalid_black": classify(overlay)["window_invalid_black"] or classify(fgpilot)["window_invalid_black"],
         "any_visual_diff": classify(overlay)["visual_diff"] or classify(fgpilot)["visual_diff"],
+        "any_visible_subset_diff": classify(overlay)["visible_visual_diff"] or classify(fgpilot)["visible_visual_diff"],
         "any_upload_diff": classify(overlay)["upload_diff"] or classify(fgpilot)["upload_diff"],
         "any_vram_diff": classify(overlay)["vram_diff"] or classify(fgpilot)["vram_diff"],
     },

@@ -123,23 +123,72 @@ static int fgSceneEquals(const char *a, const char *b)
     return a && b && strcmp(a, b) == 0;
 }
 
+static void fgInitDisplayDirect(void)
+{
+    DISPENV disp;
+    DRAWENV draw;
+
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+
+    SetDefDispEnv(&disp, 0, 0, 640, 480);
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    disp.isinter = 1;
+    draw.isbg = 0;
+
+    PutDispEnv(&disp);
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+}
+
+static void fgClearScreenDirect(void)
+{
+    static uint16 *blackStrip = NULL;
+    const int stripHeight = 60;
+    RECT rect;
+    int y;
+
+    if (blackStrip == NULL) {
+        blackStrip = (uint16 *)calloc((size_t)640 * (size_t)stripHeight, sizeof(uint16));
+        if (blackStrip == NULL)
+            return;
+    }
+
+    for (y = 0; y < 480; y += stripHeight) {
+        setRECT(&rect, 0, y, 640, stripHeight);
+        LoadImage(&rect, (uint32 *)blackStrip);
+    }
+    DrawSync(0);
+}
+
+static void fgUploadDirect(uint16 x, uint16 y, uint16 width, uint16 height, const uint8 *frameData)
+{
+    RECT rect;
+
+    if (frameData == NULL || width == 0 || height == 0)
+        return;
+
+    if (x >= 640 || y >= 480)
+        return;
+    if (x + width > 640)
+        width = (uint16)(640 - x);
+    if (y + height > 480)
+        height = (uint16)(480 - y);
+    if (width == 0 || height == 0)
+        return;
+
+    setRECT(&rect, x, y, width, height);
+    LoadImage(&rect, (uint32 *)frameData);
+    DrawSync(0);
+}
+
 static void fgDrawEntry(const struct TFgPilotEntry *entry, uint8 *frameData)
 {
-    PS1Surface sprite;
-
-    grBeginFrame();
-    grRestoreBgTiles();
     VSync(0);
-    grDrawBackground();
+    fgClearScreenDirect();
 
-    if (frameData != NULL && entry != NULL && entry->width > 0 && entry->height > 0) {
-        memset(&sprite, 0, sizeof(sprite));
-        sprite.pixels = (uint16 *)frameData;
-        sprite.width = entry->width;
-        sprite.height = entry->height;
-        grBlitToFramebuffer(&sprite, (sint16)entry->x, (sint16)entry->y);
-        DrawSync(0);
-    }
+    if (entry != NULL)
+        fgUploadDirect(entry->x, entry->y, entry->width, entry->height, frameData);
 
     eventsWaitTick(grUpdateDelay);
 }
@@ -154,19 +203,33 @@ static void fgHoldEntry(const struct TFgPilotEntry *entry, uint8 *frameData, uin
 
 static void fgPlayTestCard(void)
 {
+    static uint16 *colors[4] = { NULL, NULL, NULL, NULL };
+    static const uint16 colorValues[4] = { 0x001f, 0x03e0, 0x03ff, 0x7c1f };
+    const uint16 rectW = 120;
+    const uint16 rectH = 80;
     uint16 i;
 
-    grInitEmptyBackground();
+    fgInitDisplayDirect();
     grUpdateDelay = 1;
 
+    for (int c = 0; c < 4; c++) {
+        if (colors[c] == NULL) {
+            colors[c] = (uint16 *)malloc((size_t)rectW * (size_t)rectH * sizeof(uint16));
+            if (colors[c] == NULL)
+                return;
+            for (uint32 j = 0; j < (uint32)rectW * (uint32)rectH; j++)
+                colors[c][j] = colorValues[c];
+        }
+    }
+
     for (i = 0; i < 120; i++) {
-        grBeginFrame();
-        grRestoreBgTiles();
-        grDrawRect(NULL, 24, 24, 120, 80, 1);
-        grDrawRect(NULL, 176, 24, 120, 80, 2);
-        grDrawRect(NULL, 24, 136, 120, 80, 4);
-        grDrawRect(NULL, 176, 136, 120, 80, 5);
-        grUpdateDisplay(NULL, NULL, NULL);
+        VSync(0);
+        fgClearScreenDirect();
+        fgUploadDirect(24, 24, rectW, rectH, (const uint8 *)colors[0]);
+        fgUploadDirect(176, 24, rectW, rectH, (const uint8 *)colors[1]);
+        fgUploadDirect(24, 136, rectW, rectH, (const uint8 *)colors[2]);
+        fgUploadDirect(176, 136, rectW, rectH, (const uint8 *)colors[3]);
+        eventsWaitTick(grUpdateDelay);
     }
 }
 
@@ -182,8 +245,7 @@ static void fgPlayFishing1(void)
         return;
     }
 
-    adsInit();
-    adsInitIsland();
+    fgInitDisplayDirect();
     grUpdateDelay = 1;
     fgHoldEntry(NULL, NULL, 15);
 

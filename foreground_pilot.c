@@ -150,7 +150,7 @@ static void fgHoldEntry(const struct TFgPilotEntry *entry, uint8 *frameData, uin
 
 static void fgPlayFishing1(void)
 {
-    const char *path = "FG/FISHING1.FG1";
+    const char *path = "FG\\FISHING1.FG1";
     struct TFgPilotHeader header;
     struct TFgPilotEntry lastEntry;
     uint8 *lastFrameData = NULL;

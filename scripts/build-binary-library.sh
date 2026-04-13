@@ -133,6 +133,7 @@ git -C "$WORKTREE" sparse-checkout set \
     '/*.c' '/*.h' \
     '/CMake*' '/Makefile*' \
     '/config/ps1/' \
+    '/generated/ps1/' \
     '/scripts/'
 git -C "$WORKTREE" checkout
 

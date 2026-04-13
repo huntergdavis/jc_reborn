@@ -32,7 +32,7 @@ python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
   --output-pack "$PACK_PATH" \
   --output-json "$PACK_JSON" \
-  --frame-step 6
+  --frame-step 1
 
 python3 "$SCRIPT_DIR/build-ps1-rawframe.py" \
   --input "$RAW_FRAME_SOURCE" \

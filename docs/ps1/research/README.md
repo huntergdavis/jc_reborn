@@ -19,6 +19,7 @@ Use these in order:
 - [CURRENT_STATUS_2026-03-21.json](/home/hunter/workspace/jc_reborn/docs/ps1/research/CURRENT_STATUS_2026-03-21.json)
 - [IMPLEMENTATION_PLAN.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/IMPLEMENTATION_PLAN.md)
 - [OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md)
+- [FOREGROUND_TOP_LAYER_LOG_2026-04-13.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/FOREGROUND_TOP_LAYER_LOG_2026-04-13.md)
 - [generated/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/README.md)
 - [archive/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/archive/README.md)
 

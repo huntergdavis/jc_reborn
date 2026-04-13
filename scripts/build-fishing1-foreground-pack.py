@@ -88,7 +88,7 @@ def main():
     parser.add_argument("--output-pack", required=True)
     parser.add_argument("--output-json")
     parser.add_argument("--key-rgb", default="ff00ff", type=parse_rgb)
-    parser.add_argument("--frame-step", type=int, default=6)
+    parser.add_argument("--frame-step", type=int, default=1)
     args = parser.parse_args()
 
     frames_dir = Path(args.frames_dir)

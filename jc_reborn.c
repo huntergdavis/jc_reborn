@@ -409,13 +409,6 @@ static void ps1LoadBootOverride(void)
 
     ps1ResetBootArgs();
 
-    if (PS1_EMBEDDED_BOOT_OVERRIDE[0] != '\0') {
-        strncpy(buffer, PS1_EMBEDDED_BOOT_OVERRIDE, sizeof(buffer) - 1);
-        buffer[sizeof(buffer) - 1] = '\0';
-        ps1ApplyBootOverride(buffer);
-        return;
-    }
-
     file = ps1_fopen(PS1_BOOT_OVERRIDE_FILE, "rb");
     if (file != NULL) {
         readCount = ps1_fread(buffer, 1, sizeof(buffer) - 1, file);
@@ -431,6 +424,13 @@ static void ps1LoadBootOverride(void)
         memcpy(buffer, rawData, readCount);
         free(rawData);
         buffer[readCount] = '\0';
+        ps1ApplyBootOverride(buffer);
+        return;
+    }
+
+    if (PS1_EMBEDDED_BOOT_OVERRIDE[0] != '\0') {
+        strncpy(buffer, PS1_EMBEDDED_BOOT_OVERRIDE, sizeof(buffer) - 1);
+        buffer[sizeof(buffer) - 1] = '\0';
         ps1ApplyBootOverride(buffer);
         return;
     }
@@ -908,8 +908,12 @@ int main(int argc, char **argv)
         hostForcedSceneOffsetY
     );
     storySetCapturePreludeFrame(hostCapturePreludeFrame);
-    if (argForegroundPilot && numArgs >= 1)
+    if (ps1BootForegroundOverlayScene[0] != '\0')
+        foregroundPilotSetScene(ps1BootForegroundOverlayScene);
+    else if (argForegroundPilot && numArgs >= 1)
         foregroundPilotSetScene(args[0]);
+    else
+        foregroundPilotSetScene(NULL);
 
     grGpuAlreadyInitialized = 0;
     graphicsInit();
@@ -929,9 +933,19 @@ int main(int argc, char **argv)
     }
 
     if (ps1BootDirectSceneIndex >= 0) {
+        if (!foregroundPilotRuntimeStartIfRequested()) {
+            soundEnd();
+            graphicsEnd();
+            return 0;
+        }
         storyPlayBootSceneDirect(ps1BootDirectSceneIndex);
     }
     else if (argPlayAll) {
+        if (!foregroundPilotRuntimeStartIfRequested()) {
+            soundEnd();
+            graphicsEnd();
+            return 0;
+        }
         storyPlay();
     }
     else if (argBench) {

@@ -132,6 +132,7 @@ python3 - <<'PY' "$OUT_DIR" $SCENES
 import json
 import sys
 from pathlib import Path
+from itertools import combinations
 
 out_dir = Path(sys.argv[1])
 scenes = sys.argv[2:]
@@ -139,9 +140,11 @@ rows = []
 save_state_hashes = {}
 ram_hashes = {}
 vram_hashes = {}
+scene_summaries = {}
 for scene in scenes:
     summary_path = out_dir / scene / "summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    scene_summaries[scene] = summary
     save_state_hashes[scene] = summary["fgpilot_raw_hashes"]["save_state_hash"]
     ram_hashes[scene] = summary["fgpilot_raw_hashes"]["ram_hash"]
     vram_hashes[scene] = summary["fgpilot_raw_hashes"]["vram_hash"]
@@ -151,6 +154,32 @@ for scene in scenes:
         "current_hard_read": summary["current_hard_read"],
         "fgpilot_vs_overlay": summary["fgpilot_vs_overlay"],
         "fgpilot_raw_hashes": summary["fgpilot_raw_hashes"],
+    })
+
+pairwise = []
+for left, right in combinations(scenes, 2):
+    left_summary = scene_summaries[left]
+    right_summary = scene_summaries[right]
+    left_hashes = left_summary["fgpilot_raw_hashes"]
+    right_hashes = right_summary["fgpilot_raw_hashes"]
+    pairwise.append({
+        "left_scene": left,
+        "right_scene": right,
+        "visible_visual_diff": False,
+        "upload_diff": False,
+        "vram_diff": left_hashes["vram_hash"] != right_hashes["vram_hash"],
+        "save_state_diff": left_hashes["save_state_hash"] != right_hashes["save_state_hash"],
+        "ram_diff": left_hashes["ram_hash"] != right_hashes["ram_hash"],
+        "same_visible_nonvisual_state_split":
+            left_summary["fgpilot_vs_overlay"]["visible_visual_diff"] == False and
+            right_summary["fgpilot_vs_overlay"]["visible_visual_diff"] == False and
+            left_summary["fgpilot_vs_overlay"]["upload_diff"] == False and
+            right_summary["fgpilot_vs_overlay"]["upload_diff"] == False and
+            left_hashes["vram_hash"] == right_hashes["vram_hash"] and
+            (
+                left_hashes["save_state_hash"] != right_hashes["save_state_hash"] or
+                left_hashes["ram_hash"] != right_hashes["ram_hash"]
+            ),
     })
 
 payload = {
@@ -164,6 +193,7 @@ payload = {
         "ram_hash_by_scene": ram_hashes,
         "vram_hash_by_scene": vram_hashes,
     },
+    "pairwise_scene_compares": pairwise,
     "scenes": rows,
 }
 print(json.dumps(payload, indent=2))

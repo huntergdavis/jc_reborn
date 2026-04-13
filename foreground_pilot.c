@@ -150,6 +150,27 @@ static int fgSceneEquals(const char *a, const char *b)
     return a && b && strcmp(a, b) == 0;
 }
 
+static int fgAdsNameEquals(const char *adsName, const char *baseName)
+{
+    size_t adsLen;
+    size_t baseLen;
+
+    if (!adsName || !baseName)
+        return 0;
+    if (strcmp(adsName, baseName) == 0)
+        return 1;
+
+    adsLen = strlen(adsName);
+    baseLen = strlen(baseName);
+    if (adsLen == baseLen + 4 &&
+        memcmp(adsName, baseName, baseLen) == 0 &&
+        strcmp(adsName + baseLen, ".ADS") == 0) {
+        return 1;
+    }
+
+    return 0;
+}
+
 static void fgTelemetryUpdate(void)
 {
     if (!gFgRuntime.active) {
@@ -698,7 +719,7 @@ int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
 
     if ((fgSceneEquals(gForegroundPilotScene, "fishing1") ||
          fgSceneEquals(gForegroundPilotScene, "testcard")) &&
-        fgSceneEquals(adsName, "FISHING") && adsTag == 1) {
+        fgAdsNameEquals(adsName, "FISHING") && adsTag == 1) {
         return 1;
     }
 

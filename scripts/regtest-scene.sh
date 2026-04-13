@@ -334,6 +334,10 @@ fi
 # Run duckstation-regtest
 # ---------------------------------------------------------------------------
 FRAMES_DIR="$OUTPUT_DIR/frames"
+RAW_FRAMES_DIR="$FRAMES_DIR"
+FILTERED_FRAMES_DIR=""
+CPU_TO_VRAM_COPY_COUNT=0
+CPU_TO_VRAM_COPY_DIR=""
 if [ "$USE_DOCKER_REGTEST" -eq 0 ]; then
     mkdir -p "$FRAMES_DIR"
 fi
@@ -385,10 +389,11 @@ else
 
     DOCKER_RUN_DIR="$(find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 -type d -exec test -f '{}/regtest.log' ';' -print | sort | tail -1)"
     if [ -n "$DOCKER_RUN_DIR" ] && [ -d "$DOCKER_RUN_DIR" ]; then
+        RAW_FRAMES_DIR="$DOCKER_RUN_DIR/frames"
         if [ "$START_FRAME" -gt 0 ] && [ -d "$DOCKER_RUN_DIR/filtered-frames" ]; then
             FRAMES_DIR="$DOCKER_RUN_DIR/filtered-frames"
         else
-            FRAMES_DIR="$DOCKER_RUN_DIR/frames"
+            FRAMES_DIR="$RAW_FRAMES_DIR"
         fi
         if [ -f "$DOCKER_RUN_DIR/regtest.log" ]; then
             REGTEST_LOG="$DOCKER_RUN_DIR/regtest.log"
@@ -435,6 +440,13 @@ fi
 
 if [ "$FRAME_COUNT" -gt 0 ]; then
     FRAMES_DIR="$(dirname "${FRAME_FILES[0]}")"
+fi
+
+if [ -d "$RAW_FRAMES_DIR" ]; then
+    CPU_TO_VRAM_COPY_COUNT="$(find "$RAW_FRAMES_DIR" -type f -name 'cpu_to_vram_copy_*.png' 2>/dev/null | wc -l | tr -d ' ')"
+    if [ "$CPU_TO_VRAM_COPY_COUNT" -gt 0 ]; then
+        CPU_TO_VRAM_COPY_DIR="$RAW_FRAMES_DIR"
+    fi
 fi
 
 log "Captured $FRAME_COUNT frame(s)."
@@ -671,12 +683,17 @@ result = {
         'exit_code': $REGTEST_EXIT,
         'timed_out': $REGTEST_EXIT == 124,
         'frames_captured': $FRAME_COUNT,
+        'cpu_to_vram_copy_count': int('$CPU_TO_VRAM_COPY_COUNT'),
         'state_hash': '$STATE_HASH' if '$STATE_HASH' else None,
         'has_fatal_error': bool($HAS_FATAL),
     },
     'paths': {
         'output_dir': os.path.abspath('$OUTPUT_DIR'),
         'frames_dir': os.path.abspath('$FRAMES_DIR'),
+        'raw_frames_dir': os.path.abspath('$RAW_FRAMES_DIR'),
+        'filtered_frames_dir': os.path.abspath('$FILTERED_FRAMES_DIR') if '$FILTERED_FRAMES_DIR' else None,
+        'docker_run_dir': os.path.abspath('$DOCKER_RUN_DIR') if '${DOCKER_RUN_DIR:-}' else None,
+        'cpu_to_vram_copy_dir': os.path.abspath('$CPU_TO_VRAM_COPY_DIR') if '$CPU_TO_VRAM_COPY_DIR' else None,
         'telemetry': os.path.abspath('$TELEMETRY_FILE'),
         'printf_log': os.path.abspath('$PRINTF_FILE'),
         'raw_hashes': os.path.abspath('$RAW_HASHES_FILE'),

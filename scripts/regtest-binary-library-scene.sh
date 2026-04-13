@@ -231,6 +231,7 @@ git -C "$WORKTREE" sparse-checkout init --no-cone >/dev/null
 git -C "$WORKTREE" sparse-checkout set \
     '/*.xml' \
     '/config/ps1/' \
+    '/generated/ps1/' \
     '/scripts/' \
     '/CMake*' \
     '/Makefile*' >/dev/null

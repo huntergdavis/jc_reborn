@@ -194,6 +194,20 @@ payload = {
         "vram_hash_by_scene": vram_hashes,
     },
     "pairwise_scene_compares": pairwise,
+    "matrix_hard_read": {
+        "all_scenes_nonvisual_against_overlay":
+            all(row["current_hard_read"]["fgpilot_adds_only_nonvisual_state_drift"] for row in rows),
+        "all_pairs_same_visible_output":
+            all(pair["visible_visual_diff"] is False and pair["upload_diff"] is False and pair["vram_diff"] is False
+                for pair in pairwise),
+        "all_pairs_distinct_machine_state":
+            all(pair["save_state_diff"] or pair["ram_diff"] for pair in pairwise),
+        "all_pairs_same_visible_nonvisual_state_split":
+            all(pair["same_visible_nonvisual_state_split"] for pair in pairwise),
+        "distinct_save_state_hashes": len(set(save_state_hashes.values())),
+        "distinct_ram_hashes": len(set(ram_hashes.values())),
+        "distinct_vram_hashes": len(set(vram_hashes.values())),
+    },
     "scenes": rows,
 }
 print(json.dumps(payload, indent=2))

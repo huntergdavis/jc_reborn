@@ -128,23 +128,27 @@ print(json.dumps(payload, indent=2))
 PY
 done
 
-python3 - <<'PY' "$OUT_DIR" $SCENES
+python3 - <<'PY' "$OUT_DIR" "$SCRIPT_DIR" $SCENES
 import json
 import sys
 from pathlib import Path
 from itertools import combinations
+import subprocess
 
 out_dir = Path(sys.argv[1])
-scenes = sys.argv[2:]
+script_dir = Path(sys.argv[2])
+scenes = sys.argv[3:]
 rows = []
 save_state_hashes = {}
 ram_hashes = {}
 vram_hashes = {}
 scene_summaries = {}
+fgpilot_results = {}
 for scene in scenes:
     summary_path = out_dir / scene / "summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     scene_summaries[scene] = summary
+    fgpilot_results[scene] = out_dir / scene / "fgpilot" / "result.json"
     save_state_hashes[scene] = summary["fgpilot_raw_hashes"]["save_state_hash"]
     ram_hashes[scene] = summary["fgpilot_raw_hashes"]["ram_hash"]
     vram_hashes[scene] = summary["fgpilot_raw_hashes"]["vram_hash"]
@@ -158,27 +162,31 @@ for scene in scenes:
 
 pairwise = []
 for left, right in combinations(scenes, 2):
-    left_summary = scene_summaries[left]
-    right_summary = scene_summaries[right]
-    left_hashes = left_summary["fgpilot_raw_hashes"]
-    right_hashes = right_summary["fgpilot_raw_hashes"]
+    cmp = json.loads(subprocess.check_output([
+        "python3",
+        str(script_dir / "compare-regtest-result-bundles.py"),
+        "--base",
+        str(fgpilot_results[left]),
+        "--overlay",
+        str(fgpilot_results[right]),
+    ], text=True))
     pairwise.append({
         "left_scene": left,
         "right_scene": right,
-        "visible_visual_diff": False,
-        "upload_diff": False,
-        "vram_diff": left_hashes["vram_hash"] != right_hashes["vram_hash"],
-        "save_state_diff": left_hashes["save_state_hash"] != right_hashes["save_state_hash"],
-        "ram_diff": left_hashes["ram_hash"] != right_hashes["ram_hash"],
+        "visible_visual_diff": not cmp["filtered_visible_frames"]["all_common_identical"],
+        "visible_first_diff": cmp["filtered_visible_frames"]["first_diff"],
+        "upload_diff": not cmp["outcome"]["cpu_to_vram_dumps_equal"],
+        "upload_first_diff": cmp["cpu_to_vram_dumps"]["first_diff"],
+        "vram_diff": not cmp["outcome"]["vram_hash_equal"],
+        "save_state_diff": not cmp["outcome"]["save_state_hash_equal"],
+        "ram_diff": not cmp["outcome"]["ram_hash_equal"],
         "same_visible_nonvisual_state_split":
-            left_summary["fgpilot_vs_overlay"]["visible_visual_diff"] == False and
-            right_summary["fgpilot_vs_overlay"]["visible_visual_diff"] == False and
-            left_summary["fgpilot_vs_overlay"]["upload_diff"] == False and
-            right_summary["fgpilot_vs_overlay"]["upload_diff"] == False and
-            left_hashes["vram_hash"] == right_hashes["vram_hash"] and
+            cmp["filtered_visible_frames"]["all_common_identical"] and
+            cmp["outcome"]["cpu_to_vram_dumps_equal"] and
+            cmp["outcome"]["vram_hash_equal"] and
             (
-                left_hashes["save_state_hash"] != right_hashes["save_state_hash"] or
-                left_hashes["ram_hash"] != right_hashes["ram_hash"]
+                not cmp["outcome"]["save_state_hash_equal"] or
+                not cmp["outcome"]["ram_hash_equal"]
             ),
     })
 

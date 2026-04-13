@@ -41,6 +41,7 @@ struct TFgPilotEntry {
 };
 
 static char gForegroundPilotScene[16] = "";
+static const uint16 kFgPilotProbeHoldFrames = 1800;
 
 static uint16 fgReadU16(const uint8 *p)
 {
@@ -123,6 +124,118 @@ static int fgSceneEquals(const char *a, const char *b)
     return a && b && strcmp(a, b) == 0;
 }
 
+static void fgInitVisiblePipeline(void)
+{
+    grUpdateDelay = 1;
+}
+
+static void fgPrepareBackgroundFrame(void)
+{
+    grInitEmptyBackground();
+}
+
+static void fgBlit16ToBackgroundRect(uint16 dstX, uint16 dstY,
+                                     uint16 width, uint16 height,
+                                     const uint16 *srcPixels)
+{
+    uint16 row;
+
+    if (srcPixels == NULL || width == 0 || height == 0)
+        return;
+
+    for (row = 0; row < height; row++) {
+        uint16 screenY = (uint16)(dstY + row);
+        const uint16 *srcRow = srcPixels + ((uint32)row * (uint32)width);
+
+        if (screenY >= 480)
+            break;
+
+        if (screenY < 240) {
+            if (dstX < 320 && bgTile0 && bgTile0->pixels) {
+                uint16 copyW = width;
+                if (dstX + copyW > 320)
+                    copyW = (uint16)(320 - dstX);
+                memcpy(bgTile0->pixels + ((uint32)screenY * 320u) + dstX,
+                       srcRow,
+                       (size_t)copyW * sizeof(uint16));
+            }
+            if (dstX + width > 320 && bgTile1 && bgTile1->pixels) {
+                uint16 srcOffset = (dstX < 320) ? (uint16)(320 - dstX) : 0;
+                uint16 tileX = (dstX < 320) ? 0 : (uint16)(dstX - 320);
+                uint16 copyW = (uint16)(width - srcOffset);
+                if (tileX + copyW > 320)
+                    copyW = (uint16)(320 - tileX);
+                memcpy(bgTile1->pixels + ((uint32)screenY * 320u) + tileX,
+                       srcRow + srcOffset,
+                       (size_t)copyW * sizeof(uint16));
+            }
+        } else {
+            uint16 tileY = (uint16)(screenY - 240);
+            if (dstX < 320 && bgTile3 && bgTile3->pixels) {
+                uint16 copyW = width;
+                if (dstX + copyW > 320)
+                    copyW = (uint16)(320 - dstX);
+                memcpy(bgTile3->pixels + ((uint32)tileY * 320u) + dstX,
+                       srcRow,
+                       (size_t)copyW * sizeof(uint16));
+            }
+            if (dstX + width > 320 && bgTile4 && bgTile4->pixels) {
+                uint16 srcOffset = (dstX < 320) ? (uint16)(320 - dstX) : 0;
+                uint16 tileX = (dstX < 320) ? 0 : (uint16)(dstX - 320);
+                uint16 copyW = (uint16)(width - srcOffset);
+                if (tileX + copyW > 320)
+                    copyW = (uint16)(320 - tileX);
+                memcpy(bgTile4->pixels + ((uint32)tileY * 320u) + tileX,
+                       srcRow + srcOffset,
+                       (size_t)copyW * sizeof(uint16));
+            }
+        }
+    }
+}
+
+static void fgPresentCurrentBackground(uint16 holdFrames)
+{
+    uint16 i;
+
+    grSaveCleanBgTiles();
+    for (i = 0; i < holdFrames; i++)
+        grUpdateDisplay(NULL, NULL, NULL);
+}
+
+static uint8 *fgLoadRawFileDirect(const char *cdPath, uint32 *outSize)
+{
+    CdlFILE fileInfo;
+    uint32 totalBytes;
+    uint8 *buffer;
+    int totalSectors;
+
+    if (cdPath == NULL || outSize == NULL)
+        return NULL;
+
+    if (CdSearchFile(&fileInfo, (char *)cdPath) == NULL) {
+        printf("FG pilot: CdSearchFile failed for %s\n", cdPath);
+        return NULL;
+    }
+
+    totalBytes = (uint32)fileInfo.size;
+    totalSectors = (int)((totalBytes + 2047u) / 2048u);
+    buffer = (uint8 *)malloc((size_t)totalSectors * 2048u);
+    if (buffer == NULL)
+        return NULL;
+
+    CdControl(CdlSetloc, (uint8 *)&fileInfo.pos, 0);
+    CdRead(totalSectors, (uint32 *)buffer, CdlModeSpeed);
+    if (CdReadSync(0, 0) < 0) {
+        printf("FG pilot: CdReadSync failed for %s\n", cdPath);
+        free(buffer);
+        return NULL;
+    }
+
+    *outSize = totalBytes;
+    cdromResetState();
+    return buffer;
+}
+
 static void fgInitDisplayDirect(void)
 {
     DISPENV disp;
@@ -145,34 +258,24 @@ static void fgShowRawFrame(const char *cdPath, uint16 holdFrames)
 {
     uint32 rawSize = 0;
     uint8 *screenBuffer;
-    int stripHeight = 60;
-    int yOffset;
 
     if (cdPath == NULL)
         return;
 
-    screenBuffer = ps1_loadRawFile(cdPath, &rawSize);
+    screenBuffer = fgLoadRawFileDirect(cdPath, &rawSize);
     if (screenBuffer == NULL)
         return;
     if (rawSize < (uint32)(640 * 480 * 2)) {
+        printf("FG pilot: short raw frame %s (%u bytes)\n", cdPath, (unsigned int)rawSize);
         free(screenBuffer);
         return;
     }
 
-    fgInitDisplayDirect();
-
-    for (yOffset = 0; yOffset < 480; yOffset += stripHeight) {
-        RECT rect;
-        uint8 *stripData = screenBuffer + ((uint32)yOffset * 640u * 2u);
-        setRECT(&rect, 0, yOffset, 640, stripHeight);
-        LoadImage(&rect, (uint32 *)stripData);
-        DrawSync(0);
-    }
-
+    fgInitVisiblePipeline();
+    fgPrepareBackgroundFrame();
+    fgBlit16ToBackgroundRect(0, 0, 640, 480, (const uint16 *)screenBuffer);
     free(screenBuffer);
-
-    for (uint16 i = 0; i < holdFrames; i++)
-        VSync(0);
+    fgPresentCurrentBackground(holdFrames);
 }
 
 static void fgClearScreenDirect(void)
@@ -243,8 +346,7 @@ static void fgPlayTestCard(void)
     const uint16 rectH = 80;
     uint16 i;
 
-    fgInitDisplayDirect();
-    grUpdateDelay = 1;
+    fgInitVisiblePipeline();
 
     for (int c = 0; c < 4; c++) {
         if (colors[c] == NULL) {
@@ -257,13 +359,12 @@ static void fgPlayTestCard(void)
     }
 
     for (i = 0; i < 120; i++) {
-        fgClearScreenDirect();
-        fgUploadDirect(24, 24, rectW, rectH, (const uint8 *)colors[0]);
-        fgUploadDirect(176, 24, rectW, rectH, (const uint8 *)colors[1]);
-        fgUploadDirect(24, 136, rectW, rectH, (const uint8 *)colors[2]);
-        fgUploadDirect(176, 136, rectW, rectH, (const uint8 *)colors[3]);
-        VSync(0);
-        eventsWaitTick(grUpdateDelay);
+        fgPrepareBackgroundFrame();
+        fgBlit16ToBackgroundRect(24, 24, rectW, rectH, colors[0]);
+        fgBlit16ToBackgroundRect(176, 24, rectW, rectH, colors[1]);
+        fgBlit16ToBackgroundRect(24, 136, rectW, rectH, colors[2]);
+        fgBlit16ToBackgroundRect(176, 136, rectW, rectH, colors[3]);
+        fgPresentCurrentBackground(1);
     }
 }
 
@@ -279,9 +380,9 @@ static void fgPlayFishing1(void)
         return;
     }
 
-    fgInitDisplayDirect();
-    grUpdateDelay = 1;
-    fgHoldEntry(NULL, NULL, 15);
+    fgInitVisiblePipeline();
+    fgPrepareBackgroundFrame();
+    fgPresentCurrentBackground(15);
 
     for (uint16 frameIndex = 0; frameIndex < header.frameCount; frameIndex++) {
         struct TFgPilotEntry entry;
@@ -300,14 +401,16 @@ static void fgPlayFishing1(void)
                 break;
             }
         }
-        fgDrawEntry(&entry, frameData);
+        fgPrepareBackgroundFrame();
+        if (frameData != NULL)
+            fgBlit16ToBackgroundRect(entry.x, entry.y, entry.width, entry.height,
+                                     (const uint16 *)frameData);
+        fgPresentCurrentBackground(1);
 
         {
             uint16 vblanks = header.displayVBlanks;
-            if (vblanks == 0)
-                vblanks = 1;
-            for (uint16 i = 1; i < vblanks; i++)
-                VSync(0);
+            if (vblanks > 1)
+                fgPresentCurrentBackground((uint16)(vblanks - 1));
         }
 
         if (lastFrameData != NULL) {
@@ -322,9 +425,13 @@ static void fgPlayFishing1(void)
     }
 
     if (haveLastEntry) {
-        fgHoldEntry(&lastEntry, lastFrameData, 150);
+        fgPrepareBackgroundFrame();
+        fgBlit16ToBackgroundRect(lastEntry.x, lastEntry.y, lastEntry.width, lastEntry.height,
+                                 (const uint16 *)lastFrameData);
+        fgPresentCurrentBackground(150);
     } else {
-        fgHoldEntry(NULL, NULL, 150);
+        fgPrepareBackgroundFrame();
+        fgPresentCurrentBackground(150);
     }
 
     if (lastFrameData != NULL)
@@ -333,12 +440,22 @@ static void fgPlayFishing1(void)
 
 static void fgPlayFishing1Raw(void)
 {
-    fgShowRawFrame("\\FG\\FISH24.RAW;1", 180);
+    fgShowRawFrame("\\FG\\FISH24.RAW;1", kFgPilotProbeHoldFrames);
 }
 
 static void fgPlayTitleCopy(void)
 {
-    fgShowRawFrame("\\TITLE.RAW;1", 180);
+    fgShowRawFrame("\\TITLE.RAW;1", kFgPilotProbeHoldFrames);
+}
+
+static void fgPlayIsleTest(void)
+{
+    uint16 i;
+
+    grUpdateDelay = 1;
+    grLoadScreen("ISLETEMP.SCR");
+    for (i = 0; i < kFgPilotProbeHoldFrames; i++)
+        grUpdateDisplay(NULL, NULL, NULL);
 }
 
 int foregroundPilotRequested(void)
@@ -379,6 +496,11 @@ void foregroundPilotPlay(void)
 
     if (fgSceneEquals(gForegroundPilotScene, "titlecopy")) {
         fgPlayTitleCopy();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "isletest")) {
+        fgPlayIsleTest();
         return;
     }
 

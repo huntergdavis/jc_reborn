@@ -225,6 +225,15 @@ for left, right in combinations(scenes, 2):
                 not cmp["outcome"]["save_state_hash_equal"] or
                 not cmp["outcome"]["ram_hash_equal"]
             ),
+        "same_surface_but_distinct_deep_state":
+            cmp["filtered_visible_frames"]["all_common_identical"] and
+            cmp["outcome"]["cpu_to_vram_dumps_equal"] and
+            cmp["outcome"]["vram_hash_equal"] and
+            cmp["outcome"]["state_hash_equal"] and
+            (
+                not cmp["outcome"]["save_state_hash_equal"] and
+                not cmp["outcome"]["ram_hash_equal"]
+            ),
     })
 
 payload = {
@@ -289,6 +298,8 @@ payload = {
             all(pair["save_state_diff"] or pair["ram_diff"] for pair in pairwise),
         "all_pairs_same_visible_nonvisual_state_split":
             all(pair["same_visible_nonvisual_state_split"] for pair in pairwise),
+        "all_pairs_same_surface_but_distinct_deep_state":
+            all(pair["same_surface_but_distinct_deep_state"] for pair in pairwise),
         "distinct_state_hashes": len(set(state_hashes.values())),
         "distinct_save_state_hashes": len(set(save_state_hashes.values())),
         "distinct_ram_hashes": len(set(ram_hashes.values())),

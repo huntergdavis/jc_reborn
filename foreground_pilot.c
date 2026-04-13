@@ -13,6 +13,13 @@
 #include "graphics_ps1.h"
 #include "cdrom_ps1.h"
 
+extern uint16 ps1AdsDbgActiveThreads;
+extern uint16 ps1AdsDbgReplayCount;
+extern uint16 ps1AdsDbgRunningThreads;
+extern uint16 ps1AdsDbgReplayDrawFrame;
+extern uint16 ps1AdsDbgMergeCarryFrame;
+extern uint16 ps1AdsDbgNoDrawThreadsFrame;
+
 struct TFgPilotHeader {
     char magic[4];
     uint16 version;
@@ -40,8 +47,27 @@ struct TFgPilotEntry {
     uint32 dataSize;
 };
 
+struct TFgPilotRuntime {
+    uint8 active;
+    uint8 mode;
+    uint16 frameIndex;
+    uint16 frameVBlank;
+    uint16 displayVBlanks;
+    uint16 holdFrames;
+    struct TFgPilotHeader header;
+    struct TFgPilotEntry currentEntry;
+    uint8 *currentFrameData;
+};
+
 static char gForegroundPilotScene[16] = "";
 static const uint16 kFgPilotProbeHoldFrames = 1800;
+static struct TFgPilotRuntime gFgRuntime = {0};
+
+enum {
+    FG_RUNTIME_NONE = 0,
+    FG_RUNTIME_TESTCARD = 1,
+    FG_RUNTIME_FISHING1 = 2
+};
 
 static uint16 fgReadU16(const uint8 *p)
 {
@@ -122,6 +148,26 @@ static int fgLoadEntry(const char *path, const struct TFgPilotHeader *header,
 static int fgSceneEquals(const char *a, const char *b)
 {
     return a && b && strcmp(a, b) == 0;
+}
+
+static void fgTelemetryUpdate(void)
+{
+    if (!gFgRuntime.active) {
+        ps1AdsDbgActiveThreads = 0;
+        ps1AdsDbgReplayCount = 0;
+        ps1AdsDbgRunningThreads = 0;
+        ps1AdsDbgReplayDrawFrame = 0;
+        ps1AdsDbgMergeCarryFrame = 0;
+        ps1AdsDbgNoDrawThreadsFrame = 0;
+        return;
+    }
+
+    ps1AdsDbgActiveThreads = 55;
+    ps1AdsDbgReplayCount = (uint16)(gFgRuntime.header.frameCount & 0x3F);
+    ps1AdsDbgRunningThreads = (uint16)(gFgRuntime.frameIndex & 0x3F);
+    ps1AdsDbgReplayDrawFrame = (uint16)(gFgRuntime.currentEntry.sourceFrame & 0x3F);
+    ps1AdsDbgMergeCarryFrame = (uint16)(gFgRuntime.displayVBlanks & 0x3F);
+    ps1AdsDbgNoDrawThreadsFrame = (uint16)((gFgRuntime.currentFrameData != NULL) ? 1 : 0);
 }
 
 static void fgInitVisiblePipeline(void)
@@ -373,6 +419,162 @@ static void fgPlayTestCard(void)
         fgBlit16ToBackgroundRect(176, 136, rectW, rectH, colors[3]);
         fgPresentCurrentBackground(1);
     }
+}
+
+static void fgRuntimeReset(void)
+{
+    if (gFgRuntime.currentFrameData != NULL) {
+        free(gFgRuntime.currentFrameData);
+        gFgRuntime.currentFrameData = NULL;
+    }
+    memset(&gFgRuntime, 0, sizeof(gFgRuntime));
+    fgTelemetryUpdate();
+}
+
+static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
+{
+    const char *path = "FG\\FISHING1.FG1";
+
+    if (!fgLoadEntry(path, &gFgRuntime.header, frameIndex, &gFgRuntime.currentEntry))
+        return 0;
+
+    if (gFgRuntime.currentFrameData != NULL) {
+        free(gFgRuntime.currentFrameData);
+        gFgRuntime.currentFrameData = NULL;
+    }
+
+    if (gFgRuntime.currentEntry.dataSize > 0 &&
+        gFgRuntime.currentEntry.width > 0 &&
+        gFgRuntime.currentEntry.height > 0) {
+        gFgRuntime.currentFrameData = ps1_streamRead(path,
+                                                     gFgRuntime.currentEntry.dataOffset,
+                                                     gFgRuntime.currentEntry.dataSize);
+        if (gFgRuntime.currentFrameData == NULL)
+            return 0;
+    }
+
+    fgTelemetryUpdate();
+    return 1;
+}
+
+int foregroundPilotRuntimeStart(const char *sceneName)
+{
+    fgRuntimeReset();
+
+    if (sceneName == NULL)
+        return 0;
+
+    if (fgSceneEquals(sceneName, "testcard")) {
+        gFgRuntime.active = 1;
+        gFgRuntime.mode = FG_RUNTIME_TESTCARD;
+        gFgRuntime.holdFrames = kFgPilotProbeHoldFrames;
+        fgTelemetryUpdate();
+        return 1;
+    }
+
+    if (fgSceneEquals(sceneName, "fishing1")) {
+        const char *path = "FG\\FISHING1.FG1";
+        if (!fgLoadHeader(path, &gFgRuntime.header))
+            return 0;
+        gFgRuntime.active = 1;
+        gFgRuntime.mode = FG_RUNTIME_FISHING1;
+        gFgRuntime.displayVBlanks = gFgRuntime.header.displayVBlanks;
+        gFgRuntime.holdFrames = 150;
+        if (!fgRuntimeLoadFishingFrame(0)) {
+            fgRuntimeReset();
+            return 0;
+        }
+        fgTelemetryUpdate();
+        return 1;
+    }
+
+    return 0;
+}
+
+void foregroundPilotRuntimeCompose(void)
+{
+    const uint16 rectW = 120;
+    const uint16 rectH = 80;
+
+    if (!gFgRuntime.active)
+        return;
+
+    if (gFgRuntime.mode == FG_RUNTIME_TESTCARD) {
+        static uint16 *colors[4] = { NULL, NULL, NULL, NULL };
+        static const uint16 colorValues[4] = { 0x001f, 0x03e0, 0x03ff, 0x7c1f };
+
+        for (int c = 0; c < 4; c++) {
+            if (colors[c] == NULL) {
+                colors[c] = (uint16 *)malloc((size_t)rectW * (size_t)rectH * sizeof(uint16));
+                if (colors[c] == NULL)
+                    return;
+                for (uint32 j = 0; j < (uint32)rectW * (uint32)rectH; j++)
+                    colors[c][j] = colorValues[c];
+            }
+        }
+
+        fgBlit16ToBackgroundRect(24, 24, rectW, rectH, colors[0]);
+        fgBlit16ToBackgroundRect(176, 24, rectW, rectH, colors[1]);
+        fgBlit16ToBackgroundRect(24, 136, rectW, rectH, colors[2]);
+        fgBlit16ToBackgroundRect(176, 136, rectW, rectH, colors[3]);
+        return;
+    }
+
+    if (gFgRuntime.mode == FG_RUNTIME_FISHING1 && gFgRuntime.currentFrameData != NULL) {
+        fgBlit16ToBackgroundRect(gFgRuntime.currentEntry.x,
+                                 gFgRuntime.currentEntry.y,
+                                 gFgRuntime.currentEntry.width,
+                                 gFgRuntime.currentEntry.height,
+                                 (const uint16 *)gFgRuntime.currentFrameData);
+    }
+}
+
+void foregroundPilotRuntimeAdvance(void)
+{
+    if (!gFgRuntime.active)
+        return;
+
+    if (gFgRuntime.mode == FG_RUNTIME_TESTCARD) {
+        if (gFgRuntime.holdFrames > 0)
+            gFgRuntime.holdFrames--;
+        if (gFgRuntime.holdFrames == 0)
+            gFgRuntime.active = 0;
+        fgTelemetryUpdate();
+        return;
+    }
+
+    if (gFgRuntime.mode == FG_RUNTIME_FISHING1) {
+        if (gFgRuntime.frameIndex + 1 >= gFgRuntime.header.frameCount) {
+            if (gFgRuntime.holdFrames > 0)
+                gFgRuntime.holdFrames--;
+            if (gFgRuntime.holdFrames == 0)
+                gFgRuntime.active = 0;
+            fgTelemetryUpdate();
+            return;
+        }
+
+        gFgRuntime.frameVBlank++;
+        if (gFgRuntime.frameVBlank < gFgRuntime.displayVBlanks) {
+            fgTelemetryUpdate();
+            return;
+        }
+
+        gFgRuntime.frameVBlank = 0;
+        gFgRuntime.frameIndex++;
+        if (!fgRuntimeLoadFishingFrame(gFgRuntime.frameIndex))
+            gFgRuntime.active = 0;
+        fgTelemetryUpdate();
+    }
+}
+
+int foregroundPilotRuntimeActive(void)
+{
+    return gFgRuntime.active ? 1 : 0;
+}
+
+void foregroundPilotRuntimeEnd(void)
+{
+    fgRuntimeReset();
 }
 
 static void fgPlayFishing1(void)

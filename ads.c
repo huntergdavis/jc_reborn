@@ -1577,21 +1577,11 @@ void adsPlay(char *adsName, uint16 adsTag)
 
 #ifdef PS1_BUILD
     if (adsNameRef != NULL && strcmp(adsNameRef, "FGPILOT") == 0) {
-        if (adsTag == 1)
-            foregroundPilotSetScene("fishing1");
-        else if (adsTag == 2)
-            foregroundPilotSetScene("testcard");
-        else if (adsTag == 3)
-            foregroundPilotSetScene("titlecopy");
-        else if (adsTag == 4)
-            foregroundPilotSetScene("isletest");
-        else if (adsTag == 5)
-            foregroundPilotSetScene("adsfishing1");
-        else
-            foregroundPilotSetScene("fishing1");
-
-        foregroundPilotPlay();
-        return;
+        const char *pilotScene = (adsTag == 2) ? "testcard" : "fishing1";
+        if (!foregroundPilotRuntimeStart(pilotScene))
+            return;
+        adsNameRef = "FISHING";
+        adsTag = 1;
     }
 #endif
 
@@ -1832,6 +1822,11 @@ void adsPlay(char *adsName, uint16 adsTag)
 #endif
         }
 
+#ifdef PS1_BUILD
+        if (foregroundPilotRuntimeActive())
+            foregroundPilotRuntimeCompose();
+#endif
+
 #ifndef PS1_BUILD
         if (debugMode) {
 
@@ -1866,6 +1861,10 @@ void adsPlay(char *adsName, uint16 adsTag)
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
 #else
         grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
+#endif
+#ifdef PS1_BUILD
+        if (foregroundPilotRuntimeActive())
+            foregroundPilotRuntimeAdvance();
 #endif
         if (grCaptureSequenceComplete())
             break;
@@ -1997,6 +1996,10 @@ void adsPlay(char *adsName, uint16 adsTag)
     grRestoreZone(NULL, 0, 0, 0, 0);
 
     adsReleaseAds();
+
+#ifdef PS1_BUILD
+    foregroundPilotRuntimeEnd();
+#endif
 
     /* Unpin ADS resource to allow LRU eviction */
     unpinResource(adsResource, "ADS");

@@ -17,8 +17,10 @@ INTERVAL="${INTERVAL:-30}"
 SHARED_DIR="$OUT_DIR/shared"
 BASE_DIR="$SHARED_DIR/base"
 OVERLAY_ONLY_DIR="$SHARED_DIR/overlay-only"
+PAIRWISE_DIR="$OUT_DIR/pairwise"
 
 mkdir -p "$OUT_DIR"
+mkdir -p "$PAIRWISE_DIR"
 
 "$SCRIPT_DIR/regtest-scene.sh" \
     --scene "FISHING 1" \
@@ -162,17 +164,22 @@ for scene in scenes:
 
 pairwise = []
 for left, right in combinations(scenes, 2):
-    cmp = json.loads(subprocess.check_output([
+    pair_name = f"{left}-vs-{right}.json"
+    pair_path = out_dir / "pairwise" / pair_name
+    cmp_text = subprocess.check_output([
         "python3",
         str(script_dir / "compare-regtest-result-bundles.py"),
         "--base",
         str(fgpilot_results[left]),
         "--overlay",
         str(fgpilot_results[right]),
-    ], text=True))
+    ], text=True)
+    pair_path.write_text(cmp_text, encoding="utf-8")
+    cmp = json.loads(cmp_text)
     pairwise.append({
         "left_scene": left,
         "right_scene": right,
+        "compare_json": str(pair_path),
         "visible_visual_diff": not cmp["filtered_visible_frames"]["all_common_identical"],
         "visible_first_diff": cmp["filtered_visible_frames"]["first_diff"],
         "upload_diff": not cmp["outcome"]["cpu_to_vram_dumps_equal"],

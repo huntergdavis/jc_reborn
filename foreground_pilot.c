@@ -141,6 +141,40 @@ static void fgInitDisplayDirect(void)
     SetDispMask(1);
 }
 
+static void fgShowRawFrame(const char *cdPath, uint16 holdFrames)
+{
+    uint32 rawSize = 0;
+    uint8 *screenBuffer;
+    int stripHeight = 60;
+    int yOffset;
+
+    if (cdPath == NULL)
+        return;
+
+    screenBuffer = ps1_loadRawFile(cdPath, &rawSize);
+    if (screenBuffer == NULL)
+        return;
+    if (rawSize < (uint32)(640 * 480 * 2)) {
+        free(screenBuffer);
+        return;
+    }
+
+    fgInitDisplayDirect();
+
+    for (yOffset = 0; yOffset < 480; yOffset += stripHeight) {
+        RECT rect;
+        uint8 *stripData = screenBuffer + ((uint32)yOffset * 640u * 2u);
+        setRECT(&rect, 0, yOffset, 640, stripHeight);
+        LoadImage(&rect, (uint32 *)stripData);
+        DrawSync(0);
+    }
+
+    free(screenBuffer);
+
+    for (uint16 i = 0; i < holdFrames; i++)
+        VSync(0);
+}
+
 static void fgClearScreenDirect(void)
 {
     static uint16 *blackStrip = NULL;
@@ -297,6 +331,16 @@ static void fgPlayFishing1(void)
         free(lastFrameData);
 }
 
+static void fgPlayFishing1Raw(void)
+{
+    fgShowRawFrame("\\FG\\FISH24.RAW;1", 180);
+}
+
+static void fgPlayTitleCopy(void)
+{
+    fgShowRawFrame("\\TITLE.RAW;1", 180);
+}
+
 int foregroundPilotRequested(void)
 {
     return gForegroundPilotScene[0] != '\0';
@@ -325,6 +369,16 @@ void foregroundPilotPlay(void)
 
     if (fgSceneEquals(gForegroundPilotScene, "fishing1")) {
         fgPlayFishing1();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "fishing1raw")) {
+        fgPlayFishing1Raw();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "titlecopy")) {
+        fgPlayTitleCopy();
         return;
     }
 

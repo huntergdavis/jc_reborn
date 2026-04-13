@@ -271,6 +271,15 @@ payload = {
             all(not row["save_state_hash_matches_shared_overlay"] for row in rows),
         "all_scenes_distinct_ram_hash_from_shared_overlay":
             all(not row["ram_hash_matches_shared_overlay"] for row in rows),
+        "all_scenes_same_shared_overlay_surface_but_distinct_deep_state":
+            (
+                all(row["visible_matches_shared_overlay"] for row in rows) and
+                all(row["upload_matches_shared_overlay"] for row in rows) and
+                all(row["vram_hash_matches_shared_overlay"] for row in rows) and
+                all(row["state_hash_matches_shared_overlay"] for row in rows) and
+                all(not row["save_state_hash_matches_shared_overlay"] for row in rows) and
+                all(not row["ram_hash_matches_shared_overlay"] for row in rows)
+            ),
         "all_scenes_nonvisual_against_overlay":
             all(row["current_hard_read"]["fgpilot_adds_only_nonvisual_state_drift"] for row in rows),
         "all_pairs_same_visible_output":

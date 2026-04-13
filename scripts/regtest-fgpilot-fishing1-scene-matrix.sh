@@ -122,6 +122,7 @@ payload = {
         "ram_hash": overlay_result["outcome"].get("raw_hashes", {}).get("ram_hash"),
         "vram_hash": overlay_result["outcome"].get("raw_hashes", {}).get("vram_hash"),
     },
+    "fgpilot_raw_hashes": fgpilot_compare["raw_hashes"]["overlay"],
 }
 print(json.dumps(payload, indent=2))
 PY
@@ -135,19 +136,34 @@ from pathlib import Path
 out_dir = Path(sys.argv[1])
 scenes = sys.argv[2:]
 rows = []
+save_state_hashes = {}
+ram_hashes = {}
+vram_hashes = {}
 for scene in scenes:
     summary_path = out_dir / scene / "summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
+    save_state_hashes[scene] = summary["fgpilot_raw_hashes"]["save_state_hash"]
+    ram_hashes[scene] = summary["fgpilot_raw_hashes"]["ram_hash"]
+    vram_hashes[scene] = summary["fgpilot_raw_hashes"]["vram_hash"]
     rows.append({
         "scene": scene,
         "summary_path": str(summary_path),
         "current_hard_read": summary["current_hard_read"],
         "fgpilot_vs_overlay": summary["fgpilot_vs_overlay"],
+        "fgpilot_raw_hashes": summary["fgpilot_raw_hashes"],
     })
 
 payload = {
     "shared_base_result": str((out_dir / "shared" / "base" / "result.json")),
     "shared_overlay_result": str((out_dir / "shared" / "overlay-only" / "result.json")),
+    "scene_state_distinctness": {
+        "distinct_save_state_hashes": len(set(save_state_hashes.values())),
+        "distinct_ram_hashes": len(set(ram_hashes.values())),
+        "distinct_vram_hashes": len(set(vram_hashes.values())),
+        "save_state_hash_by_scene": save_state_hashes,
+        "ram_hash_by_scene": ram_hashes,
+        "vram_hash_by_scene": vram_hashes,
+    },
     "scenes": rows,
 }
 print(json.dumps(payload, indent=2))

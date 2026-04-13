@@ -15,6 +15,7 @@ OUT_DIR="${1:-/tmp/fgpilot-fishing1-exact}"
 FRAMES="${FRAMES:-1320}"
 START_FRAME="${START_FRAME:-1230}"
 INTERVAL="${INTERVAL:-30}"
+FGOVERLAY_SCENE="${FGOVERLAY_SCENE:-fishing1}"
 
 BASE_DIR="$OUT_DIR/base"
 OVERLAY_ONLY_DIR="$OUT_DIR/overlay-only"
@@ -46,7 +47,7 @@ mkdir -p "$OUT_DIR"
 
 "$SCRIPT_DIR/regtest-scene.sh" \
     --scene "FISHING 1" \
-    --boot "story scene 17 fgoverlay testcard" \
+    --boot "story scene 17 fgoverlay ${FGOVERLAY_SCENE}" \
     --frames "$FRAMES" \
     --start-frame "$START_FRAME" \
     --interval "$INTERVAL" \

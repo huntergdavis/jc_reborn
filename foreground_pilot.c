@@ -86,6 +86,8 @@ enum {
     FG_RUNTIME_FISHING1 = 2
 };
 
+static int fgSceneEquals(const char *a, const char *b);
+
 static uint8 fgSceneModeForName(const char *sceneName)
 {
     if (fgSceneEquals(sceneName, "testcard"))

@@ -805,6 +805,23 @@ static void grDrawCapturePatternCell(sint16 x, sint16 y, int symbol)
         grDrawRectColor15(x, y + 3, 8, 2, color);
 }
 
+static void grDrawForegroundPilotDiagnostics(void)
+{
+    const int x = 520;
+    const int y = 8;
+    const int panelW = 110;
+    const int rowH = 3;
+    const int stepY = 5;
+
+    grDrawCounterBar(x, y, panelW, 34, 0x0000);
+    grDrawCounterBar(x + 2, y + 2, foregroundPilotRuntimeRequestedEver() ? 18 : 0, rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 2 + stepY, foregroundPilotRuntimeStartedEver() ? 18 : 0, rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 2), foregroundPilotRuntimeComposedEver() ? 18 : 0, rowH, 0x7C1F);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 3), foregroundPilotRuntimeActive() ? 18 : 0, rowH, 0x03FF);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 4), foregroundPilotRuntimeHasFrameData() ? 18 : 0, rowH, 0x7FE0);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 5), (foregroundPilotRuntimeMode() & 0x07) * 8, rowH, 0x001F);
+}
+
 static void grDrawCaptureActorPanel(void)
 {
     struct TPs1CaptureEntitySummary entities[GR_CAPTURE_ENTITY_COUNT];
@@ -823,17 +840,6 @@ static void grDrawCaptureActorPanel(void)
     grDrawCounterBar(panelX, panelY, panelW, 50, 0x0000);
     if (grCaptureOverlayMaskOnly)
         return;
-
-    /* Pilot runtime marker for regtest-visible diagnostics.
-     * This piggybacks on the already-visible capture panel so story-route
-     * fgpilot runs can prove runtime state without relying on the strip
-     * decoder. */
-    grDrawCounterBar(panelX + 64, panelY + 2, foregroundPilotRuntimeRequestedEver() ? 6 : 0, 2, 0x7FFF);
-    grDrawCounterBar(panelX + 64, panelY + 6, foregroundPilotRuntimeStartedEver() ? 6 : 0, 2, 0x03E0);
-    grDrawCounterBar(panelX + 64, panelY + 10, foregroundPilotRuntimeComposedEver() ? 6 : 0, 2, 0x7C1F);
-    grDrawCounterBar(panelX + 64, panelY + 14, foregroundPilotRuntimeActive() ? 6 : 0, 2, 0x03FF);
-    grDrawCounterBar(panelX + 64, panelY + 18, foregroundPilotRuntimeHasFrameData() ? 6 : 0, 2, 0x7FE0);
-    grDrawCounterBar(panelX + 64, panelY + 22, foregroundPilotRuntimeMode() & 0x07, 2, 0x001F);
 
     for (entity = 0; entity < GR_CAPTURE_ENTITY_COUNT; entity++) {
         const struct TPs1CaptureEntitySummary *summary = &entities[entity];
@@ -1554,6 +1560,8 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
         grDrawStoryDiagnostics();
         grDrawPilotPackDiagnostics();
         grDrawAdsFreezeDiagnostics();
+        if (grCaptureOverlay)
+            grDrawForegroundPilotDiagnostics();
     }
     grCaptureEmitFrameMetadataLine();
 

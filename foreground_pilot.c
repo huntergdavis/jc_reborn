@@ -66,6 +66,13 @@ static uint8 gFgRequestedEver = 0;
 static uint8 gFgStartedEver = 0;
 static uint8 gFgComposedEver = 0;
 
+static void fgResetTelemetryFlags(void)
+{
+    gFgRequestedEver = 0;
+    gFgStartedEver = 0;
+    gFgComposedEver = 0;
+}
+
 enum {
     FG_RUNTIME_NONE = 0,
     FG_RUNTIME_TESTCARD = 1,
@@ -751,6 +758,8 @@ const char *foregroundPilotSceneName(void)
 void foregroundPilotSetScene(const char *sceneName)
 {
     size_t i;
+
+    fgResetTelemetryFlags();
 
     if (!sceneName) {
         gForegroundPilotScene[0] = '\0';

@@ -715,13 +715,26 @@ static size_t grCaptureBuildOverlayPayload(uint8 *buffer, size_t capacity)
         embeddedActors++;
     }
 
-    if (offset + 8 <= capacity) {
+    if (offset + 10 <= capacity) {
         uint8 pilotFlags = 0;
+        uint8 pilotLifecycle = 0;
 
         if (foregroundPilotRuntimeActive())
             pilotFlags |= 0x01;
         if (foregroundPilotRuntimeHasFrameData())
             pilotFlags |= 0x02;
+        if (foregroundPilotConfiguredEver())
+            pilotLifecycle |= 0x01;
+        if (foregroundPilotRequestedNow())
+            pilotLifecycle |= 0x02;
+        if (foregroundPilotRuntimeAdsMatchEver())
+            pilotLifecycle |= 0x04;
+        if (foregroundPilotRuntimeStartAttemptedEver())
+            pilotLifecycle |= 0x08;
+        if (foregroundPilotRuntimeStartedEver())
+            pilotLifecycle |= 0x10;
+        if (foregroundPilotRuntimeComposedEver())
+            pilotLifecycle |= 0x20;
 
         buffer[offset++] = pilotFlags;
         buffer[offset++] = (uint8)(foregroundPilotRuntimeMode() & 0xff);
@@ -731,6 +744,8 @@ static size_t grCaptureBuildOverlayPayload(uint8 *buffer, size_t capacity)
         buffer[offset++] = (uint8)((foregroundPilotRuntimeSourceFrame() >> 8) & 0xff);
         buffer[offset++] = (uint8)(foregroundPilotRuntimeDisplayVBlanks() & 0xff);
         buffer[offset++] = (uint8)((foregroundPilotRuntimeDisplayVBlanks() >> 8) & 0xff);
+        buffer[offset++] = pilotLifecycle;
+        buffer[offset++] = 0;
     }
 
     buffer[8] = (uint8)totalActors;

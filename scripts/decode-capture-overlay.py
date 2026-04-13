@@ -478,6 +478,14 @@ def parse_overlay(packet: bytes) -> dict:
             "source_frame": payload[offset + 4] | (payload[offset + 5] << 8),
             "display_vblanks": payload[offset + 6] | (payload[offset + 7] << 8),
         }
+        if len(payload) >= offset + 10:
+            pilot_lifecycle = payload[offset + 8]
+            pilot["configured"] = bool(pilot_lifecycle & 0x01)
+            pilot["requested"] = bool(pilot_lifecycle & 0x02)
+            pilot["ads_match"] = bool(pilot_lifecycle & 0x04)
+            pilot["start_attempted"] = bool(pilot_lifecycle & 0x08)
+            pilot["started"] = bool(pilot_lifecycle & 0x10)
+            pilot["composed"] = bool(pilot_lifecycle & 0x20)
 
     decoded = {
         "frame_number": frame_number,

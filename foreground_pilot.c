@@ -63,7 +63,7 @@ static char gForegroundPilotScene[16] = "";
 static const uint16 kFgPilotProbeHoldFrames = 1800;
 static struct TFgPilotRuntime gFgRuntime = {0};
 static uint8 gFgConfiguredEver = 0;
-static uint8 gFgRequestedEver = 0;
+static uint8 gFgSetClearedEver = 0;
 static uint8 gFgAdsMatchEver = 0;
 static uint8 gFgStartAttemptEver = 0;
 static uint8 gFgStartedEver = 0;
@@ -72,7 +72,7 @@ static uint8 gFgComposedEver = 0;
 static void fgResetTelemetryFlags(void)
 {
     gFgConfiguredEver = 0;
-    gFgRequestedEver = 0;
+    gFgSetClearedEver = 0;
     gFgAdsMatchEver = 0;
     gFgStartAttemptEver = 0;
     gFgStartedEver = 0;
@@ -455,7 +455,6 @@ static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
 int foregroundPilotRuntimeStart(const char *sceneName)
 {
     fgRuntimeReset();
-    gFgRequestedEver = 1;
 
     if (sceneName == NULL)
         return 0;
@@ -604,9 +603,14 @@ int foregroundPilotConfiguredEver(void)
     return gFgConfiguredEver ? 1 : 0;
 }
 
-int foregroundPilotRuntimeRequestedEver(void)
+int foregroundPilotSetClearedEver(void)
 {
-    return gFgRequestedEver ? 1 : 0;
+    return gFgSetClearedEver ? 1 : 0;
+}
+
+int foregroundPilotRequestedNow(void)
+{
+    return foregroundPilotRequested();
 }
 
 int foregroundPilotRuntimeAdsMatchEver(void)
@@ -780,10 +784,9 @@ void foregroundPilotSetScene(const char *sceneName)
 {
     size_t i;
 
-    fgResetTelemetryFlags();
-
     if (!sceneName) {
         gForegroundPilotScene[0] = '\0';
+        gFgSetClearedEver = 1;
         return;
     }
 
@@ -791,7 +794,6 @@ void foregroundPilotSetScene(const char *sceneName)
         gForegroundPilotScene[i] = sceneName[i];
     gForegroundPilotScene[i] = '\0';
     gFgConfiguredEver = 1;
-    gFgRequestedEver = 1;
 }
 
 int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
@@ -943,7 +945,12 @@ int foregroundPilotConfiguredEver(void)
     return foregroundPilotRequested() ? 1 : 0;
 }
 
-int foregroundPilotRuntimeRequestedEver(void)
+int foregroundPilotSetClearedEver(void)
+{
+    return 0;
+}
+
+int foregroundPilotRequestedNow(void)
 {
     return foregroundPilotRequested() ? 1 : 0;
 }

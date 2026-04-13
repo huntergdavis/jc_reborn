@@ -1577,11 +1577,16 @@ void adsPlay(char *adsName, uint16 adsTag)
 
 #ifdef PS1_BUILD
     if (adsNameRef != NULL && strcmp(adsNameRef, "FGPILOT") == 0) {
-        const char *pilotScene = (adsTag == 2) ? "testcard" : "fishing1";
+        const char *pilotScene = (adsTag == 2 || adsTag == 3) ? "testcard" : "fishing1";
         if (!foregroundPilotRuntimeStart(pilotScene))
             return;
-        adsNameRef = "FISHING";
-        adsTag = 1;
+        if (adsTag == 3) {
+            adsNameRef = "BUILDING";
+            adsTag = 1;
+        } else {
+            adsNameRef = "FISHING";
+            adsTag = 1;
+        }
     }
 #endif
 

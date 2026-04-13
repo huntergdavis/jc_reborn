@@ -187,59 +187,17 @@ static void fgBlit16ToBackgroundRect(uint16 dstX, uint16 dstY,
                                      uint16 width, uint16 height,
                                      const uint16 *srcPixels)
 {
-    uint16 row;
+    PS1Surface sprite;
 
     if (srcPixels == NULL || width == 0 || height == 0)
         return;
 
-    for (row = 0; row < height; row++) {
-        uint16 screenY = (uint16)(dstY + row);
-        const uint16 *srcRow = srcPixels + ((uint32)row * (uint32)width);
+    memset(&sprite, 0, sizeof(sprite));
+    sprite.width = width;
+    sprite.height = height;
+    sprite.pixels = (uint16 *)srcPixels;
 
-        if (screenY >= 480)
-            break;
-
-        if (screenY < 240) {
-            if (dstX < 320 && bgTile0 && bgTile0->pixels) {
-                uint16 copyW = width;
-                if (dstX + copyW > 320)
-                    copyW = (uint16)(320 - dstX);
-                memcpy(bgTile0->pixels + ((uint32)screenY * 320u) + dstX,
-                       srcRow,
-                       (size_t)copyW * sizeof(uint16));
-            }
-            if (dstX + width > 320 && bgTile1 && bgTile1->pixels) {
-                uint16 srcOffset = (dstX < 320) ? (uint16)(320 - dstX) : 0;
-                uint16 tileX = (dstX < 320) ? 0 : (uint16)(dstX - 320);
-                uint16 copyW = (uint16)(width - srcOffset);
-                if (tileX + copyW > 320)
-                    copyW = (uint16)(320 - tileX);
-                memcpy(bgTile1->pixels + ((uint32)screenY * 320u) + tileX,
-                       srcRow + srcOffset,
-                       (size_t)copyW * sizeof(uint16));
-            }
-        } else {
-            uint16 tileY = (uint16)(screenY - 240);
-            if (dstX < 320 && bgTile3 && bgTile3->pixels) {
-                uint16 copyW = width;
-                if (dstX + copyW > 320)
-                    copyW = (uint16)(320 - dstX);
-                memcpy(bgTile3->pixels + ((uint32)tileY * 320u) + dstX,
-                       srcRow,
-                       (size_t)copyW * sizeof(uint16));
-            }
-            if (dstX + width > 320 && bgTile4 && bgTile4->pixels) {
-                uint16 srcOffset = (dstX < 320) ? (uint16)(320 - dstX) : 0;
-                uint16 tileX = (dstX < 320) ? 0 : (uint16)(dstX - 320);
-                uint16 copyW = (uint16)(width - srcOffset);
-                if (tileX + copyW > 320)
-                    copyW = (uint16)(320 - tileX);
-                memcpy(bgTile4->pixels + ((uint32)tileY * 320u) + tileX,
-                       srcRow + srcOffset,
-                       (size_t)copyW * sizeof(uint16));
-            }
-        }
-    }
+    grCompositeToBackground(&sprite, (sint16)dstX, (sint16)dstY);
 }
 
 static void fgPresentCurrentBackground(uint16 holdFrames)

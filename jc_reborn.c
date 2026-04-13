@@ -813,6 +813,12 @@ int main(int argc, char **argv)
     /* Load boot override BEFORE seeding RNG so "seed N" can override. */
     ps1LoadBootOverride();
 
+    if (argForegroundPilot && numArgs >= 1) {
+        foregroundPilotSetScene(args[0]);
+        foregroundPilotPlay();
+        return 0;
+    }
+
     /* Keep the early PS1 display init for scripted story boots, but only
      * show the actual title artwork for normal interactive boots. */
     if (ps1BootDirectSceneIndex < 0 &&

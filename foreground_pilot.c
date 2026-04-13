@@ -184,12 +184,12 @@ static void fgUploadDirect(uint16 x, uint16 y, uint16 width, uint16 height, cons
 
 static void fgDrawEntry(const struct TFgPilotEntry *entry, uint8 *frameData)
 {
-    VSync(0);
     fgClearScreenDirect();
 
     if (entry != NULL)
         fgUploadDirect(entry->x, entry->y, entry->width, entry->height, frameData);
 
+    VSync(0);
     eventsWaitTick(grUpdateDelay);
 }
 
@@ -223,12 +223,12 @@ static void fgPlayTestCard(void)
     }
 
     for (i = 0; i < 120; i++) {
-        VSync(0);
         fgClearScreenDirect();
         fgUploadDirect(24, 24, rectW, rectH, (const uint8 *)colors[0]);
         fgUploadDirect(176, 24, rectW, rectH, (const uint8 *)colors[1]);
         fgUploadDirect(24, 136, rectW, rectH, (const uint8 *)colors[2]);
         fgUploadDirect(176, 136, rectW, rectH, (const uint8 *)colors[3]);
+        VSync(0);
         eventsWaitTick(grUpdateDelay);
     }
 }

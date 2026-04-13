@@ -5,6 +5,7 @@ import hashlib
 import json
 from pathlib import Path
 
+from PIL import Image
 
 def sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -64,6 +65,31 @@ def compare_named_sets(base_dir: Path, overlay_dir: Path, pattern: str) -> dict:
     }
 
 
+def frame_black_stats(directory: Path, pattern: str = "frame_*.png") -> dict:
+    files = listed_files(directory, pattern)
+    black_files: list[str] = []
+    max_levels: dict[str, int] = {}
+
+    for path in files:
+        img = Image.open(path).convert("RGB")
+        max_level = 0
+        for r, g, b in img.getdata():
+            level = max(r, g, b)
+            if level > max_level:
+                max_level = level
+        max_levels[path.name] = max_level
+        if max_level == 0:
+            black_files.append(path.name)
+
+    return {
+        "directory": str(directory) if directory else None,
+        "frame_count": len(files),
+        "all_black_count": len(black_files),
+        "all_black_files": black_files,
+        "max_level_by_file": max_levels,
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Compare two regtest-scene result bundles, including filtered frames and CPU->VRAM dumps."
@@ -84,6 +110,8 @@ def main() -> int:
     overlay_raw = resolve_dump_dir(overlay["paths"].get("cpu_to_vram_copy_dir") or overlay["paths"].get("raw_frames_dir"))
 
     filtered_cmp = compare_named_sets(base_filtered, overlay_filtered, "frame_*.png")
+    base_black = frame_black_stats(base_filtered)
+    overlay_black = frame_black_stats(overlay_filtered)
     vram_cmp = compare_named_sets(
         base_raw,
         overlay_raw,
@@ -119,6 +147,10 @@ def main() -> int:
             "overlay_cpu_to_vram_copy_count": overlay["outcome"].get("cpu_to_vram_copy_count"),
         },
         "filtered_frames": filtered_cmp,
+        "filtered_frame_black_stats": {
+            "base": base_black,
+            "overlay": overlay_black,
+        },
         "cpu_to_vram_dumps": vram_cmp,
         "raw_hashes": {
             "base": base["outcome"].get("raw_hashes", {}),

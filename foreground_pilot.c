@@ -480,6 +480,33 @@ static void fgPlayAdsFishing1(void)
     adsPlay("FISHING", 1);
 }
 
+static void fgShowSolidColor(uint8 r, uint8 g, uint8 b, uint16 holdFrames)
+{
+    DISPENV disp;
+    DRAWENV draw;
+    uint16 i;
+
+    ResetGraph(0);
+    SetDefDispEnv(&disp, 0, 0, 640, 480);
+    SetDefDrawEnv(&draw, 0, 0, 640, 480);
+    disp.isinter = 1;
+    setRGB0(&draw, r, g, b);
+    draw.isbg = 1;
+
+    PutDispEnv(&disp);
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+
+    DrawSync(0);
+    for (i = 0; i < holdFrames; i++)
+        VSync(0);
+}
+
+static void fgPlaySolidRed(void)
+{
+    fgShowSolidColor(255, 0, 0, kFgPilotProbeHoldFrames);
+}
+
 int foregroundPilotRequested(void)
 {
     return gForegroundPilotScene[0] != '\0';
@@ -533,6 +560,11 @@ void foregroundPilotPlay(void)
 
     if (fgSceneEquals(gForegroundPilotScene, "adsfishing1")) {
         fgPlayAdsFishing1();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "solidred")) {
+        fgPlaySolidRed();
         return;
     }
 

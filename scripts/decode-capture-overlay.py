@@ -15,16 +15,36 @@ FIXED_COLOR_MAP = {
     (255, 204, 0): 3,
 }
 
-
 def classify_strip_color(color: tuple[int, int, int]) -> int:
     r, g, b = color
-    if max(r, g, b) < 32:
+    mx = max(r, g, b)
+    mn = min(r, g, b)
+    if mx < 48:
         return 0
+    if (mx - mn) <= 40:
+        return 1 if mx >= 144 else 0
+    if b >= g + 24 and b >= r + 24:
+        return 3
+    if g >= r + 24 and b >= r + 24:
+        return 2
     if r >= g and r >= b:
         return 1
     if g >= r and g >= b:
         return 2
     return 3
+
+
+def nearest_fixed_symbol(color: tuple[int, int, int]) -> int:
+    best_symbol = 0
+    best_distance = None
+    r, g, b = color
+    for fixed_color, symbol in FIXED_COLOR_MAP.items():
+        fr, fg, fb = fixed_color
+        distance = ((r - fr) * (r - fr)) + ((g - fg) * (g - fg)) + ((b - fb) * (b - fb))
+        if best_distance is None or distance < best_distance:
+            best_distance = distance
+            best_symbol = symbol
+    return best_symbol
 
 
 def read_overlay_cells_at(image: Image.Image, origin_x: int, origin_y: int) -> list[tuple[int, int, int]]:
@@ -210,6 +230,32 @@ def read_strip_cells_at(image: Image.Image, origin_x: int, origin_y: int) -> lis
     return cells
 
 
+def decode_symbols_from_strip_cells(cells: list[tuple[int, int, int]]) -> list[int]:
+    unique_colors = list(dict.fromkeys(cells))
+
+    if len(unique_colors) <= 4 and all(color in FIXED_COLOR_MAP for color in unique_colors):
+        return [FIXED_COLOR_MAP[cell] for cell in cells]
+
+    if len(unique_colors) <= 4:
+        for symbol_values in permutations(range(4), len(unique_colors)):
+            color_map = dict(zip(unique_colors, symbol_values))
+            symbols = [color_map[cell] for cell in cells]
+            try:
+                parse_overlay(unpack_packet(symbols))
+                return symbols
+            except ValueError:
+                continue
+
+    family_symbols = [classify_strip_color(cell) for cell in cells]
+    try:
+        parse_overlay(unpack_packet(family_symbols))
+        return family_symbols
+    except ValueError:
+        pass
+
+    return [nearest_fixed_symbol(cell) for cell in cells]
+
+
 def read_strip_pattern_symbols_at(image: Image.Image, origin_x: int, origin_y: int) -> list[int]:
     img = image.convert("RGB")
     width, height = img.size
@@ -258,6 +304,31 @@ def read_strip_pattern_symbols_at(image: Image.Image, origin_x: int, origin_y: i
     return symbols
 
 
+def read_strip_center_symbols_at(image: Image.Image, origin_x: int, origin_y: int) -> list[int]:
+    img = image.convert("RGB")
+    width, height = img.size
+    width_cells = 40
+    height_cells = 6
+    cell_size = 8
+    if origin_x < 0 or origin_y < 0:
+        raise ValueError("image too small for strip overlay")
+    if origin_x + width_cells * cell_size > width or origin_y + height_cells * cell_size > height:
+        raise ValueError("strip overlay origin is outside image bounds")
+
+    symbols: list[int] = []
+    for cell_y in range(height_cells):
+        for cell_x in range(width_cells):
+            votes = [0, 0, 0, 0]
+            base_x = origin_x + cell_x * cell_size
+            base_y = origin_y + cell_y * cell_size
+            for sample_y in range(base_y + 3, base_y + 5):
+                for sample_x in range(base_x + 1, base_x + cell_size - 1):
+                    symbol = classify_strip_color(img.getpixel((sample_x, sample_y)))
+                    votes[symbol] += 1
+            symbols.append(max(range(4), key=lambda idx: votes[idx]))
+    return symbols
+
+
 def decode_strip_image(image: Image.Image) -> dict:
     width, _ = image.size
     width_cells = 40
@@ -272,6 +343,12 @@ def decode_strip_image(image: Image.Image) -> dict:
 
     for origin_x, origin_y in candidate_origins:
         try:
+            symbols = read_strip_center_symbols_at(image, origin_x, origin_y)
+            return parse_overlay(unpack_packet(symbols))
+        except ValueError as exc:
+            last_error = exc
+
+        try:
             symbols = read_strip_pattern_symbols_at(image, origin_x, origin_y)
             return parse_overlay(unpack_packet(symbols))
         except ValueError as exc:
@@ -282,27 +359,11 @@ def decode_strip_image(image: Image.Image) -> dict:
         except ValueError as exc:
             last_error = exc
             continue
-
-        unique_colors = list(dict.fromkeys(cells))
-        if len(unique_colors) > 4:
-            last_error = ValueError("too many strip overlay colors")
-            continue
-
-        if all(color in FIXED_COLOR_MAP for color in unique_colors):
-            symbols = [FIXED_COLOR_MAP[cell] for cell in cells]
-            try:
-                return parse_overlay(unpack_packet(symbols))
-            except ValueError as exc:
-                last_error = exc
-
-        for symbol_values in permutations(range(4), len(unique_colors)):
-            color_map = dict(zip(unique_colors, symbol_values))
-            symbols = [color_map[cell] for cell in cells]
-            try:
-                return parse_overlay(unpack_packet(symbols))
-            except ValueError as exc:
-                last_error = exc
-                continue
+        try:
+            symbols = decode_symbols_from_strip_cells(cells)
+            return parse_overlay(unpack_packet(symbols))
+        except ValueError as exc:
+            last_error = exc
 
     raise ValueError(str(last_error or "could not decode strip overlay payload"))
 
@@ -332,26 +393,10 @@ def unpack_packet(symbols: list[int]) -> bytes:
 
 
 def decode_packet_from_cells(cells: list[tuple[int, int, int]]) -> dict:
-    unique_colors = list(dict.fromkeys(cells))
-    if len(unique_colors) > 4:
-        raise ValueError("too many overlay colors")
-
-    if all(color in FIXED_COLOR_MAP for color in unique_colors):
-        symbols = [FIXED_COLOR_MAP[cell] for cell in cells]
-        try:
-            return parse_overlay(unpack_packet(symbols))
-        except ValueError:
-            pass
-
-    for symbol_values in permutations(range(4), len(unique_colors)):
-        color_map = dict(zip(unique_colors, symbol_values))
-        symbols = [color_map[cell] for cell in cells]
-        try:
-            return parse_overlay(unpack_packet(symbols))
-        except ValueError:
-            continue
-
-    raise ValueError("could not decode overlay payload")
+    try:
+        return parse_overlay(unpack_packet(decode_symbols_from_strip_cells(cells)))
+    except ValueError as exc:
+        raise ValueError("could not decode overlay payload") from exc
 
 
 def parse_overlay(packet: bytes) -> dict:
@@ -378,6 +423,7 @@ def parse_overlay(packet: bytes) -> dict:
         embedded_count = payload[9]
         offset = 10
     draws = []
+    pilot = None
     for _ in range(embedded_count):
         if magic == b"JCD1":
             if offset + 12 > len(payload):
@@ -422,12 +468,26 @@ def parse_overlay(packet: bytes) -> dict:
             })
             offset += 7
 
-    return {
+    if len(payload) >= offset + 8:
+        pilot_flags = payload[offset]
+        pilot = {
+            "active": bool(pilot_flags & 0x01),
+            "has_frame_data": bool(pilot_flags & 0x02),
+            "mode": payload[offset + 1],
+            "frame_index": payload[offset + 2] | (payload[offset + 3] << 8),
+            "source_frame": payload[offset + 4] | (payload[offset + 5] << 8),
+            "display_vblanks": payload[offset + 6] | (payload[offset + 7] << 8),
+        }
+
+    decoded = {
         "frame_number": frame_number,
         "draw_count": total_draw_count,
         "embedded_draw_count": embedded_count,
         "draws": draws,
     }
+    if pilot is not None:
+        decoded["pilot"] = pilot
+    return decoded
 
 
 def main() -> int:

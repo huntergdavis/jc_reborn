@@ -12,6 +12,11 @@ int foregroundPilotRuntimeStart(const char *sceneName);
 void foregroundPilotRuntimeCompose(void);
 void foregroundPilotRuntimeAdvance(void);
 int foregroundPilotRuntimeActive(void);
+int foregroundPilotRuntimeMode(void);
+unsigned short foregroundPilotRuntimeFrameIndex(void);
+unsigned short foregroundPilotRuntimeSourceFrame(void);
+unsigned short foregroundPilotRuntimeDisplayVBlanks(void);
+int foregroundPilotRuntimeHasFrameData(void);
 void foregroundPilotRuntimeEnd(void);
 
 #endif

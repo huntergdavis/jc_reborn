@@ -690,6 +690,24 @@ static size_t grCaptureBuildOverlayPayload(uint8 *buffer, size_t capacity)
         embeddedActors++;
     }
 
+    if (offset + 8 <= capacity) {
+        uint8 pilotFlags = 0;
+
+        if (foregroundPilotRuntimeActive())
+            pilotFlags |= 0x01;
+        if (foregroundPilotRuntimeHasFrameData())
+            pilotFlags |= 0x02;
+
+        buffer[offset++] = pilotFlags;
+        buffer[offset++] = (uint8)(foregroundPilotRuntimeMode() & 0xff);
+        buffer[offset++] = (uint8)(foregroundPilotRuntimeFrameIndex() & 0xff);
+        buffer[offset++] = (uint8)((foregroundPilotRuntimeFrameIndex() >> 8) & 0xff);
+        buffer[offset++] = (uint8)(foregroundPilotRuntimeSourceFrame() & 0xff);
+        buffer[offset++] = (uint8)((foregroundPilotRuntimeSourceFrame() >> 8) & 0xff);
+        buffer[offset++] = (uint8)(foregroundPilotRuntimeDisplayVBlanks() & 0xff);
+        buffer[offset++] = (uint8)((foregroundPilotRuntimeDisplayVBlanks() >> 8) & 0xff);
+    }
+
     buffer[8] = (uint8)totalActors;
     buffer[9] = (uint8)embeddedActors;
 
@@ -1510,16 +1528,17 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     if (foregroundPilotRuntimeActive())
         foregroundPilotRuntimeCompose();
 
-    /* Upload background tiles (with sprites composited in software) to framebuffer */
-    grDrawBackground();
-
     /* Draw capture overlay into the final visible frame. Do not merge it back
-     * into clean background state, or it will perturb later frames while still
-     * being overwritten by the background upload on the current one. */
+     * into clean background state. Draw it into the RAM background right before
+     * upload so the current frame captures it, and the next frame's restore
+     * still wipes it back out. */
     if (grCaptureOverlay) {
         grDrawCaptureOverlay();
         grDrawCaptureActorPanel();
     }
+
+    /* Upload background tiles (with sprites composited in software) to framebuffer */
+    grDrawBackground();
 
     /* Handle frame timing */
     eventsWaitTick(grUpdateDelay);

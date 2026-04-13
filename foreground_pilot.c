@@ -551,6 +551,33 @@ int foregroundPilotRuntimeActive(void)
     return gFgRuntime.active ? 1 : 0;
 }
 
+int foregroundPilotRuntimeMode(void)
+{
+    return gFgRuntime.active ? (int)gFgRuntime.mode : 0;
+}
+
+unsigned short foregroundPilotRuntimeFrameIndex(void)
+{
+    return gFgRuntime.active ? gFgRuntime.frameIndex : 0;
+}
+
+unsigned short foregroundPilotRuntimeSourceFrame(void)
+{
+    return (gFgRuntime.active && gFgRuntime.currentFrameData != NULL)
+        ? gFgRuntime.currentEntry.sourceFrame
+        : 0;
+}
+
+unsigned short foregroundPilotRuntimeDisplayVBlanks(void)
+{
+    return gFgRuntime.active ? gFgRuntime.displayVBlanks : 0;
+}
+
+int foregroundPilotRuntimeHasFrameData(void)
+{
+    return (gFgRuntime.active && gFgRuntime.currentFrameData != NULL) ? 1 : 0;
+}
+
 void foregroundPilotRuntimeEnd(void)
 {
     fgRuntimeReset();
@@ -827,6 +854,31 @@ int foregroundPilotRuntimeStartRequested(void)
 int foregroundPilotRuntimeStartIfRequested(void)
 {
     return foregroundPilotRequested() ? 0 : 1;
+}
+
+int foregroundPilotRuntimeMode(void)
+{
+    return 0;
+}
+
+unsigned short foregroundPilotRuntimeFrameIndex(void)
+{
+    return 0;
+}
+
+unsigned short foregroundPilotRuntimeSourceFrame(void)
+{
+    return 0;
+}
+
+unsigned short foregroundPilotRuntimeDisplayVBlanks(void)
+{
+    return 0;
+}
+
+int foregroundPilotRuntimeHasFrameData(void)
+{
+    return 0;
 }
 
 void foregroundPilotPlay(void)

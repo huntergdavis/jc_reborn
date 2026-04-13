@@ -126,6 +126,8 @@ static int fgSceneEquals(const char *a, const char *b)
 
 static void fgInitVisiblePipeline(void)
 {
+    adsInit();
+    adsNoIsland();
     grUpdateDelay = 1;
 }
 
@@ -452,10 +454,24 @@ static void fgPlayIsleTest(void)
 {
     uint16 i;
 
-    grUpdateDelay = 1;
+    fgInitVisiblePipeline();
     grLoadScreen("ISLETEMP.SCR");
     for (i = 0; i < kFgPilotProbeHoldFrames; i++)
         grUpdateDisplay(NULL, NULL, NULL);
+}
+
+static void fgPlayAdsIntro(void)
+{
+    adsInit();
+    adsNoIsland();
+    adsPlayIntro();
+}
+
+static void fgPlayAdsFishing1(void)
+{
+    adsInit();
+    adsNoIsland();
+    adsPlay("FISHING", 1);
 }
 
 int foregroundPilotRequested(void)
@@ -501,6 +517,16 @@ void foregroundPilotPlay(void)
 
     if (fgSceneEquals(gForegroundPilotScene, "isletest")) {
         fgPlayIsleTest();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "adsintro")) {
+        fgPlayAdsIntro();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "adsfishing1")) {
+        fgPlayAdsFishing1();
         return;
     }
 

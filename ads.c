@@ -60,6 +60,7 @@ extern int strcmp(const char *s1, const char *s2);
 #include "walk.h"
 #include "bench.h"
 #include "ads.h"
+#include "foreground_pilot.h"
 #ifdef PS1_BUILD
 #include "ps1_debug.h"
 #include "ps1_restore_pilots.h"
@@ -1573,6 +1574,26 @@ void adsPlay(char *adsName, uint16 adsTag)
     uint32 dataSize;
     char stableAdsName[16];
     const char *adsNameRef = adsStabilizeName(adsName, stableAdsName, sizeof(stableAdsName));
+
+#ifdef PS1_BUILD
+    if (adsNameRef != NULL && strcmp(adsNameRef, "FGPILOT") == 0) {
+        if (adsTag == 1)
+            foregroundPilotSetScene("fishing1");
+        else if (adsTag == 2)
+            foregroundPilotSetScene("testcard");
+        else if (adsTag == 3)
+            foregroundPilotSetScene("titlecopy");
+        else if (adsTag == 4)
+            foregroundPilotSetScene("isletest");
+        else if (adsTag == 5)
+            foregroundPilotSetScene("adsfishing1");
+        else
+            foregroundPilotSetScene("fishing1");
+
+        foregroundPilotPlay();
+        return;
+    }
+#endif
 
     struct TAdsResource *adsResource = findAdsResource((char *)adsNameRef);
 

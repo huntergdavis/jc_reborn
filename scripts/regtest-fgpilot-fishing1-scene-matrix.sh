@@ -9,7 +9,7 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
 OUT_DIR="${1:-/tmp/fgpilot-fishing1-scene-matrix}"
-SCENES="${SCENES:-testcard fishing1}"
+SCENES="${SCENES:-testcard fishing1 fishing1raw adsfishing1}"
 
 mkdir -p "$OUT_DIR"
 

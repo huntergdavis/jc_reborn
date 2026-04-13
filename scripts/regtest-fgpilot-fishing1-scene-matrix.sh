@@ -169,6 +169,8 @@ for scene in scenes:
     rows.append({
         "scene": scene,
         "summary_path": str(summary_path),
+        "fgpilot_result_json": str(fgpilot_results[scene]),
+        "fgpilot_compare_json": str(out_dir / scene / "compare-fgpilot-vs-overlay.json"),
         "current_hard_read": summary["current_hard_read"],
         "fgpilot_vs_overlay": summary["fgpilot_vs_overlay"],
         "fgpilot_raw_hashes": summary["fgpilot_raw_hashes"],

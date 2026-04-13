@@ -593,10 +593,26 @@ def run_git(*args):
 
 def is_build_affecting(path_str):
     path = Path(path_str)
+    if not path.parts:
+        return False
+    if path.parts[0] == "build-ps1":
+        return False
+    if path.parts[0] == "vision-artifacts":
+        return False
+    if path.parts[0] == "tmp-regtests":
+        return False
+    if path.parts[0] == "host-results":
+        return False
+    if path.parts[0] == "binary-library":
+        return False
+    if path.parts[0] == "scripts" and "__pycache__" in path.parts:
+        return False
     if path == Path("config/ps1/BOOTMODE.TXT"):
         return False
     if path == Path("config/ps1/bootmode_embedded.h"):
         return False
+    if len(path.parts) >= 2 and path.parts[0] == "generated" and path.parts[1] == "ps1":
+        return True
     if path.suffix in {".c", ".h"}:
         return True
     if len(path.parts) >= 2 and path.parts[0] == "config" and path.parts[1] == "ps1":

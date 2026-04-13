@@ -672,6 +672,11 @@ int foregroundPilotRequested(void)
     return gForegroundPilotScene[0] != '\0';
 }
 
+const char *foregroundPilotSceneName(void)
+{
+    return gForegroundPilotScene;
+}
+
 void foregroundPilotSetScene(const char *sceneName)
 {
     size_t i;
@@ -684,6 +689,28 @@ void foregroundPilotSetScene(const char *sceneName)
     for (i = 0; i + 1 < sizeof(gForegroundPilotScene) && sceneName[i] != '\0'; i++)
         gForegroundPilotScene[i] = sceneName[i];
     gForegroundPilotScene[i] = '\0';
+}
+
+int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
+{
+    if (!foregroundPilotRequested() || adsName == NULL)
+        return 0;
+
+    if ((fgSceneEquals(gForegroundPilotScene, "fishing1") ||
+         fgSceneEquals(gForegroundPilotScene, "testcard")) &&
+        fgSceneEquals(adsName, "FISHING") && adsTag == 1) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int foregroundPilotRuntimeStartRequested(void)
+{
+    if (!foregroundPilotRequested())
+        return 0;
+
+    return foregroundPilotRuntimeStart(gForegroundPilotScene);
 }
 
 void foregroundPilotPlay(void)
@@ -740,6 +767,11 @@ int foregroundPilotRequested(void)
     return gForegroundPilotScene[0] != '\0';
 }
 
+const char *foregroundPilotSceneName(void)
+{
+    return gForegroundPilotScene;
+}
+
 void foregroundPilotSetScene(const char *sceneName)
 {
     if (!sceneName) {
@@ -748,6 +780,18 @@ void foregroundPilotSetScene(const char *sceneName)
     }
     strncpy(gForegroundPilotScene, sceneName, sizeof(gForegroundPilotScene) - 1);
     gForegroundPilotScene[sizeof(gForegroundPilotScene) - 1] = '\0';
+}
+
+int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
+{
+    (void)adsName;
+    (void)adsTag;
+    return 0;
+}
+
+int foregroundPilotRuntimeStartRequested(void)
+{
+    return 0;
 }
 
 void foregroundPilotPlay(void)

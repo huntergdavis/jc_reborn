@@ -1576,6 +1576,12 @@ void adsPlay(char *adsName, uint16 adsTag)
     const char *adsNameRef = adsStabilizeName(adsName, stableAdsName, sizeof(stableAdsName));
 
 #ifdef PS1_BUILD
+    if (foregroundPilotShouldStartForAds(adsNameRef, adsTag) &&
+        !foregroundPilotRuntimeActive()) {
+        if (!foregroundPilotRuntimeStartRequested())
+            return;
+    }
+
     if (adsNameRef != NULL && strcmp(adsNameRef, "FGPILOT") == 0) {
         const char *pilotScene = (adsTag == 2 || adsTag == 3) ? "testcard" : "fishing1";
         if (!foregroundPilotRuntimeStart(pilotScene))

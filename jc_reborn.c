@@ -143,6 +143,7 @@ static int hostCapturePreludeFrame = 0;
 static int ps1BootForcedSeed = -1;  /* -1 = use hardware RNG */
 static int ps1BootDirectSceneIndex = -1;  /* -1 = not set; >=0 = play scene directly and exit */
 static char ps1BootArgStorage[3][32];
+static char ps1BootForegroundOverlayScene[32];
 static char ps1BootCaptureMetaDirStorage[32];
 static char ps1BootCaptureSceneLabelStorage[64];
 volatile uint16 ps1BootDbgCaptureMode = 0;
@@ -167,6 +168,7 @@ static void ps1ResetBootArgs(void)
         args[i] = NULL;
         ps1BootArgStorage[i][0] = '\0';
     }
+    ps1BootForegroundOverlayScene[0] = '\0';
     ps1BootCaptureMetaDirStorage[0] = '\0';
     ps1BootCaptureSceneLabelStorage[0] = '\0';
 
@@ -275,6 +277,13 @@ static void ps1ApplyBootOverride(char *buffer)
             grCaptureOverlay = 1;
             if (ps1BootDbgCaptureMode == 0)
                 ps1BootDbgCaptureMode = 1;
+        } else if (!strcmp(tokens[i], "fgoverlay") && (i + 1) < tokenCount) {
+            ps1CopyBootString(
+                ps1BootForegroundOverlayScene,
+                sizeof(ps1BootForegroundOverlayScene),
+                tokens[i + 1]
+            );
+            i++;
         } else if (!strcmp(tokens[i], "capture-meta-dir") && (i + 1) < tokenCount) {
             grCaptureMetaDir = ps1CopyBootString(
                 ps1BootCaptureMetaDirStorage,
@@ -860,8 +869,12 @@ int main(int argc, char **argv)
         hostForcedSceneOffsetY
     );
     storySetCapturePreludeFrame(hostCapturePreludeFrame);
-    if (argForegroundPilot && numArgs >= 1)
+    if (ps1BootForegroundOverlayScene[0] != '\0')
+        foregroundPilotSetScene(ps1BootForegroundOverlayScene);
+    else if (argForegroundPilot && numArgs >= 1)
         foregroundPilotSetScene(args[0]);
+    else
+        foregroundPilotSetScene(NULL);
 
     if (hostForcedSeed >= 0)
         srand((unsigned int)hostForcedSeed);

@@ -171,6 +171,7 @@ for scene in scenes:
         "summary_path": str(summary_path),
         "fgpilot_result_json": str(fgpilot_results[scene]),
         "fgpilot_compare_json": str(out_dir / scene / "compare-fgpilot-vs-overlay.json"),
+        "fgpilot_state_hash": json.loads(fgpilot_results[scene].read_text(encoding="utf-8"))["outcome"].get("state_hash"),
         "current_hard_read": summary["current_hard_read"],
         "fgpilot_vs_overlay": summary["fgpilot_vs_overlay"],
         "fgpilot_raw_hashes": summary["fgpilot_raw_hashes"],
@@ -194,6 +195,7 @@ for left, right in combinations(scenes, 2):
         "left_scene": left,
         "right_scene": right,
         "compare_json": str(pair_path),
+        "state_hash_equal": cmp["outcome"]["state_hash_equal"],
         "visible_visual_diff": not cmp["filtered_visible_frames"]["all_common_identical"],
         "visible_first_diff": cmp["filtered_visible_frames"]["first_diff"],
         "upload_diff": not cmp["outcome"]["cpu_to_vram_dumps_equal"],
@@ -228,6 +230,8 @@ payload = {
     "matrix_hard_read": {
         "overlay_mode_alone_is_nonvisual_state_only":
             overlay_vs_mask["nonvisual_state_only"] if overlay_vs_mask else None,
+        "all_pairs_same_state_hash":
+            all(pair["state_hash_equal"] for pair in pairwise),
         "all_scenes_nonvisual_against_overlay":
             all(row["current_hard_read"]["fgpilot_adds_only_nonvisual_state_drift"] for row in rows),
         "all_pairs_same_visible_output":

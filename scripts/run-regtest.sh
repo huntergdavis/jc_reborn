@@ -52,6 +52,7 @@ TIMEOUT="${REGTEST_TIMEOUT:-180}"
 UPSCALE=""
 CPU_MODE=""
 STREAM_MODE="${REGTEST_STREAM_MODE:-filtered}"
+VRAM_WRITE_DUMPS=0
 
 # ── Argument Parsing ────────────────────────────────────────────────────────
 
@@ -72,6 +73,7 @@ Options:
   --upscale N         Upscale resolution multiplier (e.g., 2, 3)
   --cpu MODE          CPU execution mode (e.g., Interpreter, CachedInterpreter, Recompiler)
   --image TAG         Docker image tag (default: jc-reborn-regtest:latest)
+  --vram-write-dumps  Enable DuckStation CPU->VRAM / VRAM-write dump capture
   --raw-console       Stream the full DuckStation log to stdout instead of filtering debug noise
   --help              Show this help message
 
@@ -109,6 +111,8 @@ while [ $# -gt 0 ]; do
             CPU_MODE="$2"; shift 2 ;;
         --image)
             IMAGE_TAG="$2"; shift 2 ;;
+        --vram-write-dumps)
+            VRAM_WRITE_DUMPS=1; shift ;;
         --raw-console)
             STREAM_MODE="raw"; shift ;;
         --help|-h)
@@ -223,6 +227,10 @@ if [ -n "$BIOS_DIR" ] && [ -d "$BIOS_DIR" ]; then
     DOCKER_ARGS+=(-v "${BIOS_DIR}:/root/.local/share/duckstation/bios:ro")
 fi
 
+if [ "$VRAM_WRITE_DUMPS" -eq 1 ]; then
+    DOCKER_ARGS+=(-e "JC_REGTEST_DUMP_VRAM_WRITES=1")
+fi
+
 DOCKER_ARGS+=("$IMAGE_TAG")
 
 # Regtest binary arguments.
@@ -265,6 +273,7 @@ echo "Frames:         $FRAMES (~${RUN_SECONDS}s at 60fps)"
 echo "Start frame:    $START_FRAME"
 echo "Dump interval:  every ${INTERVAL} frames"
 echo "Renderer:       $RENDERER"
+echo "VRAM dumps:     $([ "$VRAM_WRITE_DUMPS" -eq 1 ] && echo enabled || echo disabled)"
 echo "Output dir:     $RUN_OUTPUT_DIR"
 echo "Timeout:        ${TIMEOUT}s"
 echo ""
@@ -366,6 +375,21 @@ echo "Log file:       $LOG_FILE"
 echo "Frame PNGs:     $FRAMES_DIR/"
 if [ -n "$FILTERED_DIR" ]; then
     echo "Filtered PNGs:  $FILTERED_DIR/ ($FILTERED_COUNT at >= frame $START_FRAME)"
+fi
+if [ "$VRAM_WRITE_DUMPS" -eq 1 ]; then
+    VRAM_DUMP_DIR="$(find "$RUN_OUTPUT_DIR" -type d -path '*/textures/*/dumps' 2>/dev/null | head -n 1 || true)"
+    CPU_COPY_COUNT=0
+    if [ -d "$FRAMES_DIR" ]; then
+        CPU_COPY_COUNT="$(find "$FRAMES_DIR" -type f -name 'cpu_to_vram_copy_*.png' 2>/dev/null | wc -l)"
+    fi
+    if [ -n "$VRAM_DUMP_DIR" ]; then
+        VRAM_DUMP_COUNT="$(find "$VRAM_DUMP_DIR" -type f -name '*.png' 2>/dev/null | wc -l)"
+        echo "VRAM dump PNGs: $VRAM_DUMP_DIR/ ($VRAM_DUMP_COUNT)"
+    elif [ "$CPU_COPY_COUNT" -gt 0 ]; then
+        echo "VRAM dump PNGs: $FRAMES_DIR/ ($CPU_COPY_COUNT cpu_to_vram_copy_*.png)"
+    else
+        echo "VRAM dump PNGs: <none found>"
+    fi
 fi
 echo ""
 

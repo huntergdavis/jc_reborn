@@ -51,6 +51,7 @@ CAPTURE_OVERLAY_MASK=0
 APPEND_CAPTURE_ARGS="${REGTEST_APPEND_CAPTURE_ARGS:-0}"
 LOG_LEVEL="${REGTEST_LOG_LEVEL:-Info}"
 LOCK_FILE="${REGTEST_LOCK_FILE:-$PROJECT_ROOT/.regtest-build.lock}"
+VRAM_WRITE_DUMPS="${REGTEST_VRAM_WRITE_DUMPS:-0}"
 
 usage() {
     cat <<'USAGE'
@@ -70,6 +71,7 @@ Options:
   --overlay-mask   Append capture-overlay-mask to the boot string
   --skip-build     Skip CD image rebuild (use existing jcreborn.cue)
   --quiet          Suppress progress messages on stderr
+  --vram-write-dumps  Enable DuckStation CPU->VRAM / VRAM-write dump capture
   -h, --help       Show this help
 USAGE
     exit 0
@@ -88,6 +90,7 @@ while [ $# -gt 0 ]; do
         --output)    OUTPUT_DIR="$2"; shift 2 ;;
         --overlay)   CAPTURE_OVERLAY=1; shift ;;
         --overlay-mask) CAPTURE_OVERLAY_MASK=1; shift ;;
+        --vram-write-dumps) VRAM_WRITE_DUMPS=1; shift ;;
         --skip-build) SKIP_BUILD=1; shift ;;
         --quiet)     QUIET=1; shift ;;
         -h|--help)   usage ;;
@@ -377,6 +380,7 @@ else
         --dumpdir "$OUTPUT_DIR" \
         --log "$LOG_LEVEL" \
         --timeout "$REGTEST_TIMEOUT" \
+        $([ "$VRAM_WRITE_DUMPS" = "1" ] && printf '%s' '--vram-write-dumps') \
         > "$REGTEST_LOG" 2>&1 || REGTEST_EXIT=$?
 
     DOCKER_RUN_DIR="$(find "$OUTPUT_DIR" -mindepth 1 -maxdepth 1 -type d -exec test -f '{}/regtest.log' ';' -print | sort | tail -1)"

@@ -115,6 +115,10 @@ system = Path("src/core/system.cpp").read_text(encoding="utf-8")
 expected_regtest = [
     'si.SetFloatValue("Main", "EmulationSpeed", 1.0f);',
     'INFO_LOG("JC_REGTEST_PATCH: EmulationSpeed forced to 1.0");',
+    'INFO_LOG("JC_REGTEST_PATCH: Enabling VRAM write dump mode");',
+    'si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", true);',
+    'si.SetBoolValue("TextureReplacements", "DumpVRAMWrites", true);',
+    'si.SetBoolValue("TextureReplacements", "AlwaysTrackUploads", true);',
 ]
 expected_system = [
     'INFO_LOG("JC_REGTEST_PATCH: Forcing PresentSkipMode::Disabled");',

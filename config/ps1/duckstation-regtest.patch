@@ -1,6 +1,14 @@
 --- a/src/duckstation-regtest/regtest_host.cpp
 +++ b/src/duckstation-regtest/regtest_host.cpp
-@@ -105,7 +105,9 @@
+@@ -42,6 +42,7 @@
+ #include "fmt/format.h"
+ 
+ #include <csignal>
++#include <cstdlib>
+ #include <cstdio>
+ #include <ctime>
+ 
+@@ -105,7 +106,25 @@
    si.SetStringValue("Logging", "LogLevel", Settings::GetLogLevelName(Log::Level::Info));
    si.SetBoolValue("Main", "ApplyGameSettings", false); // don't want game settings interfering
    si.SetBoolValue("BIOS", "PatchFastBoot", true);      // no point validating the bios intro..
@@ -8,12 +16,28 @@
 +  /* Keep frame presentation live for dump-based harness runs. */
 +  si.SetFloatValue("Main", "EmulationSpeed", 1.0f);
 +  INFO_LOG("JC_REGTEST_PATCH: EmulationSpeed forced to 1.0");
++
++  const bool dump_vram_writes =
++    (std::getenv("JC_REGTEST_DUMP_VRAM_WRITES") != nullptr &&
++     std::getenv("JC_REGTEST_DUMP_VRAM_WRITES")[0] != '\0' &&
++     std::getenv("JC_REGTEST_DUMP_VRAM_WRITES")[0] != '0');
++  if (dump_vram_writes)
++  {
++    INFO_LOG("JC_REGTEST_PATCH: Enabling VRAM write dump mode");
++    si.SetBoolValue("Debug", "DumpCPUToVRAMCopies", true);
++    si.SetBoolValue("TextureReplacements", "DumpVRAMWrites", true);
++    si.SetBoolValue("TextureReplacements", "AlwaysTrackUploads", true);
++    si.SetUIntValue("TextureReplacements", "DumpVRAMWriteWidthThreshold", 1);
++    si.SetUIntValue("TextureReplacements", "DumpVRAMWriteHeightThreshold", 1);
++    si.SetUIntValue("TextureReplacements", "DumpTextureWidthThreshold", 1);
++    si.SetUIntValue("TextureReplacements", "DumpTextureHeightThreshold", 1);
++  }
  
    // disable all sources
    for (u32 i = 0; i < static_cast<u32>(InputSourceType::Count); i++)
 --- a/src/core/system.cpp
 +++ b/src/core/system.cpp
-@@ -3874,7 +3874,9 @@
+@@ -3881,7 +3881,9 @@
  {
    // Avoid flipping vsync on and off by manually throttling when vsync is on.
    const GPUVSyncMode vsync_mode = GetEffectiveVSyncMode();
@@ -24,7 +48,7 @@
  
    static constexpr std::array<const char*, 3> present_throttle_names = {"Disabled", "WhenVSyncBlocks", "Always"};
  
-@@ -3916,9 +3918,10 @@
+@@ -3923,9 +3925,10 @@
    if (!IsRunningAtNonStandardSpeed())
      return PresentSkipMode::Disabled;
  

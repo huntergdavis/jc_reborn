@@ -61,6 +61,7 @@ int grCaptureInterval = 0;
 int grCaptureStartFrame = 0;
 int grCaptureEndFrame = -1;
 int grCaptureOverlay = 0;
+int grCaptureForegroundOnly = 0;
 static int grCurrentFrame = 0;
 static char grCaptureSceneLabel[64] = "";
 static int grCaptureSequenceFinished = 0;
@@ -605,11 +606,87 @@ static void grCaptureWriteFrameMetadata(const char *filename,
     fprintf(f, "  \"visible_draw_count\": %d,\n",
             grCaptureCountVisibleDraws(ttmThreads, ttmHolidayThread));
     fprintf(f, "  \"overlay_enabled\": %s,\n", grCaptureOverlay ? "true" : "false");
+    fprintf(f, "  \"foreground_only\": %s,\n",
+            grCaptureForegroundOnly ? "true" : "false");
+    fprintf(f, "  \"foreground_key_rgb\": [%d, %d, %d],\n", 255, 0, 255);
     grCaptureWriteDrawArray(f, "draws", grCapturedDraws, grCapturedDrawCount);
     fprintf(f, ",\n");
     grCaptureWriteVisibleDrawArray(f, ttmThreads, ttmHolidayThread);
     fprintf(f, "\n}\n");
     fclose(f);
+}
+
+
+static SDL_Surface *grCaptureBuildSurface(struct TTtmThread *ttmThreads,
+                                          struct TTtmThread *ttmHolidayThread)
+{
+    SDL_Surface *windowSurface;
+    SDL_Surface *captureSurface;
+
+    if (sdl_window == NULL) {
+        fprintf(stderr, "Error: Cannot capture frame, SDL window not initialized\n");
+        return NULL;
+    }
+
+    windowSurface = SDL_GetWindowSurface(sdl_window);
+    if (windowSurface == NULL) {
+        fprintf(stderr, "Error: Cannot get window surface: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    if (!grCaptureForegroundOnly) {
+        captureSurface = SDL_ConvertSurfaceFormat(windowSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+        if (captureSurface == NULL) {
+            fprintf(stderr, "Error: Cannot convert capture surface: %s\n", SDL_GetError());
+            return NULL;
+        }
+        if (grCaptureOverlay)
+            grCaptureEmbedOverlay(captureSurface);
+        return captureSurface;
+    }
+
+    if (ttmThreads == NULL) {
+        fprintf(stderr, "Error: foreground-only capture requires active thread layers\n");
+        return NULL;
+    }
+
+    captureSurface = SDL_CreateRGBSurfaceWithFormat(0,
+                                                    windowSurface->w,
+                                                    windowSurface->h,
+                                                    32,
+                                                    SDL_PIXELFORMAT_ARGB8888);
+    if (captureSurface == NULL) {
+        fprintf(stderr, "Error: Cannot create foreground capture surface: %s\n", SDL_GetError());
+        return NULL;
+    }
+
+    SDL_FillRect(captureSurface,
+                 NULL,
+                 SDL_MapRGB(captureSurface->format, 255, 0, 255));
+
+    for (int i = 0; i < MAX_TTM_THREADS; i++) {
+        if (!ttmThreads[i].isRunning || ttmThreads[i].ttmLayer == NULL)
+            continue;
+
+        SDL_BlitSurface(ttmThreads[i].ttmLayer,
+                        NULL,
+                        captureSurface,
+                        &grScreenOrigin);
+    }
+
+    if (ttmHolidayThread != NULL &&
+        ttmHolidayThread->isRunning &&
+        ttmHolidayThread->ttmLayer != NULL) {
+        SDL_BlitSurface(ttmHolidayThread->ttmLayer,
+                        NULL,
+                        captureSurface,
+                        &grScreenOrigin);
+    }
+
+    if (grCaptureOverlay)
+        grCaptureEmbedOverlay(captureSurface);
+
+    return captureSurface;
 }
 
 
@@ -792,13 +869,20 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     }
 
     if (shouldCapture && filename != NULL) {
-        if (grCaptureFrame(filename) == 0) {
+        SDL_Surface *captureSurface = grCaptureBuildSurface(ttmThreads, ttmHolidayThread);
+        if (captureSurface != NULL && SDL_SaveBMP(captureSurface, filename) == 0) {
             grCaptureWriteFrameMetadata(filename, ttmThreads, ttmHolidayThread);
             printf("Frame %d captured to %s\n", grCurrentFrame, filename);
             if (grCaptureFrameNumber >= 0)
                 grCaptureFrameNumber = -1;
             if (grCaptureEndFrame >= 0 && grCurrentFrame >= grCaptureEndFrame)
                 grCaptureSequenceFinished = 1;
+            SDL_FreeSurface(captureSurface);
+        } else {
+            if (captureSurface != NULL) {
+                fprintf(stderr, "Error: Cannot save frame to %s: %s\n", filename, SDL_GetError());
+                SDL_FreeSurface(captureSurface);
+            }
         }
     }
 
@@ -1658,36 +1742,13 @@ void grFadeOut()
  * Returns 0 on success, -1 on error
  */
 int grCaptureFrame(const char *filename) {
-    SDL_Surface *captureSurface = NULL;
-
-    if (sdl_window == NULL) {
-        fprintf(stderr, "Error: Cannot capture frame, SDL window not initialized\n");
+    SDL_Surface *captureSurface = grCaptureBuildSurface(NULL, NULL);
+    if (captureSurface == NULL)
         return -1;
-    }
 
-    SDL_Surface *windowSurface = SDL_GetWindowSurface(sdl_window);
-    if (windowSurface == NULL) {
-        fprintf(stderr, "Error: Cannot get window surface: %s\n", SDL_GetError());
-        return -1;
-    }
-
-    if (grCaptureOverlay) {
-        captureSurface = SDL_ConvertSurfaceFormat(windowSurface, SDL_PIXELFORMAT_ARGB8888, 0);
-        if (captureSurface == NULL) {
-            fprintf(stderr, "Error: Cannot convert capture surface: %s\n", SDL_GetError());
-            return -1;
-        }
-        grCaptureEmbedOverlay(captureSurface);
-    }
-    else {
-        captureSurface = windowSurface;
-    }
-
-    /* Save as BMP file */
     if (SDL_SaveBMP(captureSurface, filename) != 0) {
         fprintf(stderr, "Error: Cannot save frame to %s: %s\n", filename, SDL_GetError());
-        if (captureSurface != windowSurface)
-            SDL_FreeSurface(captureSurface);
+        SDL_FreeSurface(captureSurface);
         return -1;
     }
 
@@ -1696,8 +1757,7 @@ int grCaptureFrame(const char *filename) {
                captureSurface->w, captureSurface->h);
     }
 
-    if (captureSurface != windowSurface)
-        SDL_FreeSurface(captureSurface);
+    SDL_FreeSurface(captureSurface);
 
     return 0;
 }

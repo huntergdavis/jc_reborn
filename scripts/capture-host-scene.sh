@@ -38,6 +38,7 @@ SKIP_VISUAL_DETECT=1
 STAMP_PREFIX=1
 UNTIL_EXIT=0
 CAPTURE_OVERLAY=0
+CAPTURE_FOREGROUND_ONLY=0
 TIMEOUT_SECONDS=""
 
 usage() {
@@ -68,6 +69,7 @@ Options:
   --skip-visual-detect Skip expensive visual_detect.py postprocess (default)
   --no-stamp           Do not prefix the output leaf with UTC timestamp
   --overlay            Embed debug overlay blocks in captured screenshots
+  --foreground-only    Capture composited non-background layers over magenta key
   -h, --help           Show this help
 USAGE
     exit 0
@@ -98,6 +100,7 @@ while [ $# -gt 0 ]; do
         --skip-visual-detect) SKIP_VISUAL_DETECT=1; shift ;;
         --no-stamp) STAMP_PREFIX=0; shift ;;
         --overlay) CAPTURE_OVERLAY=1; shift ;;
+        --foreground-only) CAPTURE_FOREGROUND_ONLY=1; shift ;;
         -h|--help) usage ;;
         *) echo "Unknown option: $1" >&2; exit 1 ;;
     esac
@@ -348,6 +351,9 @@ capture_args=(
 if [ "$CAPTURE_OVERLAY" -eq 1 ]; then
     capture_args+=(capture-overlay)
 fi
+if [ "$CAPTURE_FOREGROUND_ONLY" -eq 1 ]; then
+    capture_args+=(capture-foreground-only)
+fi
 if [ "$UNTIL_EXIT" -eq 1 ]; then
     capture_args+=(capture-range "$START_FRAME" -1)
 else
@@ -370,7 +376,7 @@ set -e
 popd >/dev/null
 
 python3 - "$PROJECT_ROOT" "$OUTPUT_DIR" "$SCENE_LIST_FILE" "$ADS_NAME" "$TAG" \
-           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$START_FRAME" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" "$TIMEOUT_SECONDS" "$FRAME_LIST" <<'PY'
+           "$BOOT" "$SEED" "$capture_ts" "$FRAMES" "$START_FRAME" "$INTERVAL" "$MODE" "$ISLAND_X" "$ISLAND_Y" "$LOWTIDE" "$SKIP_VISUAL_DETECT" "$UNTIL_EXIT" "$host_exit_code" "$CAPTURE_OVERLAY" "$TIMEOUT_SECONDS" "$FRAME_LIST" "$CAPTURE_FOREGROUND_ONLY" <<'PY'
 import hashlib
 import json
 import os
@@ -401,6 +407,7 @@ host_exit_code = int(sys.argv[18])
 capture_overlay = int(sys.argv[19]) != 0
 timeout_seconds = int(sys.argv[20]) if sys.argv[20] else 0
 frame_list_raw = sys.argv[21].strip()
+capture_foreground_only = int(sys.argv[22]) != 0
 frames_dir = output_dir / "frames"
 frame_meta_dir = output_dir / "frame-meta"
 
@@ -681,6 +688,7 @@ result = {
             if forced_island_x is not None and forced_island_y is not None else None
         ),
         "forced_low_tide": forced_low_tide,
+        "capture_foreground_only": capture_foreground_only,
     },
     "outcome": outcome,
     "paths": {
@@ -709,6 +717,7 @@ result = {
     ),
     "forced_low_tide": forced_low_tide,
     "capture_overlay": capture_overlay,
+    "capture_foreground_only": capture_foreground_only,
     "frame_count": len(frame_files),
     "frames": [p.relative_to(output_dir).as_posix() for p in frame_files],
     "frame_meta_files": [p.relative_to(output_dir).as_posix() for p in list_meta_files()],

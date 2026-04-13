@@ -1576,6 +1576,13 @@ void adsPlay(char *adsName, uint16 adsTag)
     const char *adsNameRef = adsStabilizeName(adsName, stableAdsName, sizeof(stableAdsName));
 
 #ifdef PS1_BUILD
+    /* Reset launch-state before any early-return path so story playback can
+     * tell the difference between "scene failed to start" and "previous scene
+     * launched successfully". */
+    ps1AdsLastPlayLaunched = 0;
+#endif
+
+#ifdef PS1_BUILD
     if (foregroundPilotShouldStartForAds(adsNameRef, adsTag) &&
         !foregroundPilotRuntimeActive()) {
         if (!foregroundPilotRuntimeStartRequested())
@@ -1688,7 +1695,6 @@ void adsPlay(char *adsName, uint16 adsTag)
     adsLoad(data, dataSize, adsResource->numTags, adsTag, &offset);
 
     adsStopRequested = 0;
-    ps1AdsLastPlayLaunched = 0;
     grUpdateDelay = 0;
 
     // Play the first ADS chunk of the sequence

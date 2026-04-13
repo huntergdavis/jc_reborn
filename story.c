@@ -489,15 +489,10 @@ void storyPlay()
                 forcedFinalScene = requestedScene;
             else if (requestedScene->flags & FINAL)
                 bootScene = requestedScene;
-#ifdef PS1_BUILD
-            else
-                forcedIntermediateScene = requestedScene;
-#else
             else if (storyCapturePreludeFrame)
                 forcedIntermediateScene = requestedScene;
             else
                 bootScene = requestedScene;
-#endif
             storyBootSceneIndex = -1;
         }
         else if (storyBootAdsName[0] != '\0' && storyBootAdsTag >= 0) {

@@ -32,6 +32,11 @@ python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
   --output-json "$PACK_JSON" \
   --frame-step 6
 
+if [ ! -s "$PACK_PATH" ]; then
+  echo "foreground pack was not generated: $PACK_PATH" >&2
+  exit 1
+fi
+
 echo "$ANALYSIS_JSON"
 echo "$PACK_JSON"
 echo "$PACK_PATH"

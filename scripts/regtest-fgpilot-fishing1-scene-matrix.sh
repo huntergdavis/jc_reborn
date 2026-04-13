@@ -176,6 +176,10 @@ for scene in scenes:
         "fgpilot_state_hash": state_hashes[scene],
         "state_hash_matches_shared_overlay":
             state_hashes[scene] == summary["shared_overlay_reference"]["state_hash"],
+        "save_state_hash_matches_shared_overlay":
+            summary["fgpilot_raw_hashes"]["save_state_hash"] == summary["shared_overlay_reference"]["save_state_hash"],
+        "ram_hash_matches_shared_overlay":
+            summary["fgpilot_raw_hashes"]["ram_hash"] == summary["shared_overlay_reference"]["ram_hash"],
         "current_hard_read": summary["current_hard_read"],
         "fgpilot_vs_overlay": summary["fgpilot_vs_overlay"],
         "fgpilot_raw_hashes": summary["fgpilot_raw_hashes"],
@@ -251,6 +255,10 @@ payload = {
             all(row["fgpilot_vs_overlay"]["state_diff"] for row in rows),
         "all_scenes_same_state_hash_as_shared_overlay":
             all(row["state_hash_matches_shared_overlay"] for row in rows),
+        "all_scenes_distinct_save_state_hash_from_shared_overlay":
+            all(not row["save_state_hash_matches_shared_overlay"] for row in rows),
+        "all_scenes_distinct_ram_hash_from_shared_overlay":
+            all(not row["ram_hash_matches_shared_overlay"] for row in rows),
         "all_scenes_nonvisual_against_overlay":
             all(row["current_hard_read"]["fgpilot_adds_only_nonvisual_state_drift"] for row in rows),
         "all_pairs_same_visible_output":

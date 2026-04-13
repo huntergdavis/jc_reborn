@@ -7,6 +7,7 @@ void foregroundPilotSetScene(const char *sceneName);
 void foregroundPilotPlay(void);
 int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag);
 int foregroundPilotRuntimeStartRequested(void);
+int foregroundPilotRuntimeStartIfRequested(void);
 int foregroundPilotRuntimeStart(const char *sceneName);
 void foregroundPilotRuntimeCompose(void);
 void foregroundPilotRuntimeAdvance(void);

@@ -734,6 +734,15 @@ int foregroundPilotRuntimeStartRequested(void)
     return foregroundPilotRuntimeStart(gForegroundPilotScene);
 }
 
+int foregroundPilotRuntimeStartIfRequested(void)
+{
+    if (!foregroundPilotRequested())
+        return 1;
+    if (foregroundPilotRuntimeActive())
+        return 1;
+    return foregroundPilotRuntimeStartRequested();
+}
+
 void foregroundPilotPlay(void)
 {
     if (fgSceneEquals(gForegroundPilotScene, "testcard")) {
@@ -813,6 +822,11 @@ int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
 int foregroundPilotRuntimeStartRequested(void)
 {
     return 0;
+}
+
+int foregroundPilotRuntimeStartIfRequested(void)
+{
+    return foregroundPilotRequested() ? 0 : 1;
 }
 
 void foregroundPilotPlay(void)

@@ -962,6 +962,11 @@ int main(int argc, char **argv)
         foregroundPilotPlay();
     }
     else {
+        if (!foregroundPilotRuntimeStartIfRequested()) {
+            soundEnd();
+            graphicsEnd();
+            return 0;
+        }
         storyPlay();
     }
 

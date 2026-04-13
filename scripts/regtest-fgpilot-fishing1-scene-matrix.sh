@@ -18,6 +18,7 @@ SHARED_DIR="$OUT_DIR/shared"
 BASE_DIR="$SHARED_DIR/base"
 OVERLAY_ONLY_DIR="$SHARED_DIR/overlay-only"
 PAIRWISE_DIR="$OUT_DIR/pairwise"
+SHARED_OVERLAY_COMPARE_JSON="$SHARED_DIR/compare-overlay-vs-mask.json"
 
 mkdir -p "$OUT_DIR"
 mkdir -p "$PAIRWISE_DIR"
@@ -40,6 +41,11 @@ mkdir -p "$PAIRWISE_DIR"
     --overlay \
     --vram-write-dumps \
     --output "$OVERLAY_ONLY_DIR" >/dev/null
+
+python3 "$SCRIPT_DIR/compare-regtest-result-bundles.py" \
+    --base "$BASE_DIR/result.json" \
+    --overlay "$OVERLAY_ONLY_DIR/result.json" \
+    > "$SHARED_OVERLAY_COMPARE_JSON"
 
 for scene in $SCENES; do
     SCENE_DIR="$OUT_DIR/$scene"
@@ -64,15 +70,16 @@ for scene in $SCENES; do
         --overlay "$FGPILOT_DIR/result.json" \
         > "$FGPILOT_COMPARE_JSON"
 
-    python3 - <<'PY' "$BASE_DIR/result.json" "$OVERLAY_ONLY_DIR/result.json" "$FGPILOT_COMPARE_JSON" "$scene" > "$SUMMARY_JSON"
+    python3 - <<'PY' "$BASE_DIR/result.json" "$OVERLAY_ONLY_DIR/result.json" "$SHARED_OVERLAY_COMPARE_JSON" "$FGPILOT_COMPARE_JSON" "$scene" > "$SUMMARY_JSON"
 import json
 import sys
 from pathlib import Path
 
 base_result = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 overlay_result = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
-fgpilot_compare = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
-scene = sys.argv[4]
+overlay_compare = json.loads(Path(sys.argv[3]).read_text(encoding="utf-8"))
+fgpilot_compare = json.loads(Path(sys.argv[4]).read_text(encoding="utf-8"))
+scene = sys.argv[5]
 
 def classify(compare):
     outcome = compare["outcome"]
@@ -107,15 +114,17 @@ payload = {
     "fgoverlay_scene": scene,
     "shared_base_result": str(Path(sys.argv[1])),
     "shared_overlay_result": str(Path(sys.argv[2])),
+    "shared_overlay_compare_json": str(Path(sys.argv[3])),
+    "overlay_vs_mask": classify(overlay_compare),
     "fgpilot_vs_overlay": classify(fgpilot_compare),
     "current_hard_read": {
-        "overlay_mode_alone_is_nonvisual_state_only": True,
+        "overlay_mode_alone_is_nonvisual_state_only": classify(overlay_compare)["nonvisual_state_only"],
         "fgpilot_adds_only_nonvisual_state_drift": classify(fgpilot_compare)["nonvisual_state_only"],
         "window_invalid_black": classify(fgpilot_compare)["window_invalid_black"],
-        "any_visual_diff": classify(fgpilot_compare)["visual_diff"],
-        "any_visible_subset_diff": classify(fgpilot_compare)["visible_visual_diff"],
-        "any_upload_diff": classify(fgpilot_compare)["upload_diff"],
-        "any_vram_diff": classify(fgpilot_compare)["vram_diff"],
+        "any_visual_diff": classify(overlay_compare)["visual_diff"] or classify(fgpilot_compare)["visual_diff"],
+        "any_visible_subset_diff": classify(overlay_compare)["visible_visual_diff"] or classify(fgpilot_compare)["visible_visual_diff"],
+        "any_upload_diff": classify(overlay_compare)["upload_diff"] or classify(fgpilot_compare)["upload_diff"],
+        "any_vram_diff": classify(overlay_compare)["vram_diff"] or classify(fgpilot_compare)["vram_diff"],
     },
     "shared_overlay_reference": {
         "result_json": str(Path(sys.argv[2])),
@@ -146,10 +155,13 @@ ram_hashes = {}
 vram_hashes = {}
 scene_summaries = {}
 fgpilot_results = {}
+overlay_vs_mask = None
 for scene in scenes:
     summary_path = out_dir / scene / "summary.json"
     summary = json.loads(summary_path.read_text(encoding="utf-8"))
     scene_summaries[scene] = summary
+    if overlay_vs_mask is None:
+        overlay_vs_mask = summary["overlay_vs_mask"]
     fgpilot_results[scene] = out_dir / scene / "fgpilot" / "result.json"
     save_state_hashes[scene] = summary["fgpilot_raw_hashes"]["save_state_hash"]
     ram_hashes[scene] = summary["fgpilot_raw_hashes"]["ram_hash"]
@@ -200,6 +212,8 @@ for left, right in combinations(scenes, 2):
 payload = {
     "shared_base_result": str((out_dir / "shared" / "base" / "result.json")),
     "shared_overlay_result": str((out_dir / "shared" / "overlay-only" / "result.json")),
+    "shared_overlay_compare_json": str((out_dir / "shared" / "compare-overlay-vs-mask.json")),
+    "overlay_vs_mask": overlay_vs_mask,
     "scene_state_distinctness": {
         "distinct_save_state_hashes": len(set(save_state_hashes.values())),
         "distinct_ram_hashes": len(set(ram_hashes.values())),
@@ -210,6 +224,8 @@ payload = {
     },
     "pairwise_scene_compares": pairwise,
     "matrix_hard_read": {
+        "overlay_mode_alone_is_nonvisual_state_only":
+            overlay_vs_mask["nonvisual_state_only"] if overlay_vs_mask else None,
         "all_scenes_nonvisual_against_overlay":
             all(row["current_hard_read"]["fgpilot_adds_only_nonvisual_state_drift"] for row in rows),
         "all_pairs_same_visible_output":

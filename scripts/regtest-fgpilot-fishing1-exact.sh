@@ -65,13 +65,14 @@ python3 "$SCRIPT_DIR/compare-regtest-result-bundles.py" \
     --overlay "$FGPILOT_DIR/result.json" \
     > "$FGPILOT_COMPARE_JSON"
 
-python3 - <<'PY' "$OVERLAY_COMPARE_JSON" "$FGPILOT_COMPARE_JSON" > "$SUMMARY_JSON"
+python3 - <<'PY' "$OVERLAY_COMPARE_JSON" "$FGPILOT_COMPARE_JSON" "$FGOVERLAY_SCENE" > "$SUMMARY_JSON"
 import json
 import sys
 from pathlib import Path
 
 overlay = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
 fgpilot = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+fgoverlay_scene = sys.argv[3]
 
 def classify(compare):
     outcome = compare["outcome"]
@@ -103,6 +104,7 @@ def classify(compare):
     }
 
 payload = {
+    "fgoverlay_scene": fgoverlay_scene,
     "overlay_vs_mask": classify(overlay),
     "fgpilot_vs_overlay": classify(fgpilot),
     "current_hard_read": {

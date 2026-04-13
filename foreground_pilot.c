@@ -131,9 +131,10 @@ static void fgInitVisiblePipeline(void)
     grUpdateDelay = 1;
 }
 
-static void fgPrepareBackgroundFrame(void)
+static void fgInitBlackBackground(void)
 {
     grInitEmptyBackground();
+    grSaveCleanBgTiles();
 }
 
 static void fgBlit16ToBackgroundRect(uint16 dstX, uint16 dstY,
@@ -199,9 +200,9 @@ static void fgPresentCurrentBackground(uint16 holdFrames)
 {
     uint16 i;
 
-    grSaveCleanBgTiles();
-    for (i = 0; i < holdFrames; i++)
+    for (i = 0; i < holdFrames; i++) {
         grUpdateDisplay(NULL, NULL, NULL);
+    }
 }
 
 static uint8 *fgLoadRawFileDirect(const char *cdPath, uint32 *outSize)
@@ -274,7 +275,9 @@ static void fgShowRawFrame(const char *cdPath, uint16 holdFrames)
     }
 
     fgInitVisiblePipeline();
-    fgPrepareBackgroundFrame();
+    fgInitBlackBackground();
+    grBeginFrame();
+    grRestoreBgTiles();
     fgBlit16ToBackgroundRect(0, 0, 640, 480, (const uint16 *)screenBuffer);
     free(screenBuffer);
     fgPresentCurrentBackground(holdFrames);
@@ -349,6 +352,7 @@ static void fgPlayTestCard(void)
     uint16 i;
 
     fgInitVisiblePipeline();
+    fgInitBlackBackground();
 
     for (int c = 0; c < 4; c++) {
         if (colors[c] == NULL) {
@@ -361,7 +365,8 @@ static void fgPlayTestCard(void)
     }
 
     for (i = 0; i < 120; i++) {
-        fgPrepareBackgroundFrame();
+        grBeginFrame();
+        grRestoreBgTiles();
         fgBlit16ToBackgroundRect(24, 24, rectW, rectH, colors[0]);
         fgBlit16ToBackgroundRect(176, 24, rectW, rectH, colors[1]);
         fgBlit16ToBackgroundRect(24, 136, rectW, rectH, colors[2]);
@@ -383,7 +388,7 @@ static void fgPlayFishing1(void)
     }
 
     fgInitVisiblePipeline();
-    fgPrepareBackgroundFrame();
+    fgInitBlackBackground();
     fgPresentCurrentBackground(15);
 
     for (uint16 frameIndex = 0; frameIndex < header.frameCount; frameIndex++) {
@@ -403,7 +408,8 @@ static void fgPlayFishing1(void)
                 break;
             }
         }
-        fgPrepareBackgroundFrame();
+        grBeginFrame();
+        grRestoreBgTiles();
         if (frameData != NULL)
             fgBlit16ToBackgroundRect(entry.x, entry.y, entry.width, entry.height,
                                      (const uint16 *)frameData);
@@ -427,12 +433,12 @@ static void fgPlayFishing1(void)
     }
 
     if (haveLastEntry) {
-        fgPrepareBackgroundFrame();
+        grBeginFrame();
+        grRestoreBgTiles();
         fgBlit16ToBackgroundRect(lastEntry.x, lastEntry.y, lastEntry.width, lastEntry.height,
                                  (const uint16 *)lastFrameData);
         fgPresentCurrentBackground(150);
     } else {
-        fgPrepareBackgroundFrame();
         fgPresentCurrentBackground(150);
     }
 

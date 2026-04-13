@@ -133,6 +133,7 @@ extern int grUpdateDelay;
 
 /* Frame capture for visual regression testing */
 extern int grCaptureFrameNumber;
+extern int grCaptureForegroundOnly;
 extern char *grCaptureFilename;
 extern char *grCaptureDir;
 extern char *grCaptureMetaDir;

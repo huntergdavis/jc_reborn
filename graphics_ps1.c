@@ -195,6 +195,7 @@ int grUpdateDelay = 0;
 
 /* Frame capture - stubbed for PS1 */
 int grCaptureFrameNumber = -1;
+int grCaptureForegroundOnly = 0;
 char *grCaptureFilename = NULL;
 char *grCaptureDir = NULL;
 char *grCaptureMetaDir = NULL;

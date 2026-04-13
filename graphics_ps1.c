@@ -807,19 +807,22 @@ static void grDrawCapturePatternCell(sint16 x, sint16 y, int symbol)
 
 static void grDrawForegroundPilotDiagnostics(void)
 {
-    const int x = 520;
-    const int y = 8;
-    const int panelW = 110;
+    const int x = 2;
+    const int y = 62;
+    const int panelW = 96;
     const int rowH = 3;
     const int stepY = 5;
 
-    grDrawCounterBar(x, y, panelW, 34, 0x0000);
-    grDrawCounterBar(x + 2, y + 2, foregroundPilotRuntimeRequestedEver() ? 18 : 0, rowH, 0x7FFF);
-    grDrawCounterBar(x + 2, y + 2 + stepY, foregroundPilotRuntimeStartedEver() ? 18 : 0, rowH, 0x03E0);
-    grDrawCounterBar(x + 2, y + 2 + (stepY * 2), foregroundPilotRuntimeComposedEver() ? 18 : 0, rowH, 0x7C1F);
-    grDrawCounterBar(x + 2, y + 2 + (stepY * 3), foregroundPilotRuntimeActive() ? 18 : 0, rowH, 0x03FF);
-    grDrawCounterBar(x + 2, y + 2 + (stepY * 4), foregroundPilotRuntimeHasFrameData() ? 18 : 0, rowH, 0x7FE0);
-    grDrawCounterBar(x + 2, y + 2 + (stepY * 5), (foregroundPilotRuntimeMode() & 0x07) * 8, rowH, 0x001F);
+    grDrawCounterBar(x, y, panelW, 44, 0x0000);
+    grDrawCounterBar(x + 2, y + 2, foregroundPilotConfiguredEver() ? 18 : 0, rowH, 0x4210);
+    grDrawCounterBar(x + 2, y + 2 + stepY, foregroundPilotRuntimeRequestedEver() ? 18 : 0, rowH, 0x7FFF);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 2), foregroundPilotRuntimeAdsMatchEver() ? 18 : 0, rowH, 0x03E0);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 3), foregroundPilotRuntimeStartAttemptedEver() ? 18 : 0, rowH, 0x7C1F);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 4), foregroundPilotRuntimeStartedEver() ? 18 : 0, rowH, 0x03FF);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 5), foregroundPilotRuntimeComposedEver() ? 18 : 0, rowH, 0x7FE0);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 6), foregroundPilotRuntimeActive() ? 18 : 0, rowH, 0x001F);
+    grDrawCounterBar(x + 2, y + 2 + (stepY * 7), foregroundPilotRuntimeHasFrameData() ? 18 : 0, rowH, 0x03FF);
+    grDrawCounterBar(x + 28, y + 2 + (stepY * 7), (foregroundPilotRuntimeMode() & 0x07) * 8, rowH, 0x7FFF);
 }
 
 static void grDrawCaptureActorPanel(void)

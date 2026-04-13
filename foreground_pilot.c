@@ -62,13 +62,19 @@ struct TFgPilotRuntime {
 static char gForegroundPilotScene[16] = "";
 static const uint16 kFgPilotProbeHoldFrames = 1800;
 static struct TFgPilotRuntime gFgRuntime = {0};
+static uint8 gFgConfiguredEver = 0;
 static uint8 gFgRequestedEver = 0;
+static uint8 gFgAdsMatchEver = 0;
+static uint8 gFgStartAttemptEver = 0;
 static uint8 gFgStartedEver = 0;
 static uint8 gFgComposedEver = 0;
 
 static void fgResetTelemetryFlags(void)
 {
+    gFgConfiguredEver = 0;
     gFgRequestedEver = 0;
+    gFgAdsMatchEver = 0;
+    gFgStartAttemptEver = 0;
     gFgStartedEver = 0;
     gFgComposedEver = 0;
 }
@@ -593,9 +599,24 @@ int foregroundPilotRuntimeHasFrameData(void)
     return (gFgRuntime.active && gFgRuntime.currentFrameData != NULL) ? 1 : 0;
 }
 
+int foregroundPilotConfiguredEver(void)
+{
+    return gFgConfiguredEver ? 1 : 0;
+}
+
 int foregroundPilotRuntimeRequestedEver(void)
 {
     return gFgRequestedEver ? 1 : 0;
+}
+
+int foregroundPilotRuntimeAdsMatchEver(void)
+{
+    return gFgAdsMatchEver ? 1 : 0;
+}
+
+int foregroundPilotRuntimeStartAttemptedEver(void)
+{
+    return gFgStartAttemptEver ? 1 : 0;
 }
 
 int foregroundPilotRuntimeStartedEver(void)
@@ -769,6 +790,8 @@ void foregroundPilotSetScene(const char *sceneName)
     for (i = 0; i + 1 < sizeof(gForegroundPilotScene) && sceneName[i] != '\0'; i++)
         gForegroundPilotScene[i] = sceneName[i];
     gForegroundPilotScene[i] = '\0';
+    gFgConfiguredEver = 1;
+    gFgRequestedEver = 1;
 }
 
 int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
@@ -779,6 +802,7 @@ int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
     if ((fgSceneEquals(gForegroundPilotScene, "fishing1") ||
          fgSceneEquals(gForegroundPilotScene, "testcard")) &&
         fgAdsNameEquals(adsName, "FISHING") && adsTag == 1) {
+        gFgAdsMatchEver = 1;
         return 1;
     }
 
@@ -790,6 +814,7 @@ int foregroundPilotRuntimeStartRequested(void)
     if (!foregroundPilotRequested())
         return 0;
 
+    gFgStartAttemptEver = 1;
     return foregroundPilotRuntimeStart(gForegroundPilotScene);
 }
 
@@ -913,7 +938,22 @@ int foregroundPilotRuntimeHasFrameData(void)
     return 0;
 }
 
+int foregroundPilotConfiguredEver(void)
+{
+    return foregroundPilotRequested() ? 1 : 0;
+}
+
 int foregroundPilotRuntimeRequestedEver(void)
+{
+    return foregroundPilotRequested() ? 1 : 0;
+}
+
+int foregroundPilotRuntimeAdsMatchEver(void)
+{
+    return 0;
+}
+
+int foregroundPilotRuntimeStartAttemptedEver(void)
 {
     return 0;
 }

@@ -62,6 +62,9 @@ struct TFgPilotRuntime {
 static char gForegroundPilotScene[16] = "";
 static const uint16 kFgPilotProbeHoldFrames = 1800;
 static struct TFgPilotRuntime gFgRuntime = {0};
+static uint8 gFgRequestedEver = 0;
+static uint8 gFgStartedEver = 0;
+static uint8 gFgComposedEver = 0;
 
 enum {
     FG_RUNTIME_NONE = 0,
@@ -439,6 +442,7 @@ static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
 int foregroundPilotRuntimeStart(const char *sceneName)
 {
     fgRuntimeReset();
+    gFgRequestedEver = 1;
 
     if (sceneName == NULL)
         return 0;
@@ -447,6 +451,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         gFgRuntime.active = 1;
         gFgRuntime.mode = FG_RUNTIME_TESTCARD;
         gFgRuntime.holdFrames = kFgPilotProbeHoldFrames;
+        gFgStartedEver = 1;
         fgTelemetryUpdate();
         return 1;
     }
@@ -463,6 +468,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
             fgRuntimeReset();
             return 0;
         }
+        gFgStartedEver = 1;
         fgTelemetryUpdate();
         return 1;
     }
@@ -477,6 +483,8 @@ void foregroundPilotRuntimeCompose(void)
 
     if (!gFgRuntime.active)
         return;
+
+    gFgComposedEver = 1;
 
     if (gFgRuntime.mode == FG_RUNTIME_TESTCARD) {
         static uint16 *colors[4] = { NULL, NULL, NULL, NULL };
@@ -576,6 +584,21 @@ unsigned short foregroundPilotRuntimeDisplayVBlanks(void)
 int foregroundPilotRuntimeHasFrameData(void)
 {
     return (gFgRuntime.active && gFgRuntime.currentFrameData != NULL) ? 1 : 0;
+}
+
+int foregroundPilotRuntimeRequestedEver(void)
+{
+    return gFgRequestedEver ? 1 : 0;
+}
+
+int foregroundPilotRuntimeStartedEver(void)
+{
+    return gFgStartedEver ? 1 : 0;
+}
+
+int foregroundPilotRuntimeComposedEver(void)
+{
+    return gFgComposedEver ? 1 : 0;
 }
 
 void foregroundPilotRuntimeEnd(void)
@@ -877,6 +900,21 @@ unsigned short foregroundPilotRuntimeDisplayVBlanks(void)
 }
 
 int foregroundPilotRuntimeHasFrameData(void)
+{
+    return 0;
+}
+
+int foregroundPilotRuntimeRequestedEver(void)
+{
+    return 0;
+}
+
+int foregroundPilotRuntimeStartedEver(void)
+{
+    return 0;
+}
+
+int foregroundPilotRuntimeComposedEver(void)
 {
     return 0;
 }

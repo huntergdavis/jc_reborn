@@ -17,6 +17,9 @@ unsigned short foregroundPilotRuntimeFrameIndex(void);
 unsigned short foregroundPilotRuntimeSourceFrame(void);
 unsigned short foregroundPilotRuntimeDisplayVBlanks(void);
 int foregroundPilotRuntimeHasFrameData(void);
+int foregroundPilotRuntimeRequestedEver(void);
+int foregroundPilotRuntimeStartedEver(void);
+int foregroundPilotRuntimeComposedEver(void);
 void foregroundPilotRuntimeEnd(void);
 
 #endif

@@ -292,15 +292,40 @@ void grPs1SetLastBmpTelemetry(uint16 slot, uint16 frames, uint16 status)
 
 static void grDrawCounterBar(int x, int y, int w, int h, uint16 color)
 {
-    if (!bgTile0 || !bgTile0->pixels) return;
-    if (x < 0 || y < 0 || x >= (int)bgTile0->width || y >= (int)bgTile0->height) return;
     if (w <= 0 || h <= 0) return;
-    if (x + w > (int)bgTile0->width) w = (int)bgTile0->width - x;
-    if (y + h > (int)bgTile0->height) h = (int)bgTile0->height - y;
 
-    for (int yy = 0; yy < h; yy++) {
-        uint16 *row = bgTile0->pixels + (y + yy) * (int)bgTile0->width + x;
-        for (int xx = 0; xx < w; xx++) row[xx] = color;
+    sint16 x2 = (sint16)(x + w);
+    sint16 y2 = (sint16)(y + h);
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    if (x2 > 640) x2 = 640;
+    if (y2 > 480) y2 = 480;
+    if (x >= x2 || y >= y2) return;
+
+    grMarkRectDirty(x, y, x2, y2);
+
+    for (sint16 py = y; py < y2; py++) {
+        int tileLocalY = (py < 240) ? py : py - 240;
+        PS1Surface *tileLeft = (py < 240) ? bgTile0 : bgTile3;
+        PS1Surface *tileRight = (py < 240) ? bgTile1 : bgTile4;
+
+        if (x < 320 && tileLeft && tileLeft->pixels) {
+            sint16 fillStart = x;
+            sint16 fillEnd = (x2 < 320) ? x2 : 320;
+            uint16 *dst = tileLeft->pixels + (tileLocalY * (int)tileLeft->width) + fillStart;
+            for (sint16 px = fillStart; px < fillEnd; px++) {
+                *dst++ = color;
+            }
+        }
+
+        if (x2 > 320 && tileRight && tileRight->pixels) {
+            sint16 fillStart = (x > 320) ? x : 320;
+            sint16 fillEnd = x2;
+            uint16 *dst = tileRight->pixels + (tileLocalY * (int)tileRight->width) + (fillStart - 320);
+            for (sint16 px = fillStart; px < fillEnd; px++) {
+                *dst++ = color;
+            }
+        }
     }
 }
 
@@ -798,6 +823,17 @@ static void grDrawCaptureActorPanel(void)
     grDrawCounterBar(panelX, panelY, panelW, 50, 0x0000);
     if (grCaptureOverlayMaskOnly)
         return;
+
+    /* Pilot runtime marker for regtest-visible diagnostics.
+     * This piggybacks on the already-visible capture panel so story-route
+     * fgpilot runs can prove runtime state without relying on the strip
+     * decoder. */
+    grDrawCounterBar(panelX + 64, panelY + 2, foregroundPilotRuntimeRequestedEver() ? 6 : 0, 2, 0x7FFF);
+    grDrawCounterBar(panelX + 64, panelY + 6, foregroundPilotRuntimeStartedEver() ? 6 : 0, 2, 0x03E0);
+    grDrawCounterBar(panelX + 64, panelY + 10, foregroundPilotRuntimeComposedEver() ? 6 : 0, 2, 0x7C1F);
+    grDrawCounterBar(panelX + 64, panelY + 14, foregroundPilotRuntimeActive() ? 6 : 0, 2, 0x03FF);
+    grDrawCounterBar(panelX + 64, panelY + 18, foregroundPilotRuntimeHasFrameData() ? 6 : 0, 2, 0x7FE0);
+    grDrawCounterBar(panelX + 64, panelY + 22, foregroundPilotRuntimeMode() & 0x07, 2, 0x001F);
 
     for (entity = 0; entity < GR_CAPTURE_ENTITY_COUNT; entity++) {
         const struct TPs1CaptureEntitySummary *summary = &entities[entity];

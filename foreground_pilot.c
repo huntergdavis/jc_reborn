@@ -60,6 +60,7 @@ struct TFgPilotRuntime {
 };
 
 static char gForegroundPilotScene[16] = "";
+static uint8 gForegroundPilotRequestedMode = 0;
 static const uint16 kFgPilotProbeHoldFrames = 1800;
 static struct TFgPilotRuntime gFgRuntime = {0};
 static uint8 gFgConfiguredEver = 0;
@@ -84,6 +85,15 @@ enum {
     FG_RUNTIME_TESTCARD = 1,
     FG_RUNTIME_FISHING1 = 2
 };
+
+static uint8 fgSceneModeForName(const char *sceneName)
+{
+    if (fgSceneEquals(sceneName, "testcard"))
+        return FG_RUNTIME_TESTCARD;
+    if (fgSceneEquals(sceneName, "fishing1"))
+        return FG_RUNTIME_FISHING1;
+    return FG_RUNTIME_NONE;
+}
 
 static uint16 fgReadU16(const uint8 *p)
 {
@@ -772,7 +782,7 @@ static void fgPlaySolidRed(void)
 
 int foregroundPilotRequested(void)
 {
-    return gForegroundPilotScene[0] != '\0';
+    return gForegroundPilotRequestedMode != FG_RUNTIME_NONE;
 }
 
 const char *foregroundPilotSceneName(void)
@@ -786,6 +796,7 @@ void foregroundPilotSetScene(const char *sceneName)
 
     if (!sceneName) {
         gForegroundPilotScene[0] = '\0';
+        gForegroundPilotRequestedMode = FG_RUNTIME_NONE;
         gFgSetClearedEver = 1;
         return;
     }
@@ -793,6 +804,7 @@ void foregroundPilotSetScene(const char *sceneName)
     for (i = 0; i + 1 < sizeof(gForegroundPilotScene) && sceneName[i] != '\0'; i++)
         gForegroundPilotScene[i] = sceneName[i];
     gForegroundPilotScene[i] = '\0';
+    gForegroundPilotRequestedMode = fgSceneModeForName(gForegroundPilotScene);
     gFgConfiguredEver = 1;
 }
 
@@ -801,8 +813,8 @@ int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
     if (!foregroundPilotRequested() || adsName == NULL)
         return 0;
 
-    if ((fgSceneEquals(gForegroundPilotScene, "fishing1") ||
-         fgSceneEquals(gForegroundPilotScene, "testcard")) &&
+    if ((gForegroundPilotRequestedMode == FG_RUNTIME_FISHING1 ||
+         gForegroundPilotRequestedMode == FG_RUNTIME_TESTCARD) &&
         fgAdsNameEquals(adsName, "FISHING") && adsTag == 1) {
         gFgAdsMatchEver = 1;
         return 1;
@@ -817,7 +829,14 @@ int foregroundPilotRuntimeStartRequested(void)
         return 0;
 
     gFgStartAttemptEver = 1;
-    return foregroundPilotRuntimeStart(gForegroundPilotScene);
+    switch (gForegroundPilotRequestedMode) {
+        case FG_RUNTIME_TESTCARD:
+            return foregroundPilotRuntimeStart("testcard");
+        case FG_RUNTIME_FISHING1:
+            return foregroundPilotRuntimeStart("fishing1");
+        default:
+            return foregroundPilotRuntimeStart(gForegroundPilotScene);
+    }
 }
 
 int foregroundPilotRuntimeStartIfRequested(void)
@@ -877,10 +896,11 @@ void foregroundPilotPlay(void)
 #else
 
 static char gForegroundPilotScene[16] = "";
+static uint8 gForegroundPilotRequestedMode = 0;
 
 int foregroundPilotRequested(void)
 {
-    return gForegroundPilotScene[0] != '\0';
+    return gForegroundPilotRequestedMode != 0;
 }
 
 const char *foregroundPilotSceneName(void)
@@ -892,10 +912,12 @@ void foregroundPilotSetScene(const char *sceneName)
 {
     if (!sceneName) {
         gForegroundPilotScene[0] = '\0';
+        gForegroundPilotRequestedMode = 0;
         return;
     }
     strncpy(gForegroundPilotScene, sceneName, sizeof(gForegroundPilotScene) - 1);
     gForegroundPilotScene[sizeof(gForegroundPilotScene) - 1] = '\0';
+    gForegroundPilotRequestedMode = 1;
 }
 
 int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)

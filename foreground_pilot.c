@@ -9,6 +9,7 @@
 
 #include "mytypes.h"
 #include "ads.h"
+#include "events_ps1.h"
 #include "graphics_ps1.h"
 #include "cdrom_ps1.h"
 
@@ -128,16 +129,19 @@ static void fgDrawEntry(const struct TFgPilotEntry *entry, uint8 *frameData)
 
     grBeginFrame();
     grRestoreBgTiles();
+    VSync(0);
+    grDrawBackground();
 
     if (frameData != NULL && entry != NULL && entry->width > 0 && entry->height > 0) {
         memset(&sprite, 0, sizeof(sprite));
         sprite.pixels = (uint16 *)frameData;
         sprite.width = entry->width;
         sprite.height = entry->height;
-        grCompositeToBackground(&sprite, (sint16)entry->x, (sint16)entry->y);
+        grBlitToFramebuffer(&sprite, (sint16)entry->x, (sint16)entry->y);
+        DrawSync(0);
     }
 
-    grUpdateDisplay(NULL, NULL, NULL);
+    eventsWaitTick(grUpdateDelay);
 }
 
 static void fgHoldEntry(const struct TFgPilotEntry *entry, uint8 *frameData, uint16 frames)
@@ -146,6 +150,24 @@ static void fgHoldEntry(const struct TFgPilotEntry *entry, uint8 *frameData, uin
 
     for (i = 0; i < frames; i++)
         fgDrawEntry(entry, frameData);
+}
+
+static void fgPlayTestCard(void)
+{
+    uint16 i;
+
+    grInitEmptyBackground();
+    grUpdateDelay = 1;
+
+    for (i = 0; i < 120; i++) {
+        grBeginFrame();
+        grRestoreBgTiles();
+        grDrawRect(NULL, 24, 24, 120, 80, 1);
+        grDrawRect(NULL, 176, 24, 120, 80, 2);
+        grDrawRect(NULL, 24, 136, 120, 80, 4);
+        grDrawRect(NULL, 176, 136, 120, 80, 5);
+        grUpdateDisplay(NULL, NULL, NULL);
+    }
 }
 
 static void fgPlayFishing1(void)
@@ -160,7 +182,8 @@ static void fgPlayFishing1(void)
         return;
     }
 
-    grLoadScreen("ISLETEMP.SCR");
+    adsInit();
+    adsInitIsland();
     grUpdateDelay = 1;
     fgHoldEntry(NULL, NULL, 15);
 
@@ -233,6 +256,11 @@ void foregroundPilotSetScene(const char *sceneName)
 
 void foregroundPilotPlay(void)
 {
+    if (fgSceneEquals(gForegroundPilotScene, "testcard")) {
+        fgPlayTestCard();
+        return;
+    }
+
     if (fgSceneEquals(gForegroundPilotScene, "fishing1")) {
         fgPlayFishing1();
         return;

@@ -174,6 +174,12 @@ for scene in scenes:
         "fgpilot_result_json": str(fgpilot_results[scene]),
         "fgpilot_compare_json": str(out_dir / scene / "compare-fgpilot-vs-overlay.json"),
         "fgpilot_state_hash": state_hashes[scene],
+        "visible_matches_shared_overlay":
+            summary["fgpilot_vs_overlay"]["visible_visual_diff"] is False,
+        "upload_matches_shared_overlay":
+            summary["fgpilot_vs_overlay"]["upload_diff"] is False,
+        "vram_hash_matches_shared_overlay":
+            summary["fgpilot_vs_overlay"]["vram_diff"] is False,
         "state_hash_matches_shared_overlay":
             state_hashes[scene] == summary["shared_overlay_reference"]["state_hash"],
         "save_state_hash_matches_shared_overlay":
@@ -244,6 +250,12 @@ payload = {
             len(set(state_hashes.values())) == 1,
         "all_pairs_same_state_hash":
             all(pair["state_hash_equal"] for pair in pairwise),
+        "all_scenes_same_visible_frames_as_shared_overlay":
+            all(row["visible_matches_shared_overlay"] for row in rows),
+        "all_scenes_same_uploads_as_shared_overlay":
+            all(row["upload_matches_shared_overlay"] for row in rows),
+        "all_scenes_same_vram_hash_as_shared_overlay":
+            all(row["vram_hash_matches_shared_overlay"] for row in rows),
         "all_scenes_same_visible_output_as_shared_overlay":
             all(
                 row["fgpilot_vs_overlay"]["visible_visual_diff"] is False and

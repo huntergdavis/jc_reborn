@@ -443,9 +443,10 @@ if [ "$FRAME_COUNT" -gt 0 ]; then
 fi
 
 if [ -d "$RAW_FRAMES_DIR" ]; then
+    CPU_COPY_FIRST="$(find "$RAW_FRAMES_DIR" -type f -name 'cpu_to_vram_copy_*.png' 2>/dev/null | sort | head -1)"
     CPU_TO_VRAM_COPY_COUNT="$(find "$RAW_FRAMES_DIR" -type f -name 'cpu_to_vram_copy_*.png' 2>/dev/null | wc -l | tr -d ' ')"
     if [ "$CPU_TO_VRAM_COPY_COUNT" -gt 0 ]; then
-        CPU_TO_VRAM_COPY_DIR="$RAW_FRAMES_DIR"
+        CPU_TO_VRAM_COPY_DIR="$(dirname "$CPU_COPY_FIRST")"
     fi
 fi
 

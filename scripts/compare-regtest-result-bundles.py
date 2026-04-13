@@ -21,6 +21,20 @@ def listed_files(directory: Path, pattern: str) -> list[Path]:
     return sorted(p for p in directory.glob(pattern) if p.is_file())
 
 
+def resolve_dump_dir(path_value: str | None) -> Path | None:
+    if not path_value:
+        return None
+    candidate = Path(path_value)
+    if not candidate.exists():
+        return candidate
+    if any(candidate.glob("cpu_to_vram_copy_*.png")):
+        return candidate
+    jcreborn = candidate / "jcreborn"
+    if jcreborn.is_dir() and any(jcreborn.glob("cpu_to_vram_copy_*.png")):
+        return jcreborn
+    return candidate
+
+
 def compare_named_sets(base_dir: Path, overlay_dir: Path, pattern: str) -> dict:
     base_files = {p.name: p for p in listed_files(base_dir, pattern)}
     overlay_files = {p.name: p for p in listed_files(overlay_dir, pattern)}
@@ -66,13 +80,13 @@ def main() -> int:
     base_filtered = Path(base["paths"]["filtered_frames_dir"] or base["paths"]["frames_dir"])
     overlay_filtered = Path(overlay["paths"]["filtered_frames_dir"] or overlay["paths"]["frames_dir"])
 
-    base_raw = Path(base["paths"]["raw_frames_dir"])
-    overlay_raw = Path(overlay["paths"]["raw_frames_dir"])
+    base_raw = resolve_dump_dir(base["paths"].get("cpu_to_vram_copy_dir") or base["paths"].get("raw_frames_dir"))
+    overlay_raw = resolve_dump_dir(overlay["paths"].get("cpu_to_vram_copy_dir") or overlay["paths"].get("raw_frames_dir"))
 
     filtered_cmp = compare_named_sets(base_filtered, overlay_filtered, "frame_*.png")
     vram_cmp = compare_named_sets(
-        base_raw / "jcreborn",
-        overlay_raw / "jcreborn",
+        base_raw,
+        overlay_raw,
         "cpu_to_vram_copy_*.png",
     )
 

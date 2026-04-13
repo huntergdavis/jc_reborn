@@ -145,6 +145,9 @@ static int adsIsValidTtmSlot(uint16 slot)
 
 static void adsStopScene(int sceneNo);
 
+#define ADS_THREAD_RUNNING 1
+#define ADS_THREAD_TERMINATED 2
+
 #ifdef PS1_BUILD
 static const struct TPs1RestorePilot *cachedPilot = NULL;
 static char cachedPilotAdsName[16] = {0};
@@ -191,6 +194,7 @@ static int adsStringEquals(const char *a, const char *b)
     return strcmp(a, b) == 0;
 }
 
+#ifdef PS1_BUILD
 static int adsPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
 {
     int i;
@@ -246,6 +250,17 @@ static int adsUseReplayRecovery(void)
 {
     return 0;
 }
+#else
+static int adsUseRestorePilotReplayPolicy(void)
+{
+    return 0;
+}
+
+static int adsUseReplayRecovery(void)
+{
+    return 0;
+}
+#endif
 
 #ifdef PS1_BUILD
 static int adsDiagTrackCurrentTtmPlay(void)
@@ -360,6 +375,34 @@ static void adsDiagTtmDispatch(const char *phase, int threadIndex, struct TTtmTh
            (unsigned int)(ttmThread ? ttmThread->selectedBmpSlot : 0),
            (unsigned int)(ttmThread ? ttmThread->numDrawnSprites : 0));
 }
+#else
+static void adsDiagNoteStop(int threadIndex, uint16 sceneSlot, uint16 sceneTag)
+{
+    (void)threadIndex;
+    (void)sceneSlot;
+    (void)sceneTag;
+}
+
+static void adsDiagNoteReap(int threadIndex, uint16 sceneSlot, uint16 sceneTag)
+{
+    (void)threadIndex;
+    (void)sceneSlot;
+    (void)sceneTag;
+}
+
+static void adsDiagNoteAdd(int threadIndex, uint16 sceneSlot, uint16 sceneTag)
+{
+    (void)threadIndex;
+    (void)sceneSlot;
+    (void)sceneTag;
+}
+
+static void adsDiagTtmDispatch(const char *phase, int threadIndex, struct TTtmThread *ttmThread)
+{
+    (void)phase;
+    (void)threadIndex;
+    (void)ttmThread;
+}
 #endif
 
 #ifdef PS1_BUILD
@@ -412,9 +455,6 @@ static void adsPrimeRestorePilotResources(const struct TPs1RestorePilot *pilot)
 #endif
 
 #ifdef PS1_BUILD
-#define ADS_THREAD_RUNNING 1
-#define ADS_THREAD_TERMINATED 2
-
 /* Persistent debug telemetry for overlay (kept globals). */
 uint16 ps1AdsDbgActiveThreads = 0;
 uint16 ps1AdsDbgMini = 0;

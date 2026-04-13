@@ -61,6 +61,7 @@ int grCaptureInterval = 0;
 int grCaptureStartFrame = 0;
 int grCaptureEndFrame = -1;
 int grCaptureOverlay = 0;
+int grCaptureOverlayMaskOnly = 0;
 int grCaptureForegroundOnly = 0;
 static int grCurrentFrame = 0;
 static char grCaptureSceneLabel[64] = "";

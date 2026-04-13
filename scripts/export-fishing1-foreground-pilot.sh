@@ -13,8 +13,10 @@ mkdir -p "$OUTPUT_DIR"
   --scene "FISHING 1" \
   --mode scene-default \
   --seed 1 \
+  --start-frame 0 \
   --interval 1 \
   --until-exit \
+  --no-stamp \
   --output "$HOST_CAPTURE_DIR" \
   --foreground-only
 

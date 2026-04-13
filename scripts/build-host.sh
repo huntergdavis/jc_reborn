@@ -54,6 +54,7 @@ SOURCES=(
     walk.c
     calcpath.c
     ads.c
+    foreground_pilot.c
     ttm.c
     island.c
     bench.c

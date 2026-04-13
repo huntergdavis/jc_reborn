@@ -74,6 +74,7 @@ int fclose(FILE *stream);
 #include "ads.h"
 #include "island.h"
 #include "story.h"
+#include "foreground_pilot.h"
 
 /* Root counters are exposed by PSn00bSDK on PS1 builds. */
 #ifdef PS1_BUILD
@@ -103,6 +104,7 @@ static int  argTtm      = 0;
 static int  argAds      = 0;
 static int  argPlayAll  = 0;
 static int  argIsland   = 0;
+static int  argForegroundPilot = 0;
 
 static char *args[3];
 static int  numArgs  = 0;
@@ -141,6 +143,8 @@ static int hostCapturePreludeFrame = 0;
 static int ps1BootForcedSeed = -1;  /* -1 = use hardware RNG */
 static int ps1BootDirectSceneIndex = -1;  /* -1 = not set; >=0 = play scene directly and exit */
 static char ps1BootArgStorage[3][32];
+static char ps1BootCaptureMetaDirStorage[32];
+static char ps1BootCaptureSceneLabelStorage[64];
 volatile uint16 ps1BootDbgCaptureMode = 0;
 
 static int ps1IsSpace(char c)
@@ -156,15 +160,20 @@ static void ps1ResetBootArgs(void)
     argAds = 0;
     argPlayAll = 1;
     argIsland = 0;
+    argForegroundPilot = 0;
     numArgs = 0;
 
     for (int i = 0; i < 3; i++) {
         args[i] = NULL;
         ps1BootArgStorage[i][0] = '\0';
     }
+    ps1BootCaptureMetaDirStorage[0] = '\0';
+    ps1BootCaptureSceneLabelStorage[0] = '\0';
 
+    grCaptureMetaDir = NULL;
     grCaptureOverlay = 0;
     grCaptureOverlayMaskOnly = 0;
+    grCaptureSetSceneLabel("");
     ps1BootDbgCaptureMode = 0;
     ps1BootForcedSeed = -1;
     ps1BootDirectSceneIndex = -1;
@@ -182,14 +191,32 @@ static void ps1ResetBootArgs(void)
 
 static int ps1CopyBootArg(int index, const char *src)
 {
+    size_t len;
+    char *copy;
+
     if (index < 0 || index >= 3 || !src) {
         return 0;
     }
 
     strncpy(ps1BootArgStorage[index], src, sizeof(ps1BootArgStorage[index]) - 1);
     ps1BootArgStorage[index][sizeof(ps1BootArgStorage[index]) - 1] = '\0';
-    args[index] = ps1BootArgStorage[index];
+
+    len = strlen(ps1BootArgStorage[index]);
+    copy = safe_malloc(len + 1);
+    memcpy(copy, ps1BootArgStorage[index], len + 1);
+    args[index] = copy;
     return 1;
+}
+
+static char *ps1CopyBootString(char *dst, size_t dstSize, const char *src)
+{
+    if (dst == NULL || dstSize == 0 || src == NULL) {
+        return NULL;
+    }
+
+    strncpy(dst, src, dstSize - 1);
+    dst[dstSize - 1] = '\0';
+    return dst;
 }
 
 static void ps1ApplyBootOverride(char *buffer)
@@ -249,7 +276,11 @@ static void ps1ApplyBootOverride(char *buffer)
             if (ps1BootDbgCaptureMode == 0)
                 ps1BootDbgCaptureMode = 1;
         } else if (!strcmp(tokens[i], "capture-meta-dir") && (i + 1) < tokenCount) {
-            grCaptureMetaDir = tokens[i + 1];
+            grCaptureMetaDir = ps1CopyBootString(
+                ps1BootCaptureMetaDirStorage,
+                sizeof(ps1BootCaptureMetaDirStorage),
+                tokens[i + 1]
+            );
             i++;
         } else if (!strcmp(tokens[i], "capture-range") && (i + 2) < tokenCount) {
             grCaptureStartFrame = atoi(tokens[i + 1]);
@@ -259,7 +290,11 @@ static void ps1ApplyBootOverride(char *buffer)
             grCaptureInterval = atoi(tokens[i + 1]);
             i++;
         } else if (!strcmp(tokens[i], "capture-scene-label") && (i + 1) < tokenCount) {
-            grCaptureSetSceneLabel(tokens[i + 1]);
+            grCaptureSetSceneLabel(ps1CopyBootString(
+                ps1BootCaptureSceneLabelStorage,
+                sizeof(ps1BootCaptureSceneLabelStorage),
+                tokens[i + 1]
+            ));
             i++;
         } else if (!strcmp(tokens[i], "story-day") && (i + 1) < tokenCount) {
             hostForcedStoryDay = atoi(tokens[i + 1]);
@@ -344,6 +379,15 @@ static void ps1ApplyBootOverride(char *buffer)
         }
         return;
     }
+
+    if (!strcmp(tokens[tokenBase], "fgpilot") && (tokenBase + 1) < tokenCount) {
+        if (ps1CopyBootArg(0, tokens[tokenBase + 1])) {
+            numArgs = 1;
+            argForegroundPilot = 1;
+            argPlayAll = 0;
+        }
+        return;
+    }
 }
 
 static void ps1LoadBootOverride(void)
@@ -385,7 +429,7 @@ static void ps1LoadBootOverride(void)
 
 /* Load and display title screen from raw file on CD */
 /* This runs BEFORE resource parsing for instant visual feedback */
-static void loadTitleScreenEarly(void)
+static void initTitleDisplayEarly(void)
 {
     /* Initialize graphics for 640x480 interlaced */
     ResetGraph(0);
@@ -404,6 +448,11 @@ static void loadTitleScreenEarly(void)
 
     /* Enable display */
     SetDispMask(1);
+}
+
+static void loadTitleScreenEarly(void)
+{
+    initTitleDisplayEarly();
 
     /* Allocate buffer for full title screen (640x480 x 2 bytes = 614400) */
     int totalBytes = 640 * 480 * 2;  /* 614400 bytes */
@@ -458,6 +507,7 @@ static void loadTitleScreenEarly(void)
     for (volatile int i = 0; i < 2000000; i++);
 }
 
+
 #endif
 
 static void usage()
@@ -471,6 +521,7 @@ static void usage()
         printf("         jc_reborn [<options>] bench\n");
         printf("         jc_reborn [<options>] ttm <TTM name>\n");
         printf("         jc_reborn [<options>] ads <ADS name> <ADS tag no>\n");
+        printf("         jc_reborn [<options>] fgpilot <scene>\n");
         printf("\n");
         printf(" Available options are:\n");
         printf("         window          - play in windowed mode\n");
@@ -571,6 +622,11 @@ static void parseArgs(int argc, char **argv)
             else if (!strcmp(argv[i], "ads")) {
                 argAds = 1;
                 numExpectedArgs = 2;
+            }
+            else if (!strcmp(argv[i], "fgpilot")) {
+                argForegroundPilot = 1;
+                argPlayAll = 0;
+                numExpectedArgs = 1;
             }
             else if (!strcmp(argv[i], "window")) {
                 grWindowed = 1;
@@ -731,10 +787,10 @@ static void parseArgs(int argc, char **argv)
     if (numExpectedArgs)
         usage();
 
-    if (argDump + argBench + argTtm + argAds > 1)
+    if (argDump + argBench + argTtm + argAds + argForegroundPilot > 1)
         usage();
 
-    if (argDump + argBench + argTtm + argAds == 0)
+    if (argDump + argBench + argTtm + argAds + argForegroundPilot == 0)
         argPlayAll = 1;
 }
 
@@ -757,16 +813,17 @@ int main(int argc, char **argv)
     /* Load boot override BEFORE seeding RNG so "seed N" can override. */
     ps1LoadBootOverride();
 
-    /* For normal interactive boots, show the title screen before loading
-     * resources. For scripted/headless boots, skip it so direct scene
-     * captures start at the requested scene instead of burning hundreds of
-     * frames on startup/title artwork. */
+    /* Keep the early PS1 display init for scripted story boots, but only
+     * show the actual title artwork for normal interactive boots. */
     if (ps1BootDirectSceneIndex < 0 &&
-        !storyHasBootOverridePending() &&
         !argBench &&
         !argTtm &&
-        !argAds) {
-        loadTitleScreenEarly();
+        !argAds &&
+        !argForegroundPilot) {
+        if (storyHasBootOverridePending())
+            initTitleDisplayEarly();
+        else
+            loadTitleScreenEarly();
     }
 
     /* Parse resource files from CD - needed for background and sprites */
@@ -803,6 +860,8 @@ int main(int argc, char **argv)
         hostForcedSceneOffsetY
     );
     storySetCapturePreludeFrame(hostCapturePreludeFrame);
+    if (argForegroundPilot && numArgs >= 1)
+        foregroundPilotSetScene(args[0]);
 
     if (hostForcedSeed >= 0)
         srand((unsigned int)hostForcedSeed);
@@ -836,6 +895,8 @@ int main(int argc, char **argv)
         hostForcedSceneOffsetY
     );
     storySetCapturePreludeFrame(hostCapturePreludeFrame);
+    if (argForegroundPilot && numArgs >= 1)
+        foregroundPilotSetScene(args[0]);
 
     grGpuAlreadyInitialized = 0;
     graphicsInit();
@@ -883,6 +944,9 @@ int main(int argc, char **argv)
             adsNoIsland();
 
         adsPlay(args[0], atoi(args[1]));
+    }
+    else if (argForegroundPilot) {
+        foregroundPilotPlay();
     }
     else {
         storyPlay();
@@ -1003,6 +1067,15 @@ int main(int argc, char **argv)
 
         soundEnd();
         graphicsEnd();
+    }
+
+    else if (argForegroundPilot) {
+        printf("Initializing graphics...\n");
+        graphicsInit();
+        printf("Graphics initialized\n");
+        foregroundPilotPlay();
+        graphicsEnd();
+        printf("Shutdown complete\n");
     }
 
     return 0;

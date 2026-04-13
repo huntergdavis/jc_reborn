@@ -25,6 +25,10 @@
             <file name="TITLE.RAW" type="data" source="../../TITLE.RAW"/>
             <file name="BOOTMODE.TXT" type="data" source="../../config/ps1/BOOTMODE.TXT"/>
 
+            <dir name="FG">
+                <file name="FISHING1.FG1" type="data" source="../../generated/ps1/foreground/FISHING1.FG1"/>
+            </dir>
+
             <!-- Original Sierra resource files (for metadata parsing) -->
             <file name="RESOURCE.MAP" type="data" source="../../jc_resources/RESOURCE.MAP"/>
             <file name="RESOURCE.001" type="data" source="../../jc_resources/RESOURCE.001"/>

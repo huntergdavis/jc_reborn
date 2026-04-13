@@ -1833,11 +1833,6 @@ void adsPlay(char *adsName, uint16 adsTag)
 #endif
         }
 
-#ifdef PS1_BUILD
-        if (foregroundPilotRuntimeActive())
-            foregroundPilotRuntimeCompose();
-#endif
-
 #ifndef PS1_BUILD
         if (debugMode) {
 

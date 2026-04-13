@@ -30,6 +30,7 @@
 #include "utils.h"
 #include "graphics_ps1.h"
 #include "ads.h"
+#include "foreground_pilot.h"
 #include "resource.h"
 #include "events_ps1.h"
 #include "cdrom_ps1.h"
@@ -1505,6 +1506,9 @@ void grUpdateDisplay(struct TTtmThread *ttmBackgroundThread,
     /* Wait for VSync BEFORE uploading to framebuffer.
      * This ensures we write during vertical blank when display isn't scanning. */
     VSync(0);
+
+    if (foregroundPilotRuntimeActive())
+        foregroundPilotRuntimeCompose();
 
     /* Upload background tiles (with sprites composited in software) to framebuffer */
     grDrawBackground();

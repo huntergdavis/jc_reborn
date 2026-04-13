@@ -122,25 +122,51 @@ static int fgSceneEquals(const char *a, const char *b)
     return a && b && strcmp(a, b) == 0;
 }
 
+static void fgDrawEntry(const struct TFgPilotEntry *entry, uint8 *frameData)
+{
+    PS1Surface sprite;
+
+    grBeginFrame();
+    grRestoreBgTiles();
+
+    if (frameData != NULL && entry != NULL && entry->width > 0 && entry->height > 0) {
+        memset(&sprite, 0, sizeof(sprite));
+        sprite.pixels = (uint16 *)frameData;
+        sprite.width = entry->width;
+        sprite.height = entry->height;
+        grCompositeToBackground(&sprite, (sint16)entry->x, (sint16)entry->y);
+    }
+
+    grUpdateDisplay(NULL, NULL, NULL);
+}
+
+static void fgHoldEntry(const struct TFgPilotEntry *entry, uint8 *frameData, uint16 frames)
+{
+    uint16 i;
+
+    for (i = 0; i < frames; i++)
+        fgDrawEntry(entry, frameData);
+}
+
 static void fgPlayFishing1(void)
 {
     const char *path = "FG/FISHING1.FG1";
     struct TFgPilotHeader header;
+    struct TFgPilotEntry lastEntry;
+    uint8 *lastFrameData = NULL;
+    int haveLastEntry = 0;
     if (!fgLoadHeader(path, &header)) {
         printf("FG pilot: failed to load header %s\n", path);
         return;
     }
 
-    adsInit();
-    adsNoIsland();
-    grDrawRect(grBackgroundSfc, 0, 0, 640, 480, 9);
-    grSaveCleanBgTiles();
+    grLoadScreen("ISLETEMP.SCR");
     grUpdateDelay = 1;
+    fgHoldEntry(NULL, NULL, 15);
 
     for (uint16 frameIndex = 0; frameIndex < header.frameCount; frameIndex++) {
         struct TFgPilotEntry entry;
         uint8 *frameData;
-        PS1Surface sprite;
 
         if (!fgLoadEntry(path, &header, frameIndex, &entry)) {
             printf("FG pilot: failed to load entry %u\n", (unsigned int)frameIndex);
@@ -148,28 +174,14 @@ static void fgPlayFishing1(void)
         }
 
         frameData = NULL;
-        memset(&sprite, 0, sizeof(sprite));
         if (entry.dataSize > 0 && entry.width > 0 && entry.height > 0) {
             frameData = ps1_streamRead(path, entry.dataOffset, entry.dataSize);
             if (!frameData) {
                 printf("FG pilot: failed to stream frame %u\n", (unsigned int)frameIndex);
                 break;
             }
-
-            sprite.pixels = (uint16 *)frameData;
-            sprite.width = entry.width;
-            sprite.height = entry.height;
         }
-
-        grBeginFrame();
-        grRestoreBgTiles();
-
-        if (frameData != NULL) {
-            grCompositeToBackground(&sprite, (sint16)entry.x, (sint16)entry.y);
-        }
-
-        grUpdateDisplay(NULL, NULL, NULL);
-        free(frameData);
+        fgDrawEntry(&entry, frameData);
 
         {
             uint16 vblanks = header.displayVBlanks;
@@ -178,7 +190,26 @@ static void fgPlayFishing1(void)
             for (uint16 i = 1; i < vblanks; i++)
                 VSync(0);
         }
+
+        if (lastFrameData != NULL) {
+            free(lastFrameData);
+            lastFrameData = NULL;
+        }
+        if (frameData != NULL) {
+            lastFrameData = frameData;
+            lastEntry = entry;
+            haveLastEntry = 1;
+        }
     }
+
+    if (haveLastEntry) {
+        fgHoldEntry(&lastEntry, lastFrameData, 150);
+    } else {
+        fgHoldEntry(NULL, NULL, 150);
+    }
+
+    if (lastFrameData != NULL)
+        free(lastFrameData);
 }
 
 int foregroundPilotRequested(void)

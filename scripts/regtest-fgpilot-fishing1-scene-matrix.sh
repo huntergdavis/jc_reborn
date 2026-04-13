@@ -150,6 +150,7 @@ out_dir = Path(sys.argv[1])
 script_dir = Path(sys.argv[2])
 scenes = sys.argv[3:]
 rows = []
+state_hashes = {}
 save_state_hashes = {}
 ram_hashes = {}
 vram_hashes = {}
@@ -163,6 +164,7 @@ for scene in scenes:
     if overlay_vs_mask is None:
         overlay_vs_mask = summary["overlay_vs_mask"]
     fgpilot_results[scene] = out_dir / scene / "fgpilot" / "result.json"
+    state_hashes[scene] = json.loads(fgpilot_results[scene].read_text(encoding="utf-8"))["outcome"].get("state_hash")
     save_state_hashes[scene] = summary["fgpilot_raw_hashes"]["save_state_hash"]
     ram_hashes[scene] = summary["fgpilot_raw_hashes"]["ram_hash"]
     vram_hashes[scene] = summary["fgpilot_raw_hashes"]["vram_hash"]
@@ -171,7 +173,7 @@ for scene in scenes:
         "summary_path": str(summary_path),
         "fgpilot_result_json": str(fgpilot_results[scene]),
         "fgpilot_compare_json": str(out_dir / scene / "compare-fgpilot-vs-overlay.json"),
-        "fgpilot_state_hash": json.loads(fgpilot_results[scene].read_text(encoding="utf-8"))["outcome"].get("state_hash"),
+        "fgpilot_state_hash": state_hashes[scene],
         "current_hard_read": summary["current_hard_read"],
         "fgpilot_vs_overlay": summary["fgpilot_vs_overlay"],
         "fgpilot_raw_hashes": summary["fgpilot_raw_hashes"],
@@ -219,6 +221,8 @@ payload = {
     "shared_overlay_compare_json": str((out_dir / "shared" / "compare-overlay-vs-mask.json")),
     "overlay_vs_mask": overlay_vs_mask,
     "scene_state_distinctness": {
+        "distinct_state_hashes": len(set(state_hashes.values())),
+        "state_hash_by_scene": state_hashes,
         "distinct_save_state_hashes": len(set(save_state_hashes.values())),
         "distinct_ram_hashes": len(set(ram_hashes.values())),
         "distinct_vram_hashes": len(set(vram_hashes.values())),
@@ -230,6 +234,8 @@ payload = {
     "matrix_hard_read": {
         "overlay_mode_alone_is_nonvisual_state_only":
             overlay_vs_mask["nonvisual_state_only"] if overlay_vs_mask else None,
+        "all_scenes_same_state_hash":
+            len(set(state_hashes.values())) == 1,
         "all_pairs_same_state_hash":
             all(pair["state_hash_equal"] for pair in pairwise),
         "all_scenes_nonvisual_against_overlay":
@@ -241,6 +247,7 @@ payload = {
             all(pair["save_state_diff"] or pair["ram_diff"] for pair in pairwise),
         "all_pairs_same_visible_nonvisual_state_split":
             all(pair["same_visible_nonvisual_state_split"] for pair in pairwise),
+        "distinct_state_hashes": len(set(state_hashes.values())),
         "distinct_save_state_hashes": len(set(save_state_hashes.values())),
         "distinct_ram_hashes": len(set(ram_hashes.values())),
         "distinct_vram_hashes": len(set(vram_hashes.values())),

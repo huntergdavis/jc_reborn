@@ -933,19 +933,9 @@ int main(int argc, char **argv)
     }
 
     if (ps1BootDirectSceneIndex >= 0) {
-        if (!foregroundPilotRuntimeStartIfRequested()) {
-            soundEnd();
-            graphicsEnd();
-            return 0;
-        }
         storyPlayBootSceneDirect(ps1BootDirectSceneIndex);
     }
     else if (argPlayAll) {
-        if (!foregroundPilotRuntimeStartIfRequested()) {
-            soundEnd();
-            graphicsEnd();
-            return 0;
-        }
         storyPlay();
     }
     else if (argBench) {
@@ -976,11 +966,6 @@ int main(int argc, char **argv)
         foregroundPilotPlay();
     }
     else {
-        if (!foregroundPilotRuntimeStartIfRequested()) {
-            soundEnd();
-            graphicsEnd();
-            return 0;
-        }
         storyPlay();
     }
 

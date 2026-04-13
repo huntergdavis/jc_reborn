@@ -238,6 +238,15 @@ payload = {
             len(set(state_hashes.values())) == 1,
         "all_pairs_same_state_hash":
             all(pair["state_hash_equal"] for pair in pairwise),
+        "all_scenes_same_visible_output_as_shared_overlay":
+            all(
+                row["fgpilot_vs_overlay"]["visible_visual_diff"] is False and
+                row["fgpilot_vs_overlay"]["upload_diff"] is False and
+                row["fgpilot_vs_overlay"]["vram_diff"] is False
+                for row in rows
+            ),
+        "all_scenes_distinct_machine_state_from_shared_overlay":
+            all(row["fgpilot_vs_overlay"]["state_diff"] for row in rows),
         "all_scenes_nonvisual_against_overlay":
             all(row["current_hard_read"]["fgpilot_adds_only_nonvisual_state_drift"] for row in rows),
         "all_pairs_same_visible_output":

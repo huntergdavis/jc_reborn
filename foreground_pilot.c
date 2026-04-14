@@ -59,6 +59,7 @@ struct TFgPilotRuntime {
     uint16 frameVBlank;
     uint16 displayVBlanks;
     uint16 holdFrames;
+    uint16 presentedVBlanks;
     struct TFgPilotHeader header;
     struct TFgPilotEntryTable entryTable;
     struct TFgPilotEntry currentEntry;
@@ -81,6 +82,8 @@ static char gForegroundPilotScene[16] = "";
 static unsigned char gForegroundPilotRequestedMode = 0;
 static const uint16 kFgPilotProbeHoldFrames = 1800;
 static const uint16 kFgPilotHeaderFlagDeltaBlack = 0x0001;
+static const uint16 kFgPilotHeaderFlagHostTicks = 0x0002;
+static const uint16 kFgPilotHeaderFlagHostDeadlines = 0x0004;
 static struct TFgPilotRuntime gFgRuntime = {0};
 static uint8 gFgConfiguredEver = 0;
 static uint8 gFgSetClearedEver = 0;
@@ -106,6 +109,38 @@ enum {
 };
 
 static int fgSceneEquals(const char *a, const char *b);
+
+static uint16 fgConvertHostTicksToVBlanks(uint16 ticks)
+{
+    uint32 scaled = (uint32)ticks * 6u;
+    uint16 hold = (uint16)((scaled + 4u) / 5u);
+    return hold > 0 ? hold : 1;
+}
+
+static uint16 fgEntryHoldVBlanks(const struct TFgPilotHeader *header,
+                                 const struct TFgPilotEntry *entry,
+                                 uint16 presentedVBlanks)
+{
+    uint16 hold = 0;
+
+    if (entry != NULL)
+        hold = entry->reserved0;
+    if (hold == 0 && header != NULL)
+        hold = header->displayVBlanks;
+    if (hold == 0)
+        hold = 1;
+
+    if (header != NULL && (header->reserved0 & kFgPilotHeaderFlagHostDeadlines) != 0) {
+        uint16 targetVBlanks = fgConvertHostTicksToVBlanks(hold);
+        hold = (targetVBlanks > presentedVBlanks)
+            ? (uint16)(targetVBlanks - presentedVBlanks)
+            : 1;
+    } else if (header != NULL && (header->reserved0 & kFgPilotHeaderFlagHostTicks) != 0) {
+        hold = fgConvertHostTicksToVBlanks(hold);
+    }
+
+    return hold;
+}
 
 static uint32 fgReadTickCounter(void)
 {
@@ -726,6 +761,9 @@ static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
             return 0;
     }
 
+    gFgRuntime.displayVBlanks = fgEntryHoldVBlanks(&gFgRuntime.header,
+                                                   &gFgRuntime.currentEntry,
+                                                   gFgRuntime.presentedVBlanks);
     fgTelemetryUpdate();
     return 1;
 }
@@ -825,11 +863,7 @@ void foregroundPilotRuntimeAdvance(void)
     }
 
     if (gFgRuntime.mode == FG_RUNTIME_FISHING1) {
-        uint16 frameHoldVBlanks = gFgRuntime.currentEntry.reserved0;
-        if (frameHoldVBlanks == 0)
-            frameHoldVBlanks = gFgRuntime.header.displayVBlanks;
-        if (frameHoldVBlanks == 0)
-            frameHoldVBlanks = 1;
+        uint16 frameHoldVBlanks = gFgRuntime.displayVBlanks;
 
         if (gFgRuntime.frameIndex + 1 >= gFgRuntime.header.frameCount) {
             if (gFgRuntime.holdFrames > 0)
@@ -848,13 +882,10 @@ void foregroundPilotRuntimeAdvance(void)
         }
 
         gFgRuntime.frameVBlank = 0;
+        gFgRuntime.presentedVBlanks = (uint16)(gFgRuntime.presentedVBlanks + frameHoldVBlanks);
         gFgRuntime.frameIndex++;
         if (!fgRuntimeLoadFishingFrame(gFgRuntime.frameIndex))
             gFgRuntime.active = 0;
-        else
-            gFgRuntime.displayVBlanks = (gFgRuntime.currentEntry.reserved0 != 0)
-                ? gFgRuntime.currentEntry.reserved0
-                : ((gFgRuntime.header.displayVBlanks != 0) ? gFgRuntime.header.displayVBlanks : 1);
         fgTelemetryUpdate();
     }
 }
@@ -943,6 +974,7 @@ static void fgPlayFishing1(void)
     uint8 *streamScratch = NULL;
     uint32 maxFrameDataSize = 0;
     uint32 maxStreamScratchSize = 0;
+    uint16 presentedVBlanks = 0;
     const struct TFgPilotEntry *prevEntry = NULL;
     int haveLastEntry = 0;
 
@@ -1014,11 +1046,7 @@ static void fgPlayFishing1(void)
             timing.loadDataTicks += fgElapsedTicks(tickStart);
         }
 
-        holdVBlanks = entry->reserved0;
-        if (holdVBlanks == 0)
-            holdVBlanks = header.displayVBlanks;
-        if (holdVBlanks == 0)
-            holdVBlanks = 1;
+        holdVBlanks = fgEntryHoldVBlanks(&header, entry, presentedVBlanks);
 
         {
             uint32 tickStart = fgReadTickCounter();
@@ -1057,6 +1085,7 @@ static void fgPlayFishing1(void)
         }
         timing.framesPlayed++;
         timing.presentsRequested = (uint16)(timing.presentsRequested + holdVBlanks);
+        presentedVBlanks = (uint16)(presentedVBlanks + holdVBlanks);
 
         if (frameData != NULL)
             haveLastEntry = 1;
@@ -1089,6 +1118,7 @@ static void fgPlayFishing1Progressive240(void)
     struct TFgPilotEntry lastEntry;
     struct TFgPilotEntry prevEntry;
     uint8 *lastFrameData = NULL;
+    uint16 presentedVBlanks = 0;
     int haveLastEntry = 0;
     int havePrevEntry = 0;
     if (!fgLoadHeader(path, &header)) {
@@ -1119,14 +1149,11 @@ static void fgPlayFishing1Progressive240(void)
             }
         }
 
-        holdVBlanks = entry.reserved0;
-        if (holdVBlanks == 0)
-            holdVBlanks = header.displayVBlanks;
-        if (holdVBlanks == 0)
-            holdVBlanks = 1;
+        holdVBlanks = fgEntryHoldVBlanks(&header, &entry, presentedVBlanks);
 
         fgHoldEntryHalfY(&entry, frameData, holdVBlanks,
                          havePrevEntry ? &prevEntry : NULL, 1);
+        presentedVBlanks = (uint16)(presentedVBlanks + holdVBlanks);
 
         if (lastFrameData != NULL) {
             free(lastFrameData);

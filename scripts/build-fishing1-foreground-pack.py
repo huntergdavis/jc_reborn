@@ -251,8 +251,15 @@ def main():
         data_chunks.append(payload)
         prev_rgb = rgb
 
+    header_flags = 1 if args.delta_from_previous else 0
+    if args.frame_meta_dir:
+        header_flags |= 0x0004
+
+    cumulative_ticks = 0
     for row in rows:
-        row["hold_vblanks"] = row["hold_frames"]
+        cumulative_ticks += row["hold_ticks"]
+        row["deadline_ticks"] = cumulative_ticks
+        row["hold_vblanks"] = row["deadline_ticks"] if (header_flags & 0x0004) else row["hold_frames"]
 
     table_offset = 32
     data_offset = table_offset + (len(rows) * 20)
@@ -267,7 +274,7 @@ def main():
         1,
         len(rows),
         1,
-        1 if args.delta_from_previous else 0,
+        header_flags,
         640,
         480,
         0 if union_min_x is None else union_min_x,
@@ -305,6 +312,7 @@ def main():
         "delta_from_previous": args.delta_from_previous,
         "pack_frame_count": len(rows),
         "source_frame_count": len(frame_paths),
+        "present_tick_count": sum(row["hold_ticks"] for row in rows),
         "present_frame_count": sum(row["hold_vblanks"] for row in rows),
         "union_bbox": None if union_min_x is None else {
             "x": union_min_x,

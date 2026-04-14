@@ -2656,6 +2656,9 @@ static void grRestoreTileRect(PS1Surface *dstTile,
 
 static void grRestoreRectFromCleanBg(int x, int y, int width, int height)
 {
+    int rectEndX;
+    int rectEndY;
+
     if (width <= 0 || height <= 0)
         return;
 
@@ -2674,12 +2677,59 @@ static void grRestoreRectFromCleanBg(int x, int y, int width, int height)
     if (y + height > SCREEN_HEIGHT)
         height = SCREEN_HEIGHT - y;
 
+    rectEndX = x + width;
+    rectEndY = y + height;
+
     /* Tile pixels are being modified — mark dirty for upload */
-    grMarkRectDirty(x, y, x + width, y + height);
+    grMarkRectDirty(x, y, rectEndX, rectEndY);
     if (width <= 0 || height <= 0)
         return;
 
     grEnsureCleanBgTiles();
+
+    if (x >= 0 && y >= 0 && rectEndX <= 640 && rectEndY <= 480) {
+        int tileBaseX = (x >= 320) ? 320 : 0;
+        if (rectEndX <= tileBaseX + 320) {
+            for (int row = 0; row < height; row++) {
+                int destY = y + row;
+                PS1Surface *tile = NULL;
+                const uint16 *clean = NULL;
+                int tileLocalY;
+                int tileLocalX = x - tileBaseX;
+                uint16 *dst;
+                const uint16 *src;
+
+                if (destY < 240) {
+                    tileLocalY = destY;
+                    if (tileBaseX == 0) {
+                        tile = bgTile0;
+                        clean = bgTile0Clean;
+                    } else {
+                        tile = bgTile1;
+                        clean = bgTile1Clean;
+                    }
+                } else {
+                    tileLocalY = destY - 240;
+                    if (tileBaseX == 0) {
+                        tile = bgTile3;
+                        clean = bgTile3Clean;
+                    } else {
+                        tile = bgTile4;
+                        clean = bgTile4Clean;
+                    }
+                }
+
+                if (tile == NULL || tile->pixels == NULL || clean == NULL)
+                    continue;
+
+                dst = tile->pixels + (tileLocalY * (int)tile->width) + tileLocalX;
+                src = clean + (tileLocalY * (int)tile->width) + tileLocalX;
+                memcpy(dst, src, (size_t)width * sizeof(uint16));
+            }
+            return;
+        }
+    }
+
     grRestoreTileRect(bgTile0, bgTile0Clean, 0, 0, x, y, width, height);
     grRestoreTileRect(bgTile1, bgTile1Clean, 320, 0, x, y, width, height);
     grRestoreTileRect(bgTile3, bgTile3Clean, 0, 240, x, y, width, height);

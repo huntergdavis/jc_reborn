@@ -43,6 +43,7 @@ echo "=== Building PS1 executable ==="
     jc-reborn-ps1-dev:amd64 \
     bash -lc '
         set -e
+        cmake -S /project -B /project/build-ps1
         cd /project/build-ps1
         if ! make jcreborn; then
             echo "=== Falling back to manual PS1 link ==="

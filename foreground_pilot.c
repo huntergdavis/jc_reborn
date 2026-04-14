@@ -153,6 +153,20 @@ static uint32 fgElapsedTicks(uint32 startTick)
     return (endTick >= startTick) ? (endTick - startTick) : 0;
 }
 
+static uint16 fgElapsedVBlanksSince(uint32 *lastTick)
+{
+    uint32 nowTick;
+    uint32 elapsed;
+
+    if (lastTick == NULL)
+        return 0;
+
+    nowTick = fgReadTickCounter();
+    elapsed = (nowTick >= *lastTick) ? (nowTick - *lastTick) : 0;
+    *lastTick = nowTick;
+    return (uint16)(elapsed > 0 ? elapsed : 0);
+}
+
 static void fgPrintTimingSummary(const struct TFgPilotTiming *timing)
 {
     if (timing == NULL || timing->framesPlayed == 0)
@@ -970,6 +984,7 @@ static void fgPlayFishing1(void)
     struct TFgPilotEntryTable entryTable;
     struct TFgPilotTiming timing;
     uint32 playStartTick;
+    uint32 sceneClockTick;
     uint8 *frameBuffer = NULL;
     uint8 *streamScratch = NULL;
     uint32 maxFrameDataSize = 0;
@@ -981,6 +996,7 @@ static void fgPlayFishing1(void)
     memset(&timing, 0, sizeof(timing));
 
     playStartTick = fgReadTickCounter();
+    sceneClockTick = playStartTick;
     if (!fgLoadHeader(path, &header)) {
         printf("FG pilot: failed to load header %s\n", path);
         return;
@@ -1085,7 +1101,7 @@ static void fgPlayFishing1(void)
         }
         timing.framesPlayed++;
         timing.presentsRequested = (uint16)(timing.presentsRequested + holdVBlanks);
-        presentedVBlanks = (uint16)(presentedVBlanks + holdVBlanks);
+        presentedVBlanks = (uint16)(presentedVBlanks + fgElapsedVBlanksSince(&sceneClockTick));
 
         if (frameData != NULL)
             haveLastEntry = 1;

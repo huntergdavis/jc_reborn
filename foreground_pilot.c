@@ -59,6 +59,18 @@ struct TFgPilotRuntime {
     uint8 *currentFrameData;
 };
 
+struct TFgPilotTiming {
+    uint32 loadEntryTicks;
+    uint32 loadDataTicks;
+    uint32 beginFrameTicks;
+    uint32 restoreTicks;
+    uint32 blitTicks;
+    uint32 presentTicks;
+    uint32 totalTicks;
+    uint16 framesPlayed;
+    uint16 presentsRequested;
+};
+
 static char gForegroundPilotScene[16] = "";
 static uint8 gForegroundPilotRequestedMode = 0;
 static const uint16 kFgPilotProbeHoldFrames = 1800;
@@ -88,6 +100,35 @@ enum {
 };
 
 static int fgSceneEquals(const char *a, const char *b);
+
+static uint32 fgReadTickCounter(void)
+{
+    return (uint32)VSync(-1);
+}
+
+static uint32 fgElapsedTicks(uint32 startTick)
+{
+    uint32 endTick = fgReadTickCounter();
+    return (endTick >= startTick) ? (endTick - startTick) : 0;
+}
+
+static void fgPrintTimingSummary(const struct TFgPilotTiming *timing)
+{
+    if (timing == NULL || timing->framesPlayed == 0)
+        return;
+
+    printf("FG timing: frames=%u presents=%u total=%u\n",
+           (unsigned int)timing->framesPlayed,
+           (unsigned int)timing->presentsRequested,
+           (unsigned int)timing->totalTicks);
+    printf("FG timing: entry=%u data=%u begin=%u restore=%u blit=%u present=%u\n",
+           (unsigned int)timing->loadEntryTicks,
+           (unsigned int)timing->loadDataTicks,
+           (unsigned int)timing->beginFrameTicks,
+           (unsigned int)timing->restoreTicks,
+           (unsigned int)timing->blitTicks,
+           (unsigned int)timing->presentTicks);
+}
 
 static const char *fgFishing1OverlayPackPath(void)
 {
@@ -819,8 +860,14 @@ static void fgPlayFishing1(void)
     const char *path = fgFishing1OverlayPackPath();
     struct TFgPilotHeader header;
     struct TFgPilotEntry lastEntry;
+    struct TFgPilotTiming timing;
+    uint32 playStartTick;
     uint8 *lastFrameData = NULL;
     int haveLastEntry = 0;
+
+    memset(&timing, 0, sizeof(timing));
+
+    playStartTick = fgReadTickCounter();
     if (!fgLoadHeader(path, &header)) {
         printf("FG pilot: failed to load header %s\n", path);
         return;
@@ -834,19 +881,24 @@ static void fgPlayFishing1(void)
         struct TFgPilotEntry entry;
         uint8 *frameData;
         uint16 holdVBlanks;
+        uint32 tickStart;
 
+        tickStart = fgReadTickCounter();
         if (!fgLoadEntry(path, &header, frameIndex, &entry)) {
             printf("FG pilot: failed to load entry %u\n", (unsigned int)frameIndex);
             break;
         }
+        timing.loadEntryTicks += fgElapsedTicks(tickStart);
 
         frameData = NULL;
         if (entry.dataSize > 0 && entry.width > 0 && entry.height > 0) {
+            tickStart = fgReadTickCounter();
             frameData = ps1_streamRead(path, entry.dataOffset, entry.dataSize);
             if (!frameData) {
                 printf("FG pilot: failed to stream frame %u\n", (unsigned int)frameIndex);
                 break;
             }
+            timing.loadDataTicks += fgElapsedTicks(tickStart);
         }
 
         holdVBlanks = entry.reserved0;
@@ -855,13 +907,26 @@ static void fgPlayFishing1(void)
         if (holdVBlanks == 0)
             holdVBlanks = 1;
 
+        tickStart = fgReadTickCounter();
         grBeginFrame();
+        timing.beginFrameTicks += fgElapsedTicks(tickStart);
+
+        tickStart = fgReadTickCounter();
         grRestoreBgTiles();
+        timing.restoreTicks += fgElapsedTicks(tickStart);
+
         if (frameData != NULL) {
+            tickStart = fgReadTickCounter();
             fgBlit16ToBackgroundRect(entry.x, entry.y, entry.width, entry.height,
                                      (const uint16 *)frameData);
+            timing.blitTicks += fgElapsedTicks(tickStart);
         }
+
+        tickStart = fgReadTickCounter();
         fgPresentCurrentBackground(holdVBlanks);
+        timing.presentTicks += fgElapsedTicks(tickStart);
+        timing.framesPlayed++;
+        timing.presentsRequested = (uint16)(timing.presentsRequested + holdVBlanks);
 
         if (lastFrameData != NULL) {
             free(lastFrameData);
@@ -875,14 +940,26 @@ static void fgPlayFishing1(void)
     }
 
     if (haveLastEntry) {
+        uint32 tickStart = fgReadTickCounter();
         grBeginFrame();
+        timing.beginFrameTicks += fgElapsedTicks(tickStart);
+        tickStart = fgReadTickCounter();
         grRestoreBgTiles();
+        timing.restoreTicks += fgElapsedTicks(tickStart);
+        tickStart = fgReadTickCounter();
         fgBlit16ToBackgroundRect(lastEntry.x, lastEntry.y, lastEntry.width, lastEntry.height,
                                  (const uint16 *)lastFrameData);
+        timing.blitTicks += fgElapsedTicks(tickStart);
+        tickStart = fgReadTickCounter();
         fgPresentCurrentBackground(150);
+        timing.presentTicks += fgElapsedTicks(tickStart);
     } else {
+        uint32 tickStart = fgReadTickCounter();
         fgPresentCurrentBackground(150);
+        timing.presentTicks += fgElapsedTicks(tickStart);
     }
+    timing.totalTicks = fgElapsedTicks(playStartTick);
+    fgPrintTimingSummary(&timing);
 
     if (lastFrameData != NULL)
         free(lastFrameData);

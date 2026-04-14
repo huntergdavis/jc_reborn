@@ -1787,6 +1787,8 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
 void grCompositeDirect16ToBackground(const uint16 *srcPixels, uint16 srcWidth, uint16 srcHeight,
                                      sint16 screenX, sint16 screenY)
 {
+    int rectEndX;
+    int rectEndY;
     int startSy;
     int endSy;
     int startSx;
@@ -1796,6 +1798,40 @@ void grCompositeDirect16ToBackground(const uint16 *srcPixels, uint16 srcWidth, u
         return;
     if (srcWidth > 640 || srcHeight > 480)
         return;
+
+    rectEndX = screenX + (int)srcWidth;
+    rectEndY = screenY + (int)srcHeight;
+
+    if (screenX >= 0 && screenY >= 0 &&
+        rectEndX <= 640 && rectEndY <= 480) {
+        int tileBaseX = (screenX >= 320) ? 320 : 0;
+        if (rectEndX <= tileBaseX + 320) {
+            int tileLocalX = screenX - tileBaseX;
+
+            grMarkRectDirty(screenX, screenY, rectEndX, rectEndY);
+
+            for (int sy = 0; sy < (int)srcHeight; sy++) {
+                int destY = screenY + sy;
+                PS1Surface *tile = NULL;
+                int tileLocalY;
+                uint16 *row;
+                const uint16 *srcRow = srcPixels + ((uint32)sy * (uint32)srcWidth);
+
+                if (destY < 240) {
+                    tileLocalY = destY;
+                    tile = (tileBaseX == 0) ? bgTile0 : bgTile1;
+                } else {
+                    tileLocalY = destY - 240;
+                    tile = (tileBaseX == 0) ? bgTile3 : bgTile4;
+                }
+
+                row = (tile && tile->pixels) ? (tile->pixels + tileLocalY * (int)tile->width) : NULL;
+                if (row != NULL)
+                    compositeDirectOpaqueRuns(row + tileLocalX, srcRow, srcWidth);
+            }
+            return;
+        }
+    }
 
     startSy = 0;
     endSy = srcHeight;

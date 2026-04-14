@@ -759,6 +759,9 @@ void ps1_wrapBuffer(PS1File* file, uint8_t* buffer, uint32_t size)
 static uint8_t* ps1_streamReadFromCdFile(const CdlFILE *cdfile, uint32_t offset, uint32_t size);
 static int ps1_streamReadFromCdFileInto(const CdlFILE *cdfile, uint32_t offset, uint32_t size,
                                         uint8_t *dstBuffer);
+static int ps1_streamReadFromCdFileIntoBuffered(const CdlFILE *cdfile, uint32_t offset, uint32_t size,
+                                                uint8_t *dstBuffer, uint8_t *sectorBuffer,
+                                                uint32_t sectorBufferSize);
 
 /*
  * Stream read: Read a range of bytes from a file without loading entire file.
@@ -793,6 +796,14 @@ int ps1_streamResolveFile(const char* filename, CdlFILE* outFile)
 int ps1_streamReadIntoFile(const CdlFILE *cdfile, uint32_t offset, uint32_t size, uint8_t *dstBuffer)
 {
     return ps1_streamReadFromCdFileInto(cdfile, offset, size, dstBuffer);
+}
+
+int ps1_streamReadIntoFileBuffered(const CdlFILE *cdfile, uint32_t offset, uint32_t size,
+                                   uint8_t *dstBuffer, uint8_t *sectorBuffer,
+                                   uint32_t sectorBufferSize)
+{
+    return ps1_streamReadFromCdFileIntoBuffered(cdfile, offset, size, dstBuffer, sectorBuffer,
+                                                sectorBufferSize);
 }
 
 static uint8_t* ps1_streamReadFromCdFile(const CdlFILE *cdfile, uint32_t offset, uint32_t size)
@@ -890,6 +901,34 @@ static int ps1_streamReadFromCdFileInto(const CdlFILE *cdfile, uint32_t offset, 
     uint32_t numSectors;
     uint32_t bufferSize;
     uint8_t* sectorBuffer;
+    int result;
+
+    if (cdfile == NULL || size == 0 || dstBuffer == NULL)
+        return 0;
+
+    startSector = offset / CD_SECTOR_SIZE;
+    endByte = offset + size;
+    endSector = (endByte + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
+    numSectors = endSector - startSector;
+    bufferSize = numSectors * CD_SECTOR_SIZE;
+
+    sectorBuffer = (uint8_t*)malloc(bufferSize);
+    if (!sectorBuffer)
+        return 0;
+
+    result = ps1_streamReadFromCdFileIntoBuffered(cdfile, offset, size, dstBuffer, sectorBuffer, bufferSize);
+    free(sectorBuffer);
+    return result;
+}
+
+static int ps1_streamReadFromCdFileIntoBuffered(const CdlFILE *cdfile, uint32_t offset, uint32_t size,
+                                                uint8_t *dstBuffer, uint8_t *sectorBuffer,
+                                                uint32_t sectorBufferSize)
+{
+    uint32_t startSector;
+    uint32_t endByte;
+    uint32_t endSector;
+    uint32_t numSectors;
     CdlLOC loc;
     uint32_t offsetInBuffer;
     int syncResult;
@@ -905,10 +944,7 @@ static int ps1_streamReadFromCdFileInto(const CdlFILE *cdfile, uint32_t offset, 
     endByte = offset + size;
     endSector = (endByte + CD_SECTOR_SIZE - 1) / CD_SECTOR_SIZE;
     numSectors = endSector - startSector;
-    bufferSize = numSectors * CD_SECTOR_SIZE;
-
-    sectorBuffer = (uint8_t*)malloc(bufferSize);
-    if (!sectorBuffer)
+    if (sectorBuffer == NULL || sectorBufferSize < (numSectors * CD_SECTOR_SIZE))
         return 0;
 
     sectorsRead = 0;
@@ -922,14 +958,12 @@ static int ps1_streamReadFromCdFileInto(const CdlFILE *cdfile, uint32_t offset, 
         CdIntToPos(CdPosToInt((CdlLOC *)&cdfile->pos) + startSector + sectorsRead, &loc);
 
         if (CdControl(CdlSetloc, (uint8_t*)&loc, NULL) == 0) {
-            free(sectorBuffer);
             return 0;
         }
 
         for (volatile int i = 0; i < 100000; i++);
 
         if (CdRead(chunkSectors, (uint32_t*)chunkDst, CdlModeSpeed) == 0) {
-            free(sectorBuffer);
             return 0;
         }
 
@@ -939,7 +973,6 @@ static int ps1_streamReadFromCdFileInto(const CdlFILE *cdfile, uint32_t offset, 
         } while (syncResult > 0 && --timeout > 0);
 
         if (timeout <= 0 || syncResult < 0) {
-            free(sectorBuffer);
             return 0;
         }
 
@@ -947,8 +980,11 @@ static int ps1_streamReadFromCdFileInto(const CdlFILE *cdfile, uint32_t offset, 
     }
 
     offsetInBuffer = offset % CD_SECTOR_SIZE;
-    memcpy(dstBuffer, sectorBuffer + offsetInBuffer, size);
-    free(sectorBuffer);
+    if (offsetInBuffer == 0) {
+        memcpy(dstBuffer, sectorBuffer, size);
+    } else {
+        memcpy(dstBuffer, sectorBuffer + offsetInBuffer, size);
+    }
     return 1;
 }
 

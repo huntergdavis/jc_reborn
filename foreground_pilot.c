@@ -928,7 +928,9 @@ static void fgPlayFishing1(void)
     struct TFgPilotTiming timing;
     uint32 playStartTick;
     uint8 *frameBuffer = NULL;
+    uint8 *streamScratch = NULL;
     uint32 maxFrameDataSize = 0;
+    uint32 maxStreamScratchSize = 0;
     int haveLastEntry = 0;
     int havePrevEntry = 0;
 
@@ -952,11 +954,19 @@ static void fgPlayFishing1(void)
         if (entryTable.entries[i].dataSize > maxFrameDataSize)
             maxFrameDataSize = entryTable.entries[i].dataSize;
     }
+    maxStreamScratchSize = ((maxFrameDataSize + 2047u) / 2048u) * 2048u + 2048u;
     if (maxFrameDataSize > 0) {
         frameBuffer = (uint8 *)malloc(maxFrameDataSize);
         if (frameBuffer == NULL) {
             printf("FG pilot: failed to alloc frame buffer %u\n", (unsigned int)maxFrameDataSize);
             fgFreeEntryTable(&entryTable);
+            return;
+        }
+        streamScratch = (uint8 *)malloc(maxStreamScratchSize);
+        if (streamScratch == NULL) {
+            printf("FG pilot: failed to alloc stream scratch %u\n", (unsigned int)maxStreamScratchSize);
+            fgFreeEntryTable(&entryTable);
+            free(frameBuffer);
             return;
         }
     }
@@ -982,7 +992,8 @@ static void fgPlayFishing1(void)
         if (entry.dataSize > 0 && entry.width > 0 && entry.height > 0) {
             tickStart = fgReadTickCounter();
             if (frameBuffer == NULL ||
-                !ps1_streamReadIntoFile(&cdfile, entry.dataOffset, entry.dataSize, frameBuffer)) {
+                !ps1_streamReadIntoFileBuffered(&cdfile, entry.dataOffset, entry.dataSize,
+                                               frameBuffer, streamScratch, maxStreamScratchSize)) {
                 printf("FG pilot: failed to stream frame %u\n", (unsigned int)frameIndex);
                 break;
             }
@@ -1041,6 +1052,8 @@ static void fgPlayFishing1(void)
     fgPrintTimingSummary(&timing);
 
     fgFreeEntryTable(&entryTable);
+    if (streamScratch != NULL)
+        free(streamScratch);
     if (frameBuffer != NULL)
         free(frameBuffer);
 }

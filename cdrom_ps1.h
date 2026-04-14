@@ -106,6 +106,9 @@ int ps1_fclose(PS1File* file);
 uint8_t* ps1_streamRead(const char* filename, uint32_t offset, uint32_t size);
 int ps1_streamResolveFile(const char* filename, CdlFILE* outFile);
 int ps1_streamReadIntoFile(const CdlFILE *cdfile, uint32_t offset, uint32_t size, uint8_t *dstBuffer);
+int ps1_streamReadIntoFileBuffered(const CdlFILE *cdfile, uint32_t offset, uint32_t size,
+                                   uint8_t *dstBuffer, uint8_t *sectorBuffer,
+                                   uint32_t sectorBufferSize);
 
 /* Load an entire file from CD into a malloc'd buffer.
  * Path should be a PS1 CD path like "\\SND\\SOUND00.VAG;1".

@@ -921,13 +921,14 @@ void foregroundPilotRuntimeEnd(void)
 static void fgPlayFishing1(void)
 {
     const char *path = fgFishing1OverlayPackPath();
+    CdlFILE cdfile;
     struct TFgPilotHeader header;
     struct TFgPilotEntryTable entryTable;
-    struct TFgPilotEntry lastEntry;
     struct TFgPilotEntry prevEntry;
     struct TFgPilotTiming timing;
     uint32 playStartTick;
-    uint8 *lastFrameData = NULL;
+    uint8 *frameBuffer = NULL;
+    uint32 maxFrameDataSize = 0;
     int haveLastEntry = 0;
     int havePrevEntry = 0;
 
@@ -942,6 +943,23 @@ static void fgPlayFishing1(void)
         printf("FG pilot: failed to load entry table %s\n", path);
         return;
     }
+    if (!ps1_streamResolveFile(path, &cdfile)) {
+        printf("FG pilot: failed to resolve file %s\n", path);
+        fgFreeEntryTable(&entryTable);
+        return;
+    }
+    for (uint16 i = 0; i < entryTable.count; i++) {
+        if (entryTable.entries[i].dataSize > maxFrameDataSize)
+            maxFrameDataSize = entryTable.entries[i].dataSize;
+    }
+    if (maxFrameDataSize > 0) {
+        frameBuffer = (uint8 *)malloc(maxFrameDataSize);
+        if (frameBuffer == NULL) {
+            printf("FG pilot: failed to alloc frame buffer %u\n", (unsigned int)maxFrameDataSize);
+            fgFreeEntryTable(&entryTable);
+            return;
+        }
+    }
 
     fgInitVisiblePipeline();
     fgInitBlackBackground();
@@ -949,7 +967,7 @@ static void fgPlayFishing1(void)
 
     for (uint16 frameIndex = 0; frameIndex < header.frameCount; frameIndex++) {
         struct TFgPilotEntry entry;
-        uint8 *frameData;
+        const uint8 *frameData;
         uint16 holdVBlanks;
         uint32 tickStart;
 
@@ -963,11 +981,12 @@ static void fgPlayFishing1(void)
         frameData = NULL;
         if (entry.dataSize > 0 && entry.width > 0 && entry.height > 0) {
             tickStart = fgReadTickCounter();
-            frameData = ps1_streamRead(path, entry.dataOffset, entry.dataSize);
-            if (!frameData) {
+            if (frameBuffer == NULL ||
+                !ps1_streamReadIntoFile(&cdfile, entry.dataOffset, entry.dataSize, frameBuffer)) {
                 printf("FG pilot: failed to stream frame %u\n", (unsigned int)frameIndex);
                 break;
             }
+            frameData = frameBuffer;
             timing.loadDataTicks += fgElapsedTicks(tickStart);
         }
 
@@ -1003,31 +1022,14 @@ static void fgPlayFishing1(void)
         timing.framesPlayed++;
         timing.presentsRequested = (uint16)(timing.presentsRequested + holdVBlanks);
 
-        if (lastFrameData != NULL) {
-            free(lastFrameData);
-            lastFrameData = NULL;
-        }
-        if (frameData != NULL) {
-            lastFrameData = frameData;
-            lastEntry = entry;
+        if (frameData != NULL)
             haveLastEntry = 1;
-        }
         prevEntry = entry;
         havePrevEntry = 1;
     }
 
     if (haveLastEntry) {
         uint32 tickStart = fgReadTickCounter();
-        grBeginFrame();
-        timing.beginFrameTicks += fgElapsedTicks(tickStart);
-        tickStart = fgReadTickCounter();
-        grRestoreBgTiles();
-        timing.restoreTicks += fgElapsedTicks(tickStart);
-        tickStart = fgReadTickCounter();
-        fgBlit16ToBackgroundRect(lastEntry.x, lastEntry.y, lastEntry.width, lastEntry.height,
-                                 (const uint16 *)lastFrameData);
-        timing.blitTicks += fgElapsedTicks(tickStart);
-        tickStart = fgReadTickCounter();
         fgPresentCurrentBackground(150);
         timing.presentTicks += fgElapsedTicks(tickStart);
     } else {
@@ -1039,8 +1041,8 @@ static void fgPlayFishing1(void)
     fgPrintTimingSummary(&timing);
 
     fgFreeEntryTable(&entryTable);
-    if (lastFrameData != NULL)
-        free(lastFrameData);
+    if (frameBuffer != NULL)
+        free(frameBuffer);
 }
 
 static void fgPlayFishing1Progressive240(void)

@@ -111,6 +111,8 @@ enum {
 };
 
 static int fgSceneEquals(const char *a, const char *b);
+static int fgSceneCopyWithoutSuffix(const char *sceneName, const char *suffix,
+                                    char *out, size_t outSize);
 
 static uint16 fgConvertHostTicksToVBlanks(uint16 ticks)
 {
@@ -217,9 +219,30 @@ static uint8 fgSceneModeForName(const char *sceneName)
 {
     if (fgSceneEquals(sceneName, "testcard"))
         return FG_RUNTIME_TESTCARD;
-    if (fgSceneEquals(sceneName, "fishing1"))
+    if (fgOverlayPackPathForScene(sceneName) != NULL)
         return FG_RUNTIME_FISHING1;
     return FG_RUNTIME_NONE;
+}
+
+static int fgSceneCopyWithoutSuffix(const char *sceneName, const char *suffix,
+                                    char *out, size_t outSize)
+{
+    size_t sceneLen;
+    size_t suffixLen;
+
+    if (sceneName == NULL || suffix == NULL || out == NULL || outSize == 0)
+        return 0;
+
+    sceneLen = strlen(sceneName);
+    suffixLen = strlen(suffix);
+    if (sceneLen <= suffixLen || sceneLen - suffixLen + 1 > outSize)
+        return 0;
+    if (strcmp(sceneName + sceneLen - suffixLen, suffix) != 0)
+        return 0;
+
+    memcpy(out, sceneName, sceneLen - suffixLen);
+    out[sceneLen - suffixLen] = '\0';
+    return 1;
 }
 
 static uint16 fgReadU16(const uint8 *p)
@@ -764,7 +787,7 @@ static void fgRuntimeReset(void)
     fgTelemetryUpdate();
 }
 
-static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
+static int fgRuntimeLoadSceneFrame(uint16 frameIndex)
 {
     const char *path = fgOverlayPackPathForScene(gFgRuntime.sceneName);
     const struct TFgPilotEntry *entry = fgGetEntryFromTable(&gFgRuntime.entryTable, frameIndex);
@@ -828,7 +851,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         gFgRuntime.displayVBlanks = 1;
         gFgRuntime.holdFrames = 150;
         gFgRuntime.sceneClockTick = fgReadTickCounter();
-        if (!fgRuntimeLoadFishingFrame(0)) {
+        if (!fgRuntimeLoadSceneFrame(0)) {
             fgRuntimeReset();
             return 0;
         }
@@ -927,7 +950,7 @@ void foregroundPilotRuntimeAdvance(void)
         gFgRuntime.frameVBlank = 0;
         gFgRuntime.presentedVBlanks = (uint16)(gFgRuntime.presentedVBlanks + frameHoldVBlanks);
         gFgRuntime.frameIndex++;
-        if (!fgRuntimeLoadFishingFrame(gFgRuntime.frameIndex))
+        if (!fgRuntimeLoadSceneFrame(gFgRuntime.frameIndex))
             gFgRuntime.active = 0;
         fgTelemetryUpdate();
     }
@@ -1005,9 +1028,9 @@ void foregroundPilotRuntimeEnd(void)
     fgRuntimeReset();
 }
 
-static void fgPlayFishing1(void)
+static void fgPlayOverlayPackScene(const char *sceneName)
 {
-    const char *path = fgOverlayPackPathForScene("fishing1");
+    const char *path = fgOverlayPackPathForScene(sceneName);
     CdlFILE cdfile;
     struct TFgPilotHeader header;
     struct TFgPilotEntryTable entryTable;
@@ -1026,6 +1049,9 @@ static void fgPlayFishing1(void)
 
     playStartTick = fgReadTickCounter();
     sceneClockTick = playStartTick;
+    if (path == NULL)
+        return;
+
     if (!fgLoadHeader(path, &header)) {
         printf("FG pilot: failed to load header %s\n", path);
         return;
@@ -1156,9 +1182,9 @@ static void fgPlayFishing1(void)
         free(frameBuffer);
 }
 
-static void fgPlayFishing1Progressive240(void)
+static void fgPlayOverlayPackSceneProgressive240(const char *sceneName)
 {
-    const char *path = fgOverlayPackPathForScene("fishing1");
+    const char *path = fgOverlayPackPathForScene(sceneName);
     struct TFgPilotHeader header;
     struct TFgPilotEntry lastEntry;
     struct TFgPilotEntry prevEntry;
@@ -1166,6 +1192,9 @@ static void fgPlayFishing1Progressive240(void)
     uint16 presentedVBlanks = 0;
     int haveLastEntry = 0;
     int havePrevEntry = 0;
+    if (path == NULL)
+        return;
+
     if (!fgLoadHeader(path, &header)) {
         printf("FG pilot: failed to load header %s\n", path);
         return;
@@ -1223,9 +1252,9 @@ static void fgPlayFishing1Progressive240(void)
         free(lastFrameData);
 }
 
-static void fgPlayFishing1Raw(void)
+static void fgPlayRawScene(const char *sceneName)
 {
-    const char *path = fgRawFramePathForScene("fishing1");
+    const char *path = fgRawFramePathForScene(sceneName);
     if (path == NULL)
         return;
     fgShowRawFrame(path, kFgPilotProbeHoldFrames);
@@ -1355,23 +1384,29 @@ int foregroundPilotRuntimeStartIfRequested(void)
 
 void foregroundPilotPlay(void)
 {
+    char mappedScene[sizeof(gForegroundPilotScene)];
+
     if (fgSceneEquals(gForegroundPilotScene, "testcard")) {
         fgPlayTestCard();
         return;
     }
 
-    if (fgSceneEquals(gForegroundPilotScene, "fishing1")) {
-        fgPlayFishing1();
+    if (fgOverlayPackPathForScene(gForegroundPilotScene) != NULL) {
+        fgPlayOverlayPackScene(gForegroundPilotScene);
         return;
     }
 
-    if (fgSceneEquals(gForegroundPilotScene, "fishing1p")) {
-        fgPlayFishing1Progressive240();
+    if (fgSceneCopyWithoutSuffix(gForegroundPilotScene, "p",
+                                 mappedScene, sizeof(mappedScene)) &&
+        fgOverlayPackPathForScene(mappedScene) != NULL) {
+        fgPlayOverlayPackSceneProgressive240(mappedScene);
         return;
     }
 
-    if (fgSceneEquals(gForegroundPilotScene, "fishing1raw")) {
-        fgPlayFishing1Raw();
+    if (fgSceneCopyWithoutSuffix(gForegroundPilotScene, "raw",
+                                 mappedScene, sizeof(mappedScene)) &&
+        fgRawFramePathForScene(mappedScene) != NULL) {
+        fgPlayRawScene(mappedScene);
         return;
     }
 

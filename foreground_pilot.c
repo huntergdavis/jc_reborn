@@ -60,6 +60,7 @@ struct TFgPilotRuntime {
     uint16 displayVBlanks;
     uint16 holdFrames;
     uint16 presentedVBlanks;
+    uint32 sceneClockTick;
     struct TFgPilotHeader header;
     struct TFgPilotEntryTable entryTable;
     struct TFgPilotEntry currentEntry;
@@ -793,6 +794,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         gFgRuntime.active = 1;
         gFgRuntime.mode = FG_RUNTIME_TESTCARD;
         gFgRuntime.holdFrames = kFgPilotProbeHoldFrames;
+        gFgRuntime.sceneClockTick = fgReadTickCounter();
         gFgStartedEver = 1;
         fgTelemetryUpdate();
         return 1;
@@ -810,6 +812,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         gFgRuntime.mode = FG_RUNTIME_FISHING1;
         gFgRuntime.displayVBlanks = 1;
         gFgRuntime.holdFrames = 150;
+        gFgRuntime.sceneClockTick = fgReadTickCounter();
         if (!fgRuntimeLoadFishingFrame(0)) {
             fgRuntimeReset();
             return 0;
@@ -864,12 +867,20 @@ void foregroundPilotRuntimeCompose(void)
 
 void foregroundPilotRuntimeAdvance(void)
 {
+    uint16 elapsedVBlanks;
+
     if (!gFgRuntime.active)
         return;
 
+    elapsedVBlanks = fgElapsedVBlanksSince(&gFgRuntime.sceneClockTick);
+    if (elapsedVBlanks == 0)
+        elapsedVBlanks = 1;
+
     if (gFgRuntime.mode == FG_RUNTIME_TESTCARD) {
-        if (gFgRuntime.holdFrames > 0)
-            gFgRuntime.holdFrames--;
+        if (gFgRuntime.holdFrames > elapsedVBlanks)
+            gFgRuntime.holdFrames = (uint16)(gFgRuntime.holdFrames - elapsedVBlanks);
+        else
+            gFgRuntime.holdFrames = 0;
         if (gFgRuntime.holdFrames == 0)
             gFgRuntime.active = 0;
         fgTelemetryUpdate();
@@ -880,15 +891,17 @@ void foregroundPilotRuntimeAdvance(void)
         uint16 frameHoldVBlanks = gFgRuntime.displayVBlanks;
 
         if (gFgRuntime.frameIndex + 1 >= gFgRuntime.header.frameCount) {
-            if (gFgRuntime.holdFrames > 0)
-                gFgRuntime.holdFrames--;
+            if (gFgRuntime.holdFrames > elapsedVBlanks)
+                gFgRuntime.holdFrames = (uint16)(gFgRuntime.holdFrames - elapsedVBlanks);
+            else
+                gFgRuntime.holdFrames = 0;
             if (gFgRuntime.holdFrames == 0)
                 gFgRuntime.active = 0;
             fgTelemetryUpdate();
             return;
         }
 
-        gFgRuntime.frameVBlank++;
+        gFgRuntime.frameVBlank = (uint16)(gFgRuntime.frameVBlank + elapsedVBlanks);
         if (gFgRuntime.frameVBlank < frameHoldVBlanks) {
             gFgRuntime.displayVBlanks = frameHoldVBlanks;
             fgTelemetryUpdate();

@@ -140,6 +140,26 @@ def encode_diff_crop(prev_img: Image.Image | None, cur_img: Image.Image,
     return bbox, bytes(out)
 
 
+def load_frame_delays(frame_meta_dir: Path | None) -> dict[str, int]:
+    if frame_meta_dir is None:
+        return {}
+    if not frame_meta_dir.is_dir():
+        raise SystemExit(f"frame metadata directory not found: {frame_meta_dir}")
+
+    delays: dict[str, int] = {}
+    for meta_path in sorted(frame_meta_dir.glob("frame_*.json")):
+        payload = json.loads(meta_path.read_text(encoding="utf-8"))
+        image_path = payload.get("image_path", "")
+        frame_name = Path(image_path).name if image_path else ""
+        if not frame_name:
+            frame_name = meta_path.with_suffix(".bmp").name
+        delay_ticks = int(payload.get("update_delay_ticks", 1) or 1)
+        if delay_ticks <= 0:
+            delay_ticks = 1
+        delays[frame_name] = delay_ticks
+    return delays
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build a PS1 foreground playback pack for FISHING 1.")
     parser.add_argument("--frames-dir", required=True)
@@ -148,6 +168,7 @@ def main():
     parser.add_argument("--key-rgb", default="ff00ff", type=parse_rgb)
     parser.add_argument("--frame-step", type=int, default=1)
     parser.add_argument("--delta-from-previous", action="store_true")
+    parser.add_argument("--frame-meta-dir")
     args = parser.parse_args()
 
     frames_dir = Path(args.frames_dir)
@@ -166,6 +187,7 @@ def main():
 
     rows = []
     data_chunks: list[bytes] = []
+    frame_delays = load_frame_delays(Path(args.frame_meta_dir) if args.frame_meta_dir else None)
     union_min_x = None
     union_min_y = None
     union_max_x = None
@@ -202,6 +224,8 @@ def main():
             "y": 0 if bbox is None else bbox["y"],
             "width": 0 if bbox is None else bbox["width"],
             "height": 0 if bbox is None else bbox["height"],
+            "hold_ticks": frame_delays.get(frame_path.name, 1),
+            "hold_frames": 1,
             "hold_vblanks": 1,
             "data_offset": 0,
             "data_size": len(payload),
@@ -218,13 +242,17 @@ def main():
                 prev_payload == payload
             )
             if same_frame:
-                prev["hold_vblanks"] += 1
+                prev["hold_ticks"] += row["hold_ticks"]
+                prev["hold_frames"] += 1
                 prev_rgb = rgb
                 continue
 
         rows.append(row)
         data_chunks.append(payload)
         prev_rgb = rgb
+
+    for row in rows:
+        row["hold_vblanks"] = row["hold_frames"]
 
     table_offset = 32
     data_offset = table_offset + (len(rows) * 20)

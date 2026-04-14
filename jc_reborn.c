@@ -869,9 +869,7 @@ int main(int argc, char **argv)
         hostForcedSceneOffsetY
     );
     storySetCapturePreludeFrame(hostCapturePreludeFrame);
-    if (ps1BootForegroundOverlayScene[0] != '\0')
-        foregroundPilotSetScene(ps1BootForegroundOverlayScene);
-    else if (argForegroundPilot && numArgs >= 1)
+    if (argForegroundPilot && numArgs >= 1)
         foregroundPilotSetScene(args[0]);
     else
         foregroundPilotSetScene(NULL);

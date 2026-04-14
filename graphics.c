@@ -606,6 +606,8 @@ static void grCaptureWriteFrameMetadata(const char *filename,
     fprintf(f, "  \"draw_count\": %d,\n", grCapturedDrawCount);
     fprintf(f, "  \"visible_draw_count\": %d,\n",
             grCaptureCountVisibleDraws(ttmThreads, ttmHolidayThread));
+    fprintf(f, "  \"update_delay_ticks\": %d,\n", grUpdateDelay);
+    fprintf(f, "  \"update_delay_ms\": %d,\n", grUpdateDelay * 20);
     fprintf(f, "  \"overlay_enabled\": %s,\n", grCaptureOverlay ? "true" : "false");
     fprintf(f, "  \"foreground_only\": %s,\n",
             grCaptureForegroundOnly ? "true" : "false");

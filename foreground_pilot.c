@@ -78,7 +78,7 @@ struct TFgPilotTiming {
 };
 
 static char gForegroundPilotScene[16] = "";
-static uint8 gForegroundPilotRequestedMode = 0;
+static unsigned char gForegroundPilotRequestedMode = 0;
 static const uint16 kFgPilotProbeHoldFrames = 1800;
 static const uint16 kFgPilotHeaderFlagDeltaBlack = 0x0001;
 static struct TFgPilotRuntime gFgRuntime = {0};
@@ -1311,7 +1311,7 @@ void foregroundPilotPlay(void)
 #else
 
 static char gForegroundPilotScene[16] = "";
-static uint8 gForegroundPilotRequestedMode = 0;
+static unsigned char gForegroundPilotRequestedMode = 0;
 
 int foregroundPilotRequested(void)
 {

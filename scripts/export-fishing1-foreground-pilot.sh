@@ -31,6 +31,7 @@ python3 "$SCRIPT_DIR/analyze-foreground-plates.py" \
 
 python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
+  --frame-meta-dir "$HOST_CAPTURE_DIR/frame-meta" \
   --output-pack "$PACK_PATH" \
   --output-json "$PACK_JSON"
 

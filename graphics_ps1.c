@@ -114,6 +114,7 @@ static uint32 palLutPsb[256];
 
 static void grDrawRectColor15(sint16 x, sint16 y, uint16 width, uint16 height, uint16 bgColor);
 static void grCaptureEmitFrameMetadataLine(void);
+static void grRestoreRectFromCleanBg(int x, int y, int width, int height);
 static void grCommitRectToCleanBg(int x, int y, int width, int height);
 
 static inline void markTileDirty(int idx, int minY, int maxY)
@@ -2559,6 +2560,19 @@ void grRestoreBgTiles(void)
         memcpy(dst, src, copyBytes);
     }
 
+}
+
+void grRestoreBackgroundRectForFrame(int x, int y, int width, int height)
+{
+    for (int i = 0; i < 4; i++) {
+        currDirtyMinY[i] = -1;
+        currDirtyMaxY[i] = -1;
+    }
+
+    if (width <= 0 || height <= 0)
+        return;
+
+    grRestoreRectFromCleanBg(x, y, width, height);
 }
 
 static void grRestoreTileRect(PS1Surface *dstTile,

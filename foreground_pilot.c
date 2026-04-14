@@ -852,10 +852,12 @@ static void fgPlayFishing1(void)
     const char *path = fgFishing1OverlayPackPath();
     struct TFgPilotHeader header;
     struct TFgPilotEntry lastEntry;
+    struct TFgPilotEntry prevEntry;
     struct TFgPilotTiming timing;
     uint32 playStartTick;
     uint8 *lastFrameData = NULL;
     int haveLastEntry = 0;
+    int havePrevEntry = 0;
 
     memset(&timing, 0, sizeof(timing));
 
@@ -904,7 +906,12 @@ static void fgPlayFishing1(void)
         timing.beginFrameTicks += fgElapsedTicks(tickStart);
 
         tickStart = fgReadTickCounter();
-        grRestoreBgTiles();
+        if (havePrevEntry) {
+            grRestoreBackgroundRectForFrame(prevEntry.x, prevEntry.y,
+                                            prevEntry.width, prevEntry.height);
+        } else {
+            grRestoreBgTiles();
+        }
         timing.restoreTicks += fgElapsedTicks(tickStart);
 
         if (frameData != NULL) {
@@ -929,6 +936,8 @@ static void fgPlayFishing1(void)
             lastEntry = entry;
             haveLastEntry = 1;
         }
+        prevEntry = entry;
+        havePrevEntry = 1;
     }
 
     if (haveLastEntry) {

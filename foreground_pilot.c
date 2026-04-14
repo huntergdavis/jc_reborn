@@ -186,14 +186,18 @@ static void fgPrintTimingSummary(const struct TFgPilotTiming *timing)
            (unsigned int)timing->presentTicks);
 }
 
-static const char *fgFishing1OverlayPackPath(void)
+static const char *fgOverlayPackPathForScene(const char *sceneName)
 {
-    return "FG\\FISHING1.FG1";
+    if (fgSceneEquals(sceneName, "fishing1"))
+        return "FG\\FISHING1.FG1";
+    return NULL;
 }
 
-static const char *fgFishing1DirectPackPath(void)
+static const char *fgDirectPackPathForScene(const char *sceneName)
 {
-    return "FG\\FISHING1D.FG1";
+    if (fgSceneEquals(sceneName, "fishing1"))
+        return "FG\\FISHING1D.FG1";
+    return NULL;
 }
 
 static int fgHeaderUsesDeltaBlack(const struct TFgPilotHeader *header)
@@ -754,7 +758,7 @@ static void fgRuntimeReset(void)
 
 static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
 {
-    const char *path = fgFishing1OverlayPackPath();
+    const char *path = fgOverlayPackPathForScene("fishing1");
     const struct TFgPilotEntry *entry = fgGetEntryFromTable(&gFgRuntime.entryTable, frameIndex);
 
     if (entry == NULL)
@@ -801,7 +805,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
     }
 
     if (fgSceneEquals(sceneName, "fishing1")) {
-        const char *path = fgFishing1OverlayPackPath();
+        const char *path = fgOverlayPackPathForScene(sceneName);
         if (!fgLoadHeader(path, &gFgRuntime.header))
             return 0;
         if (!fgLoadEntryTable(path, &gFgRuntime.header, &gFgRuntime.entryTable)) {
@@ -991,7 +995,7 @@ void foregroundPilotRuntimeEnd(void)
 
 static void fgPlayFishing1(void)
 {
-    const char *path = fgFishing1OverlayPackPath();
+    const char *path = fgOverlayPackPathForScene("fishing1");
     CdlFILE cdfile;
     struct TFgPilotHeader header;
     struct TFgPilotEntryTable entryTable;
@@ -1142,7 +1146,7 @@ static void fgPlayFishing1(void)
 
 static void fgPlayFishing1Progressive240(void)
 {
-    const char *path = fgFishing1OverlayPackPath();
+    const char *path = fgOverlayPackPathForScene("fishing1");
     struct TFgPilotHeader header;
     struct TFgPilotEntry lastEntry;
     struct TFgPilotEntry prevEntry;

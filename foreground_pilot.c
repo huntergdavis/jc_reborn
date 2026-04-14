@@ -925,15 +925,14 @@ static void fgPlayFishing1(void)
     CdlFILE cdfile;
     struct TFgPilotHeader header;
     struct TFgPilotEntryTable entryTable;
-    struct TFgPilotEntry prevEntry;
     struct TFgPilotTiming timing;
     uint32 playStartTick;
     uint8 *frameBuffer = NULL;
     uint8 *streamScratch = NULL;
     uint32 maxFrameDataSize = 0;
     uint32 maxStreamScratchSize = 0;
+    const struct TFgPilotEntry *prevEntry = NULL;
     int haveLastEntry = 0;
-    int havePrevEntry = 0;
 
     memset(&timing, 0, sizeof(timing));
 
@@ -1017,9 +1016,9 @@ static void fgPlayFishing1(void)
 
         {
             uint32 tickStart = fgReadTickCounter();
-            if (havePrevEntry) {
-                grRestoreBackgroundRectForFrame(prevEntry.x, prevEntry.y,
-                                                prevEntry.width, prevEntry.height);
+            if (prevEntry != NULL) {
+                grRestoreBackgroundRectForFrame(prevEntry->x, prevEntry->y,
+                                                prevEntry->width, prevEntry->height);
             } else {
                 grRestoreBgTiles();
             }
@@ -1043,8 +1042,7 @@ static void fgPlayFishing1(void)
 
         if (frameData != NULL)
             haveLastEntry = 1;
-        prevEntry = *entry;
-        havePrevEntry = 1;
+        prevEntry = entry;
     }
 
     if (haveLastEntry) {

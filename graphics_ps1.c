@@ -2831,6 +2831,8 @@ void grDrawBackground(void)
     int screenX[4] = { 0, 320, 0, 320 };
     int screenY[4] = { 0, 0, 240, 240 };
     RECT rects[4];  /* Separate RECTs — LoadImage may read asynchronously */
+    int dirtyCount = 0;
+    int singleIndex = -1;
 
     for (int i = 0; i < 4; i++) {
         if (!tiles[i] || !tiles[i]->pixels) continue;
@@ -2852,14 +2854,21 @@ void grDrawBackground(void)
         }
         if (minY < 0) continue;  /* tile is fully clean — skip upload */
 
+        dirtyCount++;
+        singleIndex = i;
+
         int h = maxY - minY + 1;
         uint32 w = tiles[i]->width;
         setRECT(&rects[i], screenX[i], screenY[i] + minY, w, h);
+        if (dirtyCount == 1) {
+            rects[0] = rects[i];
+        }
         LoadImage(&rects[i], (uint32 *)(tiles[i]->pixels + minY * w));
     }
 
     /* Wait for DMA completion */
-    DrawSync(0);
+    if (dirtyCount > 0)
+        DrawSync(0);
 
     /* Advance dirty state: this frame's compositing becomes next frame's restore set */
     for (int i = 0; i < 4; i++) {

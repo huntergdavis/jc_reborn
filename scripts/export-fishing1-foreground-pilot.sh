@@ -3,19 +3,30 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-OUTPUT_DIR="${1:-$PROJECT_ROOT/host-results/fishing1-foreground-pilot}"
+OUTPUT_DIR="${1:-}"
+SCENE_SLUG="${2:-fishing1}"
+SCENE_NAME="${3:-FISHING 1}"
+PACK_BASENAME="${4:-$(printf '%s' "$SCENE_SLUG" | tr '[:lower:]' '[:upper:]' | tr -cd 'A-Z0-9')}"
+RAW_FRAME_INDEX="${5:-24}"
+RAW_BASENAME="${6:-FISH}"
+
+if [ -z "$OUTPUT_DIR" ]; then
+  OUTPUT_DIR="$PROJECT_ROOT/host-results/${SCENE_SLUG}-foreground-pilot"
+fi
+
 HOST_CAPTURE_DIR="$OUTPUT_DIR/host-capture"
 ANALYSIS_JSON="$OUTPUT_DIR/foreground-analysis.json"
-PACK_PATH="$PROJECT_ROOT/generated/ps1/foreground/FISHING1.FG1"
+PACK_PATH="$PROJECT_ROOT/generated/ps1/foreground/${PACK_BASENAME}.FG1"
 PACK_JSON="$OUTPUT_DIR/foreground-pack.json"
-DIRECT_PACK_PATH="$PROJECT_ROOT/generated/ps1/foreground/FISHING1D.FG1"
+DIRECT_PACK_PATH="$PROJECT_ROOT/generated/ps1/foreground/${PACK_BASENAME}D.FG1"
 DIRECT_PACK_JSON="$OUTPUT_DIR/foreground-pack-direct.json"
-RAW_FRAME_SOURCE="$HOST_CAPTURE_DIR/frames/frame_00024.bmp"
-RAW_FRAME_PATH="$PROJECT_ROOT/generated/ps1/foreground/FISH24.RAW"
+RAW_FRAME_NAME="$(printf 'frame_%05d.bmp' "$RAW_FRAME_INDEX")"
+RAW_FRAME_SOURCE="$HOST_CAPTURE_DIR/frames/$RAW_FRAME_NAME"
+RAW_FRAME_PATH="$PROJECT_ROOT/generated/ps1/foreground/${RAW_BASENAME}${RAW_FRAME_INDEX}.RAW"
 mkdir -p "$OUTPUT_DIR"
 
 "$SCRIPT_DIR/capture-host-scene.sh" \
-  --scene "FISHING 1" \
+  --scene "$SCENE_NAME" \
   --mode story-single \
   --seed 1 \
   --start-frame 0 \
@@ -30,12 +41,14 @@ python3 "$SCRIPT_DIR/analyze-foreground-plates.py" \
   --output-json "$ANALYSIS_JSON"
 
 python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
+  --scene-label "$SCENE_NAME" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
   --frame-meta-dir "$HOST_CAPTURE_DIR/frame-meta" \
   --output-pack "$PACK_PATH" \
   --output-json "$PACK_JSON"
 
 python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
+  --scene-label "$SCENE_NAME" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
   --output-pack "$DIRECT_PACK_PATH" \
   --output-json "$DIRECT_PACK_JSON" \

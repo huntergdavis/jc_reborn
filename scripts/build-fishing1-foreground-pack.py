@@ -161,10 +161,11 @@ def load_frame_delays(frame_meta_dir: Path | None) -> dict[str, int]:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Build a PS1 foreground playback pack for FISHING 1.")
+    parser = argparse.ArgumentParser(description="Build a PS1 foreground playback pack.")
     parser.add_argument("--frames-dir", required=True)
     parser.add_argument("--output-pack", required=True)
     parser.add_argument("--output-json")
+    parser.add_argument("--scene-label", default="")
     parser.add_argument("--key-rgb", default="ff00ff", type=parse_rgb)
     parser.add_argument("--frame-step", type=int, default=1)
     parser.add_argument("--delta-from-previous", action="store_true")
@@ -306,6 +307,7 @@ def main():
             f.write(chunk)
 
     summary = {
+        "scene_label": args.scene_label,
         "frames_dir": str(frames_dir),
         "output_pack": str(output_pack),
         "frame_step": args.frame_step,

@@ -821,7 +821,7 @@ static uint8_t* ps1_streamReadFromCdFile(const CdlFILE *cdfile, uint32_t offset,
     int timeout;
     uint32_t sectorsRead;
 
-    enum { PS1_CD_READ_CHUNK_SECTORS = 64 };
+    enum { PS1_CD_READ_CHUNK_SECTORS = 128 };
 
     if (cdfile == NULL || size == 0)
         return NULL;
@@ -935,7 +935,7 @@ static int ps1_streamReadFromCdFileIntoBuffered(const CdlFILE *cdfile, uint32_t 
     int timeout;
     uint32_t sectorsRead;
 
-    enum { PS1_CD_READ_CHUNK_SECTORS = 64 };
+    enum { PS1_CD_READ_CHUNK_SECTORS = 128 };
 
     if (cdfile == NULL || size == 0 || dstBuffer == NULL)
         return 0;

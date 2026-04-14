@@ -293,17 +293,9 @@ static void fgBlit16ToBackgroundRect(uint16 dstX, uint16 dstY,
                                      uint16 width, uint16 height,
                                      const uint16 *srcPixels)
 {
-    PS1Surface sprite;
-
     if (srcPixels == NULL || width == 0 || height == 0)
         return;
-
-    memset(&sprite, 0, sizeof(sprite));
-    sprite.width = width;
-    sprite.height = height;
-    sprite.pixels = (uint16 *)srcPixels;
-
-    grCompositeToBackground(&sprite, (sint16)dstX, (sint16)dstY);
+    grCompositeDirect16ToBackground(srcPixels, width, height, (sint16)dstX, (sint16)dstY);
 }
 
 static void fgPresentCurrentBackground(uint16 holdFrames)

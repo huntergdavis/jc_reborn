@@ -1624,6 +1624,24 @@ static inline void compositePsbSpanRev(uint16 *dst, const uint8 *src,
     }
 }
 
+static inline void compositeDirectOpaqueRuns(uint16 *dst, const uint16 *src, int count)
+{
+    int runStart = -1;
+
+    for (int i = 0; i < count; i++) {
+        if (src[i] != 0x0000) {
+            if (runStart < 0)
+                runStart = i;
+        } else if (runStart >= 0) {
+            memcpy(dst + runStart, src + runStart, (size_t)(i - runStart) * sizeof(uint16));
+            runStart = -1;
+        }
+    }
+
+    if (runStart >= 0)
+        memcpy(dst + runStart, src + runStart, (size_t)(count - runStart) * sizeof(uint16));
+}
+
 /*
  * Composite a RAM-stored sprite into the background tile buffers WITH TRANSPARENCY
  * Skips pixels with value 0x0000 (transparent)
@@ -1761,6 +1779,80 @@ void grCompositeToBackground(PS1Surface *sprite, sint16 screenX, sint16 screenY)
                     if (p != 0x0000) rowRight[dx - 320] = p;
                 }
             }
+        }
+    }
+}
+
+void grCompositeDirect16ToBackground(const uint16 *srcPixels, uint16 srcWidth, uint16 srcHeight,
+                                     sint16 screenX, sint16 screenY)
+{
+    int startSy;
+    int endSy;
+    int startSx;
+    int endSx;
+
+    if (srcPixels == NULL || srcWidth == 0 || srcHeight == 0)
+        return;
+    if (srcWidth > 640 || srcHeight > 480)
+        return;
+
+    startSy = 0;
+    endSy = srcHeight;
+    if (screenY < 0)
+        startSy = -screenY;
+    if (screenY + endSy > 480)
+        endSy = 480 - screenY;
+    if (startSy >= endSy)
+        return;
+
+    startSx = 0;
+    endSx = srcWidth;
+    if (screenX < 0)
+        startSx = -screenX;
+    if (screenX + endSx > 640)
+        endSx = 640 - screenX;
+    if (startSx >= endSx)
+        return;
+
+    grMarkRectDirty(screenX + startSx, screenY + startSy,
+                    screenX + endSx, screenY + endSy);
+
+    for (int sy = startSy; sy < endSy; sy++) {
+        int destY = screenY + sy;
+        PS1Surface *tileLeft;
+        PS1Surface *tileRight;
+        int tileLocalY;
+        uint16 *rowLeft;
+        uint16 *rowRight;
+        const uint16 *srcRow = srcPixels + ((uint32)sy * (uint32)srcWidth);
+        int destStartX = screenX + startSx;
+        int destEndX = screenX + endSx;
+
+        if (destY < 240) {
+            tileLocalY = destY;
+            tileLeft = bgTile0;
+            tileRight = bgTile1;
+        } else {
+            tileLocalY = destY - 240;
+            tileLeft = bgTile3;
+            tileRight = bgTile4;
+        }
+
+        rowLeft = (tileLeft && tileLeft->pixels) ? (tileLeft->pixels + tileLocalY * (int)tileLeft->width) : NULL;
+        rowRight = (tileRight && tileRight->pixels) ? (tileRight->pixels + tileLocalY * (int)tileRight->width) : NULL;
+
+        if (rowLeft && destStartX < 320) {
+            int lx0 = destStartX;
+            int lx1 = (destEndX < 320) ? destEndX : 320;
+            int srcX = startSx + (lx0 - destStartX);
+            compositeDirectOpaqueRuns(rowLeft + lx0, srcRow + srcX, lx1 - lx0);
+        }
+
+        if (rowRight && destEndX > 320) {
+            int rx0 = (destStartX > 320) ? destStartX : 320;
+            int rx1 = destEndX;
+            int srcX = startSx + (rx0 - destStartX);
+            compositeDirectOpaqueRuns(rowRight + (rx0 - 320), srcRow + srcX, rx1 - rx0);
         }
     }
 }

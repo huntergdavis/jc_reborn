@@ -1329,8 +1329,6 @@ int foregroundPilotRuntimeStartRequested(void)
     switch (gForegroundPilotRequestedMode) {
         case FG_RUNTIME_TESTCARD:
             return foregroundPilotRuntimeStart("testcard");
-        case FG_RUNTIME_FISHING1:
-            return foregroundPilotRuntimeStart("fishing1");
         default:
             return foregroundPilotRuntimeStart(gForegroundPilotScene);
     }

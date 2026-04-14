@@ -128,6 +128,25 @@ static inline void markTileDirty(int idx, int minY, int maxY)
     }
 }
 
+static inline void grMarkSingleColumnDirty(int tileBaseX, int y0, int y1Exclusive)
+{
+    int idxBase = (tileBaseX == 0) ? 0 : 1;
+
+    if (y0 < 240) {
+        int minY = y0;
+        int maxY = (y1Exclusive < 240) ? (y1Exclusive - 1) : 239;
+        markTileDirty(idxBase, minY, maxY);
+    }
+
+    if (y1Exclusive > 240) {
+        int minY = (y0 > 240) ? (y0 - 240) : 0;
+        int maxY = y1Exclusive - 241;
+        if (maxY > 239)
+            maxY = 239;
+        markTileDirty(idxBase + 2, minY, maxY);
+    }
+}
+
 static void grMarkAllTilesDirty(void)
 {
     for (int i = 0; i < 4; i++) {
@@ -1846,7 +1865,7 @@ void grCompositeDirect16ToBackground(const uint16 *srcPixels, uint16 srcWidth, u
         int tileBaseX = (screenX >= 320) ? 320 : 0;
         if (rectEndX <= tileBaseX + 320) {
             if (screenY < 240 && rectEndY > 240) {
-                grMarkRectDirty(screenX, screenY, rectEndX, rectEndY);
+                grMarkSingleColumnDirty(tileBaseX, screenY, rectEndY);
                 if (tileBaseX == 0) {
                     grCompositeDirectOpaqueSingleColumn(srcPixels, srcWidth,
                                                         screenX, screenY, srcHeight,
@@ -1861,7 +1880,7 @@ void grCompositeDirect16ToBackground(const uint16 *srcPixels, uint16 srcWidth, u
 
             int tileLocalX = screenX - tileBaseX;
 
-            grMarkRectDirty(screenX, screenY, rectEndX, rectEndY);
+            grMarkSingleColumnDirty(tileBaseX, screenY, rectEndY);
 
             {
                 PS1Surface *tile;
@@ -2778,15 +2797,14 @@ static void grRestoreRectFromCleanBg(int x, int y, int width, int height)
     rectEndY = y + height;
 
     /* Tile pixels are being modified — mark dirty for upload */
-    grMarkRectDirty(x, y, rectEndX, rectEndY);
-    if (width <= 0 || height <= 0)
-        return;
-
-    grEnsureCleanBgTiles();
-
     if (x >= 0 && y >= 0 && rectEndX <= 640 && rectEndY <= 480) {
         int tileBaseX = (x >= 320) ? 320 : 0;
         if (rectEndX <= tileBaseX + 320) {
+            grMarkSingleColumnDirty(tileBaseX, y, rectEndY);
+            if (width <= 0 || height <= 0)
+                return;
+
+            grEnsureCleanBgTiles();
             if (y < 240 && rectEndY > 240) {
                 if (tileBaseX == 0) {
                     grRestoreRectSingleColumn(bgTile0Clean, bgTile0,
@@ -2829,6 +2847,12 @@ static void grRestoreRectFromCleanBg(int x, int y, int width, int height)
             return;
         }
     }
+
+    grMarkRectDirty(x, y, rectEndX, rectEndY);
+    if (width <= 0 || height <= 0)
+        return;
+
+    grEnsureCleanBgTiles();
 
     grRestoreTileRect(bgTile0, bgTile0Clean, 0, 0, x, y, width, height);
     grRestoreTileRect(bgTile1, bgTile1Clean, 320, 0, x, y, width, height);

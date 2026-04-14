@@ -61,6 +61,7 @@ struct TFgPilotRuntime {
     uint16 holdFrames;
     uint16 presentedVBlanks;
     uint32 sceneClockTick;
+    char sceneName[16];
     struct TFgPilotHeader header;
     struct TFgPilotEntryTable entryTable;
     struct TFgPilotEntry currentEntry;
@@ -758,7 +759,7 @@ static void fgRuntimeReset(void)
 
 static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
 {
-    const char *path = fgOverlayPackPathForScene("fishing1");
+    const char *path = fgOverlayPackPathForScene(gFgRuntime.sceneName);
     const struct TFgPilotEntry *entry = fgGetEntryFromTable(&gFgRuntime.entryTable, frameIndex);
 
     if (entry == NULL)
@@ -797,6 +798,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
     if (fgSceneEquals(sceneName, "testcard")) {
         gFgRuntime.active = 1;
         gFgRuntime.mode = FG_RUNTIME_TESTCARD;
+        strncpy(gFgRuntime.sceneName, sceneName, sizeof(gFgRuntime.sceneName) - 1);
         gFgRuntime.holdFrames = kFgPilotProbeHoldFrames;
         gFgRuntime.sceneClockTick = fgReadTickCounter();
         gFgStartedEver = 1;
@@ -814,6 +816,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         }
         gFgRuntime.active = 1;
         gFgRuntime.mode = FG_RUNTIME_FISHING1;
+        strncpy(gFgRuntime.sceneName, sceneName, sizeof(gFgRuntime.sceneName) - 1);
         gFgRuntime.displayVBlanks = 1;
         gFgRuntime.holdFrames = 150;
         gFgRuntime.sceneClockTick = fgReadTickCounter();

@@ -961,8 +961,6 @@ static int ps1_streamReadFromCdFileIntoBuffered(const CdlFILE *cdfile, uint32_t 
             return 0;
         }
 
-        for (volatile int i = 0; i < 100000; i++);
-
         if (CdRead(chunkSectors, (uint32_t*)chunkDst, CdlModeSpeed) == 0) {
             return 0;
         }
@@ -1028,8 +1026,6 @@ static uint8_t* ps1_streamReadFromCdFileWhole(const CdlFILE *cdfile, uint32_t of
             free(fileBuffer);
             return NULL;
         }
-
-        for (volatile int i = 0; i < 100000; i++);
 
         if (CdRead(chunkSectors, (uint32_t*)chunkDst, CdlModeSpeed) == 0) {
             free(fileBuffer);

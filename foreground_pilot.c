@@ -193,6 +193,8 @@ static const char *fgOverlayPackPathForScene(const char *sceneName)
 {
     if (fgSceneEquals(sceneName, "fishing1"))
         return "FG\\FISHING1.FG1";
+    if (fgSceneEquals(sceneName, "fishing2"))
+        return "FG\\FISHING2.FG1";
     return NULL;
 }
 
@@ -200,12 +202,16 @@ static const char *fgDirectPackPathForScene(const char *sceneName)
 {
     if (fgSceneEquals(sceneName, "fishing1"))
         return "FG\\FISHING1D.FG1";
+    if (fgSceneEquals(sceneName, "fishing2"))
+        return "FG\\FISHING2D.FG1";
     return NULL;
 }
 
 static const char *fgRawFramePathForScene(const char *sceneName)
 {
     if (fgSceneEquals(sceneName, "fishing1"))
+        return "\\FG\\FISH24.RAW;1";
+    if (fgSceneEquals(sceneName, "fishing2"))
         return "\\FG\\FISH24.RAW;1";
     return NULL;
 }
@@ -215,6 +221,11 @@ static const char *fgAdsNameForScene(const char *sceneName, uint16 *adsTagOut)
     if (fgSceneEquals(sceneName, "fishing1")) {
         if (adsTagOut != NULL)
             *adsTagOut = 1;
+        return "FISHING";
+    }
+    if (fgSceneEquals(sceneName, "fishing2")) {
+        if (adsTagOut != NULL)
+            *adsTagOut = 2;
         return "FISHING";
     }
     return NULL;

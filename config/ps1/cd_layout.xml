@@ -27,6 +27,7 @@
 
             <dir name="FG">
                 <file name="FISHING1.FG1" type="data" source="../../generated/ps1/foreground/FISHING1.FG1"/>
+                <file name="FISHING2.FG1" type="data" source="../../generated/ps1/foreground/FISHING2.FG1"/>
                 <file name="FISH24.RAW" type="data" source="../../generated/ps1/foreground/FISH24.RAW"/>
             </dir>
 

@@ -976,23 +976,23 @@ static void fgPlayFishing1(void)
     fgInitBlackBackground();
     fgPresentCurrentBackground(15);
 
-    for (uint16 frameIndex = 0; frameIndex < header.frameCount; frameIndex++) {
-        const struct TFgPilotEntry *entry;
+    if (entryTable.entries == NULL || entryTable.count == 0) {
+        fgFreeEntryTable(&entryTable);
+        if (streamScratch != NULL)
+            free(streamScratch);
+        if (frameBuffer != NULL)
+            free(frameBuffer);
+        return;
+    }
+
+    for (uint16 frameIndex = 0; frameIndex < entryTable.count; frameIndex++) {
+        const struct TFgPilotEntry *entry = &entryTable.entries[frameIndex];
         const uint8 *frameData;
         uint16 holdVBlanks;
-        uint32 tickStart;
-
-        tickStart = fgReadTickCounter();
-        entry = fgGetEntryFromTable(&entryTable, frameIndex);
-        if (entry == NULL) {
-            printf("FG pilot: failed to load entry %u\n", (unsigned int)frameIndex);
-            break;
-        }
-        timing.loadEntryTicks += fgElapsedTicks(tickStart);
 
         frameData = NULL;
         if (entry->dataSize > 0 && entry->width > 0 && entry->height > 0) {
-            tickStart = fgReadTickCounter();
+            uint32 tickStart = fgReadTickCounter();
             if (frameBuffer == NULL ||
                 !ps1_streamReadIntoFileBuffered(&cdfile, entry->dataOffset, entry->dataSize,
                                                frameBuffer, streamScratch, maxStreamScratchSize)) {
@@ -1009,29 +1009,35 @@ static void fgPlayFishing1(void)
         if (holdVBlanks == 0)
             holdVBlanks = 1;
 
-        tickStart = fgReadTickCounter();
-        grBeginFrame();
-        timing.beginFrameTicks += fgElapsedTicks(tickStart);
-
-        tickStart = fgReadTickCounter();
-        if (havePrevEntry) {
-            grRestoreBackgroundRectForFrame(prevEntry.x, prevEntry.y,
-                                            prevEntry.width, prevEntry.height);
-        } else {
-            grRestoreBgTiles();
+        {
+            uint32 tickStart = fgReadTickCounter();
+            grBeginFrame();
+            timing.beginFrameTicks += fgElapsedTicks(tickStart);
         }
-        timing.restoreTicks += fgElapsedTicks(tickStart);
+
+        {
+            uint32 tickStart = fgReadTickCounter();
+            if (havePrevEntry) {
+                grRestoreBackgroundRectForFrame(prevEntry.x, prevEntry.y,
+                                                prevEntry.width, prevEntry.height);
+            } else {
+                grRestoreBgTiles();
+            }
+            timing.restoreTicks += fgElapsedTicks(tickStart);
+        }
 
         if (frameData != NULL) {
-            tickStart = fgReadTickCounter();
+            uint32 tickStart = fgReadTickCounter();
             fgBlit16ToBackgroundRect(entry->x, entry->y, entry->width, entry->height,
                                      (const uint16 *)frameData);
             timing.blitTicks += fgElapsedTicks(tickStart);
         }
 
-        tickStart = fgReadTickCounter();
-        fgPresentCurrentBackground(holdVBlanks);
-        timing.presentTicks += fgElapsedTicks(tickStart);
+        {
+            uint32 tickStart = fgReadTickCounter();
+            fgPresentCurrentBackground(holdVBlanks);
+            timing.presentTicks += fgElapsedTicks(tickStart);
+        }
         timing.framesPlayed++;
         timing.presentsRequested = (uint16)(timing.presentsRequested + holdVBlanks);
 

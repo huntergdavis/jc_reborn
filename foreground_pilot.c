@@ -47,6 +47,11 @@ struct TFgPilotEntry {
     uint32 dataSize;
 };
 
+struct TFgPilotEntryTable {
+    struct TFgPilotEntry *entries;
+    uint16 count;
+};
+
 struct TFgPilotRuntime {
     uint8 active;
     uint8 mode;
@@ -55,6 +60,7 @@ struct TFgPilotRuntime {
     uint16 displayVBlanks;
     uint16 holdFrames;
     struct TFgPilotHeader header;
+    struct TFgPilotEntryTable entryTable;
     struct TFgPilotEntry currentEntry;
     uint8 *currentFrameData;
 };
@@ -227,6 +233,67 @@ static int fgLoadEntry(const char *path, const struct TFgPilotHeader *header,
     out->dataSize = fgReadU32(data + 16);
     free(data);
 
+    return 1;
+}
+
+static void fgFreeEntryTable(struct TFgPilotEntryTable *table)
+{
+    if (table == NULL)
+        return;
+    if (table->entries != NULL) {
+        free(table->entries);
+        table->entries = NULL;
+    }
+    table->count = 0;
+}
+
+static int fgLoadEntryTable(const char *path, const struct TFgPilotHeader *header,
+                            struct TFgPilotEntryTable *out)
+{
+    uint8 *data;
+    uint32 tableSize;
+
+    if (!path || !header || !out || header->frameCount == 0)
+        return 0;
+
+    memset(out, 0, sizeof(*out));
+    tableSize = (uint32)header->frameCount * 20u;
+    data = ps1_streamRead(path, header->tableOffset, tableSize);
+    if (!data)
+        return 0;
+
+    out->entries = (struct TFgPilotEntry *)malloc((size_t)header->frameCount * sizeof(struct TFgPilotEntry));
+    if (out->entries == NULL) {
+        free(data);
+        return 0;
+    }
+
+    out->count = header->frameCount;
+    for (uint16 i = 0; i < header->frameCount; i++) {
+        const uint8 *src = data + ((uint32)i * 20u);
+        struct TFgPilotEntry *dst = &out->entries[i];
+        dst->sourceFrame = fgReadU16(src + 0);
+        dst->x = fgReadU16(src + 2);
+        dst->y = fgReadU16(src + 4);
+        dst->width = fgReadU16(src + 6);
+        dst->height = fgReadU16(src + 8);
+        dst->reserved0 = fgReadU16(src + 10);
+        dst->dataOffset = fgReadU32(src + 12);
+        dst->dataSize = fgReadU32(src + 16);
+    }
+
+    free(data);
+    return 1;
+}
+
+static int fgGetEntryFromTable(const struct TFgPilotEntryTable *table,
+                               uint16 frameIndex,
+                               struct TFgPilotEntry *out)
+{
+    if (table == NULL || out == NULL || table->entries == NULL || frameIndex >= table->count)
+        return 0;
+
+    *out = table->entries[frameIndex];
     return 1;
 }
 
@@ -620,6 +687,7 @@ static void fgRuntimeReset(void)
         free(gFgRuntime.currentFrameData);
         gFgRuntime.currentFrameData = NULL;
     }
+    fgFreeEntryTable(&gFgRuntime.entryTable);
     memset(&gFgRuntime, 0, sizeof(gFgRuntime));
     fgTelemetryUpdate();
 }
@@ -627,8 +695,7 @@ static void fgRuntimeReset(void)
 static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
 {
     const char *path = fgFishing1OverlayPackPath();
-
-    if (!fgLoadEntry(path, &gFgRuntime.header, frameIndex, &gFgRuntime.currentEntry))
+    if (!fgGetEntryFromTable(&gFgRuntime.entryTable, frameIndex, &gFgRuntime.currentEntry))
         return 0;
 
     if (gFgRuntime.currentFrameData != NULL) {
@@ -670,6 +737,10 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         const char *path = fgFishing1OverlayPackPath();
         if (!fgLoadHeader(path, &gFgRuntime.header))
             return 0;
+        if (!fgLoadEntryTable(path, &gFgRuntime.header, &gFgRuntime.entryTable)) {
+            fgRuntimeReset();
+            return 0;
+        }
         gFgRuntime.active = 1;
         gFgRuntime.mode = FG_RUNTIME_FISHING1;
         gFgRuntime.displayVBlanks = 1;
@@ -851,6 +922,7 @@ static void fgPlayFishing1(void)
 {
     const char *path = fgFishing1OverlayPackPath();
     struct TFgPilotHeader header;
+    struct TFgPilotEntryTable entryTable;
     struct TFgPilotEntry lastEntry;
     struct TFgPilotEntry prevEntry;
     struct TFgPilotTiming timing;
@@ -866,6 +938,10 @@ static void fgPlayFishing1(void)
         printf("FG pilot: failed to load header %s\n", path);
         return;
     }
+    if (!fgLoadEntryTable(path, &header, &entryTable)) {
+        printf("FG pilot: failed to load entry table %s\n", path);
+        return;
+    }
 
     fgInitVisiblePipeline();
     fgInitBlackBackground();
@@ -878,7 +954,7 @@ static void fgPlayFishing1(void)
         uint32 tickStart;
 
         tickStart = fgReadTickCounter();
-        if (!fgLoadEntry(path, &header, frameIndex, &entry)) {
+        if (!fgGetEntryFromTable(&entryTable, frameIndex, &entry)) {
             printf("FG pilot: failed to load entry %u\n", (unsigned int)frameIndex);
             break;
         }
@@ -962,6 +1038,7 @@ static void fgPlayFishing1(void)
     timing.totalTicks = fgElapsedTicks(playStartTick);
     fgPrintTimingSummary(&timing);
 
+    fgFreeEntryTable(&entryTable);
     if (lastFrameData != NULL)
         free(lastFrameData);
 }

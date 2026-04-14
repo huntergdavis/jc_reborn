@@ -107,7 +107,7 @@ static void fgResetTelemetryFlags(void)
 enum {
     FG_RUNTIME_NONE = 0,
     FG_RUNTIME_TESTCARD = 1,
-    FG_RUNTIME_FISHING1 = 2
+    FG_RUNTIME_SCENE_PACK = 2
 };
 
 static int fgSceneEquals(const char *a, const char *b);
@@ -220,7 +220,7 @@ static uint8 fgSceneModeForName(const char *sceneName)
     if (fgSceneEquals(sceneName, "testcard"))
         return FG_RUNTIME_TESTCARD;
     if (fgOverlayPackPathForScene(sceneName) != NULL)
-        return FG_RUNTIME_FISHING1;
+        return FG_RUNTIME_SCENE_PACK;
     return FG_RUNTIME_NONE;
 }
 
@@ -846,7 +846,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
             return 0;
         }
         gFgRuntime.active = 1;
-        gFgRuntime.mode = FG_RUNTIME_FISHING1;
+        gFgRuntime.mode = FG_RUNTIME_SCENE_PACK;
         strncpy(gFgRuntime.sceneName, sceneName, sizeof(gFgRuntime.sceneName) - 1);
         gFgRuntime.displayVBlanks = 1;
         gFgRuntime.holdFrames = 150;
@@ -895,7 +895,7 @@ void foregroundPilotRuntimeCompose(void)
         return;
     }
 
-    if (gFgRuntime.mode == FG_RUNTIME_FISHING1 && gFgRuntime.currentFrameData != NULL) {
+    if (gFgRuntime.mode == FG_RUNTIME_SCENE_PACK && gFgRuntime.currentFrameData != NULL) {
         fgBlit16ToBackgroundRect(gFgRuntime.currentEntry.x,
                                  gFgRuntime.currentEntry.y,
                                  gFgRuntime.currentEntry.width,
@@ -926,7 +926,7 @@ void foregroundPilotRuntimeAdvance(void)
         return;
     }
 
-    if (gFgRuntime.mode == FG_RUNTIME_FISHING1) {
+    if (gFgRuntime.mode == FG_RUNTIME_SCENE_PACK) {
         uint16 frameHoldVBlanks = gFgRuntime.displayVBlanks;
 
         if (gFgRuntime.frameIndex + 1 >= gFgRuntime.header.frameCount) {
@@ -1282,11 +1282,11 @@ static void fgPlayAdsIntro(void)
     adsPlayIntro();
 }
 
-static void fgPlayAdsFishing1(void)
+static void fgPlayAdsScene(const char *adsName, uint16 adsTag)
 {
     adsInit();
     adsNoIsland();
-    adsPlay("FISHING", 1);
+    adsPlay(adsName, adsTag);
 }
 
 static void fgShowSolidColor(uint8 r, uint8 g, uint8 b, uint16 holdFrames)
@@ -1349,7 +1349,7 @@ int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
     if (!foregroundPilotRequested() || adsName == NULL)
         return 0;
 
-    if ((gForegroundPilotRequestedMode == FG_RUNTIME_FISHING1 ||
+    if ((gForegroundPilotRequestedMode == FG_RUNTIME_SCENE_PACK ||
          gForegroundPilotRequestedMode == FG_RUNTIME_TESTCARD) &&
         fgAdsNameEquals(adsName, "FISHING") && adsTag == 1) {
         gFgAdsMatchEver = 1;
@@ -1426,7 +1426,7 @@ void foregroundPilotPlay(void)
     }
 
     if (fgSceneEquals(gForegroundPilotScene, "adsfishing1")) {
-        fgPlayAdsFishing1();
+        fgPlayAdsScene("FISHING", 1);
         return;
     }
 

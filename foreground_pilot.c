@@ -210,6 +210,16 @@ static const char *fgRawFramePathForScene(const char *sceneName)
     return NULL;
 }
 
+static const char *fgAdsNameForScene(const char *sceneName, uint16 *adsTagOut)
+{
+    if (fgSceneEquals(sceneName, "fishing1")) {
+        if (adsTagOut != NULL)
+            *adsTagOut = 1;
+        return "FISHING";
+    }
+    return NULL;
+}
+
 static int fgHeaderUsesDeltaBlack(const struct TFgPilotHeader *header)
 {
     return (header != NULL && (header->reserved0 & kFgPilotHeaderFlagDeltaBlack) != 0) ? 1 : 0;
@@ -242,6 +252,27 @@ static int fgSceneCopyWithoutSuffix(const char *sceneName, const char *suffix,
 
     memcpy(out, sceneName, sceneLen - suffixLen);
     out[sceneLen - suffixLen] = '\0';
+    return 1;
+}
+
+static int fgSceneCopyWithoutPrefix(const char *sceneName, const char *prefix,
+                                    char *out, size_t outSize)
+{
+    size_t sceneLen;
+    size_t prefixLen;
+
+    if (sceneName == NULL || prefix == NULL || out == NULL || outSize == 0)
+        return 0;
+
+    sceneLen = strlen(sceneName);
+    prefixLen = strlen(prefix);
+    if (sceneLen <= prefixLen || sceneLen - prefixLen + 1 > outSize)
+        return 0;
+    if (strncmp(sceneName, prefix, prefixLen) != 0)
+        return 0;
+
+    memcpy(out, sceneName + prefixLen, sceneLen - prefixLen);
+    out[sceneLen - prefixLen] = '\0';
     return 1;
 }
 
@@ -1346,12 +1377,17 @@ void foregroundPilotSetScene(const char *sceneName)
 
 int foregroundPilotShouldStartForAds(const char *adsName, unsigned short adsTag)
 {
+    uint16 mappedTag = 0;
+    const char *mappedAdsName;
+
     if (!foregroundPilotRequested() || adsName == NULL)
         return 0;
 
+    mappedAdsName = fgAdsNameForScene(gForegroundPilotScene, &mappedTag);
     if ((gForegroundPilotRequestedMode == FG_RUNTIME_SCENE_PACK ||
          gForegroundPilotRequestedMode == FG_RUNTIME_TESTCARD) &&
-        fgAdsNameEquals(adsName, "FISHING") && adsTag == 1) {
+        mappedAdsName != NULL &&
+        fgAdsNameEquals(adsName, mappedAdsName) && adsTag == mappedTag) {
         gFgAdsMatchEver = 1;
         return 1;
     }
@@ -1385,6 +1421,8 @@ int foregroundPilotRuntimeStartIfRequested(void)
 void foregroundPilotPlay(void)
 {
     char mappedScene[sizeof(gForegroundPilotScene)];
+    uint16 mappedAdsTag = 0;
+    const char *mappedAdsName;
 
     if (fgSceneEquals(gForegroundPilotScene, "testcard")) {
         fgPlayTestCard();
@@ -1425,8 +1463,10 @@ void foregroundPilotPlay(void)
         return;
     }
 
-    if (fgSceneEquals(gForegroundPilotScene, "adsfishing1")) {
-        fgPlayAdsScene("FISHING", 1);
+    if (fgSceneCopyWithoutPrefix(gForegroundPilotScene, "ads",
+                                 mappedScene, sizeof(mappedScene)) &&
+        (mappedAdsName = fgAdsNameForScene(mappedScene, &mappedAdsTag)) != NULL) {
+        fgPlayAdsScene(mappedAdsName, mappedAdsTag);
         return;
     }
 

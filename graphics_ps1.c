@@ -2830,15 +2830,22 @@ void grDrawBackground(void)
     PS1Surface *tiles[4] = { bgTile0, bgTile1, bgTile3, bgTile4 };
     int screenX[4] = { 0, 320, 0, 320 };
     int screenY[4] = { 0, 0, 240, 240 };
-    RECT rects[4];  /* Separate RECTs — LoadImage may read asynchronously */
+    RECT rects[4];
+    int minYs[4];
+    int maxYs[4];
     int dirtyCount = 0;
     int singleIndex = -1;
 
     for (int i = 0; i < 4; i++) {
-        if (!tiles[i] || !tiles[i]->pixels) continue;
+        int minY = -1;
+        int maxY = -1;
+
+        minYs[i] = -1;
+        maxYs[i] = -1;
+        if (!tiles[i] || !tiles[i]->pixels)
+            continue;
 
         /* Compute upload range = union(prevDirty, currDirty) */
-        int minY = -1, maxY = -1;
         if (prevDirtyMinY[i] >= 0) {
             minY = prevDirtyMinY[i];
             maxY = prevDirtyMaxY[i];
@@ -2854,21 +2861,37 @@ void grDrawBackground(void)
         }
         if (minY < 0) continue;  /* tile is fully clean — skip upload */
 
+        minYs[i] = minY;
+        maxYs[i] = maxY;
         dirtyCount++;
         singleIndex = i;
-
-        int h = maxY - minY + 1;
-        uint32 w = tiles[i]->width;
-        setRECT(&rects[i], screenX[i], screenY[i] + minY, w, h);
-        if (dirtyCount == 1) {
-            rects[0] = rects[i];
-        }
-        LoadImage(&rects[i], (uint32 *)(tiles[i]->pixels + minY * w));
     }
 
-    /* Wait for DMA completion */
-    if (dirtyCount > 0)
+    if (dirtyCount == 1) {
+        PS1Surface *tile = tiles[singleIndex];
+        uint32 w = tile->width;
+        int minY = minYs[singleIndex];
+        int h = maxYs[singleIndex] - minY + 1;
+
+        setRECT(&rects[0], screenX[singleIndex], screenY[singleIndex] + minY, w, h);
+        LoadImage(&rects[0], (uint32 *)(tile->pixels + minY * w));
         DrawSync(0);
+    } else {
+        for (int i = 0; i < 4; i++) {
+            if (minYs[i] < 0)
+                continue;
+
+            int minY = minYs[i];
+            int h = maxYs[i] - minY + 1;
+            uint32 w = tiles[i]->width;
+
+            setRECT(&rects[i], screenX[i], screenY[i] + minY, w, h);
+            LoadImage(&rects[i], (uint32 *)(tiles[i]->pixels + minY * w));
+        }
+
+        if (dirtyCount > 0)
+            DrawSync(0);
+    }
 
     /* Advance dirty state: this frame's compositing becomes next frame's restore set */
     for (int i = 0; i < 4; i++) {

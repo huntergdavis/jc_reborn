@@ -24,6 +24,7 @@ Validation rule:
 - Full-scene `story-single --until-exit` export.
 - Corrected host-timing preservation in the export pipeline.
 - Single-tile upload-path tightening.
+- Dedicated one-tile upload branch in `grDrawBackground()`.
 
 ## What Failed
 
@@ -68,8 +69,10 @@ Validation rule:
 
 ## Next Target
 
-Stay on the stable compositor path and keep attacking upload/restore cost before
-returning to CD buffering experiments.
+Stay on the stable compositor path and keep attacking the heavy early-motion
+section of the scene, where the tall tree-walk rect still feels slower than the
+later action. Favor changes that reduce restore/upload work for larger active
+areas before returning to CD buffering experiments.
 
 ## Repeat Prompt
 

@@ -380,7 +380,7 @@ static void fgInitVisiblePipeline(void)
 {
     adsInit();
     adsNoIsland();
-    grUpdateDelay = 1;
+    grUpdateDelay = 0;
 }
 
 static void fgInitBlackBackground(void)

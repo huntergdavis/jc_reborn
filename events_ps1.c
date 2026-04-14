@@ -37,12 +37,32 @@ static int quit = 0;
 static int pause = 0;
 static int maxSpeed = 0;
 static int frameAdvance = 0;
+static uint16 delayResidue = 0;
+static uint32 lastFrameTick = 0;
+
+static uint16 eventsDelayTicksToTargetVBlanks(uint16 delay)
+{
+    uint32 scaled;
+    uint16 targetVBlanks;
+
+    if (delay == 0)
+        return 0;
+
+    /* PC ADS/TTM delay ticks are 20 ms. Convert to NTSC 60 Hz VBlanks with
+     * persistent carry so repeated timing blocks do not drift. */
+    scaled = ((uint32)delay * 6u) + (uint32)delayResidue;
+    targetVBlanks = (uint16)(scaled / 5u);
+    delayResidue = (uint16)(scaled % 5u);
+    return targetVBlanks > 0 ? targetVBlanks : 1;
+}
 
 /*
  * Initialize input system
  */
 void eventsInit()
 {
+    delayResidue = 0;
+    lastFrameTick = (uint32)VSync(-1);
     /* Initialize controller/pad system */
     InitPAD(pad_buff[0], 34, pad_buff[1], 34);
 
@@ -105,11 +125,24 @@ void eventsWaitTick(uint16 delay)
         }
     }
 
-    /* Frame timing - PS1 VSync = 16.67ms (60Hz NTSC).
-     * grUpdateDisplay already calls VSync(0) once per frame, providing the
-     * base frame cadence. No additional delay needed — compositing and CD
-     * overhead fill the remaining time, matching PC playback speed. */
-    (void)delay;
+    if (!maxSpeed) {
+        uint32 nowTick = (uint32)VSync(-1);
+        uint16 targetVBlanks = eventsDelayTicksToTargetVBlanks(delay);
+        uint16 elapsedVBlanks = 0;
+        uint16 extraVBlanks;
+
+        if (nowTick >= lastFrameTick)
+            elapsedVBlanks = (uint16)(nowTick - lastFrameTick);
+        extraVBlanks = (elapsedVBlanks < targetVBlanks)
+            ? (uint16)(targetVBlanks - elapsedVBlanks)
+            : 0;
+        while (extraVBlanks-- > 0 && !quit) {
+            VSync(0);
+        }
+        lastFrameTick = (uint32)VSync(-1);
+    } else {
+        lastFrameTick = (uint32)VSync(-1);
+    }
 
     /* Handle pause state */
     while (pause && !frameAdvance && !quit) {

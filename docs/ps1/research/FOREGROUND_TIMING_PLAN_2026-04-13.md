@@ -25,6 +25,7 @@ Validation rule:
 - Corrected host-timing preservation in the export pipeline.
 - Single-tile upload-path tightening.
 - Dedicated one-tile upload branch in `grDrawBackground()`.
+- Same-bounds fused restore+composite path.
 
 ## What Failed
 
@@ -34,6 +35,7 @@ Validation rule:
 - Overlap-skip restore as implemented.
 - Naive scheduler-delay summing.
 - Naive read-ahead / double-buffering.
+- Pilot-only black-clear restore replacement.
 
 ## Prioritized Speed Backlog
 

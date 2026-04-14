@@ -34,7 +34,11 @@ if [ "${1:-}" = "clean" ]; then
     "${DOCKER_CMD[@]}" run --rm --platform linux/amd64 \
         -v "$PWD":/project \
         jc-reborn-ps1-dev:amd64 \
-        bash -c "cd /project/build-ps1 && make clean"
+        bash -lc '
+            set -e
+            rm -rf /project/build-ps1/*
+            cmake -S /project -B /project/build-ps1
+        '
 fi
 
 echo "=== Building PS1 executable ==="

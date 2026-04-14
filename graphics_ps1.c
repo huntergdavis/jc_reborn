@@ -2685,6 +2685,162 @@ void grRestoreBackgroundRectForFrame(int x, int y, int width, int height)
     grRestoreRectFromCleanBg(x, y, width, height);
 }
 
+void grRestoreAndCompositeDirect16BackgroundRectForFrame(int x, int y, int width, int height,
+                                                         const uint16 *srcPixels)
+{
+    int rectEndX;
+    int rectEndY;
+
+    for (int i = 0; i < 4; i++) {
+        currDirtyMinY[i] = -1;
+        currDirtyMaxY[i] = -1;
+    }
+
+    if (srcPixels == NULL || width <= 0 || height <= 0)
+        return;
+
+    if (x < 0) {
+        width += x;
+        x = 0;
+    }
+    if (y < 0) {
+        height += y;
+        y = 0;
+    }
+    if (x >= SCREEN_WIDTH || y >= SCREEN_HEIGHT)
+        return;
+    if (x + width > SCREEN_WIDTH)
+        width = SCREEN_WIDTH - x;
+    if (y + height > SCREEN_HEIGHT)
+        height = SCREEN_HEIGHT - y;
+    if (width <= 0 || height <= 0)
+        return;
+
+    rectEndX = x + width;
+    rectEndY = y + height;
+
+    if (x >= 0 && y >= 0 && rectEndX <= 640 && rectEndY <= 480) {
+        int tileBaseX = (x >= 320) ? 320 : 0;
+        if (rectEndX <= tileBaseX + 320) {
+            grMarkSingleColumnDirty(tileBaseX, y, rectEndY);
+            if (y < 240 && rectEndY > 240) {
+                PS1Surface *topTile = (tileBaseX == 0) ? bgTile0 : bgTile1;
+                PS1Surface *bottomTile = (tileBaseX == 0) ? bgTile3 : bgTile4;
+                const uint16 *topClean = (tileBaseX == 0) ? bgTile0Clean : bgTile1Clean;
+                const uint16 *bottomClean = (tileBaseX == 0) ? bgTile3Clean : bgTile4Clean;
+                int tileLocalX = x - tileBaseX;
+                int topRows = 240 - y;
+                if (topRows < 0)
+                    topRows = 0;
+                if (topRows > height)
+                    topRows = height;
+
+                grEnsureCleanBgTiles();
+
+                if (topTile != NULL && topTile->pixels != NULL && topClean != NULL) {
+                    for (int row = 0; row < topRows; row++) {
+                        uint16 *dst = topTile->pixels + ((y + row) * (int)topTile->width) + tileLocalX;
+                        const uint16 *clean = topClean + ((y + row) * (int)topTile->width) + tileLocalX;
+                        const uint16 *src = srcPixels + ((uint32)row * (uint32)width);
+                        memcpy(dst, clean, (size_t)width * sizeof(uint16));
+                        compositeDirectOpaqueRuns(dst, src, width);
+                    }
+                }
+                if (bottomTile != NULL && bottomTile->pixels != NULL && bottomClean != NULL) {
+                    for (int row = 0; row < (height - topRows); row++) {
+                        uint16 *dst = bottomTile->pixels + (row * (int)bottomTile->width) + tileLocalX;
+                        const uint16 *clean = bottomClean + (row * (int)bottomTile->width) + tileLocalX;
+                        const uint16 *src = srcPixels + ((uint32)(topRows + row) * (uint32)width);
+                        memcpy(dst, clean, (size_t)width * sizeof(uint16));
+                        compositeDirectOpaqueRuns(dst, src, width);
+                    }
+                }
+                return;
+            }
+
+            {
+                PS1Surface *tile;
+                const uint16 *clean;
+                int tileLocalX = x - tileBaseX;
+                int startLocalY;
+
+                if (y < 240) {
+                    tile = (tileBaseX == 0) ? bgTile0 : bgTile1;
+                    clean = (tileBaseX == 0) ? bgTile0Clean : bgTile1Clean;
+                    startLocalY = y;
+                } else {
+                    tile = (tileBaseX == 0) ? bgTile3 : bgTile4;
+                    clean = (tileBaseX == 0) ? bgTile3Clean : bgTile4Clean;
+                    startLocalY = y - 240;
+                }
+
+                grEnsureCleanBgTiles();
+
+                if (tile == NULL || tile->pixels == NULL || clean == NULL)
+                    return;
+
+                for (int row = 0; row < height; row++) {
+                    uint16 *dst = tile->pixels + ((startLocalY + row) * (int)tile->width) + tileLocalX;
+                    const uint16 *cleanRow = clean + ((startLocalY + row) * (int)tile->width) + tileLocalX;
+                    const uint16 *srcRow = srcPixels + ((uint32)row * (uint32)width);
+                    memcpy(dst, cleanRow, (size_t)width * sizeof(uint16));
+                    compositeDirectOpaqueRuns(dst, srcRow, width);
+                }
+            }
+            return;
+        }
+    }
+
+    grEnsureCleanBgTiles();
+    grMarkRectDirty(x, y, rectEndX, rectEndY);
+    for (int row = y; row < rectEndY; row++) {
+        int tileLocalY;
+        PS1Surface *tileLeft;
+        PS1Surface *tileRight;
+        const uint16 *cleanLeft;
+        const uint16 *cleanRight;
+        int destStartX = x;
+        int destEndX = rectEndX;
+        int srcRow = row - y;
+
+        if (row < 240) {
+            tileLocalY = row;
+            tileLeft = bgTile0;
+            tileRight = bgTile1;
+            cleanLeft = bgTile0Clean;
+            cleanRight = bgTile1Clean;
+        } else {
+            tileLocalY = row - 240;
+            tileLeft = bgTile3;
+            tileRight = bgTile4;
+            cleanLeft = bgTile3Clean;
+            cleanRight = bgTile4Clean;
+        }
+
+        if (tileLeft != NULL && tileLeft->pixels != NULL && cleanLeft != NULL && destStartX < 320) {
+            int lx0 = destStartX;
+            int lx1 = (destEndX < 320) ? destEndX : 320;
+            uint16 *dst = tileLeft->pixels + (tileLocalY * (int)tileLeft->width) + lx0;
+            const uint16 *clean = cleanLeft + (tileLocalY * (int)tileLeft->width) + lx0;
+            const uint16 *src = srcPixels + ((uint32)srcRow * (uint32)width) + (uint32)(lx0 - x);
+            int span = lx1 - lx0;
+            memcpy(dst, clean, (size_t)span * sizeof(uint16));
+            compositeDirectOpaqueRuns(dst, src, span);
+        }
+
+        if (tileRight != NULL && tileRight->pixels != NULL && cleanRight != NULL && destEndX > 320) {
+            int rx0 = (destStartX > 320) ? destStartX : 320;
+            int rx1 = destEndX;
+            uint16 *dst = tileRight->pixels + (tileLocalY * (int)tileRight->width) + (rx0 - 320);
+            const uint16 *clean = cleanRight + (tileLocalY * (int)tileRight->width) + (rx0 - 320);
+            const uint16 *src = srcPixels + ((uint32)srcRow * (uint32)width) + (uint32)(rx0 - x);
+            int span = rx1 - rx0;
+            memcpy(dst, clean, (size_t)span * sizeof(uint16));
+            compositeDirectOpaqueRuns(dst, src, span);
+        }
+    }
+}
+
 static void grRestoreTileRect(PS1Surface *dstTile,
                               const uint16 *srcClean,
                               int tileScreenX,

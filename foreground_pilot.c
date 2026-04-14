@@ -363,6 +363,18 @@ static void fgBlit16ToBackgroundRect(uint16 dstX, uint16 dstY,
     grCompositeDirect16ToBackground(srcPixels, width, height, (sint16)dstX, (sint16)dstY);
 }
 
+static int fgEntriesShareBounds(const struct TFgPilotEntry *a,
+                                const struct TFgPilotEntry *b)
+{
+    if (a == NULL || b == NULL)
+        return 0;
+
+    return a->x == b->x &&
+           a->y == b->y &&
+           a->width == b->width &&
+           a->height == b->height;
+}
+
 static void fgPresentCurrentBackground(uint16 holdFrames)
 {
     uint16 i;
@@ -1016,7 +1028,12 @@ static void fgPlayFishing1(void)
 
         {
             uint32 tickStart = fgReadTickCounter();
-            if (prevEntry != NULL) {
+            if (prevEntry != NULL && frameData != NULL &&
+                fgEntriesShareBounds(prevEntry, entry)) {
+                grRestoreAndCompositeDirect16BackgroundRectForFrame(entry->x, entry->y,
+                                                                    entry->width, entry->height,
+                                                                    (const uint16 *)frameData);
+            } else if (prevEntry != NULL) {
                 grRestoreBackgroundRectForFrame(prevEntry->x, prevEntry->y,
                                                 prevEntry->width, prevEntry->height);
             } else {
@@ -1025,7 +1042,8 @@ static void fgPlayFishing1(void)
             timing.restoreTicks += fgElapsedTicks(tickStart);
         }
 
-        if (frameData != NULL) {
+        if (frameData != NULL &&
+            !(prevEntry != NULL && fgEntriesShareBounds(prevEntry, entry))) {
             uint32 tickStart = fgReadTickCounter();
             fgBlit16ToBackgroundRect(entry->x, entry->y, entry->width, entry->height,
                                      (const uint16 *)frameData);

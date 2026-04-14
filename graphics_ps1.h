@@ -190,6 +190,8 @@ void grFreeCleanBgTiles(void);
 void grEnsureCleanBgTiles(void);
 void grRestoreBgTiles(void);
 void grRestoreBackgroundRectForFrame(int x, int y, int width, int height);
+void grRestoreAndCompositeDirect16BackgroundRectForFrame(int x, int y, int width, int height,
+                                                         const uint16 *srcPixels);
 extern struct TTtmThread *grCurrentThread;
 void grClearScreen(PS1Surface *sfc);
 

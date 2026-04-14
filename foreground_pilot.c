@@ -201,6 +201,13 @@ static const char *fgDirectPackPathForScene(const char *sceneName)
     return NULL;
 }
 
+static const char *fgRawFramePathForScene(const char *sceneName)
+{
+    if (fgSceneEquals(sceneName, "fishing1"))
+        return "\\FG\\FISH24.RAW;1";
+    return NULL;
+}
+
 static int fgHeaderUsesDeltaBlack(const struct TFgPilotHeader *header)
 {
     return (header != NULL && (header->reserved0 & kFgPilotHeaderFlagDeltaBlack) != 0) ? 1 : 0;
@@ -1218,7 +1225,10 @@ static void fgPlayFishing1Progressive240(void)
 
 static void fgPlayFishing1Raw(void)
 {
-    fgShowRawFrame("\\FG\\FISH24.RAW;1", kFgPilotProbeHoldFrames);
+    const char *path = fgRawFramePathForScene("fishing1");
+    if (path == NULL)
+        return;
+    fgShowRawFrame(path, kFgPilotProbeHoldFrames);
 }
 
 static void fgPlayTitleCopy(void)

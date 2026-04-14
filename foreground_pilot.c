@@ -806,8 +806,9 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         return 1;
     }
 
-    if (fgSceneEquals(sceneName, "fishing1")) {
+    {
         const char *path = fgOverlayPackPathForScene(sceneName);
+        if (path != NULL) {
         if (!fgLoadHeader(path, &gFgRuntime.header))
             return 0;
         if (!fgLoadEntryTable(path, &gFgRuntime.header, &gFgRuntime.entryTable)) {
@@ -827,6 +828,7 @@ int foregroundPilotRuntimeStart(const char *sceneName)
         gFgStartedEver = 1;
         fgTelemetryUpdate();
         return 1;
+        }
     }
 
     return 0;

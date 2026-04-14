@@ -62,6 +62,7 @@ struct TFgPilotRuntime {
 static char gForegroundPilotScene[16] = "";
 static uint8 gForegroundPilotRequestedMode = 0;
 static const uint16 kFgPilotProbeHoldFrames = 1800;
+static const uint16 kFgPilotHeaderFlagDeltaBlack = 0x0001;
 static struct TFgPilotRuntime gFgRuntime = {0};
 static uint8 gFgConfiguredEver = 0;
 static uint8 gFgSetClearedEver = 0;
@@ -87,6 +88,21 @@ enum {
 };
 
 static int fgSceneEquals(const char *a, const char *b);
+
+static const char *fgFishing1OverlayPackPath(void)
+{
+    return "FG\\FISHING1.FG1";
+}
+
+static const char *fgFishing1DirectPackPath(void)
+{
+    return "FG\\FISHING1D.FG1";
+}
+
+static int fgHeaderUsesDeltaBlack(const struct TFgPilotHeader *header)
+{
+    return (header != NULL && (header->reserved0 & kFgPilotHeaderFlagDeltaBlack) != 0) ? 1 : 0;
+}
 
 static uint8 fgSceneModeForName(const char *sceneName)
 {
@@ -310,6 +326,24 @@ static void fgInitDisplayDirect(void)
     SetDispMask(1);
 }
 
+static void fgInitDisplayDirect240p(void)
+{
+    DISPENV disp;
+    DRAWENV draw;
+
+    ResetGraph(0);
+    SetVideoMode(MODE_NTSC);
+
+    SetDefDispEnv(&disp, 0, 0, 640, 240);
+    SetDefDrawEnv(&draw, 0, 0, 640, 240);
+    disp.isinter = 0;
+    draw.isbg = 0;
+
+    PutDispEnv(&disp);
+    PutDrawEnv(&draw);
+    SetDispMask(1);
+}
+
 static void fgShowRawFrame(const char *cdPath, uint16 holdFrames)
 {
     uint32 rawSize = 0;
@@ -336,12 +370,15 @@ static void fgShowRawFrame(const char *cdPath, uint16 holdFrames)
     fgPresentCurrentBackground(holdFrames);
 }
 
-static void fgClearScreenDirect(void)
+static void fgClearRectDirect(uint16 x, uint16 y, uint16 width, uint16 height)
 {
     static uint16 *blackStrip = NULL;
     const int stripHeight = 60;
     RECT rect;
-    int y;
+    uint16 remainingHeight;
+    uint16 clearWidth;
+    uint16 clearHeight;
+    uint16 clearY;
 
     if (blackStrip == NULL) {
         blackStrip = (uint16 *)calloc((size_t)640 * (size_t)stripHeight, sizeof(uint16));
@@ -349,11 +386,36 @@ static void fgClearScreenDirect(void)
             return;
     }
 
-    for (y = 0; y < 480; y += stripHeight) {
-        setRECT(&rect, 0, y, 640, stripHeight);
+    if (x >= 640 || y >= 480 || width == 0 || height == 0)
+        return;
+
+    clearWidth = width;
+    clearHeight = height;
+    clearY = y;
+
+    if (x + clearWidth > 640)
+        clearWidth = (uint16)(640 - x);
+    if (clearY + clearHeight > 480)
+        clearHeight = (uint16)(480 - clearY);
+    if (clearWidth == 0 || clearHeight == 0)
+        return;
+
+    remainingHeight = clearHeight;
+    while (remainingHeight > 0) {
+        uint16 chunkHeight = remainingHeight;
+        if (chunkHeight > (uint16)stripHeight)
+            chunkHeight = (uint16)stripHeight;
+
+        setRECT(&rect, x, clearY, clearWidth, chunkHeight);
         LoadImage(&rect, (uint32 *)blackStrip);
+        clearY = (uint16)(clearY + chunkHeight);
+        remainingHeight = (uint16)(remainingHeight - chunkHeight);
     }
-    DrawSync(0);
+}
+
+static void fgClearScreenDirect(void)
+{
+    fgClearRectDirect(0, 0, 640, 480);
 }
 
 static void fgUploadDirect(uint16 x, uint16 y, uint16 width, uint16 height, const uint8 *frameData)
@@ -374,26 +436,117 @@ static void fgUploadDirect(uint16 x, uint16 y, uint16 width, uint16 height, cons
 
     setRECT(&rect, x, y, width, height);
     LoadImage(&rect, (uint32 *)frameData);
-    DrawSync(0);
 }
 
-static void fgDrawEntry(const struct TFgPilotEntry *entry, uint8 *frameData)
+static void fgUploadDirectHalfY(uint16 x, uint16 y, uint16 width, uint16 height, const uint8 *frameData)
 {
-    fgClearScreenDirect();
+    static uint16 *scaledBuffer = NULL;
+    static uint32 scaledCapacityPixels = 0;
+    const uint16 *srcPixels = (const uint16 *)frameData;
+    uint16 scaledHeight;
+    uint32 requiredPixels;
+    uint32 dstIndex = 0;
+    RECT rect;
+    uint16 srcY;
 
-    if (entry != NULL)
-        fgUploadDirect(entry->x, entry->y, entry->width, entry->height, frameData);
+    if (frameData == NULL || width == 0 || height == 0)
+        return;
 
+    if (x >= 640 || y >= 480)
+        return;
+    if (x + width > 640)
+        width = (uint16)(640 - x);
+    if (y + height > 480)
+        height = (uint16)(480 - y);
+    if (width == 0 || height == 0)
+        return;
+
+    scaledHeight = (uint16)((height + 1u) / 2u);
+    if (((uint16)(y / 2u)) + scaledHeight > 240)
+        scaledHeight = (uint16)(240 - (y / 2u));
+    if (scaledHeight == 0)
+        return;
+
+    requiredPixels = (uint32)width * (uint32)scaledHeight;
+    if (requiredPixels > scaledCapacityPixels) {
+        uint16 *newBuffer = (uint16 *)realloc(scaledBuffer, requiredPixels * sizeof(uint16));
+        if (newBuffer == NULL)
+            return;
+        scaledBuffer = newBuffer;
+        scaledCapacityPixels = requiredPixels;
+    }
+
+    for (srcY = 0; srcY < height && dstIndex < requiredPixels; srcY = (uint16)(srcY + 2u)) {
+        memcpy(&scaledBuffer[dstIndex],
+               &srcPixels[(uint32)srcY * (uint32)width],
+               (size_t)width * sizeof(uint16));
+        dstIndex += width;
+    }
+
+    setRECT(&rect, x, (uint16)(y / 2u), width, scaledHeight);
+    LoadImage(&rect, (uint32 *)scaledBuffer);
+}
+
+static void fgWaitPresentedFrame(void)
+{
     VSync(0);
     eventsWaitTick(grUpdateDelay);
 }
 
-static void fgHoldEntry(const struct TFgPilotEntry *entry, uint8 *frameData, uint16 frames)
+static void fgDrawEntry(const struct TFgPilotEntry *entry, uint8 *frameData,
+                        const struct TFgPilotEntry *prevEntry, int clearPrev)
+{
+    if (clearPrev && prevEntry != NULL)
+        fgClearRectDirect(prevEntry->x, prevEntry->y, prevEntry->width, prevEntry->height);
+
+    if (entry != NULL)
+        fgUploadDirect(entry->x, entry->y, entry->width, entry->height, frameData);
+
+    DrawSync(0);
+    fgWaitPresentedFrame();
+}
+
+static void fgHoldEntry(const struct TFgPilotEntry *entry, uint8 *frameData, uint16 frames,
+                        const struct TFgPilotEntry *prevEntry, int clearPrev)
 {
     uint16 i;
 
-    for (i = 0; i < frames; i++)
-        fgDrawEntry(entry, frameData);
+    if (frames == 0)
+        return;
+
+    fgDrawEntry(entry, frameData, prevEntry, clearPrev);
+    for (i = 1; i < frames; i++)
+        fgWaitPresentedFrame();
+}
+
+static void fgDrawEntryHalfY(const struct TFgPilotEntry *entry, uint8 *frameData,
+                             const struct TFgPilotEntry *prevEntry, int clearPrev)
+{
+    if (clearPrev && prevEntry != NULL) {
+        fgClearRectDirect(prevEntry->x,
+                          (uint16)(prevEntry->y / 2u),
+                          prevEntry->width,
+                          (uint16)((prevEntry->height + 1u) / 2u));
+    }
+
+    if (entry != NULL)
+        fgUploadDirectHalfY(entry->x, entry->y, entry->width, entry->height, frameData);
+
+    DrawSync(0);
+    fgWaitPresentedFrame();
+}
+
+static void fgHoldEntryHalfY(const struct TFgPilotEntry *entry, uint8 *frameData, uint16 frames,
+                             const struct TFgPilotEntry *prevEntry, int clearPrev)
+{
+    uint16 i;
+
+    if (frames == 0)
+        return;
+
+    fgDrawEntryHalfY(entry, frameData, prevEntry, clearPrev);
+    for (i = 1; i < frames; i++)
+        fgWaitPresentedFrame();
 }
 
 static void fgPlayTestCard(void)
@@ -440,7 +593,7 @@ static void fgRuntimeReset(void)
 
 static int fgRuntimeLoadFishingFrame(uint16 frameIndex)
 {
-    const char *path = "FG\\FISHING1.FG1";
+    const char *path = fgFishing1OverlayPackPath();
 
     if (!fgLoadEntry(path, &gFgRuntime.header, frameIndex, &gFgRuntime.currentEntry))
         return 0;
@@ -481,12 +634,12 @@ int foregroundPilotRuntimeStart(const char *sceneName)
     }
 
     if (fgSceneEquals(sceneName, "fishing1")) {
-        const char *path = "FG\\FISHING1.FG1";
+        const char *path = fgFishing1OverlayPackPath();
         if (!fgLoadHeader(path, &gFgRuntime.header))
             return 0;
         gFgRuntime.active = 1;
         gFgRuntime.mode = FG_RUNTIME_FISHING1;
-        gFgRuntime.displayVBlanks = gFgRuntime.header.displayVBlanks;
+        gFgRuntime.displayVBlanks = 1;
         gFgRuntime.holdFrames = 150;
         if (!fgRuntimeLoadFishingFrame(0)) {
             fgRuntimeReset();
@@ -555,6 +708,12 @@ void foregroundPilotRuntimeAdvance(void)
     }
 
     if (gFgRuntime.mode == FG_RUNTIME_FISHING1) {
+        uint16 frameHoldVBlanks = gFgRuntime.currentEntry.reserved0;
+        if (frameHoldVBlanks == 0)
+            frameHoldVBlanks = gFgRuntime.header.displayVBlanks;
+        if (frameHoldVBlanks == 0)
+            frameHoldVBlanks = 1;
+
         if (gFgRuntime.frameIndex + 1 >= gFgRuntime.header.frameCount) {
             if (gFgRuntime.holdFrames > 0)
                 gFgRuntime.holdFrames--;
@@ -565,7 +724,8 @@ void foregroundPilotRuntimeAdvance(void)
         }
 
         gFgRuntime.frameVBlank++;
-        if (gFgRuntime.frameVBlank < gFgRuntime.displayVBlanks) {
+        if (gFgRuntime.frameVBlank < frameHoldVBlanks) {
+            gFgRuntime.displayVBlanks = frameHoldVBlanks;
             fgTelemetryUpdate();
             return;
         }
@@ -574,6 +734,10 @@ void foregroundPilotRuntimeAdvance(void)
         gFgRuntime.frameIndex++;
         if (!fgRuntimeLoadFishingFrame(gFgRuntime.frameIndex))
             gFgRuntime.active = 0;
+        else
+            gFgRuntime.displayVBlanks = (gFgRuntime.currentEntry.reserved0 != 0)
+                ? gFgRuntime.currentEntry.reserved0
+                : ((gFgRuntime.header.displayVBlanks != 0) ? gFgRuntime.header.displayVBlanks : 1);
         fgTelemetryUpdate();
     }
 }
@@ -652,7 +816,7 @@ void foregroundPilotRuntimeEnd(void)
 
 static void fgPlayFishing1(void)
 {
-    const char *path = "FG\\FISHING1.FG1";
+    const char *path = fgFishing1OverlayPackPath();
     struct TFgPilotHeader header;
     struct TFgPilotEntry lastEntry;
     uint8 *lastFrameData = NULL;
@@ -669,6 +833,7 @@ static void fgPlayFishing1(void)
     for (uint16 frameIndex = 0; frameIndex < header.frameCount; frameIndex++) {
         struct TFgPilotEntry entry;
         uint8 *frameData;
+        uint16 holdVBlanks;
 
         if (!fgLoadEntry(path, &header, frameIndex, &entry)) {
             printf("FG pilot: failed to load entry %u\n", (unsigned int)frameIndex);
@@ -683,18 +848,20 @@ static void fgPlayFishing1(void)
                 break;
             }
         }
+
+        holdVBlanks = entry.reserved0;
+        if (holdVBlanks == 0)
+            holdVBlanks = header.displayVBlanks;
+        if (holdVBlanks == 0)
+            holdVBlanks = 1;
+
         grBeginFrame();
         grRestoreBgTiles();
-        if (frameData != NULL)
+        if (frameData != NULL) {
             fgBlit16ToBackgroundRect(entry.x, entry.y, entry.width, entry.height,
                                      (const uint16 *)frameData);
-        fgPresentCurrentBackground(1);
-
-        {
-            uint16 vblanks = header.displayVBlanks;
-            if (vblanks > 1)
-                fgPresentCurrentBackground((uint16)(vblanks - 1));
         }
+        fgPresentCurrentBackground(holdVBlanks);
 
         if (lastFrameData != NULL) {
             free(lastFrameData);
@@ -715,6 +882,75 @@ static void fgPlayFishing1(void)
         fgPresentCurrentBackground(150);
     } else {
         fgPresentCurrentBackground(150);
+    }
+
+    if (lastFrameData != NULL)
+        free(lastFrameData);
+}
+
+static void fgPlayFishing1Progressive240(void)
+{
+    const char *path = fgFishing1OverlayPackPath();
+    struct TFgPilotHeader header;
+    struct TFgPilotEntry lastEntry;
+    struct TFgPilotEntry prevEntry;
+    uint8 *lastFrameData = NULL;
+    int haveLastEntry = 0;
+    int havePrevEntry = 0;
+    if (!fgLoadHeader(path, &header)) {
+        printf("FG pilot: failed to load header %s\n", path);
+        return;
+    }
+
+    fgInitDisplayDirect240p();
+    fgClearRectDirect(0, 0, 640, 240);
+    fgHoldEntryHalfY(NULL, NULL, 15, NULL, 0);
+
+    for (uint16 frameIndex = 0; frameIndex < header.frameCount; frameIndex++) {
+        struct TFgPilotEntry entry;
+        uint8 *frameData;
+        uint16 holdVBlanks;
+
+        if (!fgLoadEntry(path, &header, frameIndex, &entry)) {
+            printf("FG pilot: failed to load entry %u\n", (unsigned int)frameIndex);
+            break;
+        }
+
+        frameData = NULL;
+        if (entry.dataSize > 0 && entry.width > 0 && entry.height > 0) {
+            frameData = ps1_streamRead(path, entry.dataOffset, entry.dataSize);
+            if (!frameData) {
+                printf("FG pilot: failed to stream frame %u\n", (unsigned int)frameIndex);
+                break;
+            }
+        }
+
+        holdVBlanks = entry.reserved0;
+        if (holdVBlanks == 0)
+            holdVBlanks = header.displayVBlanks;
+        if (holdVBlanks == 0)
+            holdVBlanks = 1;
+
+        fgHoldEntryHalfY(&entry, frameData, holdVBlanks,
+                         havePrevEntry ? &prevEntry : NULL, 1);
+
+        if (lastFrameData != NULL) {
+            free(lastFrameData);
+            lastFrameData = NULL;
+        }
+        if (frameData != NULL) {
+            lastFrameData = frameData;
+            lastEntry = entry;
+            haveLastEntry = 1;
+        }
+        prevEntry = entry;
+        havePrevEntry = 1;
+    }
+
+    if (haveLastEntry) {
+        fgHoldEntryHalfY(&lastEntry, lastFrameData, 150, &lastEntry, 0);
+    } else {
+        fgHoldEntryHalfY(NULL, NULL, 150, NULL, 0);
     }
 
     if (lastFrameData != NULL)
@@ -859,6 +1095,11 @@ void foregroundPilotPlay(void)
 
     if (fgSceneEquals(gForegroundPilotScene, "fishing1")) {
         fgPlayFishing1();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "fishing1p")) {
+        fgPlayFishing1Progressive240();
         return;
     }
 

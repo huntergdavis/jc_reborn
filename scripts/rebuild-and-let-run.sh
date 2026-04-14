@@ -85,35 +85,19 @@ sleep 1
 echo "=== Launching DuckStation (will keep running) ==="
 
 SCREENSHOT_DIR="$HOME/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots"
-DUCK_SETTINGS="$HOME/.var/app/org.duckstation.DuckStation/config/duckstation/settings.ini"
 CUE_FILE="$PWD/jcreborn.cue"
 CAPTURE_INTERVAL=${PS1_CAPTURE_INTERVAL:-5}
 INITIAL_CAPTURE_WAIT=${PS1_INITIAL_CAPTURE_WAIT:-35}
 CAPTURE_COUNT=${PS1_CAPTURE_COUNT:-4}
-DUCK_SETTINGS_BACKUP=""
 
 mkdir -p "$SCREENSHOT_DIR"
 
 prepare_duckstation_test_settings() {
-    if [ ! -f "$DUCK_SETTINGS" ]; then
-        return
-    fi
-
-    DUCK_SETTINGS_BACKUP="/tmp/duckstation-settings-$$.ini"
-    cp "$DUCK_SETTINGS" "$DUCK_SETTINGS_BACKUP"
-
-    if grep -q '^StartFullscreen = ' "$DUCK_SETTINGS"; then
-        sed -i 's/^StartFullscreen = .*/StartFullscreen = true/' "$DUCK_SETTINGS"
-    else
-        printf '\nStartFullscreen = true\n' >> "$DUCK_SETTINGS"
-    fi
+    :
 }
 
 restore_duckstation_test_settings() {
-    if [ -n "$DUCK_SETTINGS_BACKUP" ] && [ -f "$DUCK_SETTINGS_BACKUP" ]; then
-        cp "$DUCK_SETTINGS_BACKUP" "$DUCK_SETTINGS"
-        rm -f "$DUCK_SETTINGS_BACKUP"
-    fi
+    :
 }
 
 take_duckstation_screenshot() {
@@ -171,12 +155,6 @@ sleep "$INITIAL_CAPTURE_WAIT"
 if kill -0 "$DUCK_PID" 2>/dev/null; then
     if take_duckstation_screenshot SCREENSHOT_FILE; then
         echo "Screenshot 1/${CAPTURE_COUNT} saved to: $SCREENSHOT_FILE"
-
-        if [ -x "$PWD/scripts/decode-ps1-bars.py" ]; then
-            echo ""
-            echo "=== Telemetry decode (capture 1/${CAPTURE_COUNT}) ==="
-            "$PWD/scripts/decode-ps1-bars.py" --include-zero "$SCREENSHOT_FILE" || true
-        fi
     fi
 fi
 
@@ -186,12 +164,6 @@ for ((capture_index=2; capture_index<=CAPTURE_COUNT; capture_index++)); do
     if kill -0 "$DUCK_PID" 2>/dev/null; then
         if take_duckstation_screenshot SCREENSHOT_FILE2; then
             echo "Screenshot ${capture_index}/${CAPTURE_COUNT} saved to: $SCREENSHOT_FILE2"
-
-            if [ -x "$PWD/scripts/decode-ps1-bars.py" ]; then
-                echo ""
-                echo "=== Telemetry decode (capture ${capture_index}/${CAPTURE_COUNT}) ==="
-                "$PWD/scripts/decode-ps1-bars.py" --include-zero "$SCREENSHOT_FILE2" || true
-            fi
         fi
     fi
 done

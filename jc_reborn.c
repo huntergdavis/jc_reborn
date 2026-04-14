@@ -1013,28 +1013,16 @@ int main(int argc, char **argv)
     }
 
     else if (argDump) {
-#ifdef PS1_BUILD
-        /* VISUAL DEBUG: ORANGE screen = argDump path */
-        showDebugScreen(255, 165, 0);
-#endif
         dumpAllResources();
     }
 
     else if (argBench) {
-#ifdef PS1_BUILD
-        /* VISUAL DEBUG: PINK screen = argBench path */
-        showDebugScreen(255, 192, 203);
-#endif
         graphicsInit();
         adsPlayBench();
         graphicsEnd();
     }
 
     else if (argTtm) {
-#ifdef PS1_BUILD
-        /* VISUAL DEBUG: YELLOW screen = Reached TTM section */
-        showDebugScreen(255, 255, 0);
-#endif
         graphicsInit();
 
 #ifdef PS1_BUILD

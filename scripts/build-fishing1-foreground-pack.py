@@ -82,6 +82,64 @@ def encode_crop(img: Image.Image, bbox, key_rgb: tuple[int, int, int]) -> bytes:
     return bytes(out)
 
 
+def encode_diff_crop(prev_img: Image.Image | None, cur_img: Image.Image,
+                     key_rgb: tuple[int, int, int]) -> tuple[dict | None, bytes]:
+    prev_pixels = prev_img.load() if prev_img is not None else None
+    cur_pixels = cur_img.load()
+    width, height = cur_img.size
+    min_x = width
+    min_y = height
+    max_x = -1
+    max_y = -1
+
+    for y in range(height):
+        for x in range(width):
+            prev_rgb = (0, 0, 0) if prev_pixels is None else prev_pixels[x, y][:3]
+            cur_rgb = cur_pixels[x, y][:3]
+            if prev_rgb == key_rgb:
+                prev_rgb = (0, 0, 0)
+            if cur_rgb == key_rgb:
+                cur_rgb = (0, 0, 0)
+            if prev_rgb != cur_rgb:
+                if x < min_x:
+                    min_x = x
+                if y < min_y:
+                    min_y = y
+                if x > max_x:
+                    max_x = x
+                if y > max_y:
+                    max_y = y
+
+    if max_x < min_x or max_y < min_y:
+        return None, b""
+
+    bbox = {
+        "x": min_x,
+        "y": min_y,
+        "width": max_x - min_x + 1,
+        "height": max_y - min_y + 1,
+    }
+    crop = cur_img.crop((
+        bbox["x"],
+        bbox["y"],
+        bbox["x"] + bbox["width"],
+        bbox["y"] + bbox["height"],
+    )).convert("RGB")
+    pixels = crop.load()
+    crop_w, crop_h = crop.size
+    out = bytearray(crop_w * crop_h * 2)
+    i = 0
+
+    for y in range(crop_h):
+        for x in range(crop_w):
+            rgb = pixels[x, y]
+            value = rgb888_to_ps1((0, 0, 0) if rgb == key_rgb else rgb)
+            out[i:i + 2] = struct.pack("<H", value)
+            i += 2
+
+    return bbox, bytes(out)
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build a PS1 foreground playback pack for FISHING 1.")
     parser.add_argument("--frames-dir", required=True)
@@ -89,6 +147,7 @@ def main():
     parser.add_argument("--output-json")
     parser.add_argument("--key-rgb", default="ff00ff", type=parse_rgb)
     parser.add_argument("--frame-step", type=int, default=1)
+    parser.add_argument("--delta-from-previous", action="store_true")
     args = parser.parse_args()
 
     frames_dir = Path(args.frames_dir)
@@ -111,18 +170,18 @@ def main():
     union_min_y = None
     union_max_x = None
     union_max_y = None
-
-    table_offset = 32
-    data_offset = table_offset + (len(selected_indices) * 20)
-    next_offset = data_offset
+    prev_rgb = None
 
     for source_index in selected_indices:
         frame_path = frame_paths[source_index]
         with Image.open(frame_path) as raw:
             rgb = raw.convert("RGB")
 
-        bbox = find_bbox(rgb, args.key_rgb)
-        payload = encode_crop(rgb, bbox, args.key_rgb)
+        if args.delta_from_previous:
+            bbox, payload = encode_diff_crop(prev_rgb, rgb, args.key_rgb)
+        else:
+            bbox = find_bbox(rgb, args.key_rgb)
+            payload = encode_crop(rgb, bbox, args.key_rgb)
 
         if bbox is not None:
             x2 = bbox["x"] + bbox["width"] - 1
@@ -136,26 +195,51 @@ def main():
             if union_max_y is None or y2 > union_max_y:
                 union_max_y = y2
 
-        rows.append({
+        row = {
             "source_frame": source_index,
             "frame": frame_path.name,
             "x": 0 if bbox is None else bbox["x"],
             "y": 0 if bbox is None else bbox["y"],
             "width": 0 if bbox is None else bbox["width"],
             "height": 0 if bbox is None else bbox["height"],
-            "data_offset": next_offset,
+            "hold_vblanks": 1,
+            "data_offset": 0,
             "data_size": len(payload),
-        })
+        }
+
+        if rows:
+            prev = rows[-1]
+            prev_payload = data_chunks[-1]
+            same_frame = (
+                prev["x"] == row["x"] and
+                prev["y"] == row["y"] and
+                prev["width"] == row["width"] and
+                prev["height"] == row["height"] and
+                prev_payload == payload
+            )
+            if same_frame:
+                prev["hold_vblanks"] += 1
+                prev_rgb = rgb
+                continue
+
+        rows.append(row)
         data_chunks.append(payload)
-        next_offset += len(payload)
+        prev_rgb = rgb
+
+    table_offset = 32
+    data_offset = table_offset + (len(rows) * 20)
+    next_offset = data_offset
+    for row, chunk in zip(rows, data_chunks):
+        row["data_offset"] = next_offset
+        next_offset += len(chunk)
 
     header = struct.pack(
         "<4sHHHHHHHHHHII",
         b"FGP1",
         1,
         len(rows),
-        args.frame_step,
-        0,
+        1,
+        1 if args.delta_from_previous else 0,
         640,
         480,
         0 if union_min_x is None else union_min_x,
@@ -179,7 +263,7 @@ def main():
                 row["y"],
                 row["width"],
                 row["height"],
-                0,
+                row["hold_vblanks"],
                 row["data_offset"],
                 row["data_size"],
             ))
@@ -190,8 +274,10 @@ def main():
         "frames_dir": str(frames_dir),
         "output_pack": str(output_pack),
         "frame_step": args.frame_step,
+        "delta_from_previous": args.delta_from_previous,
         "pack_frame_count": len(rows),
         "source_frame_count": len(frame_paths),
+        "present_frame_count": sum(row["hold_vblanks"] for row in rows),
         "union_bbox": None if union_min_x is None else {
             "x": union_min_x,
             "y": union_min_y,

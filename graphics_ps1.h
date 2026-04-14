@@ -142,6 +142,7 @@ extern int grCaptureStartFrame;
 extern int grCaptureEndFrame;
 extern int grCaptureOverlay;
 extern int grCaptureOverlayMaskOnly;
+extern int grPs1TelemetryEnabled;
 void grCaptureSetSceneLabel(const char *sceneLabel);
 
 /* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly)
@@ -213,9 +214,5 @@ int grGetCurrentFrame(void);
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
 int grCaptureSequenceComplete(void);
-
-/* PS1 telemetry overlay toggle (intended to be wired to pause menu later). */
-void grSetPs1Telemetry(int enabled);
-extern int grPs1TelemetryEnabled;
 
 #endif /* GRAPHICS_PS1_H */

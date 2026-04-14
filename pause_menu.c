@@ -74,7 +74,6 @@ static uint16 prevButtons = 0;
 enum {
     MENU_RESUME,
     MENU_SOUND,
-    MENU_TELEMETRY,
     MENU_CAPTIONS,
     MENU_SCENE_ORDER,
     MENU_DIRECT_CONTROL,
@@ -311,7 +310,6 @@ static void drawSetTime(void)
 static void drawMainMenu(void)
 {
     const char *soundLabel   = soundDisabled ? "OFF" : "ON";
-    const char *telLabel     = grPs1TelemetryEnabled ? "ON" : "OFF";
 
     FntPrint(fontID, "\n");
     drawSeparator();
@@ -325,8 +323,6 @@ static void drawMainMenu(void)
              menuCursor == MENU_RESUME ? ">" : " ");
     FntPrint(fontID, " %s Sound: %s\n",
              menuCursor == MENU_SOUND ? ">" : " ", soundLabel);
-    FntPrint(fontID, " %s Telemetry: %s\n",
-             menuCursor == MENU_TELEMETRY ? ">" : " ", telLabel);
     FntPrint(fontID, " %s Captions: (soon)\n",
              menuCursor == MENU_CAPTIONS ? ">" : " ");
     FntPrint(fontID, " %s Scene Order: (soon)\n",
@@ -369,10 +365,6 @@ static int handleMainInput(uint16 pressed)
 
         case MENU_SOUND:
             soundDisabled = !soundDisabled;
-            break;
-
-        case MENU_TELEMETRY:
-            grSetPs1Telemetry(!grPs1TelemetryEnabled);
             break;
 
         case MENU_NEXT_SCENE:

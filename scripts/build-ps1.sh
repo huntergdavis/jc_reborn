@@ -36,8 +36,11 @@ if [ "${1:-}" = "clean" ]; then
         jc-reborn-ps1-dev:amd64 \
         bash -lc '
             set -e
-            rm -rf /project/build-ps1/*
-            cmake -S /project -B /project/build-ps1
+            rm -rf /project/build-ps1
+            mkdir -p /project/build-ps1
+            cmake -G "Unix Makefiles" \
+                -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+                -S /project -B /project/build-ps1
         '
 fi
 
@@ -47,7 +50,9 @@ echo "=== Building PS1 executable ==="
     jc-reborn-ps1-dev:amd64 \
     bash -lc '
         set -e
-        cmake -S /project -B /project/build-ps1
+        cmake -G "Unix Makefiles" \
+            -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+            -S /project -B /project/build-ps1
         cd /project/build-ps1
         if ! make jcreborn; then
             echo "=== Falling back to manual PS1 link ==="

@@ -15,7 +15,15 @@ BOOTMODE_FILE="$PWD/config/ps1/BOOTMODE.TXT"
 BOOTMODE_BACKUP=""
 BOOT_OVERRIDE=""
 
-if [ "$1" = "noclean" ]; then
+prepare_duckstation_test_settings() {
+    :
+}
+
+restore_duckstation_test_settings() {
+    :
+}
+
+if [ "${1:-}" = "noclean" ]; then
     BUILD_MODE="noclean"
     shift
 else
@@ -36,17 +44,17 @@ stage_boot_override() {
         return
     fi
 
+    if [ -z "$BOOT_OVERRIDE" ]; then
+        return
+    fi
+
     BOOTMODE_BACKUP="/tmp/ps1-bootmode-$$.txt"
     cp "$BOOTMODE_FILE" "$BOOTMODE_BACKUP"
 
-    if [ -n "$BOOT_OVERRIDE" ]; then
-        printf '%s\n' "$BOOT_OVERRIDE" > "$BOOTMODE_FILE"
-        echo "=== Boot override ==="
-        echo "$BOOT_OVERRIDE"
-        echo ""
-    else
-        : > "$BOOTMODE_FILE"
-    fi
+    printf '%s\n' "$BOOT_OVERRIDE" > "$BOOTMODE_FILE"
+    echo "=== Boot override ==="
+    echo "$BOOT_OVERRIDE"
+    echo ""
 }
 
 restore_boot_override() {
@@ -91,14 +99,6 @@ INITIAL_CAPTURE_WAIT=${PS1_INITIAL_CAPTURE_WAIT:-35}
 CAPTURE_COUNT=${PS1_CAPTURE_COUNT:-4}
 
 mkdir -p "$SCREENSHOT_DIR"
-
-prepare_duckstation_test_settings() {
-    :
-}
-
-restore_duckstation_test_settings() {
-    :
-}
 
 take_duckstation_screenshot() {
     local out_var="$1"

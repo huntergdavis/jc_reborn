@@ -827,8 +827,7 @@ int main(int argc, char **argv)
     if (ps1BootDirectSceneIndex < 0 &&
         !argBench &&
         !argTtm &&
-        !argAds &&
-        !argForegroundPilot) {
+        !argAds) {
         if (storyHasBootOverridePending())
             initTitleDisplayEarly();
         else

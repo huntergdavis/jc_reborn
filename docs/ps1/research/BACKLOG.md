@@ -9,6 +9,20 @@ for the active rollout picture and [generated/README.md](/home/hunter/workspace/
 for bulk generated artifacts. This file is a work-queue reference, not the
 authoritative rollout-status snapshot.
 
+## 2026-04-16 priority update
+
+Immediate top priority is no longer generic pack bring-up by itself. It is:
+
+1. keep the current prerender pilot baseline stable
+2. restore the real ocean layer under that working foreground path
+3. restore island after ocean
+4. restore random island placement after static island
+
+Use [OCEAN_RESTORE_PLAN_2026-04-16.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/OCEAN_RESTORE_PLAN_2026-04-16.md)
+for the short-horizon step sequence and
+[CURRENT_STATUS_2026-04-16.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/CURRENT_STATUS_2026-04-16.md)
+for the compact current snapshot.
+
 ## How To Read This File
 
 - Use this when choosing the next workstream or parallelizing effort.

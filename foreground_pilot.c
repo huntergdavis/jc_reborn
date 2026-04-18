@@ -1317,6 +1317,33 @@ static void fgPlayIsleTest(void)
         grUpdateDisplay(NULL, NULL, NULL);
 }
 
+static void fgPlayOceanTest(void)
+{
+    uint16 i;
+
+    fgInitVisiblePipeline();
+    grLoadScreen("OCEAN00.SCR");
+    for (i = 0; i < kFgPilotProbeHoldFrames; i++)
+        grUpdateDisplay(NULL, NULL, NULL);
+}
+
+static void fgPlayOceanRuntimeScene(const char *sceneName)
+{
+    fgInitVisiblePipeline();
+    grLoadScreen("OCEAN00.SCR");
+    grEnsureCleanBgTiles();
+
+    if (!foregroundPilotRuntimeStart(sceneName))
+        return;
+
+    while (foregroundPilotRuntimeActive()) {
+        grBeginFrame();
+        grRestoreBgTiles();
+        grUpdateDisplay(NULL, NULL, NULL);
+        foregroundPilotRuntimeAdvance();
+    }
+}
+
 static void fgPlayAdsIntro(void)
 {
     adsInit();
@@ -1441,7 +1468,7 @@ void foregroundPilotPlay(void)
     }
 
     if (fgOverlayPackPathForScene(gForegroundPilotScene) != NULL) {
-        fgPlayOverlayPackScene(gForegroundPilotScene);
+        fgPlayOceanRuntimeScene(gForegroundPilotScene);
         return;
     }
 
@@ -1466,6 +1493,11 @@ void foregroundPilotPlay(void)
 
     if (fgSceneEquals(gForegroundPilotScene, "isletest")) {
         fgPlayIsleTest();
+        return;
+    }
+
+    if (fgSceneEquals(gForegroundPilotScene, "oceantest")) {
+        fgPlayOceanTest();
         return;
     }
 

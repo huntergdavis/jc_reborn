@@ -8,10 +8,41 @@ Reference navigation:
 
 - [CURRENT_STATUS_2026-03-21.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/CURRENT_STATUS_2026-03-21.md)
   Active rollout snapshot.
+- [CURRENT_STATUS_2026-04-16.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/CURRENT_STATUS_2026-04-16.md)
+  Current prerender pilot snapshot.
+- [OCEAN_RESTORE_PLAN_2026-04-16.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/OCEAN_RESTORE_PLAN_2026-04-16.md)
+  Active short-term ocean reintegration plan.
 - [generated/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/generated/README.md)
   Bulk generated datasets and manifests.
 - [archive/README.md](/home/hunter/workspace/jc_reborn/docs/ps1/research/archive/README.md)
   Historical snapshots only.
+
+## 2026-04-16 update
+
+Current project-level reality:
+
+- the prerender pilot is now real, not hypothetical
+- `fishing1` is visually correct, full-scene, and near-PC timing on PS1
+- the generic foreground runtime path has already been proven on a second scene
+  (`fishing2`)
+- the immediate product-facing blocker is no longer timing; it is restoring the
+  real ocean/island background under the working prerender foreground path
+
+Important new constraint:
+
+- naive background swaps inside the standalone prerender loop are not safe
+- full `adsInitIsland() + adsPlay()` routing is also not a safe substitute for
+  `fgpilot`
+
+That means the short-term execution path is:
+
+1. keep the standalone prerender player as the foreground baseline
+2. reintroduce the real ocean layer through a background-only path
+3. only after ocean is stable, restore island
+4. only after static island is stable, restore random island placement
+
+This does not replace the long-term offline-scene architecture. It sharpens the
+next milestone needed to make that architecture look like a real game again.
 
 ## Execution status
 
@@ -48,9 +79,11 @@ Key supporting artifacts:
 
 Near-term open work:
 
-- tighten heuristics into validated transition data where available
-- keep shrinking the remaining route-specific pack tails
-- keep normal boot and story-scene handoffs healthy while the live restore set
+- keep the current prerender pilot baseline stable
+- restore the real ocean layer under prerender playback without changing
+  foreground playback semantics
+- restore island only after ocean is proven stable
+- then preserve normal boot and story-scene handoffs while the live restore set
   expands
 
 ## Objective

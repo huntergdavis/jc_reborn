@@ -503,8 +503,9 @@ static void loadTitleScreenEarly(void)
 
     free(screenBuffer);
 
-    /* Show title for 3 seconds */
-    for (int i = 0; i < 180; i++) {  /* 60fps * 3 sec = 180 frames */
+    /* Show title briefly, letting later boot work make up the rest of the
+     * perceived handoff time before the first scene appears. */
+    for (int i = 0; i < 90; i++) {
         VSync(0);
     }
 
@@ -912,7 +913,6 @@ int main(int argc, char **argv)
     else
         foregroundPilotSetScene(NULL);
 
-    grGpuAlreadyInitialized = 0;
     graphicsInit();
     soundInit();
 

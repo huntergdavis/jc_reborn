@@ -503,18 +503,10 @@ static void loadTitleScreenEarly(void)
 
     free(screenBuffer);
 
-    /* Show title briefly, letting later boot work make up the rest of the
-     * perceived handoff time before the first scene appears. */
-    for (int i = 0; i < 90; i++) {
-        VSync(0);
-    }
-
     /* Reset CD state for subsequent resource loading */
     /* This ensures ps1_fopen works correctly after direct CD calls */
     cdromResetState();
 
-    /* Additional delay for CD to settle */
-    for (volatile int i = 0; i < 2000000; i++);
 }
 
 

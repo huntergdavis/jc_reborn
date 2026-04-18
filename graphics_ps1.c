@@ -111,11 +111,17 @@ static int prevDirtyMaxY[4] = {-1, -1, -1, -1};
  * palLutPsb:    low nibble = even (PSB pre-transcoded format). */
 static uint32 palLutSierra[256];
 static uint32 palLutPsb[256];
+static int grPresentDuringScreenLoad = 1;
 
 static void grDrawRectColor15(sint16 x, sint16 y, uint16 width, uint16 height, uint16 bgColor);
 static void grCaptureEmitFrameMetadataLine(void);
 static void grRestoreRectFromCleanBg(int x, int y, int width, int height);
 static void grCommitRectToCleanBg(int x, int y, int width, int height);
+
+void grSetPresentDuringScreenLoad(int enabled)
+{
+    grPresentDuringScreenLoad = enabled ? 1 : 0;
+}
 
 static inline void markTileDirty(int idx, int minY, int maxY)
 {
@@ -3455,18 +3461,20 @@ void grLoadScreen(char *strArg)
     bgTile2a = NULL;
     bgTile2b = NULL;
 
-    /* LoadImage top row directly to framebuffer
-     * Use separate RECTs - LoadImage is async and may read RECT after return */
-    RECT topRect0, topRect1;
-    if (bgTile0 && bgTile0->pixels) {
-        setRECT(&topRect0, 0, 0, bgTile0->width, bgTile0->height);
-        LoadImage(&topRect0, (uint32*)bgTile0->pixels);
+    if (grPresentDuringScreenLoad) {
+        /* LoadImage top row directly to framebuffer
+         * Use separate RECTs - LoadImage is async and may read RECT after return */
+        RECT topRect0, topRect1;
+        if (bgTile0 && bgTile0->pixels) {
+            setRECT(&topRect0, 0, 0, bgTile0->width, bgTile0->height);
+            LoadImage(&topRect0, (uint32*)bgTile0->pixels);
+        }
+        if (bgTile1 && bgTile1->pixels) {
+            setRECT(&topRect1, 320, 0, bgTile1->width, bgTile1->height);
+            LoadImage(&topRect1, (uint32*)bgTile1->pixels);
+        }
+        DrawSync(0);
     }
-    if (bgTile1 && bgTile1->pixels) {
-        setRECT(&topRect1, 320, 0, bgTile1->width, bgTile1->height);
-        LoadImage(&topRect1, (uint32*)bgTile1->pixels);
-    }
-    DrawSync(0);
 
     /* Bottom row: Handle based on image height and existing tiles
      * For partial height images (like ISLETEMP 640x350), preserve existing ocean tiles */
@@ -3524,28 +3532,26 @@ void grLoadScreen(char *strArg)
         bgTile5b = NULL;
     }
 
-    DrawSync(0);  /* Sync top row uploads */
+    if (grPresentDuringScreenLoad) {
+        /* Disable display during bottom row LoadImage to avoid tearing/corruption */
+        SetDispMask(0);
 
-    /* Disable display during bottom row LoadImage to avoid tearing/corruption */
-    SetDispMask(0);
+        /* LoadImage bottom row tiles directly to framebuffer (2x320 layout)
+         * Use separate RECTs - LoadImage is async and may read RECT after return */
+        RECT botRect3, botRect4;
 
-    /* LoadImage bottom row tiles directly to framebuffer (2x320 layout)
-     * Use separate RECTs - LoadImage is async and may read RECT after return */
-    RECT botRect3, botRect4;
+        if (bgTile3 && bgTile3->pixels) {
+            setRECT(&botRect3, 0, 240, bgTile3->width, bgTile3->height);
+            LoadImage(&botRect3, (uint32*)bgTile3->pixels);
+        }
+        if (bgTile4 && bgTile4->pixels) {
+            setRECT(&botRect4, 320, 240, bgTile4->width, bgTile4->height);
+            LoadImage(&botRect4, (uint32*)bgTile4->pixels);
+        }
 
-    if (bgTile3 && bgTile3->pixels) {
-        setRECT(&botRect3, 0, 240, bgTile3->width, bgTile3->height);
-        LoadImage(&botRect3, (uint32*)bgTile3->pixels);
+        DrawSync(0);  /* Sync bottom row uploads */
+        SetDispMask(1);
     }
-    if (bgTile4 && bgTile4->pixels) {
-        setRECT(&botRect4, 320, 240, bgTile4->width, bgTile4->height);
-        LoadImage(&botRect4, (uint32*)bgTile4->pixels);
-    }
-
-    DrawSync(0);  /* Sync bottom row uploads */
-
-    /* Re-enable display */
-    SetDispMask(1);
 
     /* Set grBackgroundSfc to first tile for compatibility with existing code */
     grBackgroundSfc = bgTile0;

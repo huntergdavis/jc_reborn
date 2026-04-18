@@ -1330,7 +1330,10 @@ static void fgPlayOceanTest(void)
 static void fgPlayOceanRuntimeScene(const char *sceneName)
 {
     fgInitVisiblePipeline();
+    grSetPresentDuringScreenLoad(0);
     grLoadScreen("OCEAN00.SCR");
+    grLoadScreen("ISLETEMP.SCR");
+    grSetPresentDuringScreenLoad(1);
     grEnsureCleanBgTiles();
 
     if (!foregroundPilotRuntimeStart(sceneName))

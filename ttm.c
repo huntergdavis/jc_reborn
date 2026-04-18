@@ -64,6 +64,7 @@ extern int fprintf(FILE *stream, const char *format, ...);
 
 int ttmDx = 0;
 int ttmDy = 0;
+static int gTtmStaticBaseBuildMode = 0;
 
 #ifdef PS1_BUILD
 static int ttmStringEquals(const char *a, const char *b)
@@ -87,6 +88,16 @@ static int ttmIsBuildingMjsandProbe(struct TTtmThread *ttmThread)
         return 0;
 
     return ttmStringEquals(ttmResource->resName, "MJSAND.TTM");
+}
+
+static int ttmBmpAllowedInStaticBase(const char *bmpName)
+{
+    if (bmpName == NULL)
+        return 0;
+    return ttmStringEquals(bmpName, "TRUNK.BMP") ||
+           ttmStringEquals(bmpName, "BACKGRND.BMP") ||
+           ttmStringEquals(bmpName, "MRAFT.BMP") ||
+           ttmStringEquals(bmpName, "HOLIDAY.BMP");
 }
 
 static int ttmPilotContainsAdsTag(const struct TPs1RestorePilot *pilot, uint16 adsTag)
@@ -654,7 +665,8 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0x0FF0:
                 debugMsg("    UPDATE");
-                continueLoop = 0;
+                if (!gTtmStaticBaseBuildMode)
+                    continueLoop = 0;
                 break;
 
             case 0x1021:
@@ -791,11 +803,23 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0xA504:
                 debugMsg("    DRAW_SPRITE %d %d %d %d", args[0], args[1], args[2], args[3]);
+#ifdef PS1_BUILD
+                if (gTtmStaticBaseBuildMode &&
+                    !ttmBmpAllowedInStaticBase((args[3] < MAX_BMP_SLOTS) ? ttmSlot->loadedBmpNames[args[3]] : NULL)) {
+                    break;
+                }
+#endif
                 grDrawSprite(ttmThread->ttmLayer, ttmThread->ttmSlot, args[0], args[1], args[2], args[3]);
                 break;
 
             case 0xA524:
                 debugMsg("    DRAW_SPRITE_FLIP %d %d %d %d", args[0], args[1], args[2], args[3]);
+#ifdef PS1_BUILD
+                if (gTtmStaticBaseBuildMode &&
+                    !ttmBmpAllowedInStaticBase((args[3] < MAX_BMP_SLOTS) ? ttmSlot->loadedBmpNames[args[3]] : NULL)) {
+                    break;
+                }
+#endif
                 grDrawSpriteFlip(ttmThread->ttmLayer, ttmThread->ttmSlot, args[0], args[1], args[2], args[3]);
                 break;
 
@@ -831,7 +855,8 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0xF01F:
                 debugMsg("    LOAD_SCREEN %s", strArg);
-                grLoadScreen(strArg);
+                if (!gTtmStaticBaseBuildMode)
+                    grLoadScreen(strArg);
                 break;
 
             case 0xF02F:
@@ -855,4 +880,9 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
     }
 
     ttmThread->ip = offset;
+}
+
+void ttmSetStaticBaseBuildMode(int enabled)
+{
+    gTtmStaticBaseBuildMode = enabled ? 1 : 0;
 }

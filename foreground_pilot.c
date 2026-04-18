@@ -12,6 +12,10 @@
 #include "events_ps1.h"
 #include "graphics_ps1.h"
 #include "cdrom_ps1.h"
+#include "island.h"
+#include "ps1_restore_pilots.h"
+#include "story.h"
+#include "ttm.h"
 
 extern uint16 ps1AdsDbgActiveThreads;
 extern uint16 ps1AdsDbgReplayCount;
@@ -50,6 +54,32 @@ struct TFgPilotEntry {
 struct TFgPilotEntryTable {
     struct TFgPilotEntry *entries;
     uint16 count;
+};
+
+struct TFgOccluderHeader {
+    char magic[4];
+    uint16 version;
+    uint16 frameCount;
+    uint16 nameCount;
+    uint16 drawCount;
+    uint32 frameTableOffset;
+    uint32 nameTableOffset;
+    uint32 drawTableOffset;
+};
+
+struct TFgOccluderFrame {
+    uint16 firstDraw;
+    uint16 drawCount;
+};
+
+struct TFgOccluderDraw {
+    uint8 nameIndex;
+    uint8 imageNo;
+    uint16 spriteNo;
+    sint16 x;
+    sint16 y;
+    uint8 flipped;
+    uint8 reserved0;
 };
 
 struct TFgPilotRuntime {
@@ -93,6 +123,14 @@ static uint8 gFgAdsMatchEver = 0;
 static uint8 gFgStartAttemptEver = 0;
 static uint8 gFgStartedEver = 0;
 static uint8 gFgComposedEver = 0;
+static struct TTtmSlot gFgOccluderSlot;
+static uint8 gFgOccluderSlotLoaded = 0;
+static struct TFgOccluderFrame *gFgOccluderFrames = NULL;
+static struct TFgOccluderDraw *gFgOccluderDraws = NULL;
+static char *gFgOccluderNames = NULL;
+static uint16 gFgOccluderFrameCount = 0;
+static uint16 gFgOccluderNameCount = 0;
+static uint16 gFgOccluderDrawCount = 0;
 
 static void fgResetTelemetryFlags(void)
 {
@@ -113,6 +151,11 @@ enum {
 static int fgSceneEquals(const char *a, const char *b);
 static int fgSceneCopyWithoutSuffix(const char *sceneName, const char *suffix,
                                     char *out, size_t outSize);
+static uint16 fgReadU16(const uint8 *p);
+static sint16 fgReadS16(const uint8 *p);
+static void fgResetBackdropOccluders(void);
+static void fgConfigureBackdropOccluders(const char *sceneName);
+static void fgComposeBackdropOccluders(uint16 sourceFrame);
 
 static uint16 fgConvertHostTicksToVBlanks(uint16 ticks)
 {
@@ -207,6 +250,29 @@ static const char *fgDirectPackPathForScene(const char *sceneName)
     return NULL;
 }
 
+static int fgOccluderPathForScene(const char *sceneName, char *outPath, size_t outSize)
+{
+    const char *overlayPath = fgOverlayPackPathForScene(sceneName);
+    const char *dot;
+    size_t prefixLen;
+
+    if (outPath == NULL || outSize == 0)
+        return 0;
+    outPath[0] = '\0';
+
+    if (overlayPath == NULL)
+        return 0;
+
+    dot = strrchr(overlayPath, '.');
+    prefixLen = dot != NULL ? (size_t)(dot - overlayPath) : strlen(overlayPath);
+    if (prefixLen + 5 > outSize)
+        return 0;
+
+    memcpy(outPath, overlayPath, prefixLen);
+    memcpy(outPath + prefixLen, ".FOC", 5);
+    return 1;
+}
+
 static const char *fgRawFramePathForScene(const char *sceneName)
 {
     if (fgSceneEquals(sceneName, "fishing1"))
@@ -229,6 +295,216 @@ static const char *fgAdsNameForScene(const char *sceneName, uint16 *adsTagOut)
         return "FISHING";
     }
     return NULL;
+}
+
+static const struct TPs1RestorePilot *fgRestorePilotForScene(const char *sceneName)
+{
+    uint16 adsTag = 0;
+    const char *adsName = fgAdsNameForScene(sceneName, &adsTag);
+    uint16 i;
+    uint16 j;
+
+    if (adsName == NULL)
+        return NULL;
+
+    for (i = 0; i < PS1_RESTORE_PILOT_COUNT; i++) {
+        const struct TPs1RestorePilot *pilot = &gPs1RestorePilots[i];
+        if (pilot->adsName == NULL || strcmp(pilot->adsName, adsName) != 0)
+            continue;
+        for (j = 0; j < pilot->adsTagCount; j++) {
+            if (pilot->adsTags[j] == adsTag)
+                return pilot;
+        }
+    }
+
+    return NULL;
+}
+
+static int fgBytesContainString(const uint8 *data, uint32 dataSize, const char *needle)
+{
+    uint32 i;
+    size_t needleLen;
+
+    if (data == NULL || needle == NULL)
+        return 0;
+
+    needleLen = strlen(needle);
+    if (needleLen == 0 || dataSize < needleLen)
+        return 0;
+
+    for (i = 0; i + (uint32)needleLen <= dataSize; i++) {
+        if (memcmp(data + i, needle, needleLen) == 0)
+            return 1;
+    }
+
+    return 0;
+}
+
+static int fgScenePreludeUsesBmp(const char *sceneName, const char *bmpName)
+{
+    const struct TPs1RestorePilot *pilot = fgRestorePilotForScene(sceneName);
+    uint16 i;
+
+    if (pilot == NULL || bmpName == NULL)
+        return 0;
+
+    for (i = 0; i < pilot->sceneTtmCount; i++) {
+        struct TTtmSlot slot;
+        int found = 0;
+
+        memset(&slot, 0, sizeof(slot));
+        ttmInitSlot(&slot);
+        ttmLoadTtm(&slot, (char *)pilot->sceneTtms[i]);
+        if (slot.data != NULL)
+            found = fgBytesContainString(slot.data, slot.dataSize, bmpName);
+        ttmResetSlot(&slot);
+
+        if (found)
+            return 1;
+    }
+
+    return 0;
+}
+
+
+static int fgTtmUsesBmpSprite(const uint8 *data, uint32 dataSize,
+                              const char *bmpName, uint16 wantedSpriteNo)
+{
+    uint32 offset = 0;
+    uint8 selectedSlot = 0;
+    char slotBmpNames[MAX_BMP_SLOTS][20];
+    uint8 slotBmpValid[MAX_BMP_SLOTS];
+
+    memset(slotBmpNames, 0, sizeof(slotBmpNames));
+    memset(slotBmpValid, 0, sizeof(slotBmpValid));
+
+    while (offset + 1 < dataSize) {
+        uint16 opcode = fgReadU16(data + offset);
+        uint8 numArgs = (uint8)(opcode & 0x000f);
+        uint16 args[10];
+        char strArg[20];
+        uint32 i;
+
+        offset += 2;
+        memset(args, 0, sizeof(args));
+        memset(strArg, 0, sizeof(strArg));
+
+        if (numArgs == 0x0f) {
+            uint32 strLen = 0;
+            while (offset < dataSize && data[offset] != 0) {
+                if (strLen + 1 < sizeof(strArg))
+                    strArg[strLen++] = (char)data[offset];
+                offset++;
+            }
+            if (offset >= dataSize)
+                break;
+            offset++;
+            if ((strLen & 1u) == 0u && offset < dataSize)
+                offset++;
+        } else {
+            if (numArgs > 10 || offset + ((uint32)numArgs * 2u) > dataSize)
+                break;
+            for (i = 0; i < numArgs; i++) {
+                args[i] = fgReadU16(data + offset);
+                offset += 2;
+            }
+        }
+
+        switch (opcode) {
+            case 0x1051:
+                selectedSlot = (args[0] < MAX_BMP_SLOTS) ? (uint8)args[0] : (MAX_BMP_SLOTS - 1);
+                break;
+
+            case 0xF02F:
+                if (selectedSlot < MAX_BMP_SLOTS) {
+                    strncpy(slotBmpNames[selectedSlot], strArg, sizeof(slotBmpNames[selectedSlot]) - 1);
+                    slotBmpNames[selectedSlot][sizeof(slotBmpNames[selectedSlot]) - 1] = '\0';
+                    slotBmpValid[selectedSlot] = 1;
+                }
+                break;
+
+            case 0xA504:
+            case 0xA524:
+                if (numArgs >= 4 &&
+                    args[3] < MAX_BMP_SLOTS &&
+                    slotBmpValid[args[3]] &&
+                    strcmp(slotBmpNames[args[3]], bmpName) == 0 &&
+                    args[2] == wantedSpriteNo) {
+                    return 1;
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    return 0;
+}
+
+
+static int fgScenePreludeUsesBmpSprite(const char *sceneName,
+                                       const char *bmpName,
+                                       uint16 wantedSpriteNo)
+{
+    const struct TPs1RestorePilot *pilot = fgRestorePilotForScene(sceneName);
+    uint16 i;
+
+    if (pilot == NULL || bmpName == NULL)
+        return 0;
+
+    for (i = 0; i < pilot->sceneTtmCount; i++) {
+        struct TTtmSlot slot;
+        int found = 0;
+
+        memset(&slot, 0, sizeof(slot));
+        ttmInitSlot(&slot);
+        ttmLoadTtm(&slot, (char *)pilot->sceneTtms[i]);
+        if (slot.data != NULL)
+            found = fgTtmUsesBmpSprite(slot.data, slot.dataSize, bmpName, wantedSpriteNo);
+        ttmResetSlot(&slot);
+
+        if (found)
+            return 1;
+    }
+
+    return 0;
+}
+
+static void fgBuildStaticScenePrelude(const char *sceneName)
+{
+    const struct TPs1RestorePilot *pilot = fgRestorePilotForScene(sceneName);
+    uint16 i;
+
+    if (pilot == NULL)
+        return;
+
+    ttmSetStaticBaseBuildMode(1);
+    for (i = 0; i < pilot->sceneTtmCount; i++) {
+        struct TTtmSlot slot;
+        struct TTtmThread thread;
+
+        memset(&slot, 0, sizeof(slot));
+        memset(&thread, 0, sizeof(thread));
+        ttmInitSlot(&slot);
+        ttmLoadTtm(&slot, (char *)pilot->sceneTtms[i]);
+        if (slot.data == NULL) {
+            ttmResetSlot(&slot);
+            continue;
+        }
+
+        thread.ttmSlot = &slot;
+        thread.ttmLayer = grBackgroundSfc;
+        thread.isRunning = 1;
+        thread.delay = 4;
+        thread.fgColor = 0x0f;
+        thread.bgColor = 0x0f;
+        grCurrentThread = &thread;
+        ttmPlay(&thread);
+        grCurrentThread = NULL;
+        ttmResetSlot(&slot);
+    }
+    ttmSetStaticBaseBuildMode(0);
 }
 
 static int fgHeaderUsesDeltaBlack(const struct TFgPilotHeader *header)
@@ -290,6 +566,11 @@ static int fgSceneCopyWithoutPrefix(const char *sceneName, const char *prefix,
 static uint16 fgReadU16(const uint8 *p)
 {
     return (uint16)((uint16)p[0] | ((uint16)p[1] << 8));
+}
+
+static sint16 fgReadS16(const uint8 *p)
+{
+    return (sint16)fgReadU16(p);
 }
 
 static uint32 fgReadU32(const uint8 *p)
@@ -829,6 +1110,22 @@ static void fgRuntimeReset(void)
     fgTelemetryUpdate();
 }
 
+static void fgResetBackdropOccluders(void)
+{
+    (void)gFgOccluderSlot;
+    (void)gFgOccluderSlotLoaded;
+}
+
+static void fgConfigureBackdropOccluders(const char *sceneName)
+{
+    (void)sceneName;
+}
+
+static void fgComposeBackdropOccluders(uint16 sourceFrame)
+{
+    (void)sourceFrame;
+}
+
 static int fgRuntimeLoadSceneFrame(uint16 frameIndex)
 {
     const char *path = fgOverlayPackPathForScene(gFgRuntime.sceneName);
@@ -943,6 +1240,7 @@ void foregroundPilotRuntimeCompose(void)
                                  gFgRuntime.currentEntry.width,
                                  gFgRuntime.currentEntry.height,
                                  (const uint16 *)gFgRuntime.currentFrameData);
+        fgComposeBackdropOccluders(gFgRuntime.currentEntry.sourceFrame);
     }
 }
 
@@ -1329,12 +1627,23 @@ static void fgPlayOceanTest(void)
 
 static void fgPlayOceanRuntimeScene(const char *sceneName)
 {
+    uint16 adsTag = 0;
+    const char *adsName = fgAdsNameForScene(sceneName, &adsTag);
+
+    fgResetBackdropOccluders();
     fgInitVisiblePipeline();
     grSetPresentDuringScreenLoad(0);
-    grLoadScreen("OCEAN00.SCR");
-    grLoadScreen("ISLETEMP.SCR");
+    if (adsName != NULL && storyPrepareSceneBaseByAds(adsName, adsTag)) {
+        adsInitIsland();
+        fgBuildStaticScenePrelude(sceneName);
+        fgConfigureBackdropOccluders(sceneName);
+        grSaveCleanBgTiles();
+    } else {
+        grLoadScreen("OCEAN00.SCR");
+        grLoadScreen("ISLETEMP.SCR");
+        grEnsureCleanBgTiles();
+    }
     grSetPresentDuringScreenLoad(1);
-    grEnsureCleanBgTiles();
 
     if (!foregroundPilotRuntimeStart(sceneName))
         return;
@@ -1345,6 +1654,8 @@ static void fgPlayOceanRuntimeScene(const char *sceneName)
         grUpdateDisplay(NULL, NULL, NULL);
         foregroundPilotRuntimeAdvance();
     }
+
+    fgResetBackdropOccluders();
 }
 
 static void fgPlayAdsIntro(void)

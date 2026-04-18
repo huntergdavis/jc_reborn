@@ -30,4 +30,5 @@ void storySetIslandOverrides(int hasPosition, int xPos, int yPos, int hasLowTide
 void storySetSceneOffsetOverride(int hasOffset, int xOffset, int yOffset);
 void storySetCapturePreludeFrame(int enabled);
 void storyPlayBootSceneDirect(int sceneIndex);
+int storyPrepareSceneBaseByAds(const char *adsName, uint16 adsTag);
 int storyHasBootOverridePending(void);

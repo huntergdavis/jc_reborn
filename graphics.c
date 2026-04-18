@@ -80,6 +80,7 @@ struct TCapturedSpriteDraw {
     uint16 imageNo;
     uint8 flipped;
     const char *bmpName;
+    SDL_Surface *srcSfc;
 };
 
 static struct TCapturedSpriteDraw grCapturedDraws[MAX_CAPTURED_DRAWS];
@@ -200,6 +201,7 @@ static void grCaptureRecordSpriteDraw(struct TTtmSlot *ttmSlot,
     draw->imageNo = imageNo;
     draw->flipped = flipped ? 1 : 0;
     draw->bmpName = ttmSlot->loadedBmpNames[imageNo];
+    draw->srcSfc = srcSfc;
 }
 
 
@@ -225,7 +227,105 @@ static void grCaptureRecordSurfaceDraw(SDL_Surface *surface,
     draw.imageNo = imageNo;
     draw.flipped = flipped ? 1 : 0;
     draw.bmpName = ttmSlot->loadedBmpNames[imageNo];
+    draw.srcSfc = srcSfc;
     grCaptureAppendLedgerDraw(surface, &draw);
+}
+
+
+static int grCaptureIsStaticBaseBmp(const char *bmpName)
+{
+    if (bmpName == NULL)
+        return 0;
+
+    return strcmp(bmpName, "TRUNK.BMP") == 0 ||
+           strcmp(bmpName, "BACKGRND.BMP") == 0 ||
+           strcmp(bmpName, "MRAFT.BMP") == 0 ||
+           strcmp(bmpName, "HOLIDAY.BMP") == 0;
+}
+
+
+static void grCaptureBlitRecordedDraw(SDL_Surface *dst,
+                                      const struct TCapturedSpriteDraw *draw)
+{
+    SDL_Rect src;
+    SDL_Rect dest;
+    int i;
+
+    if (dst == NULL || draw == NULL || draw->srcSfc == NULL)
+        return;
+
+    if (!draw->flipped) {
+        dest.x = draw->x;
+        dest.y = draw->y;
+        dest.w = 0;
+        dest.h = 0;
+        SDL_BlitSurface(draw->srcSfc, NULL, dst, &dest);
+        return;
+    }
+
+    for (i = 0; i < draw->srcSfc->w; i++) {
+        src.x = i;
+        src.y = 0;
+        src.w = 1;
+        src.h = draw->srcSfc->h;
+        dest.x = draw->x + draw->srcSfc->w - 1 - i;
+        dest.y = draw->y;
+        dest.w = 0;
+        dest.h = 0;
+        SDL_BlitSurface(draw->srcSfc, &src, dst, &dest);
+    }
+}
+
+
+static void grCaptureBlitForegroundLedger(SDL_Surface *captureSurface,
+                                          SDL_Surface *surface)
+{
+    struct TSurfaceCaptureLedger *ledger;
+    int i;
+
+    ledger = grCaptureFindLedger(surface, 0);
+    if (ledger == NULL)
+        return;
+
+    for (i = 0; i < ledger->count; i++) {
+        const struct TCapturedSpriteDraw *draw = &ledger->draws[i];
+
+        if (grCaptureIsStaticBaseBmp(draw->bmpName))
+            continue;
+
+        grCaptureBlitRecordedDraw(captureSurface, draw);
+    }
+}
+
+
+static void grCaptureMaskVisiblePixels(SDL_Surface *captureSurface,
+                                       SDL_Surface *finalSurface)
+{
+    uint32 magenta;
+    int y;
+
+    if (captureSurface == NULL || finalSurface == NULL)
+        return;
+    if (captureSurface->format->format != SDL_PIXELFORMAT_ARGB8888 ||
+        finalSurface->format->format != SDL_PIXELFORMAT_ARGB8888)
+        return;
+    if (captureSurface->w != finalSurface->w || captureSurface->h != finalSurface->h)
+        return;
+
+    magenta = SDL_MapRGB(captureSurface->format, 255, 0, 255);
+
+    for (y = 0; y < captureSurface->h; y++) {
+        uint32 *captureRow = (uint32 *)((uint8 *)captureSurface->pixels + (size_t)y * (size_t)captureSurface->pitch);
+        const uint32 *finalRow = (const uint32 *)((const uint8 *)finalSurface->pixels + (size_t)y * (size_t)finalSurface->pitch);
+        int x;
+
+        for (x = 0; x < captureSurface->w; x++) {
+            if (captureRow[x] == magenta)
+                continue;
+            if (captureRow[x] != finalRow[x])
+                captureRow[x] = magenta;
+        }
+    }
 }
 
 
@@ -625,6 +725,7 @@ static SDL_Surface *grCaptureBuildSurface(struct TTtmThread *ttmThreads,
 {
     SDL_Surface *windowSurface;
     SDL_Surface *captureSurface;
+    SDL_Surface *finalSurface;
 
     if (sdl_window == NULL) {
         fprintf(stderr, "Error: Cannot capture frame, SDL window not initialized\n");
@@ -670,21 +771,23 @@ static SDL_Surface *grCaptureBuildSurface(struct TTtmThread *ttmThreads,
     for (int i = 0; i < MAX_TTM_THREADS; i++) {
         if (!ttmThreads[i].isRunning || ttmThreads[i].ttmLayer == NULL)
             continue;
-
-        SDL_BlitSurface(ttmThreads[i].ttmLayer,
-                        NULL,
-                        captureSurface,
-                        &grScreenOrigin);
+        grCaptureBlitForegroundLedger(captureSurface, ttmThreads[i].ttmLayer);
     }
 
     if (ttmHolidayThread != NULL &&
         ttmHolidayThread->isRunning &&
         ttmHolidayThread->ttmLayer != NULL) {
-        SDL_BlitSurface(ttmHolidayThread->ttmLayer,
-                        NULL,
-                        captureSurface,
-                        &grScreenOrigin);
+        grCaptureBlitForegroundLedger(captureSurface, ttmHolidayThread->ttmLayer);
     }
+
+    finalSurface = SDL_ConvertSurfaceFormat(windowSurface, SDL_PIXELFORMAT_ARGB8888, 0);
+    if (finalSurface == NULL) {
+        fprintf(stderr, "Error: Cannot convert final frame for foreground masking: %s\n", SDL_GetError());
+        SDL_FreeSurface(captureSurface);
+        return NULL;
+    }
+    grCaptureMaskVisiblePixels(captureSurface, finalSurface);
+    SDL_FreeSurface(finalSurface);
 
     if (grCaptureOverlay)
         grCaptureEmbedOverlay(captureSurface);

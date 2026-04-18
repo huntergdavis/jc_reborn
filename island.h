@@ -37,4 +37,5 @@ void islandAnimate(struct TTtmThread *ttmThread);
 void islandRedrawWave(struct TTtmThread *ttmThread);
 void islandClearWaveCache(void);
 void islandInitHoliday(struct TTtmThread *ttmThread);
-
+void islandSetSuppressBackdropTrunk(int suppress);
+void islandSetSuppressBackdropLeafs(int suppress);

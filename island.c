@@ -42,11 +42,12 @@ extern int sprintf(char *str, const char *format, ...);
 
 
 struct TIslandState islandState = { 0, 0, 0, 0, 0, 0 };
+static int gIslandSuppressBackdropTrunk = 0;
+static int gIslandSuppressBackdropLeafs = 0;
 
 /* Track last-drawn wave sprite for replay on non-firing frames */
 static PS1Surface *lastWaveSprite = NULL;
 static sint16 lastWaveX = 0, lastWaveY = 0;
-
 
 void islandInit(struct TTtmThread *ttmThread)
 {
@@ -147,8 +148,10 @@ void islandInit(struct TTtmThread *ttmThread)
     // The island itself
 
     grDrawSprite(grBackgroundSfc, ttmSlot, 288, 279,  0, 0);      // island
-    grDrawSprite(grBackgroundSfc, ttmSlot, 442, 148, 13, 0);      // trunk
-    grDrawSprite(grBackgroundSfc, ttmSlot, 365, 122, 12, 0);      // leafs
+    if (!gIslandSuppressBackdropTrunk)
+        grDrawSprite(grBackgroundSfc, ttmSlot, 442, 148, 13, 0);  // trunk
+    if (!gIslandSuppressBackdropLeafs)
+        grDrawSprite(grBackgroundSfc, ttmSlot, 365, 122, 12, 0);  // leafs
     grDrawSprite(grBackgroundSfc, ttmSlot, 396, 279, 14, 0);      // palmtree's shadow
 
     if (islandState.lowTide) {
@@ -268,4 +271,15 @@ void islandInitHoliday(struct TTtmThread *ttmThread)
     else {
         ttmThread->isRunning = 0;
     }
+}
+
+void islandSetSuppressBackdropTrunk(int suppress)
+{
+    gIslandSuppressBackdropTrunk = suppress ? 1 : 0;
+}
+
+
+void islandSetSuppressBackdropLeafs(int suppress)
+{
+    gIslandSuppressBackdropLeafs = suppress ? 1 : 0;
 }

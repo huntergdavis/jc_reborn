@@ -113,6 +113,7 @@ static int storyIsValidHdg(int hdg)
 static void storyUpdateCurrentDay(void);
 static void storyCalculateIslandFromDateAndTime(void);
 static void storyCalculateIslandFromScene(struct TStoryScene *scene);
+static void storyPrepareSceneState(struct TStoryScene *scene);
 
 static void storyApplySceneDay(struct TStoryScene *scene)
 {
@@ -247,21 +248,7 @@ void storyPlayBootSceneDirect(int sceneIndex)
     scene = &storyScenes[sceneIndex];
 #endif
 
-    storyUpdateCurrentDay();
-    storyCalculateIslandFromDateAndTime();
-    storyApplySceneDay(scene);
-    if (scene->flags & ISLAND)
-        storyCalculateIslandFromScene(scene);
-
-    if (scene->flags & ISLAND) {
-        ttmDx = islandState.xPos + (scene->flags & LEFT_ISLAND ? 272 : 0);
-        ttmDy = islandState.yPos;
-    }
-    else {
-        ttmDx = 0;
-        ttmDy = 0;
-    }
-    storyApplyForcedSceneOffset();
+    storyPrepareSceneState(scene);
 
     adsInit();
 
@@ -279,6 +266,22 @@ void storyPlayBootSceneDirect(int sceneIndex)
         soundPlay(0);
 
     adsPlay(scene->adsName, scene->adsTagNo);
+}
+
+int storyPrepareSceneBaseByAds(const char *adsName, uint16 adsTag)
+{
+    struct TStoryScene *scene = storyFindSceneByAds(adsName, (int)adsTag);
+
+    if (scene == NULL)
+        return 0;
+
+#ifdef PS1_BUILD
+    memcpy(&storyPs1DirectSceneScratch, scene, sizeof(storyPs1DirectSceneScratch));
+    scene = &storyPs1DirectSceneScratch;
+#endif
+
+    storyPrepareSceneState(scene);
+    return 1;
 }
 
 static struct TStoryScene *storyPickScene(
@@ -336,6 +339,25 @@ static void storyUpdateCurrentDay()
 
     storyCurrentDay = config.currentDay;
     debugMsg("The day of the story is: %d", storyCurrentDay);
+}
+
+static void storyPrepareSceneState(struct TStoryScene *scene)
+{
+    storyUpdateCurrentDay();
+    storyCalculateIslandFromDateAndTime();
+    storyApplySceneDay(scene);
+    if (scene->flags & ISLAND)
+        storyCalculateIslandFromScene(scene);
+
+    if (scene->flags & ISLAND) {
+        ttmDx = islandState.xPos + (scene->flags & LEFT_ISLAND ? 272 : 0);
+        ttmDy = islandState.yPos;
+    }
+    else {
+        ttmDx = 0;
+        ttmDy = 0;
+    }
+    storyApplyForcedSceneOffset();
 }
 
 

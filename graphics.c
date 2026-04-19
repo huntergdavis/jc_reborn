@@ -35,6 +35,7 @@
 #include "graphics.h"
 #include "resource.h"
 #include "events.h"
+#include "ttm.h"
 
 
 static SDL_Window *sdl_window;
@@ -708,6 +709,8 @@ static void grCaptureWriteFrameMetadata(const char *filename,
             grCaptureCountVisibleDraws(ttmThreads, ttmHolidayThread));
     fprintf(f, "  \"update_delay_ticks\": %d,\n", grUpdateDelay);
     fprintf(f, "  \"update_delay_ms\": %d,\n", grUpdateDelay * 20);
+    fprintf(f, "  \"scene_offset_x\": %d,\n", ttmDx);
+    fprintf(f, "  \"scene_offset_y\": %d,\n", ttmDy);
     fprintf(f, "  \"overlay_enabled\": %s,\n", grCaptureOverlay ? "true" : "false");
     fprintf(f, "  \"foreground_only\": %s,\n",
             grCaptureForegroundOnly ? "true" : "false");

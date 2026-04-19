@@ -42,8 +42,8 @@ struct TFgPilotHeader {
 
 struct TFgPilotEntry {
     uint16 sourceFrame;
-    uint16 x;
-    uint16 y;
+    sint16 x;
+    sint16 y;
     uint16 width;
     uint16 height;
     uint16 reserved0;
@@ -116,6 +116,7 @@ static const uint16 kFgPilotProbeHoldFrames = 1800;
 static const uint16 kFgPilotHeaderFlagDeltaBlack = 0x0001;
 static const uint16 kFgPilotHeaderFlagHostTicks = 0x0002;
 static const uint16 kFgPilotHeaderFlagHostDeadlines = 0x0004;
+static const uint16 kFgPilotHeaderFlagSceneRelative = 0x0008;
 static struct TFgPilotRuntime gFgRuntime = {0};
 static uint8 gFgConfiguredEver = 0;
 static uint8 gFgSetClearedEver = 0;
@@ -156,6 +157,32 @@ static sint16 fgReadS16(const uint8 *p);
 static void fgResetBackdropOccluders(void);
 static void fgConfigureBackdropOccluders(const char *sceneName);
 static void fgComposeBackdropOccluders(uint16 sourceFrame);
+
+static int fgEntryDrawX(const struct TFgPilotHeader *header, const struct TFgPilotEntry *entry)
+{
+    int x;
+
+    if (entry == NULL)
+        return 0;
+
+    x = entry->x;
+    if (header != NULL && (header->reserved0 & kFgPilotHeaderFlagSceneRelative) != 0)
+        x += ttmDx;
+    return x;
+}
+
+static int fgEntryDrawY(const struct TFgPilotHeader *header, const struct TFgPilotEntry *entry)
+{
+    int y;
+
+    if (entry == NULL)
+        return 0;
+
+    y = entry->y;
+    if (header != NULL && (header->reserved0 & kFgPilotHeaderFlagSceneRelative) != 0)
+        y += ttmDy;
+    return y;
+}
 
 static uint16 fgConvertHostTicksToVBlanks(uint16 ticks)
 {
@@ -632,8 +659,8 @@ static int fgLoadEntry(const char *path, const struct TFgPilotHeader *header,
         return 0;
 
     out->sourceFrame = fgReadU16(data + 0);
-    out->x = fgReadU16(data + 2);
-    out->y = fgReadU16(data + 4);
+    out->x = fgReadS16(data + 2);
+    out->y = fgReadS16(data + 4);
     out->width = fgReadU16(data + 6);
     out->height = fgReadU16(data + 8);
     out->reserved0 = fgReadU16(data + 10);
@@ -681,8 +708,8 @@ static int fgLoadEntryTable(const char *path, const struct TFgPilotHeader *heade
         const uint8 *src = data + ((uint32)i * 20u);
         struct TFgPilotEntry *dst = &out->entries[i];
         dst->sourceFrame = fgReadU16(src + 0);
-        dst->x = fgReadU16(src + 2);
-        dst->y = fgReadU16(src + 4);
+        dst->x = fgReadS16(src + 2);
+        dst->y = fgReadS16(src + 4);
         dst->width = fgReadU16(src + 6);
         dst->height = fgReadU16(src + 8);
         dst->reserved0 = fgReadU16(src + 10);
@@ -762,7 +789,7 @@ static void fgInitBlackBackground(void)
     grSaveCleanBgTiles();
 }
 
-static void fgBlit16ToBackgroundRect(uint16 dstX, uint16 dstY,
+static void fgBlit16ToBackgroundRect(int dstX, int dstY,
                                      uint16 width, uint16 height,
                                      const uint16 *srcPixels)
 {
@@ -888,15 +915,15 @@ static void fgShowRawFrame(const char *cdPath, uint16 holdFrames)
     fgPresentCurrentBackground(holdFrames);
 }
 
-static void fgClearRectDirect(uint16 x, uint16 y, uint16 width, uint16 height)
+static void fgClearRectDirect(int x, int y, uint16 width, uint16 height)
 {
     static uint16 *blackStrip = NULL;
     const int stripHeight = 60;
     RECT rect;
     uint16 remainingHeight;
-    uint16 clearWidth;
+    int clearWidth;
     uint16 clearHeight;
-    uint16 clearY;
+    int clearY;
 
     if (blackStrip == NULL) {
         blackStrip = (uint16 *)calloc((size_t)640 * (size_t)stripHeight, sizeof(uint16));
@@ -904,6 +931,16 @@ static void fgClearRectDirect(uint16 x, uint16 y, uint16 width, uint16 height)
             return;
     }
 
+    if (width == 0 || height == 0)
+        return;
+    if (x < 0) {
+        width = (uint16)(width + x);
+        x = 0;
+    }
+    if (y < 0) {
+        height = (uint16)(height + y);
+        y = 0;
+    }
     if (x >= 640 || y >= 480 || width == 0 || height == 0)
         return;
 
@@ -912,7 +949,7 @@ static void fgClearRectDirect(uint16 x, uint16 y, uint16 width, uint16 height)
     clearY = y;
 
     if (x + clearWidth > 640)
-        clearWidth = (uint16)(640 - x);
+        clearWidth = (640 - x);
     if (clearY + clearHeight > 480)
         clearHeight = (uint16)(480 - clearY);
     if (clearWidth == 0 || clearHeight == 0)
@@ -936,24 +973,42 @@ static void fgClearScreenDirect(void)
     fgClearRectDirect(0, 0, 640, 480);
 }
 
-static void fgUploadDirect(uint16 x, uint16 y, uint16 width, uint16 height, const uint8 *frameData)
+static void fgUploadDirect(int x, int y, uint16 width, uint16 height, const uint8 *frameData)
 {
     RECT rect;
+    const uint16 *srcPixels = (const uint16 *)frameData;
+    int srcStride = width;
 
     if (frameData == NULL || width == 0 || height == 0)
         return;
 
+    if (x < 0) {
+        int trim = -x;
+        if (trim >= width)
+            return;
+        srcPixels += trim;
+        width = (uint16)(width - trim);
+        x = 0;
+    }
+    if (y < 0) {
+        int trim = -y;
+        if (trim >= height)
+            return;
+        srcPixels += (uint32)trim * (uint32)srcStride;
+        height = (uint16)(height - trim);
+        y = 0;
+    }
     if (x >= 640 || y >= 480)
         return;
-    if (x + width > 640)
+    if (x + (int)width > 640)
         width = (uint16)(640 - x);
-    if (y + height > 480)
+    if (y + (int)height > 480)
         height = (uint16)(480 - y);
     if (width == 0 || height == 0)
         return;
 
     setRECT(&rect, x, y, width, height);
-    LoadImage(&rect, (uint32 *)frameData);
+    LoadImage(&rect, (uint32 *)srcPixels);
 }
 
 static void fgUploadDirectHalfY(uint16 x, uint16 y, uint16 width, uint16 height, const uint8 *frameData)
@@ -1235,8 +1290,8 @@ void foregroundPilotRuntimeCompose(void)
     }
 
     if (gFgRuntime.mode == FG_RUNTIME_SCENE_PACK && gFgRuntime.currentFrameData != NULL) {
-        fgBlit16ToBackgroundRect(gFgRuntime.currentEntry.x,
-                                 gFgRuntime.currentEntry.y,
+        fgBlit16ToBackgroundRect(fgEntryDrawX(&gFgRuntime.header, &gFgRuntime.currentEntry),
+                                 fgEntryDrawY(&gFgRuntime.header, &gFgRuntime.currentEntry),
                                  gFgRuntime.currentEntry.width,
                                  gFgRuntime.currentEntry.height,
                                  (const uint16 *)gFgRuntime.currentFrameData);
@@ -1443,6 +1498,10 @@ static void fgPlayOverlayPackScene(const char *sceneName)
         const struct TFgPilotEntry *entry = &entryTable.entries[frameIndex];
         const uint8 *frameData;
         uint16 holdVBlanks;
+        int entryX;
+        int entryY;
+        int prevX = 0;
+        int prevY = 0;
 
         frameData = NULL;
         if (entry->dataSize > 0 && entry->width > 0 && entry->height > 0) {
@@ -1458,6 +1517,12 @@ static void fgPlayOverlayPackScene(const char *sceneName)
         }
 
         holdVBlanks = fgEntryHoldVBlanks(&header, entry, presentedVBlanks);
+        entryX = fgEntryDrawX(&header, entry);
+        entryY = fgEntryDrawY(&header, entry);
+        if (prevEntry != NULL) {
+            prevX = fgEntryDrawX(&header, prevEntry);
+            prevY = fgEntryDrawY(&header, prevEntry);
+        }
 
         {
             uint32 tickStart = fgReadTickCounter();
@@ -1469,11 +1534,11 @@ static void fgPlayOverlayPackScene(const char *sceneName)
             uint32 tickStart = fgReadTickCounter();
             if (prevEntry != NULL && frameData != NULL &&
                 fgEntriesShareBounds(prevEntry, entry)) {
-                grRestoreAndCompositeDirect16BackgroundRectForFrame(entry->x, entry->y,
+                grRestoreAndCompositeDirect16BackgroundRectForFrame(entryX, entryY,
                                                                     entry->width, entry->height,
                                                                     (const uint16 *)frameData);
             } else if (prevEntry != NULL) {
-                grRestoreBackgroundRectForFrame(prevEntry->x, prevEntry->y,
+                grRestoreBackgroundRectForFrame(prevX, prevY,
                                                 prevEntry->width, prevEntry->height);
             } else {
                 grRestoreBgTiles();
@@ -1484,7 +1549,7 @@ static void fgPlayOverlayPackScene(const char *sceneName)
         if (frameData != NULL &&
             !(prevEntry != NULL && fgEntriesShareBounds(prevEntry, entry))) {
             uint32 tickStart = fgReadTickCounter();
-            fgBlit16ToBackgroundRect(entry->x, entry->y, entry->width, entry->height,
+            fgBlit16ToBackgroundRect(entryX, entryY, entry->width, entry->height,
                                      (const uint16 *)frameData);
             timing.blitTicks += fgElapsedTicks(tickStart);
         }

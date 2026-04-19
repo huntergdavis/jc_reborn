@@ -160,6 +160,25 @@ def load_frame_delays(frame_meta_dir: Path | None) -> dict[str, int]:
     return delays
 
 
+def load_frame_offsets(frame_meta_dir: Path | None) -> dict[str, tuple[int, int]]:
+    if frame_meta_dir is None:
+        return {}
+    if not frame_meta_dir.is_dir():
+        raise SystemExit(f"frame metadata directory not found: {frame_meta_dir}")
+
+    offsets: dict[str, tuple[int, int]] = {}
+    for meta_path in sorted(frame_meta_dir.glob("frame_*.json")):
+        payload = json.loads(meta_path.read_text(encoding="utf-8"))
+        image_path = payload.get("image_path", "")
+        frame_name = Path(image_path).name if image_path else ""
+        if not frame_name:
+            frame_name = meta_path.with_suffix(".bmp").name
+        scene_offset_x = int(payload.get("scene_offset_x", 0) or 0)
+        scene_offset_y = int(payload.get("scene_offset_y", 0) or 0)
+        offsets[frame_name] = (scene_offset_x, scene_offset_y)
+    return offsets
+
+
 def main():
     parser = argparse.ArgumentParser(description="Build a PS1 foreground playback pack.")
     parser.add_argument("--frames-dir", required=True)
@@ -189,6 +208,7 @@ def main():
     rows = []
     data_chunks: list[bytes] = []
     frame_delays = load_frame_delays(Path(args.frame_meta_dir) if args.frame_meta_dir else None)
+    frame_offsets = load_frame_offsets(Path(args.frame_meta_dir) if args.frame_meta_dir else None)
     union_min_x = None
     union_min_y = None
     union_max_x = None
@@ -218,13 +238,19 @@ def main():
             if union_max_y is None or y2 > union_max_y:
                 union_max_y = y2
 
+        scene_offset_x, scene_offset_y = frame_offsets.get(frame_path.name, (0, 0))
+        local_x = 0 if bbox is None else bbox["x"] - scene_offset_x
+        local_y = 0 if bbox is None else bbox["y"] - scene_offset_y
+
         row = {
             "source_frame": source_index,
             "frame": frame_path.name,
-            "x": 0 if bbox is None else bbox["x"],
-            "y": 0 if bbox is None else bbox["y"],
+            "x": local_x,
+            "y": local_y,
             "width": 0 if bbox is None else bbox["width"],
             "height": 0 if bbox is None else bbox["height"],
+            "scene_offset_x": scene_offset_x,
+            "scene_offset_y": scene_offset_y,
             "hold_ticks": frame_delays.get(frame_path.name, 1),
             "hold_frames": 1,
             "hold_vblanks": 1,
@@ -255,6 +281,7 @@ def main():
     header_flags = 1 if args.delta_from_previous else 0
     if args.frame_meta_dir:
         header_flags |= 0x0004
+        header_flags |= 0x0008
 
     cumulative_ticks = 0
     for row in rows:
@@ -293,7 +320,7 @@ def main():
         f.write(header)
         for row in rows:
             f.write(struct.pack(
-                "<HHHHHHII",
+                "<HhhHHHII",
                 row["source_frame"],
                 row["x"],
                 row["y"],

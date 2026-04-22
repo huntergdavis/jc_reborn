@@ -1695,6 +1695,13 @@ static void fgPlayOceanRuntimeScene(const char *sceneName)
     uint16 adsTag = 0;
     const char *adsName = fgAdsNameForScene(sceneName, &adsTag);
 
+    /* Pre-load BACKGRND.BMP into the background slot NOW, before any scene
+     * setup allocates bg tiles (614 KB) or ttmSlots. At this moment the
+     * heap is freshest and the ~93 KB PSB has room to stream (which
+     * internally peaks at ~2×). ttmBackgroundSlot is a static and already
+     * zero-initialized, so this is safe to call first. */
+    adsPilotPreloadBackgrndBmp();
+
     fgResetBackdropOccluders();
     fgInitVisiblePipeline();
     grSetPresentDuringScreenLoad(0);
@@ -1706,7 +1713,12 @@ static void fgPlayOceanRuntimeScene(const char *sceneName)
     } else {
         grLoadScreen("OCEAN00.SCR");
         grLoadScreen("ISLETEMP.SCR");
-        grEnsureCleanBgTiles();
+        /* Seed initial wave positions, configure the background thread, and
+         * capture a rect-based clean backup of only the dynamic regions
+         * (wave strip + foreground pack bbox ~181 KB, vs 614 KB for a full
+         * 4-tile clean copy). BACKGRND.BMP was already pre-loaded at the
+         * top of this function when the heap was freshest. */
+        adsPilotEnableWaveBackdrop();
     }
     grSetPresentDuringScreenLoad(1);
 
@@ -1715,7 +1727,8 @@ static void fgPlayOceanRuntimeScene(const char *sceneName)
 
     while (foregroundPilotRuntimeActive()) {
         grBeginFrame();
-        grRestoreBgTiles();
+        grRestoreBgFromRects();       /* rect-based clean restore (option B) */
+        adsPilotTickBackgroundWaves();
         grUpdateDisplay(NULL, NULL, NULL);
         foregroundPilotRuntimeAdvance();
     }

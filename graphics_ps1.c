@@ -2616,6 +2616,163 @@ void grSaveCleanBgTiles(void)
     }
 }
 
+/* ---- Rect-based clean-pixel backup (option B). Alternative to full-tile
+ *      clean copies: scene declares one or more rectangles that cover its
+ *      dynamic regions; only those rects are backed up + restored. Massive
+ *      memory savings for scenes that only animate a small portion of the
+ *      screen (fishing1: wave strip + Johnny area ≈ 181 KB instead of 614
+ *      KB for all four full-size clean tiles). */
+
+#define GR_MAX_CLEAN_RECTS 8
+
+struct TGrCleanRect {
+    sint16 x, y;
+    uint16 width, height;
+    uint16 *pixels;
+};
+
+static struct TGrCleanRect gGrCleanRects[GR_MAX_CLEAN_RECTS];
+static int gGrCleanRectCount = 0;
+
+/* Copy a rectangle's pixels out of the 4 bg tiles into a flat buffer. */
+static void grCleanRectCopyOut(struct TGrCleanRect *r)
+{
+    int sy;
+    if (r->pixels == NULL || r->width == 0 || r->height == 0) return;
+    for (sy = 0; sy < (int)r->height; sy++) {
+        int destY = r->y + sy;
+        if (destY < 0 || destY >= 480) continue;
+        {
+            PS1Surface *tileLeft, *tileRight;
+            int tileLocalY;
+            if (destY < 240) { tileLocalY = destY; tileLeft = bgTile0; tileRight = bgTile1; }
+            else             { tileLocalY = destY - 240; tileLeft = bgTile3; tileRight = bgTile4; }
+            uint16 *dstRow = r->pixels + (uint32)sy * (uint32)r->width;
+            int xStart = r->x;
+            int xEnd   = r->x + (int)r->width;
+            if (xStart < 0) xStart = 0;
+            if (xEnd > 640) xEnd = 640;
+            if (tileLeft && tileLeft->pixels && xStart < 320) {
+                int lx0 = xStart;
+                int lx1 = (xEnd < 320) ? xEnd : 320;
+                uint16 *src = tileLeft->pixels + (tileLocalY * (int)tileLeft->width) + lx0;
+                memcpy(dstRow + (lx0 - r->x), src,
+                       (size_t)(lx1 - lx0) * sizeof(uint16));
+            }
+            if (tileRight && tileRight->pixels && xEnd > 320) {
+                int rx0 = (xStart > 320) ? xStart : 320;
+                int rx1 = xEnd;
+                uint16 *src = tileRight->pixels + (tileLocalY * (int)tileRight->width) + (rx0 - 320);
+                memcpy(dstRow + (rx0 - r->x), src,
+                       (size_t)(rx1 - rx0) * sizeof(uint16));
+            }
+        }
+    }
+}
+
+/* Copy a flat rectangle buffer back into the 4 bg tiles. Marks rows dirty
+ * so grDrawBackground's union-dirty upload picks them up. */
+static void grCleanRectCopyIn(const struct TGrCleanRect *r)
+{
+    int sy;
+    if (r->pixels == NULL || r->width == 0 || r->height == 0) return;
+    for (sy = 0; sy < (int)r->height; sy++) {
+        int destY = r->y + sy;
+        if (destY < 0 || destY >= 480) continue;
+        {
+            PS1Surface *tileLeft, *tileRight;
+            int tileLocalY;
+            if (destY < 240) { tileLocalY = destY; tileLeft = bgTile0; tileRight = bgTile1; }
+            else             { tileLocalY = destY - 240; tileLeft = bgTile3; tileRight = bgTile4; }
+            const uint16 *srcRow = r->pixels + (uint32)sy * (uint32)r->width;
+            int xStart = r->x;
+            int xEnd   = r->x + (int)r->width;
+            if (xStart < 0) xStart = 0;
+            if (xEnd > 640) xEnd = 640;
+            if (tileLeft && tileLeft->pixels && xStart < 320) {
+                int lx0 = xStart;
+                int lx1 = (xEnd < 320) ? xEnd : 320;
+                uint16 *dst = tileLeft->pixels + (tileLocalY * (int)tileLeft->width) + lx0;
+                memcpy(dst, srcRow + (lx0 - r->x),
+                       (size_t)(lx1 - lx0) * sizeof(uint16));
+            }
+            if (tileRight && tileRight->pixels && xEnd > 320) {
+                int rx0 = (xStart > 320) ? xStart : 320;
+                int rx1 = xEnd;
+                uint16 *dst = tileRight->pixels + (tileLocalY * (int)tileRight->width) + (rx0 - 320);
+                memcpy(dst, srcRow + (rx0 - r->x),
+                       (size_t)(rx1 - rx0) * sizeof(uint16));
+            }
+        }
+    }
+    grMarkRectDirty(r->x, r->y, r->x + (int)r->width, r->y + (int)r->height);
+}
+
+void grFreeCleanBgRects(void)
+{
+    int i;
+    for (i = 0; i < gGrCleanRectCount; i++) {
+        if (gGrCleanRects[i].pixels) {
+            free(gGrCleanRects[i].pixels);
+            gGrCleanRects[i].pixels = NULL;
+        }
+    }
+    gGrCleanRectCount = 0;
+}
+
+/* Set up rect-based clean backup. Drops any existing rects first (also any
+ * full-tile clean copies from grSaveCleanBgTiles, via the caller's intent).
+ * Returns count of rects successfully allocated. */
+int grSaveCleanBgRects(const sint16 *xArr, const sint16 *yArr,
+                       const uint16 *wArr, const uint16 *hArr, int n)
+{
+    int i;
+    grFreeCleanBgRects();
+    grFreeCleanBgTiles();  /* mutually exclusive: rect-mode replaces tile-mode */
+
+    if (n > GR_MAX_CLEAN_RECTS) n = GR_MAX_CLEAN_RECTS;
+    for (i = 0; i < n; i++) {
+        size_t size = (size_t)wArr[i] * (size_t)hArr[i] * sizeof(uint16);
+        gGrCleanRects[i].x = xArr[i];
+        gGrCleanRects[i].y = yArr[i];
+        gGrCleanRects[i].width = wArr[i];
+        gGrCleanRects[i].height = hArr[i];
+        gGrCleanRects[i].pixels = (size > 0) ? (uint16 *)malloc(size) : NULL;
+        if (gGrCleanRects[i].pixels != NULL) {
+            grCleanRectCopyOut(&gGrCleanRects[i]);
+            gGrCleanRectCount++;
+        } else {
+            /* alloc failed — skip this rect but keep going */
+            gGrCleanRects[i].width = 0;
+            gGrCleanRects[i].height = 0;
+        }
+    }
+
+    /* Force a full first-frame upload. */
+    grMarkAllTilesDirty();
+    for (int t = 0; t < 4; t++) {
+        prevDirtyMinY[t] = 0;
+        prevDirtyMaxY[t] = 239;
+    }
+    return gGrCleanRectCount;
+}
+
+/* Per-frame: restore each clean rect from its saved buffer into bg tiles.
+ * Caller uses this INSTEAD of grRestoreBgTiles when in rect-mode. */
+void grRestoreBgFromRects(void)
+{
+    int i;
+    /* Clear currDirty at start of new frame, mirroring grRestoreBgTiles. */
+    for (int t = 0; t < 4; t++) {
+        currDirtyMinY[t] = -1;
+        currDirtyMaxY[t] = -1;
+    }
+    for (i = 0; i < gGrCleanRectCount; i++) {
+        if (gGrCleanRects[i].pixels)
+            grCleanRectCopyIn(&gGrCleanRects[i]);
+    }
+}
+
 /*
  * Free clean tile copies to reclaim memory (~600KB).
  * Called when switching to non-island (black) backgrounds where clean copies aren't needed.

@@ -32,6 +32,15 @@ void adsPlaySingleTtm(char *ttmName, uint16 startTag);
 void adsPlayBench();  // TODO
 void adsCaptureCurrentFrame(void);
 
+/* Minimal wave-backdrop enable for the fgpilot scene path (PS1-only).
+ * Call adsPilotPreloadBackgrndBmp BEFORE any other scene setup so the
+ * ~93 KB PSB load hits a fresh heap; call adsPilotEnableWaveBackdrop AFTER
+ * the scene SCRs are loaded to configure the thread + seed wave positions;
+ * call adsPilotTickBackgroundWaves once per frame in the main loop. */
+void adsPilotPreloadBackgrndBmp(void);
+void adsPilotEnableWaveBackdrop(void);
+void adsPilotTickBackgroundWaves(void);
+
 /* Set by adsPlay()/adsPlayWalk(): 1 if at least one scene thread launched. */
 extern int ps1AdsLastPlayLaunched;
 extern char ps1AdsCurrentName[16];

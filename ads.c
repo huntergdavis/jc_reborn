@@ -2281,3 +2281,89 @@ void adsCaptureCurrentFrame(void)
 {
     grUpdateDisplay(&ttmBackgroundThread, ttmThreads, &ttmHolidayThread);
 }
+
+#ifdef PS1_BUILD
+
+/* Minimal wave-backdrop enable for the fgpilot path. Loads BACKGRND.BMP into
+ * the background slot, sets up the background thread, draws the four initial
+ * shore waves, and re-saves the clean bg tiles so the waves persist across
+ * the grRestoreBgTiles that runs every frame. Must be called after the
+ * static scene base (ocean + island) is in place. */
+/* Pre-load BACKGRND.BMP while the heap is freshest — call BEFORE
+ * fgInitVisiblePipeline so the ~93 KB PSB stream has room.  Safe to call
+ * early because ttmBackgroundSlot is a file-scope static and already
+ * zero-initialized. */
+void adsPilotPreloadBackgrndBmp(void)
+{
+    ttmInitSlot(&ttmBackgroundSlot);
+    grLoadBmp(&ttmBackgroundSlot, 0, "BACKGRND.BMP");
+}
+
+void adsPilotEnableWaveBackdrop(void)
+{
+    /* Called AFTER the static scene base is in place (grLoadScreen done).
+     * By this point adsPilotPreloadBackgrndBmp should have already populated
+     * ttmBackgroundSlot. We only need to (re)configure the thread and seed
+     * the wave positions into the tiles before grSaveCleanBgTiles. */
+    ttmBackgroundThread.ttmSlot   = &ttmBackgroundSlot;
+    ttmBackgroundThread.ttmLayer  = grBackgroundSfc;
+    ttmBackgroundThread.isRunning = 3;
+    ttmBackgroundThread.delay     = 2;  /* new wave every 2 frames — each of 3 positions updates every 6 frames */
+    ttmBackgroundThread.timer     = 0;
+
+    /* Safety no-hang: if the BACKGRND load didn't populate the slot, skip the
+     * per-position seed (islandAnimate would otherwise div-by-zero). */
+    if (ttmBackgroundSlot.numSprites[0] == 0) {
+        ttmBackgroundThread.isRunning = 0;
+        grSaveCleanBgTiles();
+        return;
+    }
+
+    /* Seed the clean baseline with the initial four shore wave positions,
+     * mirroring what islandInit does in the normal ads path. All four
+     * positions must be painted BEFORE the clean backup so that each
+     * per-frame restore brings the waves back along with everything else. */
+    for (int i = 0; i < 4; i++)
+        islandAnimate(&ttmBackgroundThread);
+
+    /* Rect-based clean backup: back up only the rectangles that sprites will
+     * actually draw into each frame. For fishing1 ELSE-branch (ISLETEMP.SCR
+     * scene base, islandState at origin, foreground pack in absolute coords),
+     * the dynamic region is the union of:
+     *   - Foreground pack entries' bbox: x=12..516, y=204..350 (from JSON
+     *     union_bbox — Johnny fishing + starfish throw target)
+     *   - Shoreline wave sprites: x=129..608, y=303..356 (high/low tide)
+     * Combined bounding rect: (12, 204, 596, 152) ≈ 181 KB. Saves ~433 KB
+     * vs full-tile clean copies (614 KB).
+     *
+     * NOTE / future generalization: for scenes with `storyPrepareSceneBaseByAds`
+     * randomizing islandState.xPos/yPos and/or LEFT_ISLAND=1, the rect would
+     * shift by (islandState.xPos + (LEFT_ISLAND ? 272 : 0), islandState.yPos).
+     * ISLETEMP path here uses islandState == {0}, so absolute coords are fine. */
+    {
+        sint16 xs[1]; sint16 ys[1]; uint16 ws[1]; uint16 hs[1];
+        xs[0] = 12;  ys[0] = 204;
+        ws[0] = 596; hs[0] = 152;
+        grSaveCleanBgRects(xs, ys, ws, hs, 1);
+    }
+}
+
+/* Per-frame wave tick for the fgpilot main loop — mirrors the tick block
+ * inside the normal adsPlay loop. Advances the wave frame on the delay
+ * clock; between advances redraws the last wave so it remains visible
+ * after each grRestoreBgTiles. */
+void adsPilotTickBackgroundWaves(void)
+{
+    if (!ttmBackgroundThread.isRunning)
+        return;
+
+    if (ttmBackgroundThread.timer == 0) {
+        ttmBackgroundThread.timer = ttmBackgroundThread.delay;
+        islandAnimate(&ttmBackgroundThread);
+    } else {
+        islandRedrawWave(&ttmBackgroundThread);
+        ttmBackgroundThread.timer--;
+    }
+}
+
+#endif

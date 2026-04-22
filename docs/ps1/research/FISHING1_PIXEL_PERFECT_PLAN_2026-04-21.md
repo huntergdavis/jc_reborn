@@ -21,33 +21,52 @@ Verification is a visual check by eye, comparing against your memory of
 the PC version — no screenshot diffing, no automated perceptual
 compare, no reference image. If your eye says it's right, it's right.
 
+## Approach: Path A (bespoke, stay on ELSE branch)
+
+We tried switching to the IF branch (full `adsInitIsland`) first — it
+produced multiple regressions (tree missing, Johnny pack mis-aligned,
+BACKGRND failing to re-load after `ttmInitSlot` zeroed our preload).
+Reverted.
+
+Instead we stay on the current **ELSE branch** (known-good working state
+from commit `74bb0c24`: waves animate, scene plays through, no
+ghosting) and **add `islandState`-driven variations on top of it
+manually**. We keep the memory layout we already tuned (preloaded
+BACKGRND in `ttmBackgroundSlot`, rect-based clean backup).
+
+Important note: **fgpilot mode does not run the original `FISHING.ADS`
+script or its TTMs.** Johnny's actions come from the pre-captured
+foreground pack (`FISHING1.FG1`) — pixel snapshots from the host build.
+Scene base drawing (island, trunk, raft, clouds, waves, holiday
+overlay) comes from `island.c` functions (`islandInit`,
+`islandAnimate`, `islandInitHoliday`). We call these directly with a
+controlled `islandState` in our ELSE-branch glue. Result is pixel-
+identical to calling `adsInitIsland` — same drawing code, just
+different glue.
+
 ## Step list
 
-### Step 1 — Switch fishing1 to the full `adsInitIsland` path
+### Step 1 — Boot-override tokens for `islandState`
 
-Right now fgpilot `fishing1` takes the ELSE branch of
-`fgPlayOceanRuntimeScene`: `ISLETEMP.SCR` + our added wave animation.
-That's a fallback — it doesn't apply `islandState` variations (holiday,
-raft, position, night…).
+Without this we can't reliably test each variation. The `BOOTMODE.TXT`
+parser already handles `fgpilot <scene>` — extend it to accept
+key=value tokens after the scene name:
 
-Switching to the IF branch calls `adsInitIsland` → `islandInit`, which
-already knows how to render all those variants. It was previously failing
-because of heap pressure, but our pre-load-BACKGRND + rect-based clean
-backup infrastructure (shipped in commit 74bb0c24) can be applied to this
-path too.
+    fgpilot fishing1 day=N tide=low|high raft=N holiday=N night=0|1 \
+                     islandx=N islandy=N
 
-Changes required:
+Most of these map to existing forced-variables (`storyForcedCurrentDay`,
+`hostForcedLowTide`, `hostForcedRaftStage`, `hostForcedIslandX/Y`). Some
+need new hooks (`holiday`, `night`). Parse in `jc_reborn.c`'s boot-
+override handling and apply to `islandState` at the top of
+`fgPlayOceanRuntimeScene` (after the current preload, before the ELSE
+branch draws).
 
-- `fgAdsNameForScene("fishing1")` returns `"FISHING.ADS"` instead of
-  `"FISHING"` so `storyPrepareSceneBaseByAds` matches the scene table.
-- `adsPilotPreloadBackgrndBmp()` stays at the top of
-  `fgPlayOceanRuntimeScene` (runs before any bg-tile alloc).
-- In the IF branch, after `adsInitIsland()` finishes, `grFreeCleanBgTiles`
-  + install rects covering the dynamic regions.
-- Wave tick in the main loop stays identical.
-
-**You verify**: full scene plays through, waves animate, scene overall
-looks close to fishing1.
+**You verify**: setting `fgpilot fishing1 tide=low` visibly flips wave
+positions to the low-tide set; setting `night=1` flips to `NIGHT.SCR`;
+etc. (If the ELSE branch doesn't yet respond to a token, we just see no
+change — that's fine, the step is "parser wired, overrides present,
+ready to drive subsequent steps".)
 
 ### Step 2 — Boot-override for `islandState` via `BOOTMODE.TXT`
 

@@ -784,6 +784,24 @@ static void parseArgs(int argc, char **argv)
                     usage();
                 }
             }
+            else if (!strcmp(argv[i], "night")) {
+                if (i + 1 < argc) {
+                    hostForcedNight = atoi(argv[++i]) ? 1 : 0;
+                } else {
+                    fprintf(stderr, "Error: night requires 0 or 1\n");
+                    usage();
+                }
+            }
+            else if (!strcmp(argv[i], "holiday")) {
+                if (i + 1 < argc) {
+                    hostForcedHoliday = atoi(argv[++i]);
+                    if (hostForcedHoliday < 0) hostForcedHoliday = 0;
+                    if (hostForcedHoliday > 4) hostForcedHoliday = 4;
+                } else {
+                    fprintf(stderr, "Error: holiday requires a value 0..4\n");
+                    usage();
+                }
+            }
             else if (!strcmp(argv[i], "scene-offset")) {
                 if (i + 2 < argc) {
                     hostForcedSceneOffsetX = atoi(argv[++i]);

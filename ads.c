@@ -2334,20 +2334,21 @@ void adsPilotEnableWaveBackdrop(void)
         grReleaseBmp(&ttmBackgroundSlot, 1);
     }
 
-    /* Low-tide beach: ISLETEMP.SCR was pre-rendered at high tide, so we
-     * replay islandInit's exact sprite sequence on top to rebuild the
-     * scene at low-tide dimensions without leaking ISLETEMP's baked
-     * ocean/trunk through:
-     *   0 island, 13 trunk, 12 leafs, 14 palm shadow,
-     *   1 low-tide shore, 2 rock.
-     * Sprite positions match islandInit. */
-    if (islandState.lowTide) {
+    /* Island sprites. ISLETEMP.SCR only covers the day+high-tide case;
+     * night loads NIGHT.SCR (no island baked in) and low-tide needs the
+     * bigger shore. In either case we replay islandInit's sprite
+     * sequence: 0 island, 13 trunk, 12 leafs, 14 palm shadow, then
+     * low-tide extras (1 shore, 2 rock) if applicable. Sprite positions
+     * match islandInit exactly. */
+    if (islandState.night || islandState.lowTide) {
         grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 288, 279,  0, 0);
         grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 442, 148, 13, 0);
         grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 365, 122, 12, 0);
         grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 396, 279, 14, 0);
-        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 249, 303,  1, 0);
-        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 150, 328,  2, 0);
+        if (islandState.lowTide) {
+            grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 249, 303,  1, 0);
+            grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 150, 328,  2, 0);
+        }
     }
 
     /* Holiday overlay: HOLIDAY.BMP sprite 0-3 map to Halloween, St Patrick,
@@ -2382,9 +2383,14 @@ void adsPilotEnableWaveBackdrop(void)
      * shift by (islandState.xPos + (LEFT_ISLAND ? 272 : 0), islandState.yPos).
      * ISLETEMP path here uses islandState == {0}, so absolute coords are fine. */
     {
+        /* y_min=190 covers the cast-arc pack rows whose bbox rises above
+         * Johnny's head (sf=56 starts at y=195). Without that the cast-arc
+         * line pixels painted into bg tiles on that frame never get
+         * restored on subsequent frames, leaving a ghost stroke visible
+         * against dark backgrounds (e.g. night mode). */
         sint16 xs[1]; sint16 ys[1]; uint16 ws[1]; uint16 hs[1];
-        xs[0] = 12;  ys[0] = 204;
-        ws[0] = 596; hs[0] = 152;
+        xs[0] = 12;  ys[0] = 190;
+        ws[0] = 596; hs[0] = 166;
         grSaveCleanBgRects(xs, ys, ws, hs, 1);
     }
 }

@@ -1714,8 +1714,15 @@ static void fgPlayOceanRuntimeScene(const char *sceneName)
         fgConfigureBackdropOccluders(sceneName);
         grSaveCleanBgTiles();
     } else {
-        grLoadScreen("OCEAN00.SCR");
-        grLoadScreen("ISLETEMP.SCR");
+        if (islandState.night) {
+            /* NIGHT.SCR is the full night-ocean backdrop, no island baked
+             * in. adsPilotEnableWaveBackdrop will draw the island sprites
+             * on top. */
+            grLoadScreen("NIGHT.SCR");
+        } else {
+            grLoadScreen("OCEAN00.SCR");
+            grLoadScreen("ISLETEMP.SCR");
+        }
         /* Seed initial wave positions, configure the background thread, and
          * capture a rect-based clean backup of only the dynamic regions
          * (wave strip + foreground pack bbox ~181 KB, vs 614 KB for a full

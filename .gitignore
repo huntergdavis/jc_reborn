@@ -11,6 +11,10 @@ Makefile
 build-*/
 scratch/
 
+# Scene host-capture artifacts (regenerable). The resulting pack files
+# that ship on the CD are committed under generated/ps1/foreground/.
+host-results/
+
 # Exception: release directory contains milestone builds
 !release/
 !release/*.bin

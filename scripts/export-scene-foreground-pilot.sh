@@ -63,7 +63,7 @@ python3 "$SCRIPT_DIR/analyze-foreground-plates.py" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
   --output-json "$ANALYSIS_JSON"
 
-python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
+python3 "$SCRIPT_DIR/build-scene-foreground-pack.py" \
   --scene-label "$SCENE_NAME" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
   --frame-meta-dir "$HOST_CAPTURE_DIR/frame-meta" \
@@ -71,7 +71,7 @@ python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
   --output-pack "$PACK_PATH" \
   --output-json "$PACK_JSON"
 
-python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
+python3 "$SCRIPT_DIR/build-scene-foreground-pack.py" \
   --scene-label "$SCENE_NAME" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
   --sound-events "$HOST_CAPTURE_DIR/sound-events.jsonl" \

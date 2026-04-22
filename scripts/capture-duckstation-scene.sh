@@ -14,6 +14,9 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+SCRATCH_DIR="$PROJECT_ROOT/scratch"
+mkdir -p "$SCRATCH_DIR"
+
 SCENE=""
 BOOT=""
 REFERENCE=""
@@ -128,8 +131,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-cp "$BOOTMODE_FILE" "/tmp/duck-bootmode-$RUN_TS.txt"
-BOOTMODE_BACKUP="/tmp/duck-bootmode-$RUN_TS.txt"
+cp "$BOOTMODE_FILE" "$SCRATCH_DIR/duck-bootmode-$RUN_TS.txt"
+BOOTMODE_BACKUP="$SCRATCH_DIR/duck-bootmode-$RUN_TS.txt"
 if [ -n "$BOOT" ]; then
     if [ "$CAPTURE_OVERLAY" -eq 1 ] && [[ "$BOOT" != *"capture-overlay"* ]]; then
         BOOT="$BOOT capture-overlay"
@@ -151,8 +154,8 @@ fi
 ./scripts/make-cd-image.sh
 
 mkdir -p "$SCREENSHOT_DIR"
-cp "$DUCK_SETTINGS" "/tmp/duck-settings-$RUN_TS.ini"
-DUCK_SETTINGS_BACKUP="/tmp/duck-settings-$RUN_TS.ini"
+cp "$DUCK_SETTINGS" "$SCRATCH_DIR/duck-settings-$RUN_TS.ini"
+DUCK_SETTINGS_BACKUP="$SCRATCH_DIR/duck-settings-$RUN_TS.ini"
 
 python3 - "$DUCK_SETTINGS" "$RENDERER" "$SCREENSHOT_MODE" <<'PY'
 import configparser
@@ -178,11 +181,11 @@ PY
 
 take_screenshot() {
     local out_file="$1"
-    local marker="/tmp/.duck-shot-$RUN_TS"
+    local marker="$SCRATCH_DIR/.duck-shot-$RUN_TS"
     : > "$marker"
     local latest=""
     local window_id=""
-    local fallback="/tmp/duck-shot-${RUN_TS}-$$.png"
+    local fallback="$SCRATCH_DIR/duck-shot-${RUN_TS}-$$.png"
 
     window_id=$(xdotool search --onlyvisible --name "DuckStation" 2>/dev/null | tail -1 || true)
     if [ -n "$window_id" ]; then

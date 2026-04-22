@@ -64,10 +64,11 @@ if git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
     exit 1
 fi
 
-# Step 1: Run the build
+# Step 1: Run the build (build + CD image only; do not launch the emulator)
 echo ""
 echo -e "${YELLOW}=== Step 1: Building PS1 executable ===${NC}"
-"$SCRIPT_DIR/rebuild-and-let-run.sh" --no-run 2>/dev/null || "$SCRIPT_DIR/rebuild-and-let-run.sh"
+"$SCRIPT_DIR/build-ps1.sh" clean
+"$SCRIPT_DIR/make-cd-image.sh"
 
 # Check build artifacts exist
 if [[ ! -f "$PROJECT_DIR/jcreborn.bin" ]] || [[ ! -f "$PROJECT_DIR/jcreborn.cue" ]]; then

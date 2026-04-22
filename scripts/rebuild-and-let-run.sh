@@ -11,6 +11,9 @@ fi
 
 cd "$(dirname "$0")/.."  # Change to project root
 
+SCRATCH_DIR="$PWD/scratch"
+mkdir -p "$SCRATCH_DIR"
+
 BOOTMODE_FILE="$PWD/config/ps1/BOOTMODE.TXT"
 BOOTMODE_BACKUP=""
 BOOT_OVERRIDE=""
@@ -48,7 +51,7 @@ stage_boot_override() {
         return
     fi
 
-    BOOTMODE_BACKUP="/tmp/ps1-bootmode-$$.txt"
+    BOOTMODE_BACKUP="$SCRATCH_DIR/ps1-bootmode-$$.txt"
     cp "$BOOTMODE_FILE" "$BOOTMODE_BACKUP"
 
     printf '%s\n' "$BOOT_OVERRIDE" > "$BOOTMODE_FILE"
@@ -102,7 +105,7 @@ mkdir -p "$SCREENSHOT_DIR"
 
 take_duckstation_screenshot() {
     local out_var="$1"
-    local marker="/tmp/.ps1_shot_marker_$$"
+    local marker="$SCRATCH_DIR/.ps1_shot_marker_$$"
     : > "$marker"
     local latest=""
     local window_id=""

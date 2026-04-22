@@ -15,6 +15,9 @@ fi
 
 cd "$(dirname "$0")/.."  # Change to project root
 
+SCRATCH_DIR="$PWD/scratch"
+mkdir -p "$SCRATCH_DIR"
+
 SCREENSHOT_DIR="$HOME/.var/app/org.duckstation.DuckStation/config/duckstation/screenshots"
 DUCK_SETTINGS="$HOME/.var/app/org.duckstation.DuckStation/config/duckstation/settings.ini"
 CUE_FILE="$PWD/jcreborn.cue"
@@ -56,7 +59,7 @@ prepare_duckstation_test_settings() {
         return
     fi
 
-    DUCK_SETTINGS_BACKUP="/tmp/duckstation-settings-$$.ini"
+    DUCK_SETTINGS_BACKUP="$SCRATCH_DIR/duckstation-settings-$$.ini"
     cp "$DUCK_SETTINGS" "$DUCK_SETTINGS_BACKUP"
 
     if grep -q '^StartFullscreen = ' "$DUCK_SETTINGS"; then
@@ -78,7 +81,7 @@ stage_boot_override() {
         return
     fi
 
-    BOOTMODE_BACKUP="/tmp/ps1-bootmode-$$.txt"
+    BOOTMODE_BACKUP="$SCRATCH_DIR/ps1-bootmode-$$.txt"
     cp "$BOOTMODE_FILE" "$BOOTMODE_BACKUP"
 
     local final_boot="$BOOT_OVERRIDE"
@@ -105,7 +108,7 @@ trap 'restore_duckstation_test_settings; restore_boot_override' EXIT
 
 take_duckstation_screenshot() {
     local out_var="$1"
-    local marker="/tmp/.ps1_shot_marker_$$"
+    local marker="$SCRATCH_DIR/.ps1_shot_marker_$$"
     : > "$marker"
     local latest=""
     local window_id=""
@@ -157,7 +160,7 @@ decode_screenshot() {
 }
 
 # Create marker file to identify screenshots taken after this point
-touch /tmp/.ps1_test_marker_$$
+touch $SCRATCH_DIR/.ps1_test_marker_$$
 
 stage_boot_override
 if [ -n "$BOOT_OVERRIDE" ]; then
@@ -220,7 +223,7 @@ fi
 
 echo "=== Finding latest screenshot ==="
 # Find the most recent screenshot (both DuckStation and spectacle formats)
-LATEST_SCREENSHOT=$(find "$SCREENSHOT_DIR" -name "*.png" -newer /tmp/.ps1_test_marker_$$ 2>/dev/null | sort | tail -1)
+LATEST_SCREENSHOT=$(find "$SCREENSHOT_DIR" -name "*.png" -newer $SCRATCH_DIR/.ps1_test_marker_$$ 2>/dev/null | sort | tail -1)
 
 if [ -n "$LATEST_SCREENSHOT" ]; then
     echo "Latest screenshot: $LATEST_SCREENSHOT"

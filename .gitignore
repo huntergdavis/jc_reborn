@@ -9,6 +9,7 @@ Makefile
 *.cue
 *.log
 build-*/
+scratch/
 
 # Exception: release directory contains milestone builds
 !release/

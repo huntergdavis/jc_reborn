@@ -53,32 +53,19 @@ mkdir -p "$OUTPUT_DIR"
   --no-stamp \
   --output "$HOST_CAPTURE_FULL_DIR"
 
-# Augment bounds restrict the scene-base diff to the left half of the screen,
-# where Johnny's pole/line live. Wave-crest animation produces fg-palette
-# colored speckle outside this box (right-side waves) and must be rejected.
-AUGMENT_BOUNDS="0,0,450,479"
-SCENE_BASE_FRAME=0
-# DRAW_LINE is used for the fishing line across the whole cast → in-water
-# sequence. The sprite ledger never captures those pixels, so we augment
-# every frame in the window where Johnny is holding the rod. Pollution is
-# controlled by augment_bounds plus the thin-stroke heuristic in the builder.
-AUGMENT_FRAME_RANGE="115:155"
+# Scene-base augmentation is no longer needed: grDrawLine / grDrawPixel
+# now record to the capture ledger and replay post-mask, so DRAW_LINE
+# strokes flow into fg-only naturally. Augmentation was adding wave-crest
+# speckle at the waterline (frame N foam vs frame 0 foam) which persisted
+# in the pack as a starfish-looking splotch after the throw animation.
 
 python3 "$SCRIPT_DIR/analyze-foreground-plates.py" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
-  --full-frames-dir "$HOST_CAPTURE_FULL_DIR/frames" \
-  --scene-base-frame "$SCENE_BASE_FRAME" \
-  --augment-bounds "$AUGMENT_BOUNDS" \
-  --augment-frame-range "$AUGMENT_FRAME_RANGE" \
   --output-json "$ANALYSIS_JSON"
 
 python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
   --scene-label "$SCENE_NAME" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
-  --full-frames-dir "$HOST_CAPTURE_FULL_DIR/frames" \
-  --scene-base-frame "$SCENE_BASE_FRAME" \
-  --augment-bounds "$AUGMENT_BOUNDS" \
-  --augment-frame-range "$AUGMENT_FRAME_RANGE" \
   --frame-meta-dir "$HOST_CAPTURE_DIR/frame-meta" \
   --output-pack "$PACK_PATH" \
   --output-json "$PACK_JSON"

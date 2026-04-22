@@ -96,11 +96,93 @@ def delta_bbox(prev: Image.Image | None, current: Image.Image):
     }
 
 
+def parse_augment_bounds(value: str) -> tuple[int, int, int, int]:
+    parts = [p.strip() for p in value.split(",")]
+    if len(parts) != 4:
+        raise argparse.ArgumentTypeError("expected x_min,y_min,x_max,y_max")
+    return tuple(int(p) for p in parts)  # type: ignore[return-value]
+
+
+def parse_frame_range(value: str) -> tuple[int, int]:
+    parts = [p.strip() for p in value.split(":")]
+    if len(parts) != 2:
+        raise argparse.ArgumentTypeError("expected start:end (inclusive)")
+    start = int(parts[0])
+    end = int(parts[1])
+    if end < start:
+        raise argparse.ArgumentTypeError("end must be >= start")
+    return (start, end)
+
+
+def collect_fg_palette(frame_paths, key_rgb):
+    palette = set()
+    for path in frame_paths:
+        with Image.open(path) as raw:
+            rgb = raw.convert("RGB")
+        for _, col in (rgb.getcolors(maxcolors=1 << 24) or []):
+            if col != key_rgb:
+                palette.add(col)
+    return palette
+
+
+def augment_fg(fg_rgb, full_rgb, base_rgb, fg_palette, key_rgb, bounds):
+    if full_rgb is None or base_rgb is None:
+        return fg_rgb
+    if full_rgb.size != fg_rgb.size or base_rgb.size != fg_rgb.size:
+        return fg_rgb
+    out = fg_rgb.copy()
+    op = out.load()
+    fp = fg_rgb.load()
+    ffp = full_rgb.load()
+    bp = base_rgb.load()
+    w, h = fg_rgb.size
+    if bounds is None:
+        x_min, y_min, x_max, y_max = 0, 0, w - 1, h - 1
+    else:
+        x_min, y_min, x_max, y_max = bounds
+        x_min = max(0, x_min)
+        y_min = max(0, y_min)
+        x_max = min(w - 1, x_max)
+        y_max = min(h - 1, y_max)
+    for y in range(y_min, y_max + 1):
+        for x in range(x_min, x_max + 1):
+            if fp[x, y] != key_rgb:
+                continue
+            pf = ffp[x, y]
+            if pf not in fg_palette:
+                continue
+            if pf == bp[x, y]:
+                continue
+            op[x, y] = pf
+    return out
+
+
 def main():
     parser = argparse.ArgumentParser(description="Analyze cropped foreground-only scene exports.")
     parser.add_argument("--frames-dir", required=True)
     parser.add_argument("--output-json")
     parser.add_argument("--key-rgb", default="ff00ff", type=parse_rgb)
+    parser.add_argument(
+        "--full-frames-dir",
+        help="Directory of full-render frames, same seed / indices as --frames-dir.",
+    )
+    parser.add_argument(
+        "--scene-base-frame",
+        type=int,
+        default=0,
+        help="Index into --full-frames-dir to treat as pristine scene base (default 0).",
+    )
+    parser.add_argument(
+        "--augment-bounds",
+        type=parse_augment_bounds,
+        help="Optional x_min,y_min,x_max,y_max restricting scene-base augmentation.",
+    )
+    parser.add_argument(
+        "--augment-frame-range",
+        type=parse_frame_range,
+        help="Inclusive start:end frame-index range to augment; frames outside are "
+             "left as pure foreground-only captures.",
+    )
     args = parser.parse_args()
 
     frames_dir = Path(args.frames_dir)
@@ -111,6 +193,29 @@ def main():
     if not frame_paths:
         raise SystemExit(f"no frame images found in {frames_dir}")
 
+    full_frame_paths = []
+    base_img = None
+    fg_palette = set()
+    if args.full_frames_dir:
+        full_dir = Path(args.full_frames_dir)
+        if not full_dir.is_dir():
+            raise SystemExit(f"--full-frames-dir not found: {full_dir}")
+        full_frame_paths = sorted(
+            path for path in full_dir.iterdir()
+            if path.is_file() and path.suffix.lower() in {".bmp", ".png"}
+        )
+        if len(full_frame_paths) != len(frame_paths):
+            raise SystemExit(
+                f"full-frames-dir count {len(full_frame_paths)} != frames-dir count {len(frame_paths)}"
+            )
+        if args.scene_base_frame < 0 or args.scene_base_frame >= len(full_frame_paths):
+            raise SystemExit(
+                f"--scene-base-frame {args.scene_base_frame} out of range"
+            )
+        with Image.open(full_frame_paths[args.scene_base_frame]) as raw:
+            base_img = raw.convert("RGB")
+        fg_palette = collect_fg_palette(frame_paths, args.key_rgb)
+
     rows = []
     union_min_x = None
     union_min_y = None
@@ -118,10 +223,21 @@ def main():
     union_max_y = None
     prev_rgba = None
 
-    for frame_path in frame_paths:
+    for frame_index, frame_path in enumerate(frame_paths):
         with Image.open(frame_path) as raw:
             rgb = raw.convert("RGB")
             rgba = raw.convert("RGBA")
+
+        in_augment_range = True
+        if args.augment_frame_range is not None:
+            lo, hi = args.augment_frame_range
+            in_augment_range = (lo <= frame_index <= hi)
+
+        if full_frame_paths and base_img is not None and in_augment_range:
+            with Image.open(full_frame_paths[frame_index]) as raw_full:
+                full_rgb = raw_full.convert("RGB")
+            rgb = augment_fg(rgb, full_rgb, base_img, fg_palette, args.key_rgb, args.augment_bounds)
+            rgba = rgb.convert("RGBA")
 
         bbox = find_bbox(rgb, args.key_rgb)
         pixel_bytes, color_count = crop_pixels(rgba, bbox)
@@ -171,6 +287,10 @@ def main():
 
     summary = {
         "frames_dir": str(frames_dir),
+        "full_frames_dir": str(Path(args.full_frames_dir).resolve()) if args.full_frames_dir else None,
+        "scene_base_frame": args.scene_base_frame if full_frame_paths else None,
+        "augment_bounds": list(args.augment_bounds) if args.augment_bounds else None,
+        "fg_palette_size": len(fg_palette) if fg_palette else None,
         "key_rgb": list(args.key_rgb),
         "frame_count": len(rows),
         "non_empty_frames": len(bbox_areas),

@@ -2319,15 +2319,26 @@ void adsPilotEnableWaveBackdrop(void)
         return;
     }
 
+    grDx = islandState.xPos;
+    grDy = islandState.yPos;
+
+    /* Raft: MRAFT.BMP has 5 frames, one per raft-construction stage. Loaded
+     * into BMP slot 1 so slot 0 (BACKGRND) stays intact for waves. Position
+     * matches islandInit: high tide (512, 266), low tide (529, 281). */
+    if (islandState.raft >= 1 && islandState.raft <= 5) {
+        int xRaft = islandState.lowTide ? 529 : 512;
+        int yRaft = islandState.lowTide ? 281 : 266;
+        grLoadBmp(&ttmBackgroundSlot, 1, "MRAFT.BMP");
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot,
+                     xRaft, yRaft, (uint16)(islandState.raft - 1), 1);
+        grReleaseBmp(&ttmBackgroundSlot, 1);
+    }
+
     /* Low-tide beach sprites: ISLETEMP.SCR was pre-rendered at high tide.
      * At low tide the shoreline recedes and two additional sprites fill
      * the exposed beach: sprite 1 (low-tide shore) and sprite 2 (rock)
-     * from BACKGRND.BMP, at the same positions islandInit uses. Drawn
-     * into bg tiles before the rect-backup so they're part of the
-     * restored baseline each frame. */
+     * from BACKGRND.BMP, at the same positions islandInit uses. */
     if (islandState.lowTide) {
-        grDx = islandState.xPos;
-        grDy = islandState.yPos;
         grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 249, 303, 1, 0);
         grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 150, 328, 2, 0);
     }

@@ -72,7 +72,16 @@ static int grCaptureSequenceFinished = 0;
 #define MAX_CAPTURE_SURFACES 64
 #define MAX_LEDGER_DRAWS 4096
 
+/* Draw kinds captured by the ledger. Sprite draws blit a BMP sub-image;
+ * line draws record an endpoints+color triple produced by the TTM's
+ * DRAW_LINE opcode (0xA0A4). Line draws are NOT part of the sprite ledger
+ * in the original engine, but fg-only capture needs them so the fishing-line
+ * pixels make it into the foreground-only frames. */
+#define GR_CAPTURE_KIND_SPRITE 0
+#define GR_CAPTURE_KIND_LINE   1
+
 struct TCapturedSpriteDraw {
+    uint8 kind;
     sint16 x;
     sint16 y;
     uint16 width;
@@ -80,6 +89,7 @@ struct TCapturedSpriteDraw {
     uint16 spriteNo;
     uint16 imageNo;
     uint8 flipped;
+    uint8 lineColor;
     const char *bmpName;
     SDL_Surface *srcSfc;
 };
@@ -194,6 +204,7 @@ static void grCaptureRecordSpriteDraw(struct TTtmSlot *ttmSlot,
         return;
 
     draw = &grCapturedDraws[grCapturedDrawCount++];
+    draw->kind = GR_CAPTURE_KIND_SPRITE;
     draw->x = x;
     draw->y = y;
     draw->width = (uint16)srcSfc->w;
@@ -201,6 +212,7 @@ static void grCaptureRecordSpriteDraw(struct TTtmSlot *ttmSlot,
     draw->spriteNo = spriteNo;
     draw->imageNo = imageNo;
     draw->flipped = flipped ? 1 : 0;
+    draw->lineColor = 0;
     draw->bmpName = ttmSlot->loadedBmpNames[imageNo];
     draw->srcSfc = srcSfc;
 }
@@ -220,6 +232,7 @@ static void grCaptureRecordSurfaceDraw(SDL_Surface *surface,
     if (surface == NULL || ttmSlot == NULL || srcSfc == NULL)
         return;
 
+    draw.kind = GR_CAPTURE_KIND_SPRITE;
     draw.x = x;
     draw.y = y;
     draw.width = (uint16)srcSfc->w;
@@ -227,8 +240,40 @@ static void grCaptureRecordSurfaceDraw(SDL_Surface *surface,
     draw.spriteNo = spriteNo;
     draw.imageNo = imageNo;
     draw.flipped = flipped ? 1 : 0;
+    draw.lineColor = 0;
     draw.bmpName = ttmSlot->loadedBmpNames[imageNo];
     draw.srcSfc = srcSfc;
+    grCaptureAppendLedgerDraw(surface, &draw);
+}
+
+
+/* Record a DRAW_LINE output into the target surface's ledger so fg-only
+ * capture can replay the line. Coordinates are POST-grDx/grDy, i.e.
+ * already in absolute surface space (grDrawLine applies those offsets
+ * before calling this). Replay renders the same Bresenham path on the
+ * capture surface using the palette color stored here. */
+static void grCaptureRecordLineDraw(SDL_Surface *surface,
+                                    sint16 x1,
+                                    sint16 y1,
+                                    sint16 x2,
+                                    sint16 y2,
+                                    uint8 color)
+{
+    struct TCapturedSpriteDraw draw;
+
+    if (surface == NULL)
+        return;
+
+    memset(&draw, 0, sizeof(draw));
+    draw.kind = GR_CAPTURE_KIND_LINE;
+    draw.x = x1;
+    draw.y = y1;
+    /* Pack x2,y2 into width/height (unsigned reinterpret; endpoints may
+     * exceed screen bounds but fit in sint16, which fits in uint16 as
+     * a bit pattern that we cast back on replay). */
+    draw.width = (uint16)x2;
+    draw.height = (uint16)y2;
+    draw.lineColor = color;
     grCaptureAppendLedgerDraw(surface, &draw);
 }
 
@@ -245,6 +290,88 @@ static int grCaptureIsStaticBaseBmp(const char *bmpName)
 }
 
 
+/* Draw a Bresenham line directly onto an ARGB8888 capture surface using
+ * the palette entry `color`. Used by grCaptureBlitRecordedDraw when
+ * replaying DRAW_LINE ledger entries. Coordinates are absolute surface
+ * space; no grDx/grDy offset is applied here. */
+static void grCaptureDrawLineRGBA(SDL_Surface *dst,
+                                  sint16 x1,
+                                  sint16 y1,
+                                  sint16 x2,
+                                  sint16 y2,
+                                  uint8 color)
+{
+    uint32 pixel;
+    uint16 dx, dy, cumul;
+    int xinc, yinc, x, y, i;
+
+    if (dst == NULL || dst->format->format != SDL_PIXELFORMAT_ARGB8888)
+        return;
+
+    /* Match grPutPixel's ARGB8888 byte layout: alpha byte = 0, not 0xFF.
+     * grCaptureMaskVisiblePixels compares exact uint32 values; leaving
+     * alpha = 0xFF (SDL_MapRGB's default) would cause every replayed
+     * line pixel to be masked back to magenta because the final-render
+     * surface has alpha = 0. */
+    pixel = SDL_MapRGB(dst->format,
+                       ttmPalette[color][2],
+                       ttmPalette[color][1],
+                       ttmPalette[color][0]) & 0x00FFFFFFu;
+
+    SDL_LockSurface(dst);
+
+    x = x1;
+    y = y1;
+    dx = abs(x2 - x1);
+    dy = abs(y2 - y1);
+    xinc = (x2 > x1 ? 1 : -1);
+    yinc = (y2 > y1 ? 1 : -1);
+
+    /* Degenerate case: single-pixel "line" used by grDrawPixel hooks. */
+    if (dx == 0 && dy == 0) {
+        if (x >= 0 && x < dst->w && y >= 0 && y < dst->h) {
+            uint32 *row = (uint32 *)((uint8 *)dst->pixels + (size_t)y * (size_t)dst->pitch);
+            row[x] = pixel;
+        }
+        SDL_UnlockSurface(dst);
+        return;
+    }
+
+    if (dy < dx) {
+        cumul = (dx + 1) >> 1;
+        for (i = 0; i < dx; i++) {
+            if (x >= 0 && x < dst->w && y >= 0 && y < dst->h) {
+                uint32 *row = (uint32 *)((uint8 *)dst->pixels + (size_t)y * (size_t)dst->pitch);
+                row[x] = pixel;
+            }
+            x += xinc;
+            cumul += dy;
+            if (cumul > dx) {
+                cumul -= dx;
+                y += yinc;
+            }
+        }
+    }
+    else {
+        cumul = (dy + 1) >> 1;
+        for (i = 0; i < dy; i++) {
+            if (x >= 0 && x < dst->w && y >= 0 && y < dst->h) {
+                uint32 *row = (uint32 *)((uint8 *)dst->pixels + (size_t)y * (size_t)dst->pitch);
+                row[x] = pixel;
+            }
+            y += yinc;
+            cumul += dx;
+            if (cumul > dy) {
+                cumul -= dy;
+                x += xinc;
+            }
+        }
+    }
+
+    SDL_UnlockSurface(dst);
+}
+
+
 static void grCaptureBlitRecordedDraw(SDL_Surface *dst,
                                       const struct TCapturedSpriteDraw *draw)
 {
@@ -252,7 +379,20 @@ static void grCaptureBlitRecordedDraw(SDL_Surface *dst,
     SDL_Rect dest;
     int i;
 
-    if (dst == NULL || draw == NULL || draw->srcSfc == NULL)
+    if (dst == NULL || draw == NULL)
+        return;
+
+    if (draw->kind == GR_CAPTURE_KIND_LINE) {
+        grCaptureDrawLineRGBA(dst,
+                              draw->x,
+                              draw->y,
+                              (sint16)draw->width,
+                              (sint16)draw->height,
+                              draw->lineColor);
+        return;
+    }
+
+    if (draw->srcSfc == NULL)
         return;
 
     if (!draw->flipped) {
@@ -288,12 +428,43 @@ static void grCaptureBlitForegroundLedger(SDL_Surface *captureSurface,
     if (ledger == NULL)
         return;
 
+    /* Sprite pass only. Line draws are replayed post-mask so that
+     * grCaptureMaskVisiblePixels' uint32 equality check doesn't reject
+     * them for palette-vs-window-surface color nuance. */
     for (i = 0; i < ledger->count; i++) {
         const struct TCapturedSpriteDraw *draw = &ledger->draws[i];
 
+        if (draw->kind != GR_CAPTURE_KIND_SPRITE)
+            continue;
         if (grCaptureIsStaticBaseBmp(draw->bmpName))
             continue;
 
+        grCaptureBlitRecordedDraw(captureSurface, draw);
+    }
+}
+
+
+/* Replay only the line (DRAW_LINE / DRAW_PIXEL) ledger entries. Called
+ * AFTER grCaptureMaskVisiblePixels so the line pixels stamp on top of
+ * the masked capture surface — the mask step compares the capture
+ * against the fully rendered window, and since the line's palette
+ * color doesn't match the window surface byte-for-byte (composite
+ * nuances), it would otherwise be masked back to magenta. */
+static void grCaptureBlitForegroundLedgerLines(SDL_Surface *captureSurface,
+                                               SDL_Surface *surface)
+{
+    struct TSurfaceCaptureLedger *ledger;
+    int i;
+
+    ledger = grCaptureFindLedger(surface, 0);
+    if (ledger == NULL)
+        return;
+
+    for (i = 0; i < ledger->count; i++) {
+        const struct TCapturedSpriteDraw *draw = &ledger->draws[i];
+
+        if (draw->kind != GR_CAPTURE_KIND_LINE)
+            continue;
         grCaptureBlitRecordedDraw(captureSurface, draw);
     }
 }
@@ -792,6 +963,20 @@ static SDL_Surface *grCaptureBuildSurface(struct TTtmThread *ttmThreads,
     grCaptureMaskVisiblePixels(captureSurface, finalSurface);
     SDL_FreeSurface(finalSurface);
 
+    /* Stamp line-draw ledger entries on top of the masked capture so
+     * they aren't lost to finalSurface mismatch. See note on
+     * grCaptureBlitForegroundLedgerLines. */
+    for (int i = 0; i < MAX_TTM_THREADS; i++) {
+        if (!ttmThreads[i].isRunning || ttmThreads[i].ttmLayer == NULL)
+            continue;
+        grCaptureBlitForegroundLedgerLines(captureSurface, ttmThreads[i].ttmLayer);
+    }
+    if (ttmHolidayThread != NULL &&
+        ttmHolidayThread->isRunning &&
+        ttmHolidayThread->ttmLayer != NULL) {
+        grCaptureBlitForegroundLedgerLines(captureSurface, ttmHolidayThread->ttmLayer);
+    }
+
     if (grCaptureOverlay)
         grCaptureEmbedOverlay(captureSurface);
 
@@ -1287,6 +1472,12 @@ void grRestoreZone(SDL_Surface *sfc, uint16 x, uint16 y, uint16 width, uint16 he
 void grDrawPixel(SDL_Surface *sfc, sint16 x, sint16 y, uint8 color)
 {
     x += grDx; y += grDy;
+    /* Record to the capture ledger as a zero-length line so fg-only
+     * capture replays this pixel. Same motivation as the DRAW_LINE
+     * ledger hook: the sprite ledger replay drops these direct-pixel
+     * ops, which the TTM uses for parts of the fishing line and similar
+     * non-sprite graphics primitives. */
+    grCaptureRecordLineDraw(sfc, x, y, x, y, color);
     grPutPixel(sfc, x, y, color);
 }
 
@@ -1295,6 +1486,13 @@ void grDrawLine(SDL_Surface *sfc, sint16 x1, sint16 y1, sint16 x2, sint16 y2, ui
 {
     x1 += grDx; y1 += grDy;
     x2 += grDx; y2 += grDy;
+
+    /* Record to the capture ledger so fg-only capture replays the line.
+     * The TTM's DRAW_LINE opcode (0xA0A4) is the source of the fishing
+     * line stroke in FISHING.TTM; without this hook, sprite-ledger replay
+     * would drop those pixels and the foreground-only frames would lose
+     * the line. */
+    grCaptureRecordLineDraw(sfc, x1, y1, x2, y2, color);
 
     SDL_LockSurface(sfc);
 

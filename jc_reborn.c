@@ -118,6 +118,8 @@ static int hostForcedIslandX = 0;
 static int hostForcedIslandY = 0;
 static int hostForcedLowTide = -1;
 static int hostForcedRaftStage = -1;
+static int hostForcedNight = -1;     /* -1=unset, 0|1 forces islandState.night */
+static int hostForcedHoliday = -1;   /* -1=unset, 0..4 forces islandState.holiday */
 static int hostForcedSceneOffsetValid = 0;
 static int hostForcedSceneOffsetX = 0;
 static int hostForcedSceneOffsetY = 0;
@@ -131,6 +133,8 @@ static int hostForcedIslandX = 0;
 static int hostForcedIslandY = 0;
 static int hostForcedLowTide = -1;
 static int hostForcedRaftStage = -1;
+static int hostForcedNight = -1;
+static int hostForcedHoliday = -1;
 static int hostForcedSceneOffsetValid = 0;
 static int hostForcedSceneOffsetX = 0;
 static int hostForcedSceneOffsetY = 0;
@@ -185,6 +189,8 @@ static void ps1ResetBootArgs(void)
     hostForcedIslandY = 0;
     hostForcedLowTide = -1;
     hostForcedRaftStage = -1;
+    hostForcedNight = -1;
+    hostForcedHoliday = -1;
     hostForcedSceneOffsetValid = 0;
     hostForcedSceneOffsetX = 0;
     hostForcedSceneOffsetY = 0;
@@ -318,6 +324,14 @@ static void ps1ApplyBootOverride(char *buffer)
             i++;
         } else if (!strcmp(tokens[i], "raft-stage") && (i + 1) < tokenCount) {
             hostForcedRaftStage = atoi(tokens[i + 1]);
+            i++;
+        } else if (!strcmp(tokens[i], "night") && (i + 1) < tokenCount) {
+            hostForcedNight = atoi(tokens[i + 1]) ? 1 : 0;
+            i++;
+        } else if (!strcmp(tokens[i], "holiday") && (i + 1) < tokenCount) {
+            hostForcedHoliday = atoi(tokens[i + 1]);
+            if (hostForcedHoliday < 0) hostForcedHoliday = 0;
+            if (hostForcedHoliday > 4) hostForcedHoliday = 4;
             i++;
         } else if (!strcmp(tokens[i], "scene-offset") && (i + 2) < tokenCount) {
             hostForcedSceneOffsetX = atoi(tokens[i + 1]);
@@ -916,6 +930,10 @@ int main(int argc, char **argv)
         islandState.lowTide = hostForcedLowTide;
     if (hostForcedRaftStage >= 0)
         islandState.raft = hostForcedRaftStage;
+    if (hostForcedNight >= 0)
+        islandState.night = hostForcedNight;
+    if (hostForcedHoliday >= 0)
+        islandState.holiday = hostForcedHoliday;
     if (hostForcedIslandPosValid) {
         islandState.xPos = hostForcedIslandX;
         islandState.yPos = hostForcedIslandY;

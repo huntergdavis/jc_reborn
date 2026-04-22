@@ -2319,6 +2319,19 @@ void adsPilotEnableWaveBackdrop(void)
         return;
     }
 
+    /* Low-tide beach sprites: ISLETEMP.SCR was pre-rendered at high tide.
+     * At low tide the shoreline recedes and two additional sprites fill
+     * the exposed beach: sprite 1 (low-tide shore) and sprite 2 (rock)
+     * from BACKGRND.BMP, at the same positions islandInit uses. Drawn
+     * into bg tiles before the rect-backup so they're part of the
+     * restored baseline each frame. */
+    if (islandState.lowTide) {
+        grDx = islandState.xPos;
+        grDy = islandState.yPos;
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 249, 303, 1, 0);
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 150, 328, 2, 0);
+    }
+
     /* Seed the clean baseline with the initial four shore wave positions,
      * mirroring what islandInit does in the normal ads path. All four
      * positions must be painted BEFORE the clean backup so that each

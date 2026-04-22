@@ -1,5 +1,12 @@
 # Current PS1 Restore Rollout Status
 
+> **⚠️ Historical snapshot — not current truth.**
+> Dated 2026-03-21. Preserved as the restore-pilot-era status surface.
+> The "verified" counts below belong to the restore-rollout validation
+> model and are not comparable to the current scene-playback bar. For
+> current status see [../scene-status.md](../scene-status.md) and
+> [../current-status.md](../current-status.md).
+
 Date: 2026-03-21
 
 - verified scenes: `27 / 63`

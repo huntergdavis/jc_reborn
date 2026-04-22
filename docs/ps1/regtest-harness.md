@@ -1,5 +1,12 @@
 # PS1 Regression Test Harness
 
+> **⚠️ Secondary / legacy tooling.**
+> See [regtest-quickstart.md](regtest-quickstart.md) banner for context.
+> The primary validation path is now human signoff on the scene-playback
+> (fgpilot) route — see [TESTING.md](TESTING.md) and
+> [development-workflow.md](development-workflow.md).
+
+
 Automated PS1 regression testing for scene rollout, using:
 
 - headless `duckstation-regtest` for scalable batch/frame capture

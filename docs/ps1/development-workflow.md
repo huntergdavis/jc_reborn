@@ -1,354 +1,165 @@
 # PS1 Development Workflow
 
-Build, test, and debug procedures for the PlayStation 1 port.
+Operator loop for bringing up a new scene to the current acceptance bar
+(pixel-perfect visuals + synced SFX across applicable variants). See
+[scene-status.md](scene-status.md) for the per-scene ledger.
 
-## Quick Reference
+## Prerequisites
 
-```bash
-# Clean build
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project/build-ps1 && rm -rf * && cmake .. && make"
+- Docker (or `sudo docker`) with image `jc-reborn-ps1-dev:amd64`
+- DuckStation (Flatpak: `org.duckstation.DuckStation`)
+- The project's `jc_reborn` host binary built at least once:
+  ```bash
+  ./scripts/build-host.sh
+  ```
 
-# Create CD image
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project && mkpsxiso cd_layout.xml"
+## The per-scene loop
 
-# Test in DuckStation
-open /tmp/DuckStation.app  # Then load jcreborn.cue
-```
+One iteration = one scene promoted from `⏳` to `✅ / ✅` in
+[scene-status.md](scene-status.md).
 
-## Full Development Cycle
-
-### 1. Make Code Changes
-
-Edit source files in your local repository:
-```bash
-# PS1-specific files
-vim graphics_ps1.c
-vim sound_ps1.c
-vim events_ps1.c
-
-# Core engine files (if needed)
-vim resource.c
-vim ttm.c
-```
-
-### 2. Clean Build
-
-**CRITICAL**: Always do a clean build to avoid stale object files!
+### 1. Capture the scene on the desktop host
 
 ```bash
-# Option A: Using build script
-./build-ps1.sh clean
-
-# Option B: Manual clean build
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project && rm -rf build-ps1 && mkdir build-ps1 && \
-           cd build-ps1 && \
-           cmake -DCMAKE_TOOLCHAIN_FILE=/opt/psn00bsdk/lib/libpsn00b/cmake/toolchain.cmake .. && \
-           make"
+./scripts/export-scene-foreground-pilot.sh \
+    ''                   \  # output dir (default: host-results/<slug>-foreground-pilot)
+    <slug>               \  # e.g. fishing2
+    '<ADS TAG>'          \  # e.g. 'FISHING 2'
+    <PACK_BASENAME>      \  # e.g. FISHING2
+    <raw_frame_idx>      \  # which capture frame to snapshot as the establishing .RAW
+    <RAW_BASENAME>          # e.g. FISH
 ```
 
-### 3. Check Build Output
+Produces:
+- `host-results/<slug>-foreground-pilot/host-capture/frames/*.bmp`
+- `host-results/<slug>-foreground-pilot/host-capture/frame-meta/*.json`
+- `host-results/<slug>-foreground-pilot/host-capture/sound-events.jsonl`
+- `generated/ps1/foreground/<PACK_BASENAME>.FG1` (overlay pack, FGP v2)
+- `generated/ps1/foreground/<PACK_BASENAME>D.FG1` (delta pack, FGP v2)
+- `generated/ps1/foreground/<RAW_BASENAME><idx>.RAW` (establishing frame)
+
+The `host-results/` tree is gitignored; only the `generated/ps1/foreground/*.FG1`
+and `.RAW` files are committed.
+
+### 2. Pick the establishing frame
+
+The `.RAW` is a pre-rendered background stamped before the FG1 replay
+starts, so the user sees a coherent scene instantly. Inspect
+`host-capture/frames/frame_NNNNN.bmp` and pick the first frame where
+static content is laid down but animation has not begun. Re-run step 1
+with the new `raw_frame_idx` if needed.
+
+### 3. Wire the scene in
+
+`config/ps1/cd_layout.xml` — add:
+```xml
+<file name="<PACK_BASENAME>.FG1"  type="data" source="../../generated/ps1/foreground/<PACK_BASENAME>.FG1"/>
+<file name="<PACK_BASENAME>D.FG1" type="data" source="../../generated/ps1/foreground/<PACK_BASENAME>D.FG1"/>
+<file name="<RAW_BASENAME><idx>.RAW" type="data" source="../../generated/ps1/foreground/<RAW_BASENAME><idx>.RAW"/>
+```
+
+`foreground_pilot.c` — add the scene to the routing functions:
+- `fgOverlayPackPathForScene(sceneName)` → `\\FG\\<PACK_BASENAME>.FG1;1`
+- `fgDirectPackPathForScene(sceneName)` → `\\FG\\<PACK_BASENAME>D.FG1;1`
+- `fgRawFramePathForScene(sceneName)` → `\\FG\\<RAW_BASENAME><idx>.RAW;1`
+- `fgAdsNameForScene(sceneName, &adsTagOut)` → sets the ADS filename + tag
+
+### 4. Build + launch
 
 ```bash
-# Verify executable was created
-ls -lh build-ps1/jcreborn.elf
-
-# Check executable size
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  mipsel-none-elf-size build-ps1/jcreborn.elf
-
-# Expected output:
-#    text    data     bss     dec     hex filename
-#   73860    6806   38644  119310   1d20e build-ps1/jcreborn.elf
+./scripts/rebuild-and-let-run.sh noclean
 ```
 
-### 4. Create CD Image
+Builds the PS1 executable inside Docker, regenerates the CD image, and
+launches DuckStation with the cue. BIOS plays first (boot script no
+longer passes `-fastboot`, so you get the chime for volume calibration).
+The game then boots straight into the scene named in `BOOTMODE.TXT`.
+
+### 5. Validate variants
+
+Edit `config/ps1/BOOTMODE.TXT` (or pass tokens on the `rebuild-and-let-run`
+line) to exercise each applicable variant:
+
+```
+fgpilot <slug>                          # default
+fgpilot <slug> night 1                  # dusk / night palette
+fgpilot <slug> lowtide 1                # tide state
+fgpilot <slug> holiday <N>              # holiday overlay 1..4
+fgpilot <slug> raft-stage <N>           # raft build stage 0..5
+fgpilot <slug> island-pos <x> <y>       # forced island position
+```
+
+Strike through any variant that does not apply to the scene (see
+[scene-status.md](scene-status.md) legend). Sign off each by human
+visual + audible review.
+
+### 6. Tick the row and commit
+
+In `docs/ps1/scene-status.md`:
+- Update the scene's row: `⏳` → `✅` for visuals and SFX.
+- List the validated variants (or strike through N/A ones).
+- Fill in "last verified" with the release tag once the next release
+  lands, or the current commit SHA in the interim.
+
+Commit with a scene-scoped message:
+```
+<slug>: pixel-perfect playback with synced SFX
+```
+
+### 7. Release cadence
+
+Every **10** scenes reaching `✅ / ✅` under this bar:
+```bash
+./scripts/release.sh "<milestone message>"
+```
+which bumps `VERSION`, copies the ISO to `release/`, creates an annotated
+tag `vX.Y.Z-ps1`, and pushes.
+
+## Rebuild / launch shortcuts
 
 ```bash
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project && mkpsxiso cd_layout.xml"
+# Build PS1 executable only (incremental)
+./scripts/build-ps1.sh
 
-# Verify CD image created
-ls -lh jcreborn.bin jcreborn.cue
+# Clean PS1 rebuild
+./scripts/build-ps1.sh clean
+
+# Regenerate CD image only (after build)
+./scripts/make-cd-image.sh
+
+# Build + CD image + launch DuckStation
+./scripts/rebuild-and-let-run.sh noclean
+
+# Full release (build + bump + tag + push)
+./scripts/release.sh "<message>"
 ```
 
-### 5. Test in Emulator
-
-```bash
-# Launch DuckStation
-open /tmp/DuckStation.app  # macOS
-# or
-flatpak run org.duckstation.DuckStation  # Linux
-
-# In DuckStation:
-# 1. File → Start Disc
-# 2. Select jcreborn.cue
-# 3. Observe output
-```
-
-### 6. Debug Issues
-
-**If it doesn't boot:**
-- Check DuckStation TTY console for errors
-- Look for visual debug colored screens
-- Verify BIOS is configured correctly
-
-**If it crashes:**
-- Add more visual debug points (colored rectangles)
-- Check memory usage with `mipsel-none-elf-size`
-- Verify BSS section is < 50KB
-
-## Visual Debugging
-
-Since `printf()` doesn't work in DuckStation, use colored screens:
-
-```c
-// At critical points in your code
-DRAWENV draw;
-SetDefDrawEnv(&draw, 0, 0, 640, 480);
-
-// Use different colors for different locations
-setRGB0(&draw, 255, 0, 0);    // RED = reached main()
-setRGB0(&draw, 0, 255, 0);    // GREEN = CD init OK
-setRGB0(&draw, 0, 0, 255);    // BLUE = resources loaded
-setRGB0(&draw, 255, 255, 0);  // YELLOW = graphics init OK
-
-draw.isbg = 1;  // Enable background clear
-PutDrawEnv(&draw);
-VSync(0);  // Display for 1 frame
-```
-
-## Memory Analysis
-
-### Check BSS Size
-
-**CRITICAL**: Keep BSS < 50KB for PS1 stability!
-
-```bash
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  mipsel-none-elf-size build-ps1/jcreborn.elf
-```
-
-If BSS > 50KB, convert static arrays to malloc:
-
-```c
-// BAD: Large static array
-static uint8 buffer[32768];  // 32KB in BSS!
-
-// GOOD: Heap allocation
-uint8 *buffer = malloc(32768);  // 32KB on heap
-```
-
-### Memory Profiling
-
-Run the memory test suite on desktop first:
-
-```bash
-# On desktop (SDL2)
-make test-memory
-
-# Analyze output for memory hotspots
-```
-
-## Common Build Errors
-
-### "undefined reference to..."
-
-**Cause**: Missing library or source file
-
-**Fix**: Check CMakeLists.ps1.txt:
-```cmake
-target_link_libraries(jcreborn
-    psxgpu psxcd psxspu psxapi psxgte psxsio psxpress
-)
-```
-
-### "No such file or directory"
-
-**Cause**: Missing include path
-
-**Fix**: Add to CMakeLists.ps1.txt:
-```cmake
-include_directories(
-    ${CMAKE_SOURCE_DIR}
-    /opt/psn00bsdk/include
-)
-```
-
-### "error: 'CdInit' undefined"
-
-**Cause**: Missing psxcd library or header
-
-**Fix**: Add `#include <psxcd.h>` and link psxcd library
-
-## Testing Strategy
-
-### Phase 1: Build Verification
-- [ ] Docker image builds successfully
-- [ ] CMake configuration succeeds
-- [ ] Source files compile without errors
-- [ ] Linker resolves all symbols
-- [ ] CD image generation completes
-
-### Phase 2: Boot Testing
-- [ ] DuckStation loads CD image
-- [ ] Executable boots without crash
-- [ ] Visual debug colors appear
-- [ ] No immediate errors
-
-### Phase 3: Functional Testing
-- [ ] Display background image
-- [ ] Render one TTM animation
-- [ ] Controller input responsive
-- [ ] Multiple layer compositing
-- [ ] Sprite rendering correct
-
-### Phase 4: Performance Testing
-- [ ] Frame rate ≥ 30 FPS
-- [ ] Memory usage < 2MB
-- [ ] VRAM usage < 1MB
-- [ ] No stuttering or glitches
-
-## Performance Profiling
-
-### Frame Rate
-
-Add frame counter to visual debug:
-
-```c
-static int frameCount = 0;
-frameCount++;
-
-// Every 60 frames (1 second at 60Hz)
-if (frameCount % 60 == 0) {
-    // Show frame count via colored screen
-}
-```
-
-### VRAM Usage
-
-Track VRAM allocation in graphics_ps1.c:
-
-```c
-// Current VRAM tracking
-static uint16 nextVRAMX = 640;
-static uint16 nextVRAMY = 4;
-
-// Add usage counter
-static uint32 vramUsed = 0;
-
-// In grLoadBmp:
-vramUsed += width * height * 2;  // 16-bit pixels
-```
-
-## Git Workflow
-
-### Committing Changes
-
-```bash
-# Stage changes
-git add graphics_ps1.c sound_ps1.c events_ps1.c
-
-# Commit with descriptive message
-git commit -m "PS1: Implement sprite flipping in grDrawSpriteFlip"
-
-# Push to ps1 branch
-git push origin ps1
-```
-
-### Creating Test Builds
-
-```bash
-# Create a test branch
-git checkout -b ps1-test-sprites
-
-# Make experimental changes
-vim graphics_ps1.c
-
-# Test thoroughly
-./build-ps1.sh
-
-# If successful, merge back
-git checkout ps1
-git merge ps1-test-sprites
-```
-
-## Critical PS1-Specific Rules
-
-### DO NOT:
-- ❌ Call `CdInit()` when booting from CD-ROM (causes crash)
-- ❌ Use `printf()` for debugging (doesn't output to TTY)
-- ❌ Create large static arrays (keep BSS < 50KB)
-- ❌ Use `sudo` with Docker commands (breaks permissions)
-
-### DO:
-- ✅ Use visual debugging (colored screens)
-- ✅ Use `malloc()` for large buffers
-- ✅ Always clean build when testing
-- ✅ Check BSS size after changes
-- ✅ Test frequently in DuckStation
-
-## Automated Build Script
-
-The `build-ps1.sh` script automates the entire process:
-
-```bash
-#!/bin/bash
-# Clean build for PS1
-
-set -e
-
-echo "=== PS1 Build Script ==="
-echo
-
-# Clean previous build
-echo "1. Cleaning previous build..."
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project && rm -rf build-ps1"
-
-# Build executable
-echo "2. Building executable..."
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project && mkdir build-ps1 && cd build-ps1 && \
-           cmake -DCMAKE_TOOLCHAIN_FILE=/opt/psn00bsdk/lib/libpsn00b/cmake/toolchain.cmake .. && \
-           make"
-
-# Create CD image
-echo "3. Creating CD image..."
-docker run --rm --platform linux/amd64 \
-  -v $(pwd):/project \
-  jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project && mkpsxiso cd_layout.xml"
-
-# Check outputs
-echo "4. Verifying outputs..."
-ls -lh jcreborn.bin jcreborn.cue build-ps1/jcreborn.elf
-
-echo
-echo "=== Build Complete ==="
-echo "Load jcreborn.cue in DuckStation to test"
-```
-
-## See Also
-
-- [Toolchain Setup](toolchain-setup.md) - Setting up the development environment
-- [Current Status](current-status.md) - What's implemented and what's next
-- [Build System](build-system.md) - CMake and CD image details
+## Debug + diagnostics
+
+- **Telemetry overlay**: `ps1_debug.c` provides a 5-panel on-screen
+  overlay. Use this instead of `printf()` — printing during the game
+  loop is unsafe on PS1.
+- **DuckStation console** output lands in DuckStation's own log.
+- **Per-scene capture diffs**: the host-capture frames + frame-meta
+  JSONs are a useful ground truth when a replay mismatches. Point
+  `compare-scene-reference.py` at them.
+- **Keep scratch files in `scratch/`**, never `/tmp`. DuckStation
+  logs grow fast and `/tmp` has filled and broken the shell before.
+
+## Historical / secondary tooling
+
+The headless regtest harness (`scripts/regtest-scene.sh`,
+`scripts/run-regtest.sh`, `config/ps1/regtest-scenes.txt`) and the
+binary-library regression stack are retained as secondary tools for
+targeted questions. They are **not** the primary acceptance gate;
+refer to [TESTING.md](TESTING.md) for when each is still useful and
+[ps1-branch-cleanup-plan.yaml](ps1-branch-cleanup-plan.yaml) for
+pending archival decisions.
+
+## See also
+
+- [scene-status.md](scene-status.md) — per-scene ledger
+- [current-status.md](current-status.md) — project narrative + history
+- [TESTING.md](TESTING.md) — validation strategy
+- [build-system.md](build-system.md) — CMake / Docker / CD layout
+- [toolchain-setup.md](toolchain-setup.md) — dev environment

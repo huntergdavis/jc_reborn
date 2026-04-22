@@ -1,5 +1,10 @@
 # Documentation Cleanup Summary
 
+> **⚠️ Historical document — from an earlier docs-reorg pass, not the current cleanup effort.**
+> The active cleanup contract is
+> [docs/ps1/ps1-branch-cleanup-plan.yaml](ps1/ps1-branch-cleanup-plan.yaml).
+> This file is retained for archaeology; do not cite as current policy.
+
 ## Overview
 
 Successfully reorganized all markdown documentation into focused, AI-friendly files (100-300 lines each). The new structure improves navigation, maintainability, and accessibility for both humans and AI assistants.

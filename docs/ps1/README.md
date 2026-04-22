@@ -1,139 +1,128 @@
-# Johnny Reborn - PlayStation 1 Port
+# Johnny Reborn — PlayStation 1 Port
 
-Quick start guide for building and testing the PS1 port.
+Quick-start entrypoint for the PS1 branch. The primary render path is
+**hybrid scene playback** (internal code name `fgpilot`): host-captured
+foreground pixels, captured SFX, and a narrow PS1 runtime that handles
+background, waves, holiday overlay, and SFX playback.
 
-## Quick Start
+## Current status
+
+| | |
+|---|---|
+| Release | `v0.3.6-ps1` (commit `f2737253`) |
+| Reference scene | `FISHING 1` — pixel-perfect visuals + synced SFX across night / low-tide / holiday / raft-stage |
+| Scenes fully validated under the reference bar | **1 / 63** |
+| Full ledger | [scene-status.md](scene-status.md) |
+
+"Fully validated" means human visual + audible signoff on the scene-playback
+path. Older counts (`25/63`, `60/63`, etc.) belong to earlier validation
+models and are preserved as history in `current-status.md`, not carried
+forward as current progress.
+
+## Quick start
 
 ### Prerequisites
-- Docker Desktop installed ([Download](https://www.docker.com/products/docker-desktop))
-- DuckStation PS1 emulator
+- Docker (for the `jc-reborn-ps1-dev:amd64` build image + PSn00bSDK)
+- DuckStation (Flatpak: `org.duckstation.DuckStation`)
 
-### Building
-
+### Build + run the reference scene
 ```bash
-# Run the automated build script
 ./scripts/rebuild-and-let-run.sh noclean
 ```
+Builds the PS1 executable, generates `jcreborn.bin/.cue`, launches
+DuckStation pointed at the cue. Boots into `FISHING 1` via `BOOTMODE.TXT`
+(`fgpilot fishing1`).
 
-This will:
-1. Build inside the Docker container (`jc-reborn-ps1-dev:amd64`) with PSn00bSDK
-2. Compile Johnny Reborn for PS1 via CMake
-3. Generate CD image (jcreborn.bin/jcreborn.cue) via mkpsxiso
+### Validate a variant
+```bash
+# night / low-tide / raft-stage / holiday
+./scripts/rebuild-and-let-run.sh noclean fgpilot fishing1 night 1
+./scripts/rebuild-and-let-run.sh noclean fgpilot fishing1 lowtide 1
+./scripts/rebuild-and-let-run.sh noclean fgpilot fishing1 raft-stage 5
+./scripts/rebuild-and-let-run.sh noclean fgpilot fishing1 holiday 4
+```
 
-### Testing
-
-1. Open DuckStation emulator
-2. File -> Boot Disc Image
-3. Select `jcreborn.bin`
-
-The game boots, loads resources from CD, and cycles through scene animations.
-
-## Project Status
-
-**Current Branch:** `ps1`
-**Last Updated:** 2026-03-21
-
-### Completed
-
-- [x] Docker + CMake + mkpsxiso build system (builds routinely)
-- [x] Graphics layer (~3300 lines, complete software compositing pipeline)
-- [x] CD-ROM I/O (2280 lines, reads from CD image)
-- [x] Input layer (controller mapping, pause, debug toggle)
-- [x] Resource system (hash-based O(1) lookups, LRU cache with pinning)
-- [x] Audio layer skeleton (SPU init, no playback)
-- [x] Scene restore pipeline (offline-authored scene contracts)
-- [x] Telemetry overlay (5-panel diagnostic system)
-- [x] Dirty-rect compositing optimization
-- [x] 4-bit indexed sprite format with palette LUTs
-- [x] 25/63 scenes verified on DuckStation
-
-### In Progress
-
-- [ ] Expand verified scenes from 25 to 63 (restore contract promotion)
-- [ ] Fix ACTIVITY.ADS tag 4 bring-up (stale frame)
-- [ ] Unblock BUILDING.ADS and FISHING.ADS entry paths
-- [ ] Audio playback implementation (WAV -> VAG, SPU channels)
-- [ ] Automated validation harness
+### Bring up a new scene
+See [development-workflow.md](development-workflow.md) for the full
+capture → pack → validate loop. High level:
+1. `./scripts/export-scene-foreground-pilot.sh` — host capture → FG1 pack + sound-event JSONL.
+2. Add the pack entry to `config/ps1/cd_layout.xml`.
+3. Add scene routing in `foreground_pilot.c`.
+4. Rebuild ISO, launch via `rebuild-and-let-run.sh`, iterate to pixel-perfect.
+5. Tick the row in `scene-status.md`.
 
 ## Why PS1?
 
-Johnny Reborn's optimized memory usage (350KB) and native 640x480 resolution make it a perfect fit for PS1:
-- **PS1 System RAM**: 2MB (plenty of headroom)
-- **PS1 VRAM**: 1MB
-- **PS1 Native Resolution**: 640x480
+Johnny Reborn's tight memory footprint and native 640×480 target fit PS1
+closely:
+- **Main RAM**: 2 MB
+- **VRAM**: 1 MB
+- **SPU RAM**: 512 KB (holds all 23 SFX VAGs preloaded at boot)
+- **Native output**: 640×480 interlaced
+
+The port is deliberately **hybrid**: the desktop host is the authoritative
+renderer and capture source; PS1 replays captured foreground + SFX and
+owns only the narrow runtime surface (background, wave animation,
+holiday overlay, SPU playback, input).
 
 ### Architecture
 
-The port keeps most of the codebase unchanged:
+**Unchanged from the desktop engine:**
+- Core engine (`ttm.c`, `ads.c`, `story.c`)
+- Game logic (`walk.c`, `calcpath.c`, `island.c`)
+- Utilities (`utils.c`, `config.c`, `bench.c`)
 
-**No changes needed:**
-- Core engine (ttm.c, ads.c, story.c)
-- Game logic (walk.c, calcpath.c, island.c)
-- Utilities (utils.c, config.c, bench.c)
+**PS1-specific:**
+- `graphics_ps1.c` — PSn00bSDK GPU + software compositing
+- `sound_ps1.c` — SPU playback (VAG preload at boot + round-robin voices)
+- `events_ps1.c` — PSX controller input
+- `cdrom_ps1.c` — CD-ROM file I/O
+- `foreground_pilot.c` — FG1 pack loader, frame-advance, SFX event firing
 
-**PS1-specific implementations:**
-- `graphics_ps1.c` - SDL2 -> PSn00bSDK GPU (software compositing pipeline)
-- `sound_ps1.c` - SDL_mixer -> PSn00bSDK SPU (skeleton)
-- `events_ps1.c` - SDL events -> PSX controller
-- `cdrom_ps1.c` - CD-ROM file I/O (replaces stdio)
-- `ps1_restore_pilots.h` - Auto-generated scene restore contracts
+**Offline pipeline (`scripts/`):**
+- `capture-host-scene.sh` — desktop capture (frames + metadata + sound events)
+- `export-scene-foreground-pilot.sh` — wraps capture + pack build for a scene
+- `build-scene-foreground-pack.py` — FG1 v2 pack compiler (visuals + SFX)
+- `wav2vag.py` — WAV → PS1 SPU ADPCM VAG encoder
+- `make-cd-image.sh` / `build-ps1.sh` / `rebuild-and-let-run.sh` — build + launch
 
-**Offline pipeline (scripts/):**
-- Scene analyzer -> restore specs -> cluster contracts -> pack compiler -> header generator
-- 63 scene specs, 34 cluster contracts, 26 restore pilots active
-
-### Memory Layout
-
-- **Code + Data**: ~120KB (PS-EXE)
-- **BSS**: ~57KB
-- **Resource Cache**: LRU with pinning
-- **VRAM**: 600KB framebuffers + texture cache
-- **SPU RAM**: 512KB reserved for sound effects
-
-## Building Manually
-
-If you prefer to build without the wrapper script:
-
-```bash
-# Build inside Docker
-docker run --rm -v $(pwd):/project jc-reborn-ps1-dev:amd64 \
-  bash -c "cd /project/build-ps1 && cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4 jcreborn"
-
-# Generate CD image
-mkpsxiso cd_layout.xml
-```
-
-## Controller Mapping
+## Controller mapping
 
 | PSX Button | Action |
-|-----------|--------|
-| Start | Pause/Unpause |
+|---|---|
+| Start | Pause / Unpause |
 | Select | Toggle debug |
 | Triangle | Advance frame (paused) |
 | Circle | Toggle max speed |
-| X/L1/L2/R1/R2 | Reserved |
+| X / L1 / L2 / R1 / R2 | Reserved |
 
 ## Documentation
 
-- **[Hardware Specs](hardware-specs.md)** - PS1 technical specifications
-- **[API Mapping](api-mapping.md)** - SDL2 -> PSn00bSDK translation
-- **[Build System](build-system.md)** - CMake, Docker, CD generation
-- **[Graphics Layer](graphics-layer.md)** - GPU implementation details
-- **[Audio Layer](audio-layer.md)** - SPU implementation details
-- **[Input Layer](input-layer.md)** - Controller implementation details
-- **[Current Status](current-status.md)** - Progress metrics
-- **[Toolchain Setup](toolchain-setup.md)** - Development environment
-- **[Development Workflow](development-workflow.md)** - Build and test procedures
-- **[Project History](project-history.md)** - Journey and lessons learned
-- **[Research Package](research/README.md)** - 2026-03 scene-pack and restore research
+**Current truth**
+- [scene-status.md](scene-status.md) — per-scene ledger under the reference bar
+- [current-status.md](current-status.md) — detailed progress + history of earlier validation models
+- [development-workflow.md](development-workflow.md) — operator loop for bringing up a new scene
+- [TESTING.md](TESTING.md) — validation strategy (primary = human signoff; regtest = legacy)
 
-## References
+**Platform reference**
+- [hardware-specs.md](hardware-specs.md) — PS1 hardware
+- [api-mapping.md](api-mapping.md) — SDL2 → PSn00bSDK mapping
+- [build-system.md](build-system.md) — CMake / Docker / CD generation
+- [toolchain-setup.md](toolchain-setup.md) — dev environment
 
-- [PSn00bSDK](https://github.com/Lameguy64/PSn00bSDK) - PS1 SDK
-- [mkpsxiso](https://github.com/Lameguy64/mkpsxiso) - CD image tool
-- [DuckStation](https://github.com/stenzek/duckstation) - PS1 emulator
-- [PS1 Dev Resources](https://psx.arthus.net/) - Documentation
+**History / archaeology** (kept searchable, not current truth)
+- [project-history.md](project-history.md)
+- [research/README.md](research/README.md) — design logs and prior status snapshots
+- [audio-optimization-spec.md](audio-optimization-spec.md)
+- [ps1-branch-cleanup-plan.yaml](ps1-branch-cleanup-plan.yaml) — in-flight cleanup contract
+
+## External references
+
+- [PSn00bSDK](https://github.com/Lameguy64/PSn00bSDK)
+- [mkpsxiso](https://github.com/Lameguy64/mkpsxiso)
+- [DuckStation](https://github.com/stenzek/duckstation)
+- [PS1 Dev Resources](https://psx.arthus.net/)
 
 ## License
 
-Same as main project (GPL-3.0). This port uses PSn00bSDK which is also open source.
+GPL-3.0, same as main project.

@@ -26,6 +26,10 @@ BUILDING 6 16 bringup island ads BUILDING.ADS 6
 BUILDING 7 15 bringup island ads BUILDING.ADS 7
 
 # --- FISHING.ADS (bringup=5, blocked=3) ---
+# NOTE: 'blocked' in this file reflects the legacy story/regtest route only.
+# FISHING 1 is the current reference scene under the fgpilot scene-playback
+# path — see docs/ps1/scene-status.md. The `blocked` token below is kept to
+# preserve the historical regtest-route manifest.
 FISHING 1 17 blocked story scene 17
 FISHING 2 18 blocked island ads FISHING.ADS 2
 FISHING 3 19 bringup island ads FISHING.ADS 3

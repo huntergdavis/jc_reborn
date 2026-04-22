@@ -1,5 +1,15 @@
 # PS1 Headless Regression Testing Harness
 
+> **⚠️ Secondary / legacy tooling.**
+> The headless regtest harness is no longer the primary acceptance gate
+> for the PS1 branch. Current scene bring-up goes through the
+> scene-playback (fgpilot) loop documented in
+> [development-workflow.md](development-workflow.md); human visual +
+> audible signoff is the certification gate. The regtest harness below
+> is retained as a secondary diagnostic tool. See
+> [TESTING.md](TESTING.md) for the active strategy.
+
+
 ## What It Is
 
 A fully headless PS1 emulation testing system built on DuckStation's `duckstation-regtest` binary, running in Docker. No display server needed. Runs at **520 FPS** (8x realtime) — 30 seconds of PS1 gameplay in ~3.6 seconds of wall time.

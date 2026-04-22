@@ -1,0 +1,1713 @@
+plan_id: ps1_branch_cleanup_master_plan
+plan_version: 6
+review_passes: 5
+status: partially_executed_docs_phase_landed
+created_on: 2026-04-22
+last_execution_pass: 2026-04-22
+
+execution_log:
+  - pass_date: 2026-04-22
+    agent_session_commit: pending
+    phases_completed:
+      - phase_01_protect_baseline
+      - phase_02_rewrite_primary_docs
+      - phase_02a_migrate_fgpilot_naming (docs layer only; code symbols intentionally untouched per plan hard_rules)
+      - phase_02b_reset_validation_status (seeded docs/ps1/scene-status.md as 1/63 ledger)
+      - phase_03_split_current_vs_historical_research (banners on historical snapshots + research/README.md rewrite)
+      - phase_06_partial_refresh_configs (FISHING 1 status in config/ps1/regtest-scenes.txt annotated)
+    phases_deferred_pending_human_gate:
+      - phase_03a_capture_archaeology (sizable writeup; better as its own session)
+      - phase_04_retire_binary_library_surface (needs manifest + sample-rebuild proof; archive destination is a human call)
+      - phase_05_prune_or_archive_other_heavy_artifacts (regtest-references, vision-artifacts, host-script-review)
+    notes:
+      - "Script renames export-fishing1-foreground-pilot.sh → export-scene-foreground-pilot.sh and build-fishing1-foreground-pack.py → build-scene-foreground-pack.py landed in commit 48dcb29e; this plan's canonical references updated to match."
+      - "scratch/ is the sanctioned scratch directory; /tmp is off-limits per repo memory feedback."
+repo_root: "."
+branch: ps1
+head_commit_at_plan_creation: 12641bfc
+current_reviewed_head_commit: f2737253
+baseline_release_tag: v0.3.6-ps1
+baseline_release_tag_object: 48a53dfd
+baseline_release_commit: f2737253
+baseline_release_tag_note: dereferenced_commit_for_annotated_tag
+previous_visual_only_release:
+  tag: v0.3.5-ps1
+  tag_object: 13f153d4
+  commit: 9448d49f
+  note: superseded_by_full_sfx_release
+intent: >
+  Professionalize the PS1 branch by rewriting stale references, preserving the
+  proven FISHING 1 fgpilot workflow as the current source of truth, now with
+  the full visual-plus-SFX baseline reflected accurately, archiving historical
+  research and validation artifacts, and retiring obsolete binary-library-
+  driven cleanup paths after safe archival.
+
+rules_of_engagement:
+  non_destructive_first: true
+  archive_before_delete: true
+  preserve_dirty_worktree: true
+  do_not_revert_user_changes: true
+  requires_human_confirmation_for:
+    - irreversible deletions
+    - archive destinations outside the repo
+    - removal of large historical datasets after inventory is captured
+
+working_tree_snapshot:
+  dirty_at_plan_creation: true
+  protected_live_surface:
+    - foreground_pilot.c
+    - ads.c
+    - jc_reborn.c
+    - graphics.c
+    - graphics.h
+    - graphics_ps1.c
+    - graphics_ps1.h
+    - sound_ps1.c
+    - ttm.c
+    - scripts/build-scene-foreground-pack.py
+    - scripts/build-foreground-draw-pack.py
+    - scripts/capture-host-scene.sh
+    - scripts/convert-sounds.sh
+    - scripts/export-scene-foreground-pilot.sh
+    - scripts/rebuild-and-let-run.sh
+    - scripts/wav2vag.py
+    - generated/ps1/foreground/FISHING1.FG1
+    - generated/ps1/foreground/FISHING1.FOC
+    - generated/ps1/foreground/FISHING1D.FG1
+    - host-results/fishing1-foreground-pilot
+    - docs/ps1/research/WATER_ANIMATION_HANDOFF_2026-04-21.md
+  note: >
+    Future cleanup work must start by respecting the existing dirty tree. This
+    plan is not permission to reset, overwrite, or discard current work.
+
+current_truth:
+  validated_reference_scene:
+    scene: "FISHING 1"
+    state: fully_working_on_ps1
+    validation_date: 2026-04-22
+    validation_scope: >
+      Proven today for FISHING 1 and its validated state variants. This is the
+      branch's first fully working PS1 reference scene: pixel-perfect visually
+      and now complete with synchronized SFX playback. This is the branch's
+      reference scene and reference methodology, but not a claim that every PS1
+      scene is already promoted to the same end-to-end status.
+    release_marker:
+      tag: v0.3.6-ps1
+      annotated_tag_object: 48a53dfd
+      commit: f2737253
+      note: dereferenced_commit_for_annotated_tag
+      supersedes_visual_only_release: v0.3.5-ps1
+    validation_method: human_visual_and_audible_signoff
+    audio_status: full_sfx_working
+    audio_milestone_commits:
+      - 355227fa
+      - f2737253
+    current_main_command: "./scripts/rebuild-and-let-run.sh fgpilot fishing1"
+    current_variant_tokens:
+      - "lowtide 0|1"
+      - "raft-stage 0..5"
+      - "night 0|1"
+      - "holiday 0..4"
+      - "island-pos <x> <y>"
+      - "story-day <n>"
+    proven_variant_families:
+      - night
+      - low_tide
+      - holiday
+      - raft_stage
+    canonical_assets:
+      - generated/ps1/foreground/FISHING1.FG1
+      - generated/ps1/foreground/FISHING1D.FG1
+      - generated/ps1/foreground/FISHING1.FOC
+      - generated/ps1/foreground/FISH24.RAW
+      - host-results/fishing1-foreground-pilot/foreground-analysis.json
+      - host-results/fishing1-foreground-pilot/foreground-pack.json
+      - host-results/fishing1-foreground-pilot/foreground-pack-direct.json
+      - host-results/fishing1-foreground-pilot/foreground-draw-pack.json
+      - host-results/fishing1-foreground-pilot/host-capture
+      - host-results/fishing1-foreground-pilot/host-capture/sound-events.jsonl
+      - host-results/fishing1-foreground-pilot/host-capture-full
+    canonical_metrics:
+      source_frame_count: 156
+      packed_frame_count: 95
+      fg1_pack_size_bytes: 1815850
+      direct_fg1_pack_size_bytes: 1683870
+      draw_pack_size_bytes: 8118
+      sound_event_count: 9
+      host_capture_bundle_size: 376M
+
+  primary_render_methodology:
+    internal_code_name: fgpilot
+    external_description: primary_ps1_hybrid_scene_playback_path
+    status: proven_primary_method
+    summary: >
+      PS1 scene work now uses host-captured foreground playback packs for
+      transient scene content and a runtime island/ocean scene base for PS1
+      background behavior, with host-captured sound events now replayed through
+      the PS1 SFX path. This is no longer a theory, test, or experiment. It is
+      the current rendering methodology that produced the fully working FISHING
+      1 baseline.
+    host_side_pipeline:
+      - "Capture authoritative desktop frames, metadata, and sound events with scripts/capture-host-scene.sh"
+      - "Export the FISHING 1 pilot bundle with scripts/export-scene-foreground-pilot.sh"
+      - "Build PS1 foreground packs with scripts/build-scene-foreground-pack.py, including sound-event payloads"
+      - "Build draw-event pack with scripts/build-foreground-draw-pack.py"
+    ps1_side_pipeline:
+      - "Boot fgpilot scene path"
+      - "Preload BACKGRND.BMP before heavy bg-tile allocation"
+      - "Load scene base via OCEAN00.SCR / ISLETEMP.SCR / NIGHT.SCR"
+      - "Animate shoreline waves in the runtime backdrop path"
+      - "Replay scene-relative foreground frames from FG1"
+      - "Replay captured SFX events through PS1 sound playback"
+      - "Restamp holiday overlay after foreground composition"
+      - "Use rect-based clean background backups for the dynamic area only"
+    hard_rules:
+      - "Keep `fgpilot` as an internal code term if needed, but document it as the main PS1 render path."
+      - "Do not frame the active path as `fg test`, `pilot-only`, `theory`, `proposed`, or `temporary`."
+      - "Do not present binary-library archaeology as the default way to move the branch forward."
+      - "Use scene-by-scene human validation as the acceptance gate."
+      - "Treat full dynamic ADS recreation as optional legacy context, not the current reference path."
+    scope_boundary:
+      - "Document fgpilot as the current PS1 scene-work methodology."
+      - "Do not imply that every scene is already finished merely because FISHING 1 is finished."
+      - "Use FISHING 1 as the reference implementation for how future scenes should be brought up."
+
+  platform_positioning:
+    desktop_host_role: authoritative_renderer_and_capture_source
+    ps1_role: hybrid_playback_target
+    unique_port_character:
+      - "Unlike desktop/native paths, PS1 does not need to recreate the entire original dynamic scene graph at runtime for validated scenes."
+      - "PS1 correctness is achieved by combining offline-authored foreground content with narrow runtime background logic."
+      - "This branch should describe that hybrid model as deliberate engineering, not as a compromise hidden behind experimental wording."
+
+status_model_correction:
+  problem: >
+    Some checked-in scene status surfaces still describe FISHING 1 as blocked.
+    That conflicts with the current validated fgpilot baseline, but it may still
+    reflect the old story-scene or raw regtest route rather than the current
+    fgpilot route.
+  required_fix: >
+    Do not blindly replace every `blocked` marker with `verified`. Split status
+    surfaces by route where needed.
+  preferred_status_axes:
+    - story_route_status
+    - fgpilot_route_status
+    - reference_scene_status
+  immediate_example:
+    path: config/ps1/regtest-scenes.txt
+    current_entry: "FISHING 1 17 blocked story scene 17"
+    interpretation: >
+      This likely describes the story/regtest route, not the validated fgpilot
+      route. Future cleanup should preserve that distinction instead of erasing
+      it.
+
+red_team_findings:
+  first_pass_issues_found:
+    - issue: git_recency_is_not_script_usage
+      correction: >
+        The hardened plan now treats git history as last-modified evidence only,
+        not proof that a script is unused or safe to remove.
+    - issue: methodology_scope_needed_tighter_boundaries
+      correction: >
+        The hardened plan now states clearly that FISHING 1 is the proven
+        baseline and reference implementation, not automatic proof of complete
+        scene coverage.
+    - issue: binary_library_removal_needed_archive_guards
+      correction: >
+        The hardened plan now requires an archive manifest and sample
+        reproducibility checks before dropping rebuildable payloads.
+    - issue: stale_reference_list_was_incomplete
+      correction: >
+        The hardened plan now explicitly includes additional stale surfaces such
+        as docs/ps1/regtest-quickstart.md.
+
+editorial_red_team_findings:
+  second_pass_issues_found:
+    - issue: earlier_versions_did_not_define_which_sources_win_when_docs_conflict
+      correction: >
+        This pass adds an explicit evidence hierarchy and citation backbone so
+        future cleanup work can distinguish primary artifacts from stale
+        summaries.
+    - issue: historical_status_numbers_were_too_easy_to_flatten_into_one_story
+      correction: >
+        This pass records the distinct meanings of `25 / 63`, `27 / 63`,
+        `57 / 63`, `60 / 63`, and `63 / 63` so they are preserved as
+        historical truth surfaces instead of blended into a false linear
+        narrative.
+    - issue: the_march_29_validation_log_needed_explicit_demotion_language
+      correction: >
+        This pass treats that `63 / 63` surface as a historical false summit:
+        valuable evidence about what the harness could do at the time, but not
+        usable as current scene-correct validation truth.
+    - issue: release_tag_provenance_was_easy_to_nitpick
+      correction: >
+        This pass distinguishes the annotated tag object from the dereferenced
+        release commit so the milestone can be cited precisely.
+    - issue: the_reporter_roles_risked_sounding_more_literal_than_the_evidence_supports
+      correction: >
+        This pass keeps the role framing explicitly documentary and ties it back
+        to concrete files, manifests, and commit ranges.
+
+evidence_hierarchy:
+  precedence_order:
+    - tier: 1
+      name: primary_runtime_and_repo_artifacts
+      examples:
+        - source_code_and_current_configs
+        - generated_pack_metadata_and_artifact_manifests
+        - release_tags_and_dereferenced_release_commits
+        - git_history_when_used_to_establish_what_the_branch_believed_at_a_given_time
+      editorial_rule: highest_weight_for_current_truth_and_asset_provenance
+    - tier: 2
+      name: contemporaneous_worklogs_and_research_notes
+      examples:
+        - docs/ps1/research/OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md
+        - docs/ps1/research/WATER_ANIMATION_WORKLOG_2026-04-21.md
+        - docs/ps1/research/HARNESS_WORKLOG_2026-03-28.md
+      editorial_rule: strong_evidence_for_why_decisions_changed
+    - tier: 3
+      name: curated_status_docs_and_operator_guides
+      examples:
+        - docs/ps1/current-status.md
+        - docs/ps1/TESTING.md
+        - docs/ps1/project-history.md
+      editorial_rule: preserve_as_historical_snapshots_when_they_conflict_with_tier_1_or_tier_2
+    - tier: 4
+      name: retrospective_interpretation
+      examples:
+        - this_cleanup_plan
+        - future_blog_post_material
+      editorial_rule: must_cite_lower_tiers_for_every_nontrivial_claim
+  conflict_rules:
+    - if_a_later_primary_artifact_conflicts_with_an_older_status_doc_the_status_doc_becomes_history_not_truth
+    - if_a_number_is_reused_without_its_original_definition_it_is_invalid_for_primary_docs
+    - commit_messages_can_establish_what_the_branch_claimed_at_the_time_but_not_what_must_be_treated_as_current_truth
+    - historical_docs_should_be_quoted_as_historical_definitions_not_as_universal_metrics
+
+historical_status_surfaces_and_meanings:
+  - label: restore_rollout_status_25_of_63
+    date: 2026-03-21
+    source_paths:
+      - docs/ps1/current-status.md
+      - docs/ps1/project-history.md
+      - docs/ps1/TODO.md
+    meaning_at_the_time: restore_rollout_verified_scenes_on_the_primary_status_page
+    why_it_cannot_be_reused_as_current_truth: >
+      It belongs to the restore-pilot era and predates the later scene-playback
+      baseline and stricter reference-scene framing.
+    preserve_as: historical_restore_rollout_snapshot
+
+  - label: research_snapshot_status_27_of_63
+    date: 2026-03-21
+    source_paths:
+      - docs/ps1/research/CURRENT_STATUS_2026-03-21.md
+      - docs/ps1/research/README.md
+    meaning_at_the_time: live_header_verified_scenes_inside_the_research_package
+    why_it_cannot_be_reused_as_current_truth: >
+      It is a research-snapshot metric with a different promoted-scene surface
+      than the top-level docs.
+    preserve_as: historical_research_status_snapshot
+
+  - label: validation_log_status_63_of_63
+    date: 2026-03-29
+    source_paths:
+      - docs/ps1/research/VALIDATION_LOG_2026-03-29.md
+      - docs/ps1/research/AGENT_PROMPT_2026-03-29.md
+    meaning_at_the_time: harness_level_scene_validation_claim_after_timing_and_alignment_work
+    why_it_cannot_be_reused_as_current_truth: >
+      Later docs, configs, and commit history show the branch reclassified these
+      surfaces as bringup or scene-content routing evidence rather than final
+      human-signed scene correctness.
+    preserve_as: historical_false_summit
+
+  - label: island_content_status_57_of_63
+    date: 2026-04-04
+    source_commits:
+      - 84f1c973
+    source_paths:
+      - docs/ps1/TESTING.md
+    meaning_at_the_time: scenes_rendering_with_island_content
+    why_it_cannot_be_reused_as_current_truth: >
+      Rendering island content is weaker than scene-correct validation and is
+      explicitly part of the older headless/regtest vocabulary.
+    preserve_as: historical_bringup_metric
+
+  - label: headless_regtest_status_60_of_63
+    date: 2026-04-04..2026-04-07
+    source_commits:
+      - 3cc47f01
+      - 36b50f24
+    source_paths:
+      - docs/ps1/TESTING.md
+      - config/ps1/regtest-scenes.txt
+      - docs/ps1/regtest-quickstart.md
+    meaning_at_the_time: verified_or_bringup_status_within_the_headless_regtest_surface
+    why_it_cannot_be_reused_as_current_truth: >
+      This number belongs to the headless route and was later softened from
+      `verified` language into `bringup` language for exactly that reason.
+    preserve_as: historical_regtest_status_surface
+
+  - label: current_reference_status_1_of_63
+    date: 2026-04-22
+    source_commits:
+      - 9448d49f
+      - 355227fa
+      - f2737253
+    source_paths:
+      - docs/ps1/ps1-branch-cleanup-plan.yaml
+      - host-results/fishing1-foreground-pilot/foreground-pack.json
+      - host-results/fishing1-foreground-pilot/foreground-pack-direct.json
+      - host-results/fishing1-foreground-pilot/foreground-draw-pack.json
+    meaning_at_the_time: human_signed_scene_by_scene_reference_validation_with_visual_and_sfx_complete_reference_scene
+    why_it_is_current_truth: >
+      This is the only currently documented status model that matches the
+      present proven baseline and the user-confirmed reference scene.
+    preserve_as: active_primary_status_surface
+
+citation_backbone:
+  - claim_id: branch_origin_and_initial_ps1_optimism
+    claim: >
+      The PS1 branch grew out of the low-memory `4mb2025` line and initially
+      looked like a strong fit because of native 640x480 output and aggressive
+      memory work already done on the codebase.
+    evidence:
+      - docs/ps1/project-history.md
+      - docs/archive/CLAUDE.md
+    note: historical_self_conception_not_current_methodology
+
+  - claim_id: multi_platform_porter_context
+    claim: >
+      The PS1 effort happened inside a repo culture already shaped by multiple
+      bespoke platform ports, not as a one-off isolated experiment.
+    evidence:
+      - README.md
+      - docs/archive/CLAUDE.md
+    note: important_for_future_blog_opening_and_team_portrait
+
+  - claim_id: restore_pipeline_became_the_march_truth_surface
+    claim: >
+      By mid-to-late March, restore specs, cluster contracts, scene packs, and
+      promoted-scene counts were the dominant explanation of forward progress.
+    evidence:
+      - docs/ps1/current-status.md
+      - docs/ps1/project-history.md
+      - docs/ps1/research/README.md
+      - docs/ps1/research/CURRENT_STATUS_2026-03-21.md
+    note: preserve_as_major_era_not_final_answer
+
+  - claim_id: validation_false_positive_problem
+    claim: >
+      The branch repeatedly had to defend against counting title, black,
+      ocean-only, or scene-routing outputs as success.
+    evidence:
+      - docs/ps1/research/AGENT_PROMPT_2026-03-29.md
+      - docs/ps1/research/HARNESS_WORKLOG_2026-03-28.md
+      - config/ps1/vlm-scene-pack.json
+      - README.md
+    note: central_to_the_cleanup_narrative_because_it_explains_why_old_numbers_cannot_survive_unchanged
+
+  - claim_id: bringup_rename_and_status_softening
+    claim: >
+      Early-April work explicitly softened scene status language from
+      verification toward bringup, showing that the project already knew the old
+      status vocabulary was too strong.
+    evidence:
+      - 36b50f24
+      - docs/ps1/TESTING.md
+      - config/ps1/regtest-scenes.txt
+    note: must_be_cited_when_explaining_why_old_status_surfaces_are_demoted
+
+  - claim_id: binary_library_was_archaeology_not_finish_line
+    claim: >
+      The binary library was a powerful historical debugging instrument, but it
+      belongs to the archaeology era rather than the final scene-promotion
+      workflow.
+    evidence:
+      - binary-library/index.json
+      - 84f1c973
+      - 36b50f24
+      - git_history_2026_04_04_to_2026_04_12
+    note: keep_metadata_and_story_remove_weight
+
+  - claim_id: static_fit_did_not_settle_runtime_truth
+    claim: >
+      March analyzer confidence and paper-fit memory numbers did not survive
+      contact with the later runtime allocation shape and preload-order bugs.
+    evidence:
+      - docs/ps1/research/README.md
+      - docs/ps1/research/OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md
+      - docs/ps1/research/WATER_ANIMATION_WORKLOG_2026-04-21.md
+    note: key_methodology_pivot_claim
+
+  - claim_id: fgpilot_to_scene_playback_winning_line
+    claim: >
+      April 12 through April 22 is the winning line: offline foreground capture,
+      scene-relative playback, ocean restore, wave animation, draw-event
+      capture, variant validation, and finally full SFX playback culminating in
+      a fully working FISHING 1.
+    evidence:
+      - 4439f08a
+      - 1c7481ca
+      - 77276e50
+      - e24c2c23
+      - 44cec0a6
+      - 74bb0c24
+      - 9448d49f
+      - 355227fa
+      - f2737253
+      - docs/ps1/research/OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md
+      - docs/ps1/research/FISHING1_PIXEL_PERFECT_PLAN_2026-04-21.md
+      - docs/ps1/research/WATER_ANIMATION_WORKLOG_2026-04-21.md
+    note: primary_backbone_for_rewritten_docs
+
+  - claim_id: fishing1_first_fully_working_scene
+    claim: >
+      `FISHING 1` is now the first scene that should be described as truly
+      fully working on PS1, because the visual baseline has been extended to
+      include full SFX playback across validated variants.
+    evidence:
+      - 355227fa
+      - f2737253
+      - host-results/fishing1-foreground-pilot/foreground-pack.json
+      - host-results/fishing1-foreground-pilot/foreground-pack-direct.json
+      - sound_ps1.c
+    note: use_this_when_rewriting_current_status_and_release_history
+
+  - claim_id: release_tag_needs_precise_provenance
+    claim: >
+      The release milestone should cite both the annotated tag object and the
+      dereferenced commit to avoid provenance ambiguity.
+    evidence:
+      - v0.3.6-ps1_tag_object_48a53dfd
+      - f2737253
+    note: editorial_precision_requirement
+
+missing_story_elements_filled_by_editorial_pass:
+  - the_ps1_branch_did_not_begin_with_fgpilot_it_began_with_general_portability_and_low_memory_confidence
+  - the_repo_owner_was_already_a_multi_platform_porter_before_ps1_became_the_main_story
+  - the_branch_changed_the_meaning_of_verified_multiple_times_and_that_is_part_of_the_story_not_an_embarrassing_detail_to_hide
+  - march_and_early_april_contain_false_summits_that_should_be_preserved_as_learning_events
+  - the_winning_bespoke_method_is_more_convincing_when_set_against_the_generic_systems_that_almost_worked_but_did_not_finish
+  - the_cleanup_plan_must_preserve_how_the_team_learned_not_just_what_the_team_kept
+  - the_first_scene_is_no_longer_only_visually_complete_it_now_has_a_small_but_real_audio_completion_chapter
+
+project_eras:
+  - era: embedded_port_bootstrap_and_runtime_survival
+    date_range: "2025-10-18..2026-03-16"
+    summary: >
+      The first long stretch was classic embedded-port work: cross-compilation,
+      PS1 build and CD flow, CD-ROM I/O, primitive rendering order, sprite and
+      heap stabilization, and basic platform survival at native 640x480.
+      The agent-facing docs from this era read like a field manual for getting
+      a difficult target to boot, render, and stay alive.
+    keep_as: foundational_origin_story
+    disposition: preserve_as_foundational_archaeology
+
+  - era: restore_pack_and_rollout_surface
+    date_range: "2026-03-17..2026-03-28"
+    summary: >
+      March work centered on restore specs, rollout manifests, scene clusters,
+      dirty-region templates, and proving broad scene coverage through the
+      restore-pack pipeline.
+    keep_as: historical_research
+    disposition: archive_and_demote
+
+  - era: validation_and_instrumentation_maximalism
+    date_range: "2026-03-29..2026-04-11"
+    summary: >
+      The branch then became a measurement machine: scene validation prompts,
+      host truth, semantic truth, HTML review surfaces, VLM and classifier
+      packs, screenshot overlays, headless regtests, and large binary-library
+      archaeology intended to prevent false confidence.
+    keep_as: historical_validation_infrastructure
+    disposition: archive_and_summarize_as_one_coherent_phase
+
+  - era: binary_library_and_regression_archaeology
+    date_range: "2026-04-04..2026-04-11"
+    summary: >
+      April regression work built a very large historical binary corpus and a
+      surrounding scan/bisection toolchain to chase FISHING 1 onset and
+      regression boundaries.
+    keep_as: historical_debugging_context
+    disposition: archive_out_of_repo_then_remove_from_primary_branch_surface
+
+  - era: foreground_playback_pivot_to_validated_baseline
+    date_range: "2026-04-12..2026-04-22"
+    summary: >
+      The branch pivoted to offline foreground playback, then iterated through
+      scene-relative composition, ocean restore, wave animation, draw-event
+      capture, state variants, and finally full SFX playback until FISHING 1
+      became fully working.
+    keep_as: authoritative_current_methodology
+    disposition: promote_and_document
+    milestone_commits:
+      - { sha: 1c7481ca, date: 2026-04-12, message: "Add host foreground scene export pilot" }
+      - { sha: 77276e50, date: 2026-04-12, message: "Add PS1 foreground playback pilot scaffold" }
+      - { sha: e24c2c23, date: 2026-04-13, message: "Add full-frame Fishing 1 foreground pilot" }
+      - { sha: de1e0b89, date: 2026-04-14, message: "Prove generic foreground runtime on Fishing 2" }
+      - { sha: 44cec0a6, date: 2026-04-18, message: "Restore ocean base under foreground runtime" }
+      - { sha: 6ab48668, date: 2026-04-18, message: "Capture Fishing 1 foreground as visible pixels" }
+      - { sha: 5ea67b35, date: 2026-04-19, message: "Make Fishing 1 foreground packs scene-relative" }
+      - { sha: 74bb0c24, date: 2026-04-21, message: "Animate Fishing 1 shore waves in fgpilot scenes" }
+      - { sha: f76f0944, date: 2026-04-21, message: "fishing1: wire boot-override tokens and low-tide beach sprites" }
+      - { sha: 8670d2a5, date: 2026-04-22, message: "Capture DRAW_LINE/DRAW_PIXEL for fg-only + fishing1 raft stages" }
+      - { sha: 16345973, date: 2026-04-22, message: "fishing1: drop scene-base augmentation now that DRAW_LINE is captured" }
+      - { sha: 67822af1, date: 2026-04-22, message: "fishing1: wire islandState.holiday overlay into fgpilot path" }
+      - { sha: 58bb41d4, date: 2026-04-22, message: "fishing1: replay islandInit sprite order when low-tide" }
+      - { sha: 33263ced, date: 2026-04-22, message: "fishing1: night-mode scene base + host CLI night/holiday overrides" }
+      - { sha: 9448d49f, date: 2026-04-22, message: "release: v0.3.5-ps1 - fishing1 scene pixel-perfect across all variants" }
+      - { sha: 355227fa, date: 2026-04-22, message: "fishing1: full SFX pipeline - host capture to pack to PS1 playback" }
+      - { sha: f2737253, date: 2026-04-22, message: "release: v0.3.6-ps1 - fishing1 pixel-perfect with full SFX across all variants" }
+
+authoritative_sources_to_keep_visible:
+  - path: docs/ps1/ps1-branch-cleanup-plan.yaml
+    role: cleanup_execution_contract
+  - path: docs/ps1/research/FISHING1_PIXEL_PERFECT_PLAN_2026-04-21.md
+    role: historical_design_intent_for_the_validated_path
+    note: keep_but_demote_once_main_docs_are_rewritten
+  - path: docs/ps1/research/WATER_ANIMATION_HANDOFF_2026-04-21.md
+    role: technical_handoff_for_wave/integration_root_cause_and_fix
+  - path: docs/ps1/research/WATER_ANIMATION_WORKLOG_2026-04-21.md
+    role: technical_worklog_for_the_final_water_path
+  - path: foreground_pilot.c
+    role: active_runtime_scene_playback_implementation
+  - path: ads.c
+    role: active_scene_base_wave_and_holiday_glue
+  - path: jc_reborn.c
+    role: active_boot_override_and_fgpilot_entrypoint
+  - path: sound_ps1.c
+    role: active_ps1_sfx_playback_implementation
+  - path: scripts/convert-sounds.sh
+    role: canonical_ps1_sound_asset_refresh_wrapper
+  - path: scripts/wav2vag.py
+    role: canonical_ps1_vag_encoder
+  - path: scripts/export-scene-foreground-pilot.sh
+    role: canonical_host_export_workflow
+  - path: scripts/capture-host-scene.sh
+    role: canonical_host_capture_workflow
+  - path: scripts/build-scene-foreground-pack.py
+    role: canonical_foreground_pack_compiler
+  - path: scripts/build-foreground-draw-pack.py
+    role: canonical_draw_event_pack_compiler
+  - path: generated/ps1/foreground
+    role: active_generated_scene_assets
+  - path: host-results/fishing1-foreground-pilot
+    role: active_reference_capture_bundle
+
+source_audit_scope:
+  audit_date: 2026-04-22
+  reporter_pass_completed: true
+  reviewed_markdown_files:
+    count: 318
+    included_roots:
+      - README.md
+      - docs
+      - .claude
+      - tests
+      - models
+    excluded_generated_forests:
+      - binary-library
+      - host-results
+      - regtest-references
+      - regtest-results
+      - vision-artifacts
+      - .venv-vlm
+      - build-ps1
+    method_note: >
+      Narrative and instruction docs were read directly. Very large generated
+      evidence forests were handled through their indexes, manifests, and
+      representative leaf samples so the archaeology plan can preserve their
+      meaning without pretending every generated leaf is a design document.
+  reviewed_claude_skill_files:
+    count: 15
+    directory: .claude/skills
+    dominant_themes:
+      - embedded_builds_and_cross_compile_discipline
+      - freestanding_porting_and_missing_libc_stubs
+      - rendering_order_and_gpu_debugging
+      - memory_budget_pressure
+      - exact_scripted_workflows_over_ad_hoc_commands
+  reviewed_machine_readable_surfaces:
+    count: 372
+    representative_paths:
+      - config/ps1/regtest-scenes.txt
+      - config/ps1/vlm-scene-pack.json
+      - host-script-review/manifest.json
+      - host-script-review/verification-summary.json
+      - host-results/fishing1-foreground-pilot/foreground-analysis.json
+      - host-results/fishing1-foreground-pilot/foreground-pack.json
+      - host-results/fishing1-foreground-pilot/foreground-pack-direct.json
+      - host-results/fishing1-foreground-pilot/foreground-draw-pack.json
+      - binary-library/index.json
+    method_note: >
+      Machine files were used to reconstruct what each harness believed, how it
+      defined success, and which artifact contracts it considered stable or
+      reproducible at the time.
+  git_history_used_as_evidence: true
+  git_history_findings:
+    - early_history_reads_like_embedded_port_bootstrap_work
+    - march_history_reads_like_restore_pack_and_rollout_expansion
+    - early_april_history_reads_like_validation_and_archaeology_at_scale
+    - april_12_to_april_22_reads_like_a_tight_bespoke_push_to_the_winning_fishing1_path
+    - latest_head_and_release_now_extend_that_winning_line_from_visual_completion_to_full_sfx_completion
+  caveats:
+    - reviewed_counts_are_filtered_to_human_meaningful_docs_and_machine_indexes_not_every_generated_leaf
+    - git_history_was_used_to_establish_timeline_and_branch_self_description_not_as_a_substitute_for_runtime_evidence
+
+reporter_team_portrait:
+  framing: >
+    The branch reads like the notebook of a small newsroom-lab staffed by
+    different but like-minded contributors: a human operator setting the
+    standard and several agent/tooling voices that kept changing jobs without
+    changing values.
+  shared_values_seen_across_docs_history_and_manifests:
+    - evidence_before_confidence
+    - reproducibility_before_storytelling
+    - human_review_before_claimed_validation
+    - memory_and_runtime_reality_over_elegant_theory
+    - bespoke_pragmatism_when_generic_frameworks_stop_paying_off
+    - preserve_the_paper_trail_even_when_the_direction_changes
+  observed_roles:
+    - role: operator_editor
+      description: >
+        Sets the bar for what counts as real, rejects convenient wins, and keeps
+        redirecting the branch toward what is actually visible on screen.
+      strongest_evidence:
+        - README.md
+        - docs/resuming-1-10-2026.md
+        - git_history
+    - role: embedded_porter
+      description: >
+        The early agent voice is a disciplined embedded engineer: cross-compile,
+        stub libc, fix freestanding errors, respect exact build scripts, and
+        learn the GPU in public.
+      strongest_evidence:
+        - .claude/skills/cmake-embedded-build.md
+        - .claude/skills/embedded-libc-stubs.md
+        - .claude/skills/ps1-build-workflow.md
+        - .claude/skills/ps1-rendering-debug.md
+    - role: instrumentarian
+      description: >
+        Builds overlays, debug panels, screenshot decoders, manifest contracts,
+        and HTML review surfaces so failures become legible instead of
+        anecdotal.
+      strongest_evidence:
+        - docs/PS1_LEFT_DEBUG_PANEL.md
+        - docs/PS1_DEBUGGING.md
+        - host-script-review/verification-summary.json
+        - git_history_2026_03_31_to_2026_04_03
+    - role: validator_skeptic
+      description: >
+        Refuses to count black frames, title frames, or ocean-only frames as
+        wins, and treats `63/63` style claims as suspect unless backed by human
+        review of actual scene content.
+      strongest_evidence:
+        - docs/ps1/research/AGENT_PROMPT_2026-03-29.md
+        - docs/ps1/research/VALIDATION_LOG_2026-03-29.md
+        - config/ps1/regtest-scenes.txt
+        - config/ps1/vlm-scene-pack.json
+    - role: archaeology_engineer
+      description: >
+        Builds large historical corpora, onset scans, and sequence or boundary
+        tools to understand where the branch went wrong and when it got better.
+      strongest_evidence:
+        - binary-library/index.json
+        - git_history_2026_04_04_to_2026_04_12
+    - role: bespoke_scene_engineer
+      description: >
+        Accepts that the winning PS1 path is not a generic replay system but a
+        carefully authored hybrid scene-playback method shaped by memory and
+        rendering constraints.
+      strongest_evidence:
+        - docs/ps1/research/OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md
+        - docs/ps1/research/WATER_ANIMATION_WORKLOG_2026-04-21.md
+        - docs/ps1/research/FISHING1_PIXEL_PERFECT_PLAN_2026-04-21.md
+        - foreground_pilot.c
+        - ads.c
+  unifying_read: >
+    Different voices handled different phases, but they were aligned on the
+    same ethic: make the machine legible, distrust convenient narratives, and
+    keep pushing until the screen tells the truth.
+
+agent_perspective_findings:
+  phase_1_bootstrap:
+    summary: >
+      The `.claude` skill set assumes the agent is helping a hard embedded port,
+      not running a content pipeline. The emphasis is on exact commands, SDK
+      quirks, missing libc, draw-order bugs, and memory maps.
+    implications_for_cleanup:
+      - preserve_the_skill_docs_as_primary_archaeology
+      - do_not_rewrite_history_as_if_scene_playback_was_obvious_from_day_one
+  phase_2_harness_maximalism:
+    summary: >
+      March and early April docs show the agent evolving into a harness builder
+      and validation skeptic. The system produced HTML dashboards, compare
+      reports, semantic truth manifests, VLM packs, and regression floors to
+      avoid lying to itself.
+    implications_for_cleanup:
+      - archive_harnesses_as_a_coherent_era_not_as_random_script_sprawl
+      - preserve_one_manifest_one_review_page_and_one_summary_per_harness_family
+  phase_3_archaeology_to_bespoke_method:
+    summary: >
+      Early April commits and machine manifests show a large-scale archaeology
+      phase, but April 12 to April 22 collapses into a direct bespoke line of
+      work: capture the winning scene, tighten the runtime, and validate the
+      visible result.
+    implications_for_cleanup:
+      - promote_april_12_to_april_22_as_the_current_story
+      - demote_binary_library_and_old_regtest_status_from_branch_homepage_truth
+  phrases_to_retire_from_primary_docs:
+    - blocked_baseline
+    - verified_by_harness_only
+    - fg_test
+    - pilot_only
+    - 60_of_63_currently_verified
+    - 25_of_63_verified
+  phrases_to_preserve_as_historical_markers:
+    - bringup
+    - restore_packs
+    - host_truth
+    - semantic_truth
+    - vision_reference_pipeline
+    - binary_regression
+    - onset_scan
+    - fgpilot
+
+stale_or_conflicting_references:
+  - path: docs/ps1/README.md
+    current_problem: >
+      Still describes the branch through March status metrics and generic PS1
+      port framing. Does not elevate fgpilot/FISHING 1 as the current proven
+      methodology.
+    future_action: rewrite_in_place
+
+  - path: docs/ps1/current-status.md
+    current_problem: >
+      Last updated 2026-03-21 and centered on restore-pilot counts. It does not
+      reflect the April fgpilot baseline or the v0.3.6-ps1 fully working
+      FISHING 1 milestone.
+    future_action: rewrite_in_place
+
+  - path: docs/ps1/development-workflow.md
+    current_problem: >
+      Focuses on generic PS1 build/test flow and visual debugging, but not the
+      live host-export -> FG pack -> fgpilot validation loop.
+    future_action: rewrite_in_place
+
+  - path: docs/ps1/TESTING.md
+    current_problem: >
+      Treats the binary-library and headless regtest harness as primary. That is
+      no longer the main branch narrative.
+    future_action: rewrite_in_place_and_demote_legacy_sections
+
+  - path: docs/ps1/regtest-harness.md
+    current_problem: >
+      Still presents automation/regtest as the main certification model.
+    future_action: demote_or_archive_after_docs_refresh
+
+  - path: docs/ps1/research/README.md
+    current_problem: >
+      Points readers to 2026-03-21 as the current source of truth and still
+      frames the branch around the March research package.
+    future_action: rewrite_to_match_april_fgpilot_reality
+
+  - path: docs/CLEANUP_SUMMARY.md
+    current_problem: >
+      Reflects an older documentation cleanup and is not useful as a current
+      branch truth surface.
+    future_action: archive_or_demote
+
+  - path: config/ps1/regtest-scenes.txt
+    current_problem: >
+      Still lists FISHING 1 as blocked even though the validated FISHING 1
+      fgpilot path is the current baseline.
+    future_action: update_scene_status_language_or_split_story_regtest_status_from_fgpilot_status
+
+  - path: docs/ps1/research/FISHING1_PIXEL_PERFECT_PLAN_2026-04-21.md
+    current_problem: >
+      Important history, but it still uses planning language and old token
+      examples that do not exactly match the current implementation.
+    future_action: keep_as_history_not_primary_operator_doc
+
+  - path: docs/ps1/regtest-quickstart.md
+    current_problem: >
+      Still presents FISHING 1 as blocked in the old regtest framing and can
+      mislead readers about the current validated baseline.
+    future_action: rewrite_or_archive_after_status_model_split
+
+  - path: docs/ps1/audio-optimization-spec.md
+    current_problem: >
+      Preserves useful audio-pipeline thinking, but parts of it still read as
+      future work from before the full SFX milestone landed.
+    future_action: refresh_or_archive_with_clear_historical_label
+
+reference_normalization:
+  terminology_policy:
+    keep_internal_term:
+      term: fgpilot
+      reason: current_code_and_boot_interface_use_it
+    preferred_external_description:
+      - "primary PS1 foreground playback path"
+      - "primary PS1 hybrid scene playback path"
+      - "current PS1 render methodology"
+    phrases_to_demote:
+      - fg test
+      - pilot-only
+      - experimental path
+      - proposed pivot
+      - theory
+      - blocked baseline
+    phrasing_rules:
+      - "When docs mention `fgpilot`, they should explain that it is the proven current render path, not a temporary test mode."
+      - "When docs mention FISHING 1, they should identify it as the first fully working reference scene: pixel-perfect visually and complete with SFX."
+      - "When docs mention regtest or binary-library flows, they should label them as historical or secondary tooling unless explicitly still needed."
+
+fgpilot_naming_migration_plan:
+  objective: >
+    Migrate the branch away from `fgpilot` as the primary external name while
+    preserving backward compatibility during cleanup.
+  why_migrate: >
+    `fgpilot` was a good temporary engineering label, but it now undersells the
+    current methodology by making the proven render path sound experimental.
+  canonical_external_name:
+    long_form: PS1 scene playback
+    descriptive_form: PS1 hybrid scene playback
+    short_form_for_docs: scene_playback
+  compatibility_terms:
+    keep_temporarily:
+      - fgpilot
+      - foreground pilot
+    historical_only_after_migration:
+      - fg test
+      - pilot path
+  migration_stages:
+    - stage: docs_language_first
+      actions:
+        - "Rewrite docs to say `PS1 scene playback (current code name: fgpilot)`."
+        - "Keep `fgpilot` only as a compatibility note and internal code reference."
+      done_when:
+        - "Primary docs no longer use `fgpilot` as the headline term."
+    - stage: cli_alias_and_boot_alias
+      actions:
+        - "Add a new boot/CLI alias such as `sceneplay <scene>` or equivalent."
+        - "Keep `fgpilot <scene>` working during the transition."
+        - "Update examples so the new alias is primary and `fgpilot` is marked legacy-compatible."
+      done_when:
+        - "New operator-facing commands no longer lead with `fgpilot`."
+    - stage: config_defaults_and_telemetry_surface
+      actions:
+        - "Update boot defaults, help text, and operator docs to the new naming."
+        - "Migrate any diagnostic labels from `fgpilot` to `scene playback` where safe."
+      done_when:
+        - "Default branch affordances use scene-playback naming."
+    - stage: internal_symbol_cleanup_optional
+      actions:
+        - "Rename code symbols only if that can be done safely without destabilizing the branch."
+        - "Treat internal renaming as optional polish, not a prerequisite for branch cleanup."
+      done_when:
+        - "Code naming is either migrated or intentionally left stable with clear comments."
+  hard_rules:
+    - "Do not break `fgpilot` compatibility in the first cleanup wave."
+    - "Do not rename code symbols before docs and operator surfaces are stable."
+    - "Prefer changing human-facing names first, implementation names second."
+
+documentation_program:
+  rewrite_in_place:
+    - path: docs/ps1/README.md
+      new_purpose: branch_entrypoint_for_current_fgpilot_methodology
+    - path: docs/ps1/current-status.md
+      new_purpose: current_ps1_truth_after_fishing1_full_visual_and_sfx_milestone
+    - path: docs/README.md
+      new_purpose: navigation_surface_that_distinguishes_current_ps1_truth_from_historical_ps1_material
+    - path: docs/ps1/development-workflow.md
+      new_purpose: active_operator_loop_for_host_export_and_ps1_scene_validation
+    - path: docs/ps1/TESTING.md
+      new_purpose: current_validation_strategy_with_legacy_sections_demoted
+    - path: docs/ps1/research/README.md
+      new_purpose: historical_research_index_with_april_fgpilot_path_as_current_context
+
+  demote_or_archive_after_rewrite:
+    - docs/ps1/regtest-harness.md
+    - docs/ps1/research/CURRENT_STATUS_2026-03-21.md
+    - docs/ps1/research/CURRENT_STATUS_2026-03-21.json
+    - docs/ps1/research/CURRENT_STATUS_2026-04-16.md
+    - docs/CLEANUP_SUMMARY.md
+
+  keep_as_historical_design_log:
+    - docs/ps1/research/OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md
+    - docs/ps1/research/FOREGROUND_TIMING_PLAN_2026-04-13.md
+    - docs/ps1/research/FOREGROUND_TOP_LAYER_LOG_2026-04-13.md
+    - docs/ps1/research/FISHING1_PIXEL_PERFECT_PLAN_2026-04-21.md
+    - docs/ps1/research/WATER_ANIMATION_HANDOFF_2026-04-21.md
+    - docs/ps1/research/WATER_ANIMATION_WORKLOG_2026-04-21.md
+
+documentation_citation_policy:
+  applies_to:
+    - rewritten_primary_docs
+    - archaeology_indexes
+    - future_blog_source_maps
+  required_for_each_nontrivial_claim:
+    - historical_date_or_date_range
+    - source_path_or_commit_sha
+    - claim_scope
+  must_cite_explicitly:
+    - status_numbers
+    - milestone_dates
+    - methodology_pivots
+    - artifact_sizes_and_counts_when_used_as_arguments
+    - deprecation_rationale_for_major_surfaces
+  citation_style_guidance:
+    - prefer_local_doc_or_manifest_paths_over_memory
+    - use_commit_shas_for_branch_turning_points
+    - when_a_claim_is_interpretive_label_it_as_interpretation_and_attach_the_supporting_sources
+  prohibited_patterns:
+    - uncited_reuse_of_old_status_counts
+    - flattening_multiple_validation_definitions_into_one_progress_number
+    - quoting_historical_docs_as_if_they_were_still_primary_truth
+
+active_workflow_to_document_as_primary:
+  operator_loop:
+    - step: build_host_if_needed
+      command: "./scripts/build-host.sh"
+      purpose: produce_authoritative_desktop_capture_binary
+    - step: refresh_ps1_sound_assets_if_needed
+      command: "./scripts/convert-sounds.sh"
+      purpose: regenerate_ps1_vag_assets_for_the_current_sfx_pipeline
+    - step: export_or_refresh_fishing1_reference_bundle
+      command: "./scripts/export-scene-foreground-pilot.sh"
+      purpose: regenerate_host_capture_fg1_draw_event_and_sound_event_artifacts
+    - step: build_and_run_ps1_scene
+      command: "./scripts/rebuild-and-let-run.sh fgpilot fishing1"
+      purpose: validate_live_ps1_fgpilot_scene
+    - step: validate_scene_variants
+      command_examples:
+        - "./scripts/rebuild-and-let-run.sh fgpilot fishing1 lowtide 1"
+        - "./scripts/rebuild-and-let-run.sh fgpilot fishing1 raft-stage 5"
+        - "./scripts/rebuild-and-let-run.sh fgpilot fishing1 night 1"
+        - "./scripts/rebuild-and-let-run.sh fgpilot fishing1 holiday 4"
+      purpose: verify_state_variants_in_the_current_render_path
+    - step: capture_new_host_frames_for_future_scene_expansion
+      command: "./scripts/capture-host-scene.sh --scene \"FISHING 1\" --mode story-single --foreground-only"
+      purpose: generate_source_material_for_additional_scene_work
+
+  acceptance_model:
+    primary_gate: human_visual_and_audio_validation
+    secondary_support:
+      - targeted_host_capture_review
+      - targeted_pack_analysis
+      - limited_regtest_when_it_answers_a_specific_question
+    explicitly_not_primary:
+      - full_binary_library_scans
+      - repo-wide_regression_archaeology_before_scene_work
+      - abstract_theory_docs_without_scene_proof
+
+validation_reset_plan:
+  objective: >
+    Replace legacy rollout counts and old harness-centric status models with a
+    clean scene-by-scene validation ledger aligned to the current methodology.
+  old_status_surfaces_to_demote:
+    - docs/ps1/current-status.md legacy counts such as 25/63
+    - docs/ps1/TESTING.md legacy headless verification framing such as 60/63
+    - config/ps1/regtest-scenes.txt bringup/blocked/untested route inventory
+    - docs/ps1/research/CURRENT_STATUS_2026-03-21.*
+    - docs/ps1/research/CURRENT_STATUS_2026-04-16.md
+  new_authoritative_validation_model:
+    name: scene_by_scene_reference_validation
+    as_of_plan_creation:
+      total_scenes: 63
+      validated_reference_scenes: 1
+      validated_reference_scene_list:
+        - FISHING 1
+      active_reference_scene_count_statement: "1 / 63 complete"
+    principles:
+      - "A scene counts as done only after signoff in the current scene-playback methodology, including audio where the scene now supports it."
+      - "Legacy restore/regtest/automation statuses do not roll forward as current completion credit."
+      - "One scene at a time beats broad but stale coverage counts."
+      - "Old validation surfaces are history, not the live scoreboard."
+    proposed_new_source_of_truth:
+      path: docs/ps1/scene-validation-status.yaml
+      format: machine_readable
+      minimum_fields:
+        - scene
+        - status
+        - validation_route
+        - validated_variants
+        - reference_artifacts
+        - last_signoff_date
+        - notes
+        - legacy_status_links
+    status_vocabulary:
+      - validated_reference
+      - active_validation
+      - queued
+      - not_started
+      - archived_legacy_reference_only
+    initial_seed_rules:
+      - "Seed `FISHING 1` as `validated_reference`."
+      - "Seed every other scene as `not_started` unless explicitly promoted later."
+      - "Carry legacy route details as notes or links, not as completion state."
+  migration_actions:
+    - "Archive old counts and route-specific statuses into archaeology docs."
+    - "Stop showing 25/63, 60/63, bringup, blocked, or untested as the primary branch status."
+    - "If regtest route inventories remain, label them as legacy route manifests rather than current completion state."
+
+artifact_inventory:
+  - path: binary-library
+    role: historical_regression_corpus
+    approximate_size: 118G
+    approximate_files: 24629
+    current_value: low_for_day_to_day_scene_work
+    disposition: archive_out_of_repo_then_remove_from_primary_worktree
+    retention_goal: keep_small_manifest_and_any_must_keep_summary_only
+    regeneration_fact: >
+      The library can be rebuilt from git history. The repo does not need
+      thousands of checked-in historical disc images to preserve this
+      capability.
+    measured_file_breakdown:
+      build_logs: 6906
+      metadata_json: 6902
+      ps1_executables: 4117
+      cd_bins: 3350
+      cd_cues: 3350
+    preferred_first_drops:
+      - "*.bin"
+      - "*.cue"
+    possible_second_stage_drops:
+      - "*.exe"
+    notes:
+      - "Prefer keeping a small searchable manifest plus regeneration instructions."
+      - "If metadata.json and build.log are enough to reconstruct provenance, keep those and drop rebuildable binaries."
+
+  - path: regtest-references
+    role: historical_headless_scene_reference_outputs
+    approximate_size: 12G
+    approximate_files: 26576
+    current_value: medium_as_history_low_as_primary_truth
+    disposition: archive_out_of_repo_or_prune_to_small_review_subset
+
+  - path: host-results/fishing1-foreground-pilot
+    role: canonical_host_capture_bundle_for_current_method
+    approximate_size: 376M
+    current_value: high
+    disposition: keep_in_repo_for_now_then_revisit_after_docs_refresh
+
+  - path: generated/ps1/foreground
+    role: active_generated_runtime_assets
+    approximate_size: 9.0M
+    current_value: critical
+    disposition: keep_in_repo
+
+  - path: vision-artifacts
+    role: historical_vision_pipeline_outputs
+    approximate_size: 117M
+    approximate_files: 543
+    current_value: medium_as_history_low_as_primary_truth
+    disposition: archive_in_repo_or_out_of_repo_after_indexing
+
+  - path: host-script-review
+    role: historical_host_regression_review_surface
+    approximate_size: 9.5M
+    approximate_files: 50
+    current_value: medium_as_history_low_as_primary_truth
+    disposition: archive_in_repo
+
+  - path: docs/ps1/research
+    role: mixed_current_and_historical_research_tree
+    approximate_files: 573
+    current_value: mixed
+    disposition: split_into_current_reference_and_historical_archive
+
+  - path: build-ps1
+    role: ephemeral_local_build_output
+    approximate_size: 2.4M
+    current_value: local_only
+    disposition: never_treat_as_documentation_or_source_of_truth
+
+repository_size_reduction_opportunities:
+  - area: binary_library_payloads
+    opportunity: remove_regenerable_cd_images_from_repo
+    expected_effect: major
+    rationale: >
+      The historical binary library is useful as provenance, but the checked-in
+      `.bin` and `.cue` payloads are rebuildable from history and dominate the
+      repo footprint.
+    preferred_retention:
+      - small_index_or_manifest
+      - metadata_json
+      - build_logs_if_needed_for_forensics
+    preferred_removal_order:
+      - ".bin"
+      - ".cue"
+      - ".exe after rebuild reproducibility is confirmed"
+
+  - area: large_historical_artifact_dirs
+    opportunity: archive_out_of_repo
+    expected_effect: major
+    candidate_paths:
+      - binary-library
+      - regtest-references
+      - vision-artifacts
+      - host-script-review
+    rationale: >
+      These directories reflect prior validation eras and can be indexed and
+      archived without remaining on the main branch surface.
+
+archive_manifest_requirements:
+  required_before_removing_large_rebuildable_artifacts: true
+  applies_to:
+    - binary-library
+    - regtest-references
+    - vision-artifacts
+    - host-script-review
+  minimum_manifest_fields:
+    - relative_path
+    - artifact_class
+    - byte_size
+    - sha256_if_kept_out_of_repo
+    - originating_commit_or_generation_source
+    - regeneration_command_if_rebuildable
+    - retention_decision
+    - archive_destination
+  binary_library_specific_requirements:
+    - preserve_or_generate_a_searchable_index_with_sequence_commit_date_and_subject
+    - preserve_enough_metadata_to_rebuild_a_specific_entry_on_demand
+    - test_rebuild_a_small_sample_before_dropping_executables_or_disc_images
+  removal_gate:
+    - "No large artifact deletion until the manifest exists."
+    - "No binary-library payload deletion until at least one sample rebuild has been proven from retained metadata."
+
+historical_harness_archive_groups:
+  - group: regtest_harness_stack
+    disposition: archive_or_keep_secondary_only
+    rationale: >
+      Valuable for historical validation and debugging, but no longer the
+      branch's main truth surface.
+    members:
+      - scripts/build-regtest-image.sh
+      - scripts/run-regtest.sh
+      - scripts/regtest-scene.sh
+      - scripts/regtest-all-scenes.sh
+      - scripts/regtest-compare.sh
+      - scripts/regtest-audit-story-vs-ads.sh
+      - scripts/regtest-audit-story-vs-direct.sh
+      - scripts/regtest-audit-story-vs-direct-batch.sh
+      - scripts/regtest-fgpilot-fishing1-exact.sh
+      - scripts/regtest-fgpilot-fishing1-scene-matrix.sh
+      - scripts/render-regtest-run.py
+      - config/ps1/regtest-config.sh
+      - config/ps1/Dockerfile.regtest
+      - config/ps1/duckstation-regtest.patch
+      - config/ps1/regtest-scenes.txt
+      - docs/ps1/TESTING.md
+      - docs/ps1/regtest-harness.md
+      - docs/ps1/regtest-quickstart.md
+      - regtest-references
+
+  - group: vision_vlm_llm_harness_stack
+    disposition: archive
+    rationale: >
+      Important archaeology and excellent blog-post material, but not relevant
+      to the current scene-by-scene signoff path.
+    members:
+      - scripts/vision_classifier.py
+      - scripts/vision_vlm.py
+      - scripts/validate-ps1-vlm.py
+      - scripts/validate-vision-pipeline.py
+      - scripts/publish-vision-pipeline.py
+      - scripts/run-vision-reference-pipeline.sh
+      - scripts/setup-vision-vlm-openvino.sh
+      - scripts/render-vlm-scene-pack-review.py
+      - scripts/render-vlm-vs-heuristic.py
+      - scripts/compile-host-semantic-truth.py
+      - scripts/evaluate-semantic-regression.py
+      - config/ps1/vlm-scene-pack.json
+      - vision-artifacts
+
+  - group: host_review_and_annotation_stack
+    disposition: archive
+    rationale: >
+      Useful as historical inspection infrastructure and for archaeology, but
+      not the current branch workflow.
+    members:
+      - scripts/refresh-host-script-review.sh
+      - scripts/compare-host-script-vs-expectations.py
+      - scripts/render-host-script-index.py
+      - scripts/generate-scene-annotation-review.py
+      - scripts/serve-scene-annotation-review.py
+      - scripts/launch-fishing1-annotation-review.sh
+      - scripts/launch-fishing1-full-annotation-review.sh
+      - scripts/render-frame-meta-review.py
+      - scripts/verify-host-script-review.sh
+      - scripts/test-verify-host-script-review-head-mismatch.sh
+      - scripts/test-verify-host-script-review-negative.sh
+      - host-script-review
+
+project_archaeology_plan:
+  objective: >
+    Preserve the technical journey of the PS1 branch so cleanup reduces noise
+    without erasing the evidence needed for a future long-form writeup, blog
+    post, or postmortem.
+  required_before_major_archival:
+    - produce_a_timeline_index_of_major_eras_commits_docs_and_artifacts
+    - produce_a_status_definition_timeline_so_old_counts_remain_searchable_but_not_confusing
+    - summarize_each_retired_harness_family_and_why_it_existed
+    - capture_key_assumptions_that_drove_each_phase
+    - capture_the_memory_constraints_and_runtime_findings_that_changed_direction
+    - retain_enough_examples_from_each_era_to_tell_the_story_later
+  archaeology_outputs_to_create_later:
+    - path: docs/ps1/archaeology/timeline.yaml
+      purpose: dated_era_index_with_key_commits_docs_and_artifacts
+    - path: docs/ps1/archaeology/tools.yaml
+      purpose: catalog_of_harnesses_scripts_and_what_each_one_was_for
+    - path: docs/ps1/archaeology/status-surfaces.yaml
+      purpose: what_each_historical_progress_number_meant_and_why_it_changed
+    - path: docs/ps1/archaeology/team-perspective.yaml
+      purpose: roles_shared_values_and_voice_shift_between_operator_and_agents
+    - path: docs/ps1/archaeology/assumptions.yaml
+      purpose: assumption_disproof_and_replacement_ledger
+    - path: docs/ps1/archaeology/memory-constraints.md
+      purpose: why_memory_shape_drove_the_methodology_shift
+    - path: docs/ps1/archaeology/blog-source-map.md
+      purpose: direct_pointers_for_future_long_form_writing
+    - path: docs/ps1/archaeology/reporter-notes.md
+      purpose: narrative_field_notes_for_future_blog_post_tone_and_structure
+  historical_assumptions_to_capture:
+    - assumption: broad_automation_would_be_the_primary_truth_surface
+      why_it_made_sense: lots_of_scenes_and_a_need_for_scalable_feedback
+      what_changed: human_scene_by_scene_signoff_proved_more_useful_for_the_final_method
+      replacement_insight: automation_is_supporting_archaeology_not_primary_certification
+    - assumption: generic_restore_and_replay_contracts_would_be_the_finish_line
+      why_it_made_sense: it_promised_systematic_scene_coverage_with_shared_contracts
+      what_changed: the_working_baseline_arrived_from_hybrid_scene_playback_not_full_runtime_reconstruction
+      replacement_insight: correctness_by_authored_playback_beats_generic_runtime_reconstruction_for_this_port
+    - assumption: if_the_static_analyzer_said_the_content_fit_then_runtime_memory_would_be_fine
+      why_it_made_sense: march_memory_reports_showed_zero_budget_violations_and_a_heaviest_scene_around_555_3_KB
+      what_changed: april_runtime_debugging_found_transient_heap_pressure_and_allocation_shape_problems
+      replacement_insight: fit_on_paper_is_not_the_same_as_runtime_allocation_success
+    - assumption: the_binary_regression_library_would_remain_a_core_branch_asset
+      why_it_made_sense: it_helped_find_regression_boundaries_and_historical_baselines
+      what_changed: once_fishing1_worked_the_day_to_day_need_shifted_from_archaeology_to_scene_promotion
+      replacement_insight: keep_history_searchable_but_do_not_keep_the_full_weight_in_the_main_repo
+    - assumption: fgpilot_was_just_a_temporary_experiment_name
+      why_it_made_sense: the_path_started_as_a_pilot
+      what_changed: it_became_the_working_render_methodology
+      replacement_insight: migrate_the_name_even_though_the_method_survived
+  working_style_and_team_dynamics_to_document:
+    - exact_scripts_over_hand_typed_variation
+    - one_change_then_test_then_write_it_down
+    - overlays_dashboards_and_html_reviews_to_make_embedded_failures_legible
+    - skepticism_of_false_positives_and_harness_self_congratulation
+    - willingness_to_build_throwaway_tools_that_later_become_archaeology
+    - shift_from_generic_porting_language_to_bespoke_scene_language_without_losing_rigor
+  memory_constraints_and_forcing_functions_to_document:
+    - fact: ps1_main_ram_and_vram_forced_every_rendering_decision
+      evidence:
+        - "PS1 target is 2 MB main RAM and 1 MB VRAM."
+        - "The port insists on native 640x480 output."
+      impact: forced_a_low_overhead_hybrid_model
+    - fact: full_screen_prerender_for_every_scene_was_not_disc_feasible
+      evidence:
+        - "A 640x480 16-bit frame is about 614400 bytes."
+        - "A 640x480 indexed frame is about 307200 bytes."
+        - "At scale across 63 scenes this becomes multi-gigabyte storage."
+      impact: ruled_out_naive_full_frame_video_style_approaches
+    - fact: runtime_heap_shape_mattered_more_than_static_totals
+      evidence:
+        - "March analyzer summary reported the heaviest scene at about 555.3 KB with zero budget violations."
+        - "April wave debugging still hit runtime allocation failure on BACKGRND.BMP despite that paper fit."
+      impact: pushed_the_branch_toward_preload_order_and_authored_playback
+    - fact: background_tile_backups_were_expensive
+      evidence:
+        - "Full bg-tile clean copies cost about 614 KB."
+        - "The fishing1 rect-based clean backup reduced that dynamic region to about 181 KB."
+      impact: justified_scene_specific_rect_backup_and_targeted_runtime_work
+    - fact: specific_asset_load_shape_broke_the_wave_path
+      evidence:
+        - "BACKGRND.PSB was about 93 KB but peaked at about 186 KB because the read path allocated twice."
+        - "The raw BMP fallback was about 150 KB."
+        - "Loading before bg-tile allocation solved the practical problem."
+      impact: validated_preload_order_as_part_of_the_methodology
+  what_eventually_worked_to_document:
+    - exact_host_captured_foreground_pixels_instead_of_runtime_reconstruction
+    - host_captured_sound_events_replayed_through_the_ps1_sfx_pipeline
+    - scene_relative_foreground_packs
+    - draw_line_and_draw_pixel_capture_for_missing_fg_details
+    - narrow_runtime_scene_base_for_ocean_island_waves_and_holiday_overlay
+    - preload_large_background_assets_before_bg_tile_allocation
+    - rect_based_clean_backups_for_dynamic_regions
+    - human_visual_signoff_one_scene_at_a_time
+  representative_sources_for_blog_post:
+    - docs/archive/CLAUDE.md
+    - .claude/skills/ps1-build-workflow.md
+    - .claude/skills/ps1-rendering-debug.md
+    - docs/ps1/research/AGENT_PROMPT_2026-03-29.md
+    - docs/ps1/research/OFFLINE_SCENE_PLAYBACK_PIVOT_2026-04-12.md
+    - docs/ps1/research/FOREGROUND_TIMING_PLAN_2026-04-13.md
+    - docs/ps1/research/FOREGROUND_TOP_LAYER_LOG_2026-04-13.md
+    - docs/ps1/research/FISHING1_PIXEL_PERFECT_PLAN_2026-04-21.md
+    - docs/ps1/research/WATER_ANIMATION_HANDOFF_2026-04-21.md
+    - docs/ps1/research/WATER_ANIMATION_WORKLOG_2026-04-21.md
+    - scripts/wav2vag.py
+    - sound_ps1.c
+    - host-script-review/verification-summary.json
+    - host-results/fishing1-foreground-pilot
+    - generated/ps1/foreground
+    - binary-library index and metadata only after pruning
+  suggested_blog_arc:
+    - introduce_the_cast_of_operator_agent_and_harness_builder_personas
+    - start_with_the_original_goal_and_why_ps1_was_interesting
+    - explain_the_memory_and_resolution_constraints
+    - show_how_the_team_changed_jobs_without_changing_standards
+    - walk_through_the_automation_and_validation_harness_era
+    - walk_through_restore_contracts_and_generic_runtime_attempts
+    - cover_the_binary_library_and_archaeology_phase
+    - explain_the_hybrid_playback_pivot
+    - end_on_fishing1_becoming_first_visually_complete_then_fully_working_with_sfx_and_why_that_changed_everything
+
+script_recency_signals:
+  important_caveat: >
+    Git history tells us when a script was last modified, not when it was last
+    executed by operators. Treat recency as a signal, not as automatic
+    deprecation proof.
+  required_checks_before_any_deprecation_decision:
+    - scan_docs_scripts_and_config_for_references
+    - check_whether_another_script_invokes_it
+    - check_whether_it_is_needed_to_regenerate_archived_artifacts
+    - confirm_it_is_not_part_of_the_current_operator_loop
+  active_recently_touched:
+    - path: scripts/rebuild-and-let-run.sh
+      last_touched_commit: 12641bfc
+      last_touched_date: 2026-04-22
+      implication: active_keep
+    - path: scripts/export-scene-foreground-pilot.sh
+      last_touched_commit: 16345973
+      last_touched_date: 2026-04-22
+      implication: active_keep
+    - path: scripts/build-scene-foreground-pack.py
+      last_touched_commit: 8670d2a5
+      last_touched_date: 2026-04-22
+      implication: active_keep
+    - path: scripts/build-foreground-draw-pack.py
+      last_touched_commit: uncommitted_at_plan_creation
+      last_touched_date: 2026-04-22
+      implication: active_keep
+    - path: scripts/capture-host-scene.sh
+      last_touched_commit: 1c7481ca
+      last_touched_date: 2026-04-12
+      implication: active_keep
+    - path: scripts/wav2vag.py
+      last_touched_commit: 355227fa
+      last_touched_date: 2026-04-22
+      implication: active_keep_for_audio_pipeline
+
+  active_but_secondary:
+    - path: scripts/regtest-fgpilot-fishing1-exact.sh
+      last_touched_commit: bf517857
+      last_touched_date: 2026-04-13
+      implication: keep_but_demote
+
+  likely_deprecation_candidates:
+    - path: scripts/build-binary-library.sh
+      last_touched_commit: 0c6387a9
+      last_touched_date: 2026-04-12
+      implication: deprecate_or_archive
+    - path: scripts/regtest-binary-library-scene.sh
+      last_touched_commit: fa5be68e
+      last_touched_date: 2026-04-12
+      implication: deprecate_or_archive
+    - path: scripts/scan-fishing1-binary-regression.sh
+      last_touched_commit: 8d2e6d90
+      last_touched_date: 2026-04-11
+      implication: deprecate_or_archive
+    - path: scripts/find-fishing1-startup-onset.sh
+      last_touched_commit: 8d2e6d90
+      last_touched_date: 2026-04-11
+      implication: deprecate_or_archive
+    - path: scripts/find-fishing1-visibility-onset.sh
+      last_touched_commit: 8d2e6d90
+      last_touched_date: 2026-04-11
+      implication: deprecate_or_archive
+    - path: scripts/report-binary-library-epochs.py
+      last_touched_commit: 5d374a46
+      last_touched_date: 2026-04-11
+      implication: deprecate_or_archive
+    - path: scripts/verify-fishing1-head-clean.sh
+      last_touched_commit: 047c1685
+      last_touched_date: 2026-04-11
+      implication: deprecate_or_archive
+
+script_policy:
+  keep_live:
+    - scripts/build-host.sh
+    - scripts/build-ps1.sh
+    - scripts/make-cd-image.sh
+    - scripts/rebuild-and-let-run.sh
+    - scripts/convert-sounds.sh
+    - scripts/wav2vag.py
+    - scripts/capture-host-scene.sh
+    - scripts/export-scene-foreground-pilot.sh
+    - scripts/build-scene-foreground-pack.py
+    - scripts/build-foreground-draw-pack.py
+
+  keep_but_demote_from_primary_docs:
+    - scripts/regtest-scene.sh
+    - scripts/run-regtest.sh
+    - scripts/regtest-fgpilot-fishing1-exact.sh
+    - scripts/regtest-fgpilot-fishing1-scene-matrix.sh
+    - scripts/compare-regtest-result-bundles.py
+
+  archive_candidates:
+    - scripts/build-binary-library.sh
+    - scripts/regtest-binary-library-scene.sh
+    - scripts/scan-fishing1-binary-regression.sh
+    - scripts/find-fishing1-regression-boundary.py
+    - scripts/find-fishing1-startup-onset.sh
+    - scripts/find-fishing1-visibility-onset.sh
+    - scripts/continue-fishing1-startup-onset.sh
+    - scripts/refine-fishing1-startup-onset.sh
+    - scripts/refine-fishing1-visibility-onset.sh
+    - scripts/report-binary-library-epochs.py
+    - scripts/report-binary-library-gaps.py
+    - scripts/report-binary-library-sequence-resets.py
+    - scripts/verify-fishing1-head-clean.sh
+
+deprecation_log_policy:
+  searchable_log_required: true
+  log_location_during_cleanup: docs/ps1/ps1-branch-cleanup-plan.yaml
+  commit_log_expectation: >
+    Every deprecation or archive move should also be visible in git history, but
+    the branch should keep an easy-to-grep deprecation ledger in documentation
+    so future sessions can find retired paths without scanning commits first.
+  required_fields_per_entry:
+    - path
+    - category
+    - disposition
+    - reason
+    - replacement
+    - last_touched_commit
+    - reference_scan_summary
+    - archive_location
+    - removal_commit_when_done
+    - search_tags
+
+deprecation_ledger:
+  - path: scripts/build-binary-library.sh
+    category: script
+    disposition: proposed_deprecate_and_archive
+    reason: binary_library_no_longer_primary_and_cd_images_are_regenerable
+    replacement: docs_plus_small_manifest_plus_on_demand_rebuild
+    last_touched_commit: 0c6387a9
+    reference_scan_summary: referenced_by_docs_ps1_TESTING_md_and_verify_fishing1_head_clean_sh
+    archive_location: pending
+    removal_commit_when_done: pending
+    search_tags: [binary-library, historical-regression, deprecate]
+
+  - path: scripts/regtest-binary-library-scene.sh
+    category: script
+    disposition: proposed_deprecate_and_archive
+    reason: historical_bisection_helper_for_a_workflow_that_is_no_longer_primary
+    replacement: targeted_scene_validation_and_selective_regtest_only
+    last_touched_commit: fa5be68e
+    reference_scan_summary: invoked_by_scan_fishing1_binary_regression_sh
+    archive_location: pending
+    removal_commit_when_done: pending
+    search_tags: [binary-library, regtest, deprecate]
+
+  - path: scripts/scan-fishing1-binary-regression.sh
+    category: script
+    disposition: proposed_deprecate_and_archive
+    reason: onset_scan_archaeology_is_not_the_current_branch_direction
+    replacement: scene_by_scene_fgpilot_validation
+    last_touched_commit: 8d2e6d90
+    reference_scan_summary: invoked_by_verify_fishing1_head_clean_sh
+    archive_location: pending
+    removal_commit_when_done: pending
+    search_tags: [fishing1, binary-regression, deprecate]
+
+  - path: scripts/find-fishing1-startup-onset.sh
+    category: script
+    disposition: proposed_deprecate_and_archive
+    reason: startup_onset_searches_were_specific_to_the_binary_library_debug_era
+    replacement: none_required_for_primary_workflow
+    last_touched_commit: 8d2e6d90
+    reference_scan_summary: no_active_doc_refs_found_in_current_sweep
+    archive_location: pending
+    removal_commit_when_done: pending
+    search_tags: [fishing1, onset, deprecate]
+
+  - path: scripts/find-fishing1-visibility-onset.sh
+    category: script
+    disposition: proposed_deprecate_and_archive
+    reason: visibility_onset_searches_were_specific_to_the_binary_library_debug_era
+    replacement: none_required_for_primary_workflow
+    last_touched_commit: 8d2e6d90
+    reference_scan_summary: no_active_doc_refs_found_in_current_sweep
+    archive_location: pending
+    removal_commit_when_done: pending
+    search_tags: [fishing1, onset, deprecate]
+
+  - path: scripts/report-binary-library-epochs.py
+    category: script
+    disposition: proposed_deprecate_and_archive
+    reason: only_supports_the_historical_binary_library_surface
+    replacement: none_required_for_primary_workflow
+    last_touched_commit: 5d374a46
+    reference_scan_summary: no_active_doc_refs_found_in_current_sweep
+    archive_location: pending
+    removal_commit_when_done: pending
+    search_tags: [binary-library, epochs, deprecate]
+
+  - path: scripts/verify-fishing1-head-clean.sh
+    category: script
+    disposition: proposed_deprecate_and_archive
+    reason: verifies_clean_head_against_the_binary_library_workflow_that_is_now_secondary
+    replacement: direct_fgpilot_validation_on_current_head
+    last_touched_commit: 047c1685
+    reference_scan_summary: no_active_doc_refs_found_in_current_sweep
+    archive_location: pending
+    removal_commit_when_done: pending
+    search_tags: [fishing1, head-clean, deprecate]
+
+future_cleanup_phases:
+  - id: phase_01_protect_baseline
+    goal: freeze_the_current_truth_before_reorganization
+    actions:
+      - record_the_release_tag_v0_3_6_ps1_as_the_reference_baseline
+      - preserve_the_visual_only_v0_3_5_ps1_release_as_the_immediately_previous_milestone
+      - verify_the_dirty_tree_and_do_not_revert_it
+      - inventory_active_fishing1_assets_and_host_results
+      - copy_any_must_keep_metadata_out_of_heavy_artifact_trees_before_pruning
+    done_when:
+      - active_fishing1_surface_is_explicitly_protected
+      - future_moves_cannot_accidentally_discard_current_work
+
+  - id: phase_02_rewrite_primary_docs
+    goal: make_repo_entrypoints_match_current_branch_reality
+    actions:
+      - rewrite_docs_ps1_README_md_around_fgpilot_as_primary_render_method
+      - rewrite_docs_ps1_current_status_md_around_the_fishing1_baseline_and_scene_by_scene_validation
+      - rewrite_docs_ps1_development_workflow_md_to_show_the_live_operator_loop
+      - rewrite_docs_ps1_TESTING_md_to_demote_binary_library_and_regtest_from_primary_status
+      - add_explicit_sources_for_every_primary_status_number_milestone_and_major_historical_claim
+      - normalize_term_usage_so_fgpilot_is_no_longer_presented_as_a_test_path
+    done_when:
+      - a_new_reader_would_understand_the_current_method_without_reading_research_logs
+      - all_primary_docs_identify_FISHING_1_as_the_reference_scene
+      - primary_docs_no_longer_make_uncited_historical_claims
+
+  - id: phase_02a_migrate_fgpilot_naming
+    goal: move_external_language_from_fgpilot_to_scene_playback
+    actions:
+      - rewrite_docs_to_use_scene_playback_as_the_primary_name
+      - add_a_compatible_cli_or_boot_alias_before_removing_fgpilot_from_examples
+      - relabel_default_examples_and_boot_defaults_after_compatibility_exists
+    done_when:
+      - primary_operator_docs_no_longer_lead_with_fgpilot
+      - fgpilot_survives_only_as_compatibility_or_historical_terminology
+
+  - id: phase_02b_reset_validation_status
+    goal: replace_old_counts_with_a_clean_1_of_63_scene_ledger
+    actions:
+      - create_the_new_scene_validation_status_surface
+      - seed_only_FISHING_1_as_validated_reference
+      - archive_old_restore_regtest_and_bringup_counts_as_history
+    done_when:
+      - the_primary_status_surface_says_1_of_63_complete
+      - no_primary_doc_claims_25_of_63_or_60_of_63_as_current_truth
+
+  - id: phase_03_split_current_vs_historical_research
+    goal: stop_mixing_live_reference_material_with_old_exploration
+    actions:
+      - keep_april_fgpilot_history_files_but_label_them_as_design_logs
+      - move_superseded_status_snapshots_and_rollout_docs_to_archive_locations
+      - keep_only_a_small_set_of_current_reference_docs_near_the_top_of_docs_ps1_research
+    done_when:
+      - research_root_no_longer_claims_2026_03_21_is_current_truth
+      - historical_material_is_preserved_but_not_confused_with_operator_docs
+
+  - id: phase_03a_capture_archaeology_before_pruning
+    goal: preserve_the_story_before_the_noise_is_removed
+    actions:
+      - create_the_archaeology_timeline_tools_and_assumptions_indices
+      - create_the_status_surface_timeline_showing_how_25_27_57_60_63_and_1_of_63_differ
+      - summarize_each_historical_harness_family
+      - preserve_representative_examples_for_blog_post_use
+      - capture_memory_constraints_and_methodology_pivots_in_one_place
+    done_when:
+      - future_cleanup_can_archive_old_material_without_erasing_its_narrative_value
+
+  - id: phase_04_retire_binary_library_surface
+    goal: remove_the_heaviest_obsolete_validation_stack_from_the_primary_branch_surface
+    actions:
+      - generate_and_store_archive_manifest_before_any_payload_removal
+      - export_or_preserve_a_small_manifest_of_binary_library_contents
+      - prove_sample_rebuilds_from_retained_metadata
+      - archive_binary_library_outside_the_repo
+      - remove_binary_library_specific_scripts_from_primary_documentation
+      - archive_or_remove_binary_library_specific_scripts_after_confirmation
+    done_when:
+      - binary_library_is_no_longer_the_default_story_of_the_branch
+      - repo_surface_is_significantly_smaller_and_clearer
+
+  - id: phase_05_prune_or_archive_other_heavy_artifacts
+    goal: reduce_noise_from_large_historical_outputs_without_losing_provenance
+    actions:
+      - prune_regtest_references_to_a_small_named_subset_or_archive_them_out_of_repo
+      - archive_vision_artifacts_and_host_script_review_to_secondary_history_locations
+      - keep_host_results_fishing1_foreground_pilot_until_a_replacement_reference_package_exists
+    done_when:
+      - heavy_artifacts_match_current_branch_needs
+      - active_scene_work_is_not_buried_under_old_outputs
+
+  - id: phase_06_refresh_configs_and_reference_indices
+    goal: eliminate_conflicting_status_signals
+    actions:
+      - update_config_ps1_regtest_scenes_txt_or_split_its_status_model
+      - refresh_doc_indices_and_cross_links
+      - ensure_primary_docs_point_to_the_new_cleanup_plan_and_current_method
+    done_when:
+      - no_top_level_reference_calls_fishing1_blocked_if_fgpilot_is_the_validated_baseline
+      - link_structure_matches_the_new_document_hierarchy
+
+  - id: phase_07_final_verification
+    goal: confirm_the_cleanup_changed_the_narrative_not_the_working_scene
+    actions:
+      - run_the_current_fgpilot_fishing1_flow_again
+      - confirm_sfx_still_replays_correctly_for_the_reference_scene
+      - confirm_fishing1_assets_and_host_capture_bundle_still_exist_where_needed
+      - search_docs_and_scripts_for_demoted_terms_and_stale_claims
+    done_when:
+      - docs_are_current
+      - artifacts_are_reorganized
+      - the_fully_working_fishing1_path_is_unchanged
+
+search_sweeps_for_future_session:
+  - pattern: "fg test|pilot-only|experimental path|proposed pivot|theory"
+    scope: "docs scripts config"
+    purpose: remove_experimental_framing_from_current_method_docs
+  - pattern: "binary-library|regression boundary|startup onset|visibility onset"
+    scope: "docs scripts"
+    purpose: demote_or_archive_historical_regression_archaeology
+  - pattern: "25 / 63|60 / 63|verified|bringup|untested|blocked"
+    scope: "docs config"
+    purpose: find_stale_status_language
+  - pattern: "2026-03-21|2026-04-16"
+    scope: "docs/ps1 docs/ps1/research"
+    purpose: locate_old_status_snapshots_still_presented_as_current
+  - pattern: "vision|VLM|classifier|semantic|annotation-review|host-script-review|regtest"
+    scope: "docs scripts config"
+    purpose: locate_historical_harness_surfaces_to_archive_or_demote
+
+definition_of_done:
+  - "A new contributor can identify the current PS1 method from docs/ps1 without reading research logs."
+  - "FISHING 1 is explicitly documented as the first fully working PS1 reference scene, including SFX."
+  - "`fgpilot` is documented as the proven current render path, not as a side experiment."
+  - "Primary validation status is reset to a clean 1 / 63 model with only FISHING 1 complete."
+  - "Primary docs cite the source of every reused historical count, milestone, and methodology-pivot claim."
+  - "Historical status numbers remain searchable, but each is route-qualified and definition-qualified."
+  - "Binary-library and similar heavy regression tooling are archived or clearly secondary."
+  - "Historical research is preserved, but current truth is no longer buried under it."
+  - "The archaeology package preserves the operator-plus-agent working style strongly enough to support a future reporter-style blog post."
+  - "Every deprecated path has a searchable ledger entry with archive or removal metadata."
+  - "The branch keeps enough indexed archaeology to support a future blog post or postmortem."
+  - "The cleanup does not modify or destabilize the fully working FISHING 1 scene path."

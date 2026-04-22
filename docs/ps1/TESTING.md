@@ -1,164 +1,128 @@
 # PS1 Port Testing Guide
 
-## Overview
+**Primary acceptance = human visual + audible signoff** on the
+scene-playback (fgpilot) path. Everything else in this document is
+secondary tooling: useful for targeted questions, not for certifying a
+scene as done.
 
-The PS1 port uses a headless testing harness built on DuckStation's regtest
-binary running inside Docker. This enables fully automated, deterministic
-scene validation without a display server.
+For the scene-by-scene bring-up loop, see
+[development-workflow.md](development-workflow.md). For the per-scene
+ledger, see [scene-status.md](scene-status.md).
 
-## Quick Start
+## Primary: scene-playback validation
 
 ```bash
-# Setup (once, on a fresh machine)
-./scripts/setup-dev-environment.sh
+./scripts/rebuild-and-let-run.sh noclean
+```
 
-# Build and test a single scene
+Builds the PS1 executable + CD image inside Docker and launches
+DuckStation with the cue. `BOOTMODE.TXT` controls which scene and which
+variant boots. A scene reaches `✅ / ✅` in `scene-status.md` when a
+human has confirmed visuals + SFX are correct across every applicable
+variant for that scene. Release cadence: every 10 such scenes.
+
+### Variant tokens
+
+| Token | Range | Purpose |
+|---|---|---|
+| `night <0\|1>` | 0 or 1 | Night/dusk palette |
+| `lowtide <0\|1>` | 0 or 1 | Tide state |
+| `holiday <N>` | 0..4 | Holiday overlay variant |
+| `raft-stage <N>` | 0..5 | Cumulative raft-build state |
+| `island-pos <x> <y>` | — | Force island position |
+| `story-day <N>` | 1..11 | Force story day |
+
+## Secondary (historical): headless regtest harness
+
+The headless regtest harness runs DuckStation's regtest binary in Docker
+and captures per-frame data. It's preserved for targeted diagnostics
+(regression hunts, deterministic frame-timing investigations) but is not
+the certification gate.
+
+```bash
+# Single-scene run
 ./scripts/regtest-scene.sh --scene "STAND 2"
 
-# Test a specific scene with more frames
+# Longer run with a custom interval
 ./scripts/regtest-scene.sh --scene "BUILDING 1" --frames 9000 --interval 120
 
 # Raw headless run with a late capture window
-./scripts/run-regtest.sh --frames 3600 --start-frame 2400 --dumpinterval 60 --dumpdir /tmp/regtest-out
-
-# View the result
-ls regtest-results/building-1/frames/
+./scripts/run-regtest.sh --frames 3600 --start-frame 2400 --dumpinterval 60 --dumpdir scratch/regtest-out
 ```
 
-## Architecture
+Scene manifest: `config/ps1/regtest-scenes.txt`. The `verified`,
+`bringup`, `blocked`, `untested` tokens in that file reflect the legacy
+regtest-route status model, **not** the current scene-playback bar. See
+`ps1-branch-cleanup-plan.yaml` § `status_model_correction`.
 
+Regtest output:
 ```
-┌────────────────────┐    ┌──────────────────────┐
-│  regtest-scene.sh  │───>│   build-ps1.sh       │  Build PS1 executable
-│  (orchestrator)    │    │   make-cd-image.sh    │  Create CD image
-│                    │───>│   run-regtest.sh      │  Run headless DuckStation
-│                    │───>│   decode-ps1-bars.py  │  Extract telemetry
-│                    │    └──────────────────────┘
-│                    │
-│  Output:           │
-│  - frames/*.png    │  Captured screenshots at interval
-│  - telemetry.json  │  Debug panel data
-│  - result.json     │  Structured test outcome
-│  - printf.log      │  PS1 TTY output (if PCDrv enabled)
-└────────────────────┘
+regtest-results/<ads>-<tag>/
+  frames/*.png              # captured screenshots
+  telemetry.json            # debug-panel data
+  result.json               # structured outcome
+  printf.log                # PS1 TTY output (if PCDrv enabled)
 ```
 
-## Scene Manifest
+## Secondary (historical): binary library
 
-All 63 scenes are listed in `config/ps1/regtest-scenes.txt`:
-
-```
-# Format: ADS_NAME TAG SCENE_INDEX STATUS BOOTMODE...
-STAND 1 38 verified story scene 38
-BUILDING 1 10 verified island ads BUILDING.ADS 1
-```
-
-**Status values:**
-- `verified` — renders correctly in headless regtest
-- `bringup` — being worked on
-- `blocked` — known issue preventing rendering
-- `untested` — not yet tested
-
-## Boot Modes
-
-The PS1 executable accepts boot overrides via `config/ps1/BOOTMODE.TXT`
-(embedded at build time into `bootmode_embedded.h`):
-
-| Mode | Example | Description |
-|------|---------|-------------|
-| `story scene N` | `story scene 38` | Play scene via story loop (has printf crash risk) |
-| `story direct N` | `story direct 25` | Play scene directly, bypass story loop |
-| `island ads X N` | `island ads BUILDING.ADS 1` | Play ADS tag directly with island background |
-| `story single N` | `story single 10` | Legacy: play one scene via story loop |
-
-**Recommended for testing:** `island ads X.ADS N` — avoids the story init path
-which contains printf calls that crash the PS1 game loop.
-
-## Binary Library (Historical Regression Testing)
-
-Build a PS1 executable + CD image for every code-changing commit since the
-PS1 port began. This enables testing any scene against any historical build
-to find the exact commit that introduced a regression.
+The binary-library stack builds a PS1 executable + CD image for every
+code-changing commit, enabling regression bisection against any historical
+build. Useful for archaeology; retired from the primary workflow.
 
 ```bash
-# Build the full library (~15 min, ~6.5GB)
+# Full library (~15 min, ~118 GB — see cleanup plan)
 ./scripts/build-binary-library.sh
-
-# Preview what will be built
-./scripts/build-binary-library.sh --dry-run
-
-# Resume an interrupted build
-./scripts/build-binary-library.sh --resume
-
-# Test a historical build against a scene
-./scripts/run-regtest.sh --cue binary-library/042_20251120_123456_abc123de/jcreborn.cue \
-    --frames 5400 --dumpinterval 120 --dumpdir /tmp/test-042
 ```
 
-### Output Structure
+`ps1-branch-cleanup-plan.yaml` plans to archive `binary-library/` out of
+the repo and retain only a manifest + sample-rebuild path. See plan
+phase `phase_04_retire_binary_library_surface`.
 
-```
-binary-library/
-  SUMMARY.txt              # Human-readable build summary
-  index.csv                # Spreadsheet: sequence, hash, date, status, sizes
-  index.json               # Full metadata for programmatic access
-  001_20251018_080849_a8c0599b/
-    jcreborn.exe           # PS1 executable
-    jcreborn.bin/.cue      # CD image (ready for regtest)
-    build.log              # Full build output
-    metadata.json          # Commit info + build status + file hashes
-  ...
-```
+## Boot modes
 
-### Regression Bisection Workflow
+The PS1 executable reads `BOOTMODE.TXT` from the CD. Primary mode for
+current development:
 
-1. Find a scene that's broken: `./scripts/regtest-scene.sh --scene "FISHING 1"`
-2. Pick a known-good build from `index.csv` (check the date/message)
-3. Test it: `./scripts/run-regtest.sh --cue binary-library/NNN_.../jcreborn.cue`
-4. Prefer `--start-frame` or scene-window-aware tools so you compare the real scene window, not title/ocean prefix frames
-5. Binary search between good and bad to find the breaking commit
-5. Read the breaking commit's diff to understand the root cause
+| Mode | Example | Description |
+|---|---|---|
+| `fgpilot <slug> [tokens...]` | `fgpilot fishing1 night 1` | **Primary.** Hybrid scene playback from the FG1 pack, with variant tokens. |
 
-## Known Issues
+Secondary / legacy routes (retained for diagnostics):
 
-### printf Crashes in Game Loop
+| Mode | Example | Description |
+|---|---|---|
+| `story scene N` | `story scene 38` | Play scene via story loop (printf crash risk) |
+| `story direct N` | `story direct 25` | Play scene directly, bypass story loop |
+| `island ads X.ADS N` | `island ads BUILDING.ADS 1` | Play ADS tag directly with island background |
 
-PS1 `printf()` uses the BIOS break instruction for TTY output. This crashes
-the game when called during the game loop (after init). Affected paths:
+## Known runtime pitfalls
 
-- `fprintf(stderr, ...)` — redirected to printf via macro in `jc_reborn.c`
-- `grCaptureEmitFrameMetadataLine()` — capture metadata JSON emission
-- `fatalError()` — error reporting (intentional halt)
+- **`printf()` is unsafe in the PS1 game loop.** PS1 `printf()` uses the
+  BIOS break instruction for TTY output and crashes the game when called
+  after init. Use the telemetry overlay (`ps1_debug.c`) instead.
+  Affected historical paths: `fprintf(stderr, …)` macros,
+  `grCaptureEmitFrameMetadataLine`, `fatalError`.
+- **Cold-boot ADS scenes** (`FISHING 1`, `FISHING 2`, `FISHING 6`) have
+  `ADD_SCENE` commands behind `IF_LASTPLAYED`. On cold boot these
+  conditions are never satisfied, producing an empty scene. The
+  fgpilot path sidesteps this by replaying captured frames directly.
+- **`/tmp` is off-limits for scratch files.** Redirect long-running
+  output (DuckStation logs, capture bundles) to `scratch/` in the repo.
+  `/tmp` has filled and broken the shell before.
 
-**Rule:** Never add printf/fprintf to code paths that run during the PS1
-game loop. Use visual indicators (LoadImage to VRAM) for PS1 debug output.
+## Docker images
 
-### Cold-Boot ADS Scenes (FISHING 1, 2, 6)
+| Image | Purpose | Build |
+|---|---|---|
+| `jc-reborn-ps1-dev:amd64` | PS1 cross-compile (PSn00bSDK) | `./scripts/build-docker-image.sh` |
+| `jc-reborn-regtest:latest` | Headless DuckStation regtest | `config/ps1/Dockerfile.regtest` |
 
-Some ADS scripts have all `ADD_SCENE` commands behind `IF_LASTPLAYED`
-conditionals. On cold boot (no prior scene context), these conditions are
-never satisfied, producing an empty scene. The recovery code tries all
-bookmarked chunks but these tags have no unconditional fallback path.
+## Do not cite
 
-## Docker Images
-
-| Image | Purpose | Build Command |
-|-------|---------|---------------|
-| `jc-reborn-ps1-dev:amd64` | PS1 compilation (PSn00bSDK) | `./scripts/build-docker-image.sh` |
-| `jc-reborn-regtest:latest` | Headless DuckStation regtest | See `config/ps1/Dockerfile.regtest` |
-
-## Scene Status (as of 2026-04-04)
-
-| Family | Verified | Blocked | Total |
-|--------|----------|---------|-------|
-| ACTIVITY | 10 | 0 | 10 |
-| BUILDING | 7 | 0 | 7 |
-| FISHING | 5 | 3 | 8 |
-| JOHNNY | 6 | 0 | 6 |
-| MARY | 5 | 0 | 5 |
-| MISCGAG | 2 | 0 | 2 |
-| STAND | 14 | 0 | 14 |
-| SUZY | 2 | 0 | 2 |
-| VISITOR | 6 | 0 | 6 |
-| WALKSTUF | 3 | 0 | 3 |
-| **Total** | **60** | **3** | **63** |
+The older `Scene Status (as of 2026-04-04)` table (60 verified / 3
+blocked / 63 total) from earlier versions of this file reflects the
+legacy regtest-route status model and does not translate to the current
+acceptance bar. It is preserved as history in
+`current-status.md` § "Historical status numbers (not current)". Current
+per-scene status lives in [scene-status.md](scene-status.md).

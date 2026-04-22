@@ -1,214 +1,140 @@
-# PS1 Port - Current Status
+# PS1 Port — Current Status
 
-Current progress and metrics for the PlayStation 1 port. Last updated 2026-03-21.
+**Last updated:** 2026-04-22 (release `v0.3.6-ps1`, commit `f2737253`).
 
-## Overall Status: Boots and Runs on DuckStation
+## Overall
 
-The game boots, loads resources from CD, runs scene animations, and cycles through the story loop. 25 of 63 scenes are verified correct; the remaining scenes have authored restore specs but need validation.
+The game boots on DuckStation, loads resources from CD, and runs scene
+animations. `FISHING 1` is the first and (for now) only scene that has
+been validated under the project's current acceptance bar: pixel-perfect
+visuals plus synced SFX, across every applicable variant (night /
+low-tide / holiday / raft-stage), signed off by human visual + audible
+review.
 
-| Component | Status | Progress |
-|-----------|--------|----------|
-| Build System | Complete | 100% |
-| CD-ROM I/O | Complete | 100% |
-| Graphics Layer | Complete | ~100% |
-| Input Layer | Complete | 100% |
-| Resource System | Complete | 100% |
-| Scene Restore Pipeline | Active development | ~40% verified |
-| Audio Layer | Skeleton only | 40% |
-| Telemetry / Debug | Complete | 100% |
+| Component | Status |
+|---|---|
+| Build system (Docker + CMake + mkpsxiso) | Complete |
+| CD-ROM I/O (`cdrom_ps1.c`) | Complete |
+| Graphics layer (`graphics_ps1.c`) | Complete |
+| Input layer (`events_ps1.c`) | Complete |
+| Resource system (hashed + LRU) | Complete |
+| Scene playback (fgpilot, `foreground_pilot.c`) | Primary render path; 1/63 scenes fully validated |
+| Audio layer (`sound_ps1.c`) | Working — VAG preload at boot + round-robin SPU voices + captured SFX replay |
+| Telemetry / debug overlay | Complete |
 
-## Verified Scenes: 25 / 63
+## Scenes: 1 / 63 fully validated
 
-Scenes are verified by forced-scene boot with telemetry capture on DuckStation.
+The per-scene ledger lives in [scene-status.md](scene-status.md). That
+file is the source of truth for what is complete under the current bar;
+this page gives the narrative around it.
 
-| ADS File | Tags Verified | Count |
-|----------|---------------|-------|
-| STAND.ADS | 1-12, 15-16 | 14 |
-| JOHNNY.ADS | 1-6 | 6 |
-| WALKSTUF.ADS | 1-3 | 3 |
-| MISCGAG.ADS | 1-2 | 2 |
-| **Total** | | **25** |
+Milestone release:
+- `v0.3.6-ps1` (commit `f2737253`) — fishing1 pixel-perfect with full SFX
+  across all variants.
+- Prior visual-only release `v0.3.5-ps1` (commit `9448d49f`) —
+  superseded by the full-SFX release above.
 
-### Bring-Up (in header, not yet verified)
+Release cadence from here: cut every 10 scenes that reach the same
+validated bar.
 
-- ACTIVITY.ADS tag 4 -- live in restore pilots header but has a stale extra-Johnny climb frame; needs fix before promotion to verified.
+## Primary render methodology: hybrid scene playback (fgpilot)
 
-### Blocked
+Desktop host = authoritative renderer and capture source. PS1 = hybrid
+replay target. For a validated scene, the PS1 runtime does not
+reconstruct the full TTM/ADS scene graph; it replays host-captured
+foreground pixels plus captured SFX events and owns only the narrow
+runtime surface (background, waves, holiday overlay, SPU playback,
+input).
 
-- BUILDING.ADS -- needs trustworthy entry/validation paths
-- FISHING.ADS -- needs trustworthy entry/validation paths
+The internal code name for this path is `fgpilot`; public / operator
+documentation is migrating to the name **PS1 scene playback**. See
+[ps1-branch-cleanup-plan.yaml](ps1-branch-cleanup-plan.yaml) §
+`fgpilot_naming_migration_plan`.
 
-## Build System
-
-- Docker container `jc-reborn-ps1-dev:amd64` with PSn00bSDK
-- CMake cross-compilation targeting MIPS (PSn00bSDK toolchain)
-- `mkpsxiso` for CD image generation
-- Build script: `./scripts/rebuild-and-let-run.sh noclean` (or `./scripts/build-ps1.sh`)
-- Builds and runs routinely; no manual intervention needed
-
-## Graphics Layer (graphics_ps1.c -- 3300+ lines)
-
-Complete software compositing pipeline. Key subsystems:
-
-- GPU init with double buffering (640x480 interlaced)
-- Dirty-rect system: ~80-95% reduction in per-frame data movement
-- 4-bit indexed sprite format (indexedPixels) with palette LUT -- ~4x RAM savings over 15-bit
-- 4-pixel unrolled compositing with opaque sprite fast-path
-- Palette LUT acceleration: ~15-25% compositing speedup
-- Layer composition with 5-layer depth sorting
-- VRAM management with wraparound tracking
-- BMP sprite loading supporting multi-image Sierra BMP format (up to 120 sprites per BMP)
-
-## CD-ROM I/O (cdrom_ps1.c -- 2280 lines)
-
-Fully implemented. Reads resource files from CD image using PSn00bSDK CD-ROM APIs (CdSearchFile, CdRead, CdSync). All game data loads from disc at runtime.
-
-## Resource System
-
-- Hash-based O(1) resource lookups (replaced O(N) strcmp scanning)
-- LRU cache with pinning for active resources
-- All ADS files decompressed at startup (~16KB total)
-- findTtmResource/findAdsResource/findScrResource return NULL on PS1 instead of fatalError
-
-## Input Layer (events_ps1.c -- 136 lines)
-
-100% complete.
-
-| PSX Button | Action |
-|-----------|--------|
-| Start | Pause/Unpause |
-| Select | Toggle debug |
-| Triangle | Advance frame (paused) |
-| Circle | Toggle max speed |
-
-## Audio Layer (sound_ps1.c -- 184 lines)
-
-40% -- skeleton only. SPU initialization and shutdown are implemented. No actual audio playback yet.
-
-**TODO:**
-- [ ] WAV to PS1 ADPCM (VAG) conversion
-- [ ] SPU RAM uploading (soundLoad)
-- [ ] Voice channel allocation (soundPlay)
-- [ ] ADSR envelope setup
-
-## Scene Restore System
-
-The core architectural innovation for the PS1 port. Replaces replay-based scene continuity with offline-authored scene contracts.
-
-### Offline Pipeline
+### Pipeline
 
 ```
-scene analyzer -> restore specs -> cluster contracts -> pack compiler -> header generator
+desktop host ──► capture-host-scene.sh ──► frames + frame-meta JSONs + sound-events.jsonl
+                                  │
+                                  ▼
+            export-scene-foreground-pilot.sh
+                                  │
+                                  ▼
+            build-scene-foreground-pack.py
+                                  │
+                                  ▼   (FGP v2: visuals + sound-event table)
+               generated/ps1/foreground/*.FG1 ──► CD image ──► PS1
+                                                                │
+                                                                ▼
+                                              foreground_pilot.c (replay)
+                                                                │
+                                                                ▼
+                                             sound_ps1.c soundPlay() on cue
 ```
 
-- 63 scene-scoped restore specs generated (one per scene across all ADS files)
-- Compressed into 34 cluster contracts (scenes sharing identical resource sets)
-- `ps1_restore_pilots.h`: auto-generated, 1000 lines, 26 pilot entries
-- Pack-authoritative scene loading replacing generic runtime discovery
-- Replay continuity being removed family-by-family as correctness is proven
+### Acceptance model
 
-### Scripts
+Primary gate is **human visual + audible signoff** on the scene-playback
+path. Regtest, binary-library scans, and harness-based validation are
+preserved as secondary / historical tooling — useful for targeted
+questions, not for certifying a scene as done. See
+[TESTING.md](TESTING.md).
 
-- `build-restore-pilot-spec.py` -- per-scene restore spec generation
-- `cluster-restore-scene-specs.py` -- cluster contract compression
-- `compile-scene-pack.py` -- PSB scene pack compilation
-- `generate-restore-pilots-header.py` -- C header generation
-- `rank-restore-candidates.py` -- candidate ranking for rollout
-- `plan-restore-rollout.py` -- rollout planning
+## Audio
 
-## Telemetry / Debug
+SPU is initialised at boot; all 23 VAG sound effects are preloaded into
+SPU RAM; `soundPlay(nb)` drives a round-robin over 8 voices. Captured
+`0xC051 PLAY_SAMPLE` events from the host TTM interpreter ship in the
+FG1 pack (v2) and are fired from `foreground_pilot.c` during replay,
+with a 3-frame delay constant to align key-on with the visible frame.
 
-5-panel diagnostic overlay for DuckStation debugging:
-- Scene identification and tag tracking
-- Resource cache state
-- Frame timing
-- Memory usage
-- Restore pilot state
+The VAG encoder (`scripts/wav2vag.py`) and the SPU upload/playback path
+(`sound_ps1.c`) were extensively debugged during the `v0.3.6-ps1`
+milestone; see commit `355227fa` for the bug list (shift-exponent
+inversion, ADPCM nibble-pair order, SPU DMA 64-byte alignment,
+ADSR1 attack-rate orientation, etc).
 
-Visual debugging via colored pixels (LoadImage) since printf() crashes in the game loop on PS1.
+## Historical status numbers (not current)
 
-## Performance (2026-03 optimization sprint)
+Older validation models were reset by the plan documented in
+`ps1-branch-cleanup-plan.yaml` §
+`historical_status_surfaces_and_meanings`. They are preserved here for
+searchability — **do not cite them as current progress**:
 
-| Optimization | Impact |
-|-------------|--------|
-| Dirty-rect system | ~80-95% reduction in per-frame data movement |
-| Palette LUT + 4-pixel unroll | ~15-25% compositing speedup |
-| 4-bit indexed sprites | ~4x RAM savings vs 15-bit direct |
-| Hash-based resource lookup | O(1) vs O(N) strcmp |
-| Opaque sprite fast-path | Skips transparency checks |
+| Count | Date | Meaning at the time | Source |
+|---|---|---|---|
+| 25 / 63 | 2026-03-21 | Restore-rollout verified scenes | `docs/ps1/project-history.md`, older `current-status.md` |
+| 27 / 63 | 2026-03-21 | Research-snapshot verified | `docs/ps1/research/CURRENT_STATUS_2026-03-21.md` |
+| 63 / 63 | 2026-03-29 | Harness-level validation claim | `docs/ps1/research/VALIDATION_LOG_2026-03-29.md` — *retroactively demoted as a false summit* |
+| 57 / 63 | 2026-04-04 | Scenes rendering with island content | `docs/ps1/TESTING.md` (older) |
+| 60 / 63 | 2026-04-04..07 | Bringup in the headless regtest surface | `docs/ps1/TESTING.md` (older), `config/ps1/regtest-scenes.txt` |
+| **1 / 63** | **2026-04-22** | **Human-signed reference scene under the full visual + SFX bar** | **this doc, `scene-status.md`** |
 
-### Binary Size
+Each older count belongs to a different definition of "verified";
+they are not comparable to each other or to today's number. The current
+scene ledger starts clean from 1 / 63 because that is the only surface
+that matches the present proven baseline.
 
-- PS-EXE: 120KB
-- Text segment: ~107KB
-- Data segment: ~10KB
+## Build size
 
-## Architecture
+| | |
+|---|---|
+| PS-EXE (`jcreborn.exe`) | ~158 KB |
+| CD image (`jcreborn.bin`) | ~46 MB |
 
-8-phase implementation plan, currently in Phase 7 (dirty-region restore model).
+## Known limitations
 
-**Phase progression:**
-1. Build infrastructure
-2. Core platform layers (graphics, input, audio skeleton)
-3. CD-ROM I/O and resource loading
-4. First boot and rendering
-5. Scene playback and story loop
-6. Performance optimization (hash tables, indexed sprites, dirty-rect)
-7. Dirty-region restore model (current)
-8. Full scene coverage and polish
+- `printf()` during the PS1 game loop is unsafe — use the telemetry
+  overlay (`ps1_debug.c`) for runtime visibility.
+- Scene coverage beyond FISHING 1 is pending scene-by-scene bring-up
+  via the loop in [development-workflow.md](development-workflow.md).
 
-## Next Steps
+## See also
 
-### Immediate
-1. Fix ACTIVITY.ADS tag 4 stale frame -- promote to verified (25 -> 26)
-2. Fix blocked entry paths for BUILDING.ADS and FISHING.ADS
-3. Expand verified scenes from 25 to 63 via cluster contract promotion
-
-### Short-term
-4. Build robust automated validation harness (batch scene verification)
-5. Complete audio implementation (WAV to VAG, SPU playback)
-6. PSB/BMP hot path reconciliation
-
-### Long-term
-7. Real hardware testing
-8. Title screen and loading screens
-9. Screen effects (fade, rain)
-10. Memory card save/load
-
-## Known Issues
-
-1. **ACTIVITY.ADS tag 4**: Stale extra-Johnny climb frame in restore pilot
-2. **BUILDING.ADS / FISHING.ADS**: Blocked on entry path validation
-3. **Audio**: No playback (skeleton only)
-4. **printf() in game loop**: Causes crashes/hangs on PS1 -- must use visual debugging
-
-## File Inventory
-
-### PS1 Implementation
-```
-graphics_ps1.c         3359 lines  (complete)
-cdrom_ps1.c            2280 lines  (complete)
-sound_ps1.c             184 lines  (40% - skeleton)
-events_ps1.c            136 lines  (complete)
-ps1_restore_pilots.h   1000 lines  (auto-generated, 26 pilots)
-```
-
-### Offline Pipeline Scripts
-```
-build-restore-pilot-spec.py
-cluster-restore-scene-specs.py
-compile-scene-pack.py
-generate-restore-pilots-header.py
-rank-restore-candidates.py
-plan-restore-rollout.py
-extract-dirty-region-templates.py
-decode-ps1-bars.py
-```
-
-## See Also
-
-- [Project History](project-history.md) - Development journey and lessons learned
-- [Development Workflow](development-workflow.md) - Build and test procedures
-- [Hardware Specs](hardware-specs.md) - PS1 technical details
-- [Graphics Layer](graphics-layer.md) - GPU implementation details
-- [Research Package](research/README.md) - Scene-pack and restore research
+- [scene-status.md](scene-status.md) — per-scene ledger
+- [development-workflow.md](development-workflow.md) — bring-up loop
+- [TESTING.md](TESTING.md) — validation strategy
+- [hardware-specs.md](hardware-specs.md)
+- [project-history.md](project-history.md) — development narrative
+- [research/README.md](research/README.md) — design logs (historical)
+- [ps1-branch-cleanup-plan.yaml](ps1-branch-cleanup-plan.yaml) — in-flight cleanup contract

@@ -1,5 +1,11 @@
 # Current PS1 Prerender Pilot Status
 
+> **⚠️ Historical snapshot — not current truth.**
+> Dated 2026-04-16. Preserved as a prerender-pilot-era status surface
+> between the restore-pilot era and the fgpilot/full-SFX baseline. For
+> current status see [../scene-status.md](../scene-status.md) and
+> [../current-status.md](../current-status.md).
+
 Date: 2026-04-16
 
 ## Validated now

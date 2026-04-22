@@ -160,6 +160,39 @@ def load_frame_delays(frame_meta_dir: Path | None) -> dict[str, int]:
     return delays
 
 
+def load_sound_events(path: Path | None) -> list[tuple[int, int]]:
+    """Parse a JSONL file of {"frame": N, "sample": M} entries.
+
+    Returns a list of (source_frame, sample_id) pairs sorted by source_frame.
+    A missing file is treated as "no events".
+    """
+    if path is None:
+        return []
+    if not path.is_file():
+        return []
+
+    events: list[tuple[int, int]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            payload = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        frame = payload.get("frame")
+        sample = payload.get("sample")
+        if frame is None or sample is None:
+            continue
+        frame = int(frame)
+        sample = int(sample)
+        if frame < 0 or sample < 0 or sample > 0xFFFF or frame > 0xFFFF:
+            continue
+        events.append((frame, sample))
+    events.sort(key=lambda e: (e[0], e[1]))
+    return events
+
+
 def load_frame_offsets(frame_meta_dir: Path | None) -> dict[str, tuple[int, int]]:
     if frame_meta_dir is None:
         return {}
@@ -283,6 +316,10 @@ def main():
     parser.add_argument("--frame-step", type=int, default=1)
     parser.add_argument("--delta-from-previous", action="store_true")
     parser.add_argument("--frame-meta-dir")
+    parser.add_argument(
+        "--sound-events",
+        help="JSONL of captured sound events (one {\"frame\": N, \"sample\": M} per line).",
+    )
     parser.add_argument(
         "--full-frames-dir",
         help="Directory of full-render (non foreground-only) frames, same seed / frame indices.",
@@ -453,17 +490,31 @@ def main():
         row["deadline_ticks"] = cumulative_ticks
         row["hold_vblanks"] = row["deadline_ticks"] if (header_flags & 0x0004) else row["hold_frames"]
 
-    table_offset = 32
-    data_offset = table_offset + (len(rows) * 20)
+    sound_events = load_sound_events(
+        Path(args.sound_events) if args.sound_events else None
+    )
+    pack_source_frames = {row["source_frame"] for row in rows}
+    sound_events = [ev for ev in sound_events if ev[0] in pack_source_frames]
+    if len(sound_events) > 0xFFFF:
+        sound_events = sound_events[:0xFFFF]
+
+    HEADER_SIZE = 40
+    ENTRY_SIZE = 20
+    EVENT_SIZE = 4
+
+    table_offset = HEADER_SIZE
+    data_offset = table_offset + (len(rows) * ENTRY_SIZE)
     next_offset = data_offset
     for row, chunk in zip(rows, data_chunks):
         row["data_offset"] = next_offset
         next_offset += len(chunk)
 
+    sound_events_offset = next_offset if sound_events else 0
+
     header = struct.pack(
-        "<4sHHHHHHHHHHII",
+        "<4sHHHHHHHHHHIIIHH",
         b"FGP1",
-        1,
+        2,
         len(rows),
         1,
         header_flags,
@@ -475,6 +526,9 @@ def main():
         0 if union_min_y is None else (union_max_y - union_min_y + 1),
         table_offset,
         data_offset,
+        sound_events_offset,
+        len(sound_events),
+        0,
     )
 
     output_pack = Path(args.output_pack)
@@ -496,6 +550,8 @@ def main():
             ))
         for chunk in data_chunks:
             f.write(chunk)
+        for src_frame, sample_id in sound_events:
+            f.write(struct.pack("<HH", src_frame, sample_id))
 
     summary = {
         "scene_label": args.scene_label,
@@ -520,6 +576,11 @@ def main():
         },
         "total_payload_bytes": sum(row["data_size"] for row in rows),
         "pack_size_bytes": output_pack.stat().st_size,
+        "sound_event_count": len(sound_events),
+        "sound_events": [
+            {"source_frame": src, "sample_id": samp}
+            for src, samp in sound_events
+        ],
         "rows": rows,
     }
 

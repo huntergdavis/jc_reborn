@@ -147,7 +147,7 @@ take_duckstation_screenshot() {
 
 # Launch DuckStation with fast boot
 prepare_duckstation_test_settings
-flatpak run --filesystem="$(dirname "$CUE_FILE")" org.duckstation.DuckStation -fastboot "$CUE_FILE" &
+flatpak run --filesystem="$(dirname "$CUE_FILE")" org.duckstation.DuckStation "$CUE_FILE" &
 DUCK_PID=$!
 
 echo "DuckStation PID: $DUCK_PID"

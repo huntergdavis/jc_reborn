@@ -137,8 +137,10 @@ mkdir -p "$OUTPUT_DIR"
 OUTPUT_DIR="$(cd "$OUTPUT_DIR" && pwd)"
 FRAMES_DIR="$OUTPUT_DIR/frames"
 FRAME_META_DIR="$OUTPUT_DIR/frame-meta"
+SOUND_EVENTS_FILE="$OUTPUT_DIR/sound-events.jsonl"
 mkdir -p "$FRAMES_DIR"
 mkdir -p "$FRAME_META_DIR"
+rm -f "$SOUND_EVENTS_FILE"
 
 SCENE_INDEX=""
 STATUS=""
@@ -345,6 +347,7 @@ pushd "$RES_DIR" >/dev/null
 capture_args=(
     capture-dir "$FRAMES_DIR"
     capture-meta-dir "$FRAME_META_DIR"
+    capture-sound-events "$SOUND_EVENTS_FILE"
     capture-scene-label "$SCENE"
     capture-interval "$INTERVAL"
 )

@@ -64,6 +64,7 @@ int grCaptureEndFrame = -1;
 int grCaptureOverlay = 0;
 int grCaptureOverlayMaskOnly = 0;
 int grCaptureForegroundOnly = 0;
+char *grCaptureSoundEventsPath = NULL;
 static int grCurrentFrame = 0;
 static char grCaptureSceneLabel[64] = "";
 static int grCaptureSequenceFinished = 0;
@@ -2077,4 +2078,29 @@ void grCaptureSetSceneLabel(const char *sceneLabel)
 
     strncpy(grCaptureSceneLabel, sceneLabel, sizeof(grCaptureSceneLabel) - 1);
     grCaptureSceneLabel[sizeof(grCaptureSceneLabel) - 1] = '\0';
+}
+
+
+void grCaptureSoundEvent(int sampleNo)
+{
+    FILE *f;
+    static int soundEventsTruncated = 0;
+
+    if (grCaptureSoundEventsPath == NULL || grCaptureSoundEventsPath[0] == '\0')
+        return;
+
+    /* Truncate on first event so reruns don't stack with prior captures. */
+    if (!soundEventsTruncated) {
+        f = fopen(grCaptureSoundEventsPath, "w");
+        if (f != NULL)
+            fclose(f);
+        soundEventsTruncated = 1;
+    }
+
+    f = fopen(grCaptureSoundEventsPath, "a");
+    if (f == NULL)
+        return;
+
+    fprintf(f, "{\"frame\": %d, \"sample\": %d}\n", grCurrentFrame, sampleNo);
+    fclose(f);
 }

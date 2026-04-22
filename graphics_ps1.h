@@ -142,8 +142,10 @@ extern int grCaptureStartFrame;
 extern int grCaptureEndFrame;
 extern int grCaptureOverlay;
 extern int grCaptureOverlayMaskOnly;
+extern char *grCaptureSoundEventsPath;
 extern int grPs1TelemetryEnabled;
 void grCaptureSetSceneLabel(const char *sceneLabel);
+void grCaptureSoundEvent(int sampleNo);
 
 /* Flag to track if GPU was already initialized (e.g., by loadTitleScreenEarly)
  * Set this to 1 BEFORE calling graphicsInit() if GPU is already set up */

@@ -14,6 +14,7 @@
 #include "cdrom_ps1.h"
 #include "island.h"
 #include "ps1_restore_pilots.h"
+#include "sound_ps1.h"
 #include "story.h"
 #include "ttm.h"
 
@@ -38,6 +39,14 @@ struct TFgPilotHeader {
     uint16 unionHeight;
     uint32 tableOffset;
     uint32 dataOffset;
+    uint32 soundEventsOffset;
+    uint16 soundEventCount;
+    uint16 reserved1;
+};
+
+struct TFgPilotSoundEvent {
+    uint16 sourceFrame;
+    uint16 sampleId;
 };
 
 struct TFgPilotEntry {
@@ -96,6 +105,9 @@ struct TFgPilotRuntime {
     struct TFgPilotEntryTable entryTable;
     struct TFgPilotEntry currentEntry;
     uint8 *currentFrameData;
+    struct TFgPilotSoundEvent *soundEvents;
+    uint16 soundEventCount;
+    uint16 soundEventCursor;
 };
 
 struct TFgPilotTiming {
@@ -615,7 +627,7 @@ static int fgLoadHeader(const char *path, struct TFgPilotHeader *out)
     if (!path || !out)
         return 0;
 
-    data = ps1_streamRead(path, 0, 32);
+    data = ps1_streamRead(path, 0, 40);
     if (!data)
         return 0;
 
@@ -632,11 +644,14 @@ static int fgLoadHeader(const char *path, struct TFgPilotHeader *out)
     out->unionHeight = fgReadU16(data + 22);
     out->tableOffset = fgReadU32(data + 24);
     out->dataOffset = fgReadU32(data + 28);
+    out->soundEventsOffset = fgReadU32(data + 32);
+    out->soundEventCount = fgReadU16(data + 36);
+    out->reserved1 = fgReadU16(data + 38);
     free(data);
 
     if (memcmp(out->magic, "FGP1", 4) != 0)
         return 0;
-    if (out->version != 1)
+    if (out->version != 2)
         return 0;
     if (out->frameCount == 0)
         return 0;
@@ -1161,8 +1176,76 @@ static void fgRuntimeReset(void)
         gFgRuntime.currentFrameData = NULL;
     }
     fgFreeEntryTable(&gFgRuntime.entryTable);
+    if (gFgRuntime.soundEvents != NULL) {
+        free(gFgRuntime.soundEvents);
+        gFgRuntime.soundEvents = NULL;
+    }
     memset(&gFgRuntime, 0, sizeof(gFgRuntime));
     fgTelemetryUpdate();
+}
+
+static int fgLoadSoundEvents(const char *path, const struct TFgPilotHeader *header,
+                             struct TFgPilotSoundEvent **outEvents, uint16 *outCount)
+{
+    uint8 *data;
+    uint32 byteCount;
+    uint16 i;
+
+    if (!outEvents || !outCount)
+        return 0;
+
+    *outEvents = NULL;
+    *outCount = 0;
+
+    if (!path || !header)
+        return 1;
+    if (header->soundEventCount == 0 || header->soundEventsOffset == 0)
+        return 1;
+
+    byteCount = (uint32)header->soundEventCount * 4u;
+    data = ps1_streamRead(path, header->soundEventsOffset, byteCount);
+    if (!data)
+        return 0;
+
+    *outEvents = (struct TFgPilotSoundEvent *)malloc(
+        (size_t)header->soundEventCount * sizeof(struct TFgPilotSoundEvent));
+    if (*outEvents == NULL) {
+        free(data);
+        return 0;
+    }
+
+    for (i = 0; i < header->soundEventCount; i++) {
+        (*outEvents)[i].sourceFrame = fgReadU16(data + ((uint32)i * 4u));
+        (*outEvents)[i].sampleId    = fgReadU16(data + ((uint32)i * 4u) + 2u);
+    }
+    *outCount = header->soundEventCount;
+    free(data);
+    return 1;
+}
+
+/* Sound events fire at frame-load time, but the loaded frame is not
+ * composited and flipped to the display until the next vblank or two. To
+ * keep the sample's key-on aligned with the frame the user actually sees,
+ * delay event firing by this many source-frames. Tuned by ear on
+ * fishing1 — audio landed ~2 frames ahead of the visible trigger. */
+#define FG_SOUND_EVENT_DELAY_FRAMES 3
+
+static void fgFireSoundEventsUpTo(uint16 sourceFrame)
+{
+    uint16 threshold;
+
+    if (sourceFrame < FG_SOUND_EVENT_DELAY_FRAMES)
+        return;
+    threshold = (uint16)(sourceFrame - FG_SOUND_EVENT_DELAY_FRAMES);
+
+    while (gFgRuntime.soundEventCursor < gFgRuntime.soundEventCount) {
+        const struct TFgPilotSoundEvent *ev =
+            &gFgRuntime.soundEvents[gFgRuntime.soundEventCursor];
+        if (ev->sourceFrame > threshold)
+            break;
+        soundPlay((int)ev->sampleId);
+        gFgRuntime.soundEventCursor++;
+    }
 }
 
 static void fgResetBackdropOccluders(void)
@@ -1208,6 +1291,7 @@ static int fgRuntimeLoadSceneFrame(uint16 frameIndex)
     gFgRuntime.displayVBlanks = fgEntryHoldVBlanks(&gFgRuntime.header,
                                                    &gFgRuntime.currentEntry,
                                                    gFgRuntime.presentedVBlanks);
+    fgFireSoundEventsUpTo(gFgRuntime.currentEntry.sourceFrame);
     fgTelemetryUpdate();
     return 1;
 }
@@ -1239,6 +1323,13 @@ int foregroundPilotRuntimeStart(const char *sceneName)
             fgRuntimeReset();
             return 0;
         }
+        if (!fgLoadSoundEvents(path, &gFgRuntime.header,
+                               &gFgRuntime.soundEvents,
+                               &gFgRuntime.soundEventCount)) {
+            fgRuntimeReset();
+            return 0;
+        }
+        gFgRuntime.soundEventCursor = 0;
         gFgRuntime.active = 1;
         gFgRuntime.mode = FG_RUNTIME_SCENE_PACK;
         strncpy(gFgRuntime.sceneName, sceneName, sizeof(gFgRuntime.sceneName) - 1);

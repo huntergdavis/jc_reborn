@@ -228,6 +228,7 @@ int grCaptureStartFrame = 0;
 int grCaptureEndFrame = -1;
 int grCaptureOverlay = 0;
 int grCaptureOverlayMaskOnly = 0;
+char *grCaptureSoundEventsPath = NULL;
 static int grCurrentFrame = 0;
 static struct TPs1CapturedSpriteDraw grCapturedDraws[MAX_CAPTURED_DRAWS];
 static int grCapturedDrawCount = 0;
@@ -3803,4 +3804,9 @@ int grCaptureSequenceComplete(void)
 void grCaptureSetSceneLabel(const char *sceneLabel)
 {
     grCaptureSceneLabel = sceneLabel ? sceneLabel : "";
+}
+
+void grCaptureSoundEvent(int sampleNo)
+{
+    (void)sampleNo;
 }

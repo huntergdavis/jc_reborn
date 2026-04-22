@@ -20,6 +20,7 @@
 
 #include <psxspu.h>
 #include <psxapi.h>
+#include <hwregs_c.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -82,9 +83,6 @@ void soundInit()
         soundSampleRates[i] = 0;
     }
 
-    /* Set DMA transfer mode once for all uploads */
-    SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
-
     /* Load VAG files from CD into SPU RAM */
     uint32_t spuAddr = SPU_DATA_START;
     int loaded = 0;
@@ -105,26 +103,42 @@ void soundInit()
         /* Parse VAG header — sample rate is big-endian at offset 16 */
         uint16_t sampleRate = (uint16_t)readBE32(vagData + 16);
         uint32_t adpcmSize = vagSize - VAG_HEADER_SIZE;
+        /* SPU DMA moves data in 64-byte blocks; pad up or the final ADPCM
+         * flag byte (end-of-sample) gets truncated and the voice never
+         * stops, producing silence or noise instead of our sample. */
+        uint32_t dmaSize = (adpcmSize + 63u) & ~63u;
 
         /* Check SPU RAM overflow (512KB total) */
-        if (spuAddr + adpcmSize > 512 * 1024) {
+        if (spuAddr + dmaSize > 512 * 1024) {
             printf("SPU: out of RAM at sound %d\n", i);
             free(vagData);
             break;
         }
 
+        uint8_t *dmaBuf = (uint8_t *)malloc(dmaSize);
+        if (!dmaBuf) {
+            free(vagData);
+            continue;
+        }
+        memcpy(dmaBuf, vagData + VAG_HEADER_SIZE, adpcmSize);
+        if (dmaSize > adpcmSize)
+            memset(dmaBuf + adpcmSize, 0, dmaSize - adpcmSize);
+
         /* Upload ADPCM data (skip VAG header) to SPU RAM */
+        SpuSetTransferMode(SPU_TRANSFER_BY_DMA);
         SpuSetTransferStartAddr(spuAddr);
-        SpuWrite((uint32_t *)(vagData + VAG_HEADER_SIZE), adpcmSize);
+        SpuWrite((uint32_t *)dmaBuf, dmaSize);
         SpuIsTransferCompleted(SPU_TRANSFER_WAIT);
+        free(dmaBuf);
 
         soundAddresses[i] = spuAddr;
         soundSizes[i] = adpcmSize;
         soundSampleRates[i] = sampleRate;
         soundPitches[i] = getSPUSampleRate(sampleRate);
 
-        /* Advance SPU address, 16-byte aligned */
-        spuAddr += (adpcmSize + 15) & ~15;
+        /* Advance by the DMA-aligned amount so the next sample does not
+         * overlap the padding tail of this one. */
+        spuAddr += dmaSize;
 
         free(vagData);
         loaded++;
@@ -171,15 +185,19 @@ void soundPlay(int nb)
     int ch = nextChannel;
     nextChannel = (nextChannel + 1) % NUM_CHANNELS;
 
-    /* Key-off the channel first to prevent glitches from reuse */
+    /* Key-off first so a reused channel stops cleanly before we reprogram it. */
     SpuSetKey(0, 1 << ch);
 
-    /* Set voice parameters using PSn00bSDK macros */
-    SpuSetVoiceVolume(ch, 0x3FFF, 0x3FFF);
-    SpuSetVoicePitch(ch, soundPitches[nb]);
-    SpuSetVoiceStartAddr(ch, soundAddresses[nb]);
-    /* ADSR: fast attack, no decay, hold sustain (sr=0), fast release */
-    SpuSetVoiceADSR(ch, 0x7F, 0x0, 0x00, 0x00, 0x5);
+    /* Direct register writes mirroring PSn00bSDK's vagsample example.
+     * ADSR1=0x00FF (AR=0 → instant attack; without this, short samples
+     * finish before the envelope ramps up and you hear nothing).
+     * ADSR2=0x0000 (no sustain/release curve). */
+    SPU_CH_FREQ(ch)  = soundPitches[nb];
+    SPU_CH_ADDR(ch)  = getSPUAddr(soundAddresses[nb]);
+    SPU_CH_VOL_L(ch) = 0x3FFF;
+    SPU_CH_VOL_R(ch) = 0x3FFF;
+    SPU_CH_ADSR1(ch) = 0x00FF;
+    SPU_CH_ADSR2(ch) = 0x0000;
 
     /* Start playback */
     SpuSetKey(1, 1 << ch);

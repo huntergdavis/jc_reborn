@@ -67,12 +67,14 @@ python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
   --scene-label "$SCENE_NAME" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
   --frame-meta-dir "$HOST_CAPTURE_DIR/frame-meta" \
+  --sound-events "$HOST_CAPTURE_DIR/sound-events.jsonl" \
   --output-pack "$PACK_PATH" \
   --output-json "$PACK_JSON"
 
 python3 "$SCRIPT_DIR/build-fishing1-foreground-pack.py" \
   --scene-label "$SCENE_NAME" \
   --frames-dir "$HOST_CAPTURE_DIR/frames" \
+  --sound-events "$HOST_CAPTURE_DIR/sound-events.jsonl" \
   --output-pack "$DIRECT_PACK_PATH" \
   --output-json "$DIRECT_PACK_JSON" \
   --delta-from-previous

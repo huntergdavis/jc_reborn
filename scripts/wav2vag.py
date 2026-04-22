@@ -56,13 +56,19 @@ def encode_vag(pcm_samples, sample_rate):
                 for s in block_samples:
                     predicted = coeff1 * test_hist1 + coeff2 * test_hist2
                     diff = s - predicted
-                    # Quantize
-                    nibble = int(round(diff / (1 << shift)))
+                    # SPU hardware decoder computes:
+                    #   delta = (signed_nibble << 12) >> shift
+                    # so the effective scale per nibble step is 2^(12-shift),
+                    # NOT 2^shift. Invert the shift here so the shift byte we
+                    # store actually lines up with what the decoder does.
+                    scale = 1 << (12 - shift)
+                    nibble = int(round(diff / scale))
                     nibble = max(-8, min(7, nibble))
                     nibbles.append(nibble & 0xF)
 
-                    # Reconstruct
-                    reconstructed = (nibble << shift) + predicted
+                    # Reconstruct using the exact hardware formula so the
+                    # error we accumulate matches what will be heard.
+                    reconstructed = ((nibble << 12) >> shift) + predicted
                     reconstructed = max(-32768, min(32767, reconstructed))
                     error = abs(s - reconstructed)
                     total_error += error
@@ -78,8 +84,12 @@ def encode_vag(pcm_samples, sample_rate):
                     best_hist1 = test_hist1
                     best_hist2 = test_hist2
 
-            hist1 = best_hist1
-            hist2 = best_hist2
+        # Commit the globally best (filter, shift)'s history as the starting
+        # history for the next block. (This line was previously indented into
+        # the `for filt` loop, which contaminated each filter's search with
+        # the previous filter's reconstructed history.)
+        hist1 = best_hist1
+        hist2 = best_hist2
 
         # Build the 16-byte ADPCM block
         # Byte 0: shift | (filter << 4)
@@ -93,8 +103,12 @@ def encode_vag(pcm_samples, sample_rate):
         block[1] = flags
 
         for i in range(0, 28, 2):
-            lo = best_nibbles[i + 1] & 0xF
-            hi = best_nibbles[i] & 0xF
+            # SPU ADPCM: low nibble is the earlier-in-time sample, high nibble
+            # is the later one. Reversing this still decodes to a waveform with
+            # the right envelope but swaps every adjacent sample pair,
+            # producing high-frequency hash over the real signal.
+            lo = best_nibbles[i] & 0xF
+            hi = best_nibbles[i + 1] & 0xF
             block[2 + i // 2] = (hi << 4) | lo
 
         adpcm_data.extend(block)

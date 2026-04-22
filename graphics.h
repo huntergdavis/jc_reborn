@@ -120,6 +120,7 @@ extern int grCaptureEndFrame;
 extern int grCaptureOverlay;
 extern int grCaptureOverlayMaskOnly;
 extern int grCaptureForegroundOnly;
+extern char *grCaptureSoundEventsPath;
 
 
 void graphicsInit();
@@ -162,3 +163,4 @@ void grLoadScreen(char *strArg);
 /* Frame capture for visual regression testing */
 int grCaptureFrame(const char *filename);
 void grCaptureSetSceneLabel(const char *sceneLabel);
+void grCaptureSoundEvent(int sampleNo);

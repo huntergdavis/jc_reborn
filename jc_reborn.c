@@ -554,6 +554,7 @@ static void usage()
         printf("         capture-overlay - embed a machine-readable debug overlay in captures\n");
         printf("         capture-overlay-mask - draw overlay background only for paired baseline captures\n");
         printf("         capture-foreground-only - capture composited non-background layers over magenta key\n");
+        printf("         capture-sound-events FILE - append {frame,sample} JSONL for every PLAY_SAMPLE opcode\n");
         printf("         capture-scene-label TEXT - annotate metadata with the scene label\n");
         printf("         seed N          - force deterministic RNG seed for host runs\n");
         printf("         story-day N     - force story day 1..11 for host story runs\n");
@@ -725,6 +726,14 @@ static void parseArgs(int argc, char **argv)
             }
             else if (!strcmp(argv[i], "capture-foreground-only")) {
                 grCaptureForegroundOnly = 1;
+            }
+            else if (!strcmp(argv[i], "capture-sound-events")) {
+                if (i + 1 < argc) {
+                    grCaptureSoundEventsPath = argv[++i];
+                } else {
+                    fprintf(stderr, "Error: capture-sound-events requires a file path\n");
+                    usage();
+                }
             }
             else if (!strcmp(argv[i], "capture-scene-label")) {
                 if (i + 1 < argc) {

@@ -850,6 +850,7 @@ void ttmPlay(struct TTtmThread *ttmThread)     // TODO
 
             case 0xC051:
                 debugMsg("    PLAY_SAMPLE %d", args[0]);
+                grCaptureSoundEvent(args[0]);
                 soundPlay(args[0]);
                 break;
 

@@ -22,6 +22,14 @@ execution_log:
     notes:
       - "Script renames export-fishing1-foreground-pilot.sh → export-scene-foreground-pilot.sh and build-fishing1-foreground-pack.py → build-scene-foreground-pack.py landed in commit 48dcb29e; this plan's canonical references updated to match."
       - "scratch/ is the sanctioned scratch directory; /tmp is off-limits per repo memory feedback."
+  - pass_date: 2026-04-22
+    agent_session_commit: pending
+    phases_completed:
+      - phase_03a_capture_archaeology_before_pruning
+    clears_prior_deferred_phase:
+      - phase_03a_capture_archaeology
+    notes:
+      - "Created docs/ps1/archaeology/ with timeline.yaml, tools.yaml, status-surfaces.yaml, team-perspective.yaml, assumptions.yaml, memory-constraints.md, blog-source-map.md, and reporter-notes.md."
 repo_root: "."
 branch: ps1
 head_commit_at_plan_creation: 12641bfc

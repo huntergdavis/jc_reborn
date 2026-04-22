@@ -2343,6 +2343,16 @@ void adsPilotEnableWaveBackdrop(void)
         grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 150, 328, 2, 0);
     }
 
+    /* Holiday overlay: HOLIDAY.BMP sprite 0-3 map to Halloween, St Patrick,
+     * Christmas, New Year. We preload it into slot 2 so adsPilotStampHoliday
+     * can restamp the sprite into the bg tiles each frame AFTER the
+     * foreground pack has composited Johnny -- this gives the original
+     * islandInitHoliday z-order (Johnny walks behind the tree/pumpkin/etc
+     * via post-character overlay layer) on our single-layer bg-tile path. */
+    if (islandState.holiday >= 1 && islandState.holiday <= 4) {
+        grLoadBmp(&ttmBackgroundSlot, 2, "HOLIDAY.BMP");
+    }
+
     /* Seed the clean baseline with the initial four shore wave positions,
      * mirroring what islandInit does in the normal ads path. All four
      * positions must be painted BEFORE the clean backup so that each
@@ -2388,6 +2398,34 @@ void adsPilotTickBackgroundWaves(void)
         islandRedrawWave(&ttmBackgroundThread);
         ttmBackgroundThread.timer--;
     }
+}
+
+/* Stamp the holiday sprite onto bg tiles. Called per-frame AFTER the
+ * foreground pack has been composited, so the sprite appears on top of
+ * Johnny (matching islandInitHoliday's separate-layer behaviour in the
+ * normal ads path). No-op when islandState.holiday is 0 or when
+ * HOLIDAY.BMP failed to preload. Sprite positions match
+ * islandInitHoliday. */
+void adsPilotStampHoliday(void)
+{
+    int hx = 0, hy = 0;
+    uint16 hSpriteNo = 0;
+
+    if (islandState.holiday < 1 || islandState.holiday > 4)
+        return;
+    if (ttmBackgroundSlot.numSprites[2] == 0)
+        return;
+
+    switch (islandState.holiday) {
+        case 1: hx = 410; hy = 298; hSpriteNo = 0; break;  /* Halloween */
+        case 2: hx = 333; hy = 286; hSpriteNo = 1; break;  /* St Patrick */
+        case 3: hx = 404; hy = 267; hSpriteNo = 2; break;  /* Christmas */
+        case 4: hx = 361; hy = 155; hSpriteNo = 3; break;  /* New Year */
+    }
+    grDx = islandState.xPos;
+    grDy = islandState.yPos;
+    grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot,
+                 hx, hy, hSpriteNo, 2);
 }
 
 #endif

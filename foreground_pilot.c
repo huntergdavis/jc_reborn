@@ -1296,6 +1296,9 @@ void foregroundPilotRuntimeCompose(void)
                                  gFgRuntime.currentEntry.height,
                                  (const uint16 *)gFgRuntime.currentFrameData);
         fgComposeBackdropOccluders(gFgRuntime.currentEntry.sourceFrame);
+        /* Stamp holiday overlay on top of the pack so Johnny walks behind
+         * the holiday decoration, matching islandInitHoliday's z-order. */
+        adsPilotStampHoliday();
     }
 }
 

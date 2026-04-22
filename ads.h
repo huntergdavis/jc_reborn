@@ -40,6 +40,7 @@ void adsCaptureCurrentFrame(void);
 void adsPilotPreloadBackgrndBmp(void);
 void adsPilotEnableWaveBackdrop(void);
 void adsPilotTickBackgroundWaves(void);
+void adsPilotStampHoliday(void);
 
 /* Set by adsPlay()/adsPlayWalk(): 1 if at least one scene thread launched. */
 extern int ps1AdsLastPlayLaunched;

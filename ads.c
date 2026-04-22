@@ -2334,13 +2334,20 @@ void adsPilotEnableWaveBackdrop(void)
         grReleaseBmp(&ttmBackgroundSlot, 1);
     }
 
-    /* Low-tide beach sprites: ISLETEMP.SCR was pre-rendered at high tide.
-     * At low tide the shoreline recedes and two additional sprites fill
-     * the exposed beach: sprite 1 (low-tide shore) and sprite 2 (rock)
-     * from BACKGRND.BMP, at the same positions islandInit uses. */
+    /* Low-tide beach: ISLETEMP.SCR was pre-rendered at high tide, so we
+     * replay islandInit's exact sprite sequence on top to rebuild the
+     * scene at low-tide dimensions without leaking ISLETEMP's baked
+     * ocean/trunk through:
+     *   0 island, 13 trunk, 12 leafs, 14 palm shadow,
+     *   1 low-tide shore, 2 rock.
+     * Sprite positions match islandInit. */
     if (islandState.lowTide) {
-        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 249, 303, 1, 0);
-        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 150, 328, 2, 0);
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 288, 279,  0, 0);
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 442, 148, 13, 0);
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 365, 122, 12, 0);
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 396, 279, 14, 0);
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 249, 303,  1, 0);
+        grDrawSprite(grBackgroundSfc, &ttmBackgroundSlot, 150, 328,  2, 0);
     }
 
     /* Holiday overlay: HOLIDAY.BMP sprite 0-3 map to Halloween, St Patrick,

@@ -1,216 +1,158 @@
-# Hunter's Notes on Johnny Reborn
-This is a forked version of jc_reborn from https://github.com/jno6809/jc_reborn 
-
-I've finished porting to the following systems (each generally has their own branch in this repository)
-- Low Memory and SDL1 Systems
-- Sega Dreamcast
-- RetroFW based devices
-- InkPlate and microcontroller based boards 
-- Bash and text only systems
-
-If you're looking to get Johnny onto a photo frame or embedded display device, I recommend checking out the inkplate port.  As part of that, I pre-rendered every frame from every scene and a minimal ordering of walk paths from scene to scene.  Roughly 20K files, fits on a 1GB SD card, in the rawframes directory.
-
-I've half-finished ports to the following systems, I'll fully finish these one day (again, generally they all have their own branch in this repository)
-- Xbox
-- emscripten (ugh the need for a message passing interface between engine and screen render)
-
-I've most recently worked on:
-- Closed Captions - Adding descriptive text output for all actions and scenes, support closed captioning and screen readers for the visually impaired. You can find the script files in the closed_captions branch
-
-Next up:
-- Adding voice samples for the closed captioning and scene descriptions
-- Fixing spelling and grammatical mistakes in captions, adding more dramatic flair
-
-Here are systems that I'll target in the future
-- Switch
-- Serenity OS
-- Oculus Go era VR hardware
-- Dos (allegro backend?)
-- Have any suggestions?  Let me know!  
-
 # Johnny Reborn
 
-Johnny Reborn is an open source engine for the classic Johnny Castaway screen saver, developed by Dynamix for Windows 3.x and published by Sierra, back in 1992.
+Johnny Reborn is a fork of [jno6809/jc_reborn](https://github.com/jno6809/jc_reborn), expanded into a multi-platform porting repo for the classic *Johnny Castaway* screen saver. This branch is the active `ps1` line, and the current work is focused on scene-by-scene PlayStation 1 validation.
 
-It is written in C using the SDL2 library, and was successfully compiled and tested on Linux as well as Windows (MinGW), both 32 and 64 bits.
+<p align="center">
+  <img src="docs/readme/fishing1-reference-arrival.png" width="31%" alt="FISHING 1 reference capture: Johnny arriving on the island">
+  <img src="docs/readme/fishing1-reference-cast.png" width="31%" alt="FISHING 1 reference capture: Johnny casting his fishing line">
+  <img src="docs/readme/fishing1-reference-catch.png" width="31%" alt="FISHING 1 reference capture: Johnny reeling in a catch">
+</p>
 
+<p align="center">
+  Current gallery: <code>FISHING 1</code> reference-capture frames from the validated PS1 scene-playback pipeline.
+</p>
 
-## How to install
+## Branch Snapshot
 
-For the screen saver to work, you'll need the two data files from the original
-software: `RESOURCE.MAP` and `RESOURCE.001`.
+- Branch: `ps1`
+- Current release: `v0.3.6-ps1`
+- First fully working PS1 reference scene: `FISHING 1`
+- Current acceptance bar: pixel-perfect visuals plus synced SFX across applicable variants
+- Scene ledger: [docs/ps1/scene-status.md](docs/ps1/scene-status.md)
+- Narrative status: [docs/ps1/current-status.md](docs/ps1/current-status.md)
+- Testing and validation policy: [docs/ps1/TESTING.md](docs/ps1/TESTING.md)
 
-Optionnaly, if you want sounds, you'll need some extra files as well. You can get them [here](https://github.com/nivs1978/Johnny-Castaway-Open-Source/tree/master/JCOS/Resources), from the github repository of the "JCOS" project - another port of the scrantics engine.
+`FISHING 1` is currently the only fully signed-off PS1 scene under the branch's modern bar. The rest of the branch is being promoted one scene at a time from that baseline.
 
-As a result, here is what your directory should look like:
+## Current PS1 Method
 
- | File name    | size (bytes) | md5                              |
- | -------------|--------------|----------------------------------|
- | RESOURCE.MAP |         1461 | 8bb6c99e9129806b5089a39d24228a36 |
- | RESOURCE.001 |      1175645 | 374e6d05c5e0acd88fb5af748948c899 |
- | sound0.wav   |        10768 | 53695b0df262c2a8772f69b95fd89463 |
- | sound1.wav   |        11264 | 35d08fdf2b29fc784cbec78b1fe9a7f2 |
- | sound2.wav   |         1536 | f93710cc6f70633393423a8a152a2c85 |
- | sound3.wav   |         7680 | 05a08cd60579e3ebcf26d650a185df25 |
- | sound4.wav   |         5120 | be4dff1a2a8e0fc612993280df721e0d |
- | sound5.wav   |         3072 | 24deaef44c8b5bb84678978564818103 |
- | sound6.wav   |        15872 | eb1055b6cf3d6d7361e9a00e8b088036 |
- | sound7.wav   |        15360 | cab94bace3ef401238daded2e2acec34 |
- | sound8.wav   |         2560 | 39515446ceb703084d446bd3c64bfbb0 |
- | sound9.wav   |         3584 | f86d5ce3a43cbe56a8af996427d5c173 |
- | sound10.wav  |        20480 | 5b8535f625094aa491bf8e6246342c77 |
- | sound12.wav  |         5632 | 8c173a95da644082e573a0a67ee6d6a3 |
- | sound14.wav  |        11776 | e064634cfb9125889ce06314ca01a1ea |
- | sound15.wav  |         3072 | b3db873332dda51e925533c009352c90 |
- | sound16.wav  |         7680 | 2eabfe83958db0cad77a3a9492d65fe7 |
- | sound17.wav  |         4608 | 2497d51f0e1da6b000dae82090531008 |
- | sound18.wav  |        14336 | 994a5d06f9ff416215f1874bc330e769 |
- | sound19.wav  |         3584 | 5e9cb5a08f39cf555c9662d921a0fed7 |
- | sound20.wav  |         7680 | 80e7eb0e0c384a51e642e982446fcf1d |
- | sound21.wav  |         5120 | 1a3ab0c7cec89d7d1cd620abdd161d91 |
- | sound22.wav  |         1536 | a0f4179f4877cf49122cd87ac7908a1e |
- | sound23.wav  |         2048 | 52fc04e523af3b28c4c6758cdbcafb84 |
- | sound24.wav  |         9728 | 5a6696cda2a07969522ac62db3e66757 |
+The working PS1 path is a hybrid scene-playback pipeline:
 
-All files must be copied in the same directory as the `jc_reborn` executable.
+- Host capture produces authoritative foreground pixels and sound events.
+- PS1 replays those authored packs while owning the narrow runtime surface: background, waves, overlays, input, and SPU playback.
+- Human visual and audible review is the primary certification gate.
 
+If you want the current technical details, start here:
 
-## How to run
+- [docs/ps1/current-status.md](docs/ps1/current-status.md)
+- [docs/ps1/development-workflow.md](docs/ps1/development-workflow.md)
+- [docs/ps1/scene-status.md](docs/ps1/scene-status.md)
+- [docs/ps1/ps1-branch-cleanup-plan.yaml](docs/ps1/ps1-branch-cleanup-plan.yaml)
 
-By default, the engine runs full screen and plays the life of Johnny on his island, as the original did.
+## Platform Work In This Repo
 
-But, if you're curious about how the engine works, you may type `jc_reborn help` and see the different options available. Feel free to try them and explore the inner workings of Screen Antics !
+Finished ports:
 
+- Low-memory and SDL1 systems
+- Sega Dreamcast
+- RetroFW-based devices
+- InkPlate and microcontroller-based boards
+- Bash and text-only systems
 
-## Current status
+In progress:
 
-### Short version
-Currently, Johnny reborn is in "work in progress" state. Even so, as of January 2020, every scene works with only some inaccuracies here and there.
+- PlayStation 1
+- Xbox
+- Emscripten
 
-That means that the engine globally works in an acceptable way, but more needs to be done to fully understand a number of details and faithfully reproduce the behaviour of the original engine.
+Future targets:
 
-### Long version
+- Nintendo Switch
+- SerenityOS
+- Oculus Go-era VR hardware
+- DOS
 
-Some great work was already made by Hans Milling for "Johnny Castaway Open Source" (JCOS), back in 2015. This includes:
-  - the parsing and decoding of all the data files
-  - the understanding of many instructions which constitute TTM and ADS scripts
+If you want Johnny on a photo frame or embedded display, the InkPlate work is still one of the most practical paths in this repo.
 
-What Johnny Reborn brings is:
-  - the understanding of nearly every TTM and ADS instruction, and their parameters
-  - the algorithm for Johnny to transitionnaly walk from scene to scene was implemented. Accuracy is not bad though not perfect.
-  - the same can be said about the algorithm which randomly chooses scenes to be played.
-  - as well as the algorithm which draws the island at a random place, clouds, etc.
-  - all the work was made by observing the behaviour of the original software and trying to reproduce it as accurately as possible. For a better result, a complete disassembly of the original exe may be necessary - but wasn't done to this point.
+## Original Data Files
 
+To run Johnny Reborn you still need the original resource files:
+
+- `RESOURCE.MAP`
+- `RESOURCE.001`
+
+Optional sound files can be taken from the [JCOS resources](https://github.com/nivs1978/Johnny-Castaway-Open-Source/tree/master/JCOS/Resources).
+
+Expected layout:
+
+| File name | Size (bytes) | md5 |
+| --- | ---: | --- |
+| RESOURCE.MAP | 1461 | 8bb6c99e9129806b5089a39d24228a36 |
+| RESOURCE.001 | 1175645 | 374e6d05c5e0acd88fb5af748948c899 |
+| sound0.wav | 10768 | 53695b0df262c2a8772f69b95fd89463 |
+| sound1.wav | 11264 | 35d08fdf2b29fc784cbec78b1fe9a7f2 |
+| sound2.wav | 1536 | f93710cc6f70633393423a8a152a2c85 |
+| sound3.wav | 7680 | 05a08cd60579e3ebcf26d650a185df25 |
+| sound4.wav | 5120 | be4dff1a2a8e0fc612993280df721e0d |
+| sound5.wav | 3072 | 24deaef44c8b5bb84678978564818103 |
+| sound6.wav | 15872 | eb1055b6cf3d6d7361e9a00e8b088036 |
+| sound7.wav | 15360 | cab94bace3ef401238daded2e2acec34 |
+| sound8.wav | 2560 | 39515446ceb703084d446bd3c64bfbb0 |
+| sound9.wav | 3584 | f86d5ce3a43cbe56a8af996427d5c173 |
+| sound10.wav | 20480 | 5b8535f625094aa491bf8e6246342c77 |
+| sound12.wav | 5632 | 8c173a95da644082e573a0a67ee6d6a3 |
+| sound14.wav | 11776 | e064634cfb9125889ce06314ca01a1ea |
+| sound15.wav | 3072 | b3db873332dda51e925533c009352c90 |
+| sound16.wav | 7680 | 2eabfe83958db0cad77a3a9492d65fe7 |
+| sound17.wav | 4608 | 2497d51f0e1da6b000dae82090531008 |
+| sound18.wav | 14336 | 994a5d06f9ff416215f1874bc330e769 |
+| sound19.wav | 3584 | 5e9cb5a08f39cf555c9662d921a0fed7 |
+| sound20.wav | 7680 | 80e7eb0e0c384a51e642e982446fcf1d |
+| sound21.wav | 5120 | 1a3ab0c7cec89d7d1cd620abdd161d91 |
+| sound22.wav | 1536 | a0f4179f4877cf49122cd87ac7908a1e |
+| sound23.wav | 2048 | 52fc04e523af3b28c4c6758cdbcafb84 |
+| sound24.wav | 9728 | 5a6696cda2a07969522ac62db3e66757 |
+
+All of these files should live alongside the `jc_reborn` executable, or in the repo's expected resource layout for branch-specific tooling.
+
+## Running
+
+Desktop / host exploration:
+
+```bash
+./jc_reborn help
+```
+
+Current PS1 branch loop:
+
+```bash
+./scripts/rebuild-and-let-run.sh fgpilot fishing1
+```
+
+That command is the active bring-up path for the validated scene-playback workflow. For scene-by-scene iteration and variant handling, use [docs/ps1/development-workflow.md](docs/ps1/development-workflow.md).
 
 ## Testing
 
-Johnny Reborn includes comprehensive test suites to ensure quality and catch regressions.
-
-### PS1 Status
-
-Current PS1 scene status must be read conservatively.
-
-- `regtest-references/` contains host reference captures, not PS1 signoff.
-- `config/ps1/regtest-scenes.txt` tracks PS1 bringup routing, blocked scenes, and untested scenes.
-- No scene should currently be described as PS1-verified unless a human has reviewed actual PS1-vs-host output and signed it off.
-- A scene that boots on PS1 or emits frames is not, by itself, considered verified.
-
-### Running All Tests
+General tests:
 
 ```bash
 cd tests
 make
 ```
 
-This runs all test suites including:
-- Unit tests (utils, calcpath, resource parsing, etc.)
-- Memory optimization tests (disk streaming, lazy loading, LRU cache)
-- Visual regression tests
+Useful entry points:
 
-### Visual Regression Testing
+- [tests/VISUAL_TESTING.md](tests/VISUAL_TESTING.md)
+- [docs/ps1/TESTING.md](docs/ps1/TESTING.md)
+- [docs/ps1/scene-status.md](docs/ps1/scene-status.md)
 
-The visual regression framework ensures memory optimizations don't introduce rendering bugs.
+The old PS1 regtest and harness-heavy eras are still valuable for archaeology and targeted debugging, but they are no longer the branch's primary truth surface. Current PS1 signoff is scene-by-scene human review.
 
-**Capture reference frames from all scenes:**
-```bash
-cd tests
-./capture_all_reference_frames.sh
-```
+## Project Background
 
-This captures frames from all 41 TTMs and 10 ADS scripts (~51 reference frames, ~60MB).
+The original `jc_reborn` work already decoded a large part of the Johnny Castaway engine. This repo pushes further into platform-specific ports, constrained hardware, and branch-specific workflows.
 
-**Run visual regression tests:**
-```bash
-cd tests
-make test-visual-regression
-```
-
-**Manual frame capture:**
-```bash
-cd jc_resources
-# Capture frame 50 from a TTM
-../jc_reborn window nosound capture-frame 50 capture-output test.bmp ttm GJNAT1.TTM
-
-# Capture frame 25 from an ADS
-../jc_reborn window nosound capture-frame 25 capture-output test.bmp ads ACTIVITY.ADS 0
-```
-
-For more details, see [tests/VISUAL_TESTING.md](tests/VISUAL_TESTING.md).
-
-### Memory Optimization Tests
-
-Tests for the 7 memory optimizations that reduce memory usage from ~5MB to 2-4MB:
-
-```bash
-cd tests
-make test-disk-streaming       # Disk streaming optimization
-make test-bmp-optimization     # BMP data freeing
-make test-scr-optimization     # SCR data freeing
-make test-sdl-optimization     # SDL indexed surfaces
-make test-ttm-optimization     # TTM lazy loading
-make test-ads-optimization     # ADS lazy loading
-make test-lru-cache            # LRU cache with 2MB budget
-```
-
-### Memory Budget Control
-
-Set custom memory budget for LRU cache:
-```bash
-JC_MEM_BUDGET_MB=4 ./jc_reborn window
-```
-
-Default is 2MB. Debug mode shows evictions:
-```bash
-./jc_reborn window debug
-```
-
-### Test Organization
-
-- `tests/` - All test files
-- `tests/unity/` - Unity test framework
-- `tests/visual_reference/` - Reference frames for visual regression
-- `tests/VISUAL_TESTING.md` - Visual testing documentation
-- `tests/Makefile` - Build system for tests
+What this repo adds on top of the original line is not just feature work. It is a long-running porting and validation effort across very different targets, with each branch evolving its own tools and methodology.
 
 ## Thanks
 
-I never would have been able to write Johnny Reborn without, directly or indirectly, all the people listed below. Many thanks to them.
+Johnny Reborn would not exist without the work and research of the people below.
 
-  - Hans Milling aka nivs1978, author of the JCOS project - my main source of info for my first lines of the Johnny Reborn code
-    - https://github.com/nivs1978/Johnny-Castaway-Open-Source
-    - http://nivs.dk/jc/
-  - Alexandre Fontoura aka xesf, author of castaway project - similar to Johnny Reborn, but in Javascript
-    - https://github.com/xesf/castaway
-    - https://castaway.xesf.net/viewer/
-  - The Sierra Chest website, which has a nice section about Johnny Castaway, with many screenshots and video captures. Those turned out to be quite helpful:
-    - http://sierrachest.com/index.php?a=games&id=255&title=johnny-castaway
-
-Hans Milling thanks a number of people for giving him (or helping him find) some info about the original engine. They should not be forgotten, and I thank them - indirectly - as well:
-
-  - Jeff Tunnel - For helping getting in contact with some of the original developers
-  - Kevin and Liam Ryan - Assisting with information about the resource files
-  - Jaap - Helping in finding the format of the resource files
-  - Gregori - Assisting with the Lempel-Ziv decompression
-  - Guido - The author of the xBaK project that led to understanding the TTM and ADS commands.
-
+- Hans Milling (`nivs1978`), author of JCOS: https://github.com/nivs1978/Johnny-Castaway-Open-Source
+- Alexandre Fontoura (`xesf`), author of Castaway: https://github.com/xesf/castaway
+- Sierra Chest's Johnny Castaway archive: http://sierrachest.com/index.php?a=games&id=255&title=johnny-castaway
+- Jeff Tunnel
+- Kevin and Liam Ryan
+- Jaap
+- Gregori
+- Guido

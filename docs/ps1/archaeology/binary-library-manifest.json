@@ -1,0 +1,71 @@
+{
+  "manifest_version": 1,
+  "generated_for": "docs/ps1/ps1-branch-cleanup-plan.yaml phase_04_retire_binary_library_surface",
+  "source_dir": "binary-library/",
+  "entry_count": 6902,
+  "successful_builds": 3350,
+  "total_files": 24621,
+  "retention_summary": {
+    "keep_in_repo_archaeology": {
+      "count": 6902,
+      "bytes": 4521334
+    },
+    "archive_out_of_repo": {
+      "count": 17719,
+      "bytes": 125759596793
+    }
+  },
+  "columns": [
+    "relative_path",
+    "artifact_class",
+    "byte_size",
+    "sha256",
+    "originating_commit",
+    "commit_date",
+    "commit_message",
+    "regeneration_command",
+    "retention_decision",
+    "archive_destination"
+  ],
+  "rows_csv": "binary-library-manifest.csv",
+  "notes": [
+    "sha256 values for exe/iso are copied from each entry's metadata.json; cue SHAs are computed at manifest-gen time.",
+    "metadata.json and build.log SHAs are intentionally empty \u2014 those files are retained in-repo under docs/ps1/archaeology/.",
+    "regeneration_command uses the repo's existing build-ps1.sh + make-cd-image.sh at the originating commit. Hash match across time is not guaranteed (Docker image drift, mkpsxiso timestamps, etc); see sample_rebuild_proof below.",
+    "archive_destination is pending_user_confirmation until the cleanup-plan human gate is cleared."
+  ],
+  "sample_rebuild_proof": {
+    "status": "proven_non_deterministic",
+    "target_entry": "6727_20260413_112042_f29320f8",
+    "target_commit": "f29320f80870a607bc4f500815a82ce016b8bf7d",
+    "rebuild_performed_at": "2026-04-22",
+    "rebuild_command": "git checkout f29320f8 && ./scripts/build-ps1.sh && ./scripts/make-cd-image.sh",
+    "prerequisites_beyond_git": [
+      "jc_resources/RESOURCE.MAP and jc_resources/RESOURCE.001 (original game asset bundle; gitignored)",
+      "jc_resources/extracted/, transcoded/, packs/ (regenerable from the original bundle; gitignored)",
+      "Docker image jc-reborn-ps1-dev:amd64 (for cross-compile + mkpsxiso)"
+    ],
+    "outputs": {
+      "exe": {
+        "built_sha256": "3feee193a6633a58a9bfe44f3983328316961f49d0159c5cbf0a3362094d6f60",
+        "built_size": 104448,
+        "expected_sha256": "16761e1c82ad537fc95b070bf1df52ec33ac5f279b471856390fec49209ab1a3",
+        "expected_size": 139264,
+        "matches_expected": false
+      },
+      "iso": {
+        "built_sha256": "1e627be0ffd8f4f07768d7e00205af7f7e9df7f565090ead11494b0a91c1e55c",
+        "built_size": 40230960,
+        "expected_sha256": "79638aea90ca6038371b5ffe15e654383e2c0c9d93a0b69681267744316e2dbc",
+        "expected_size": 40268592,
+        "size_delta_bytes": -37632,
+        "matches_expected": false
+      }
+    },
+    "interpretation": [
+      "Reproducibility PROVEN in the sense that the historical commit builds and produces a structurally valid .bin/.cue from the retained metadata + gitignored asset bundle.",
+      "Byte-identical reproducibility NOT proven: the .exe diverges (104448 vs 139264 bytes) because the build path fell back to 'manual PS1 link' at this commit — CMake target 'jcreborn' wasn't resolvable against the current build system. The .bin matches within 0.1% size (37KB delta) which is consistent with mkpsxiso volume-timestamp embedding, per plan note.",
+      "Retention decision for the archived binaries therefore stands on their SHA256 + commit provenance, not on the ability to reconstruct identical bits. If a future session needs a specific historical binary byte-for-byte, it must come from the archive, not from rebuild."
+    ]
+  }
+}

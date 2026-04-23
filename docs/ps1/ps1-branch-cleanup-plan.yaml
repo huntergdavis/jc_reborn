@@ -30,6 +30,17 @@ execution_log:
       - phase_03a_capture_archaeology
     notes:
       - "Created docs/ps1/archaeology/ with timeline.yaml, tools.yaml, status-surfaces.yaml, team-perspective.yaml, assumptions.yaml, memory-constraints.md, blog-source-map.md, and reporter-notes.md."
+  - pass_date: 2026-04-22
+    agent_session_commit: pending
+    phases_completed:
+      - phase_04_retire_binary_library_surface_pre_gate
+    clears_prior_deferred_phase:
+      - "(partial) phase_04_retire_binary_library_surface — manifest + sample rebuild + script archival done; payload deletion STOPPED pending archive destination from the user"
+    notes:
+      - "Generated docs/ps1/archaeology/binary-library-manifest.{csv,json}: 24,621 file rows across 6,902 commits (3,350 successful builds)."
+      - "Sample rebuild: checked out f29320f8, ran build-ps1.sh + make-cd-image.sh against the hydrated jc_resources asset bundle; produced a valid .bin/.cue, but bytes diverge from stored SHAs (exe fell back to manual PS1 link at that commit; iso differs by 37KB, consistent with mkpsxiso timestamp embedding). Rebuild is PROVEN feasible from retained metadata + jc_resources + Docker image — byte-identical reproduction is not guaranteed."
+      - "Archived 13 binary-library-era scripts to docs/ps1/archaeology/retired-scripts/ (see README.md there). Main tree had them as untracked files — git had already lost tracking of them at some earlier point."
+      - "HUMAN GATE: archive destination for ~117 GB of exe/iso/cue payloads still required before binary-library/ payloads can be removed."
 repo_root: "."
 branch: ps1
 head_commit_at_plan_creation: 12641bfc
@@ -1506,8 +1517,8 @@ deprecation_ledger:
     replacement: docs_plus_small_manifest_plus_on_demand_rebuild
     last_touched_commit: 0c6387a9
     reference_scan_summary: referenced_by_docs_ps1_TESTING_md_and_verify_fishing1_head_clean_sh
-    archive_location: pending
-    removal_commit_when_done: pending
+    archive_location: docs/ps1/archaeology/retired-scripts/
+    removal_commit_when_done: pending_main_tree_cleanup
     search_tags: [binary-library, historical-regression, deprecate]
 
   - path: scripts/regtest-binary-library-scene.sh
@@ -1517,8 +1528,8 @@ deprecation_ledger:
     replacement: targeted_scene_validation_and_selective_regtest_only
     last_touched_commit: fa5be68e
     reference_scan_summary: invoked_by_scan_fishing1_binary_regression_sh
-    archive_location: pending
-    removal_commit_when_done: pending
+    archive_location: docs/ps1/archaeology/retired-scripts/
+    removal_commit_when_done: pending_main_tree_cleanup
     search_tags: [binary-library, regtest, deprecate]
 
   - path: scripts/scan-fishing1-binary-regression.sh
@@ -1528,8 +1539,8 @@ deprecation_ledger:
     replacement: scene_by_scene_fgpilot_validation
     last_touched_commit: 8d2e6d90
     reference_scan_summary: invoked_by_verify_fishing1_head_clean_sh
-    archive_location: pending
-    removal_commit_when_done: pending
+    archive_location: docs/ps1/archaeology/retired-scripts/
+    removal_commit_when_done: pending_main_tree_cleanup
     search_tags: [fishing1, binary-regression, deprecate]
 
   - path: scripts/find-fishing1-startup-onset.sh
@@ -1539,8 +1550,8 @@ deprecation_ledger:
     replacement: none_required_for_primary_workflow
     last_touched_commit: 8d2e6d90
     reference_scan_summary: no_active_doc_refs_found_in_current_sweep
-    archive_location: pending
-    removal_commit_when_done: pending
+    archive_location: docs/ps1/archaeology/retired-scripts/
+    removal_commit_when_done: pending_main_tree_cleanup
     search_tags: [fishing1, onset, deprecate]
 
   - path: scripts/find-fishing1-visibility-onset.sh
@@ -1550,8 +1561,8 @@ deprecation_ledger:
     replacement: none_required_for_primary_workflow
     last_touched_commit: 8d2e6d90
     reference_scan_summary: no_active_doc_refs_found_in_current_sweep
-    archive_location: pending
-    removal_commit_when_done: pending
+    archive_location: docs/ps1/archaeology/retired-scripts/
+    removal_commit_when_done: pending_main_tree_cleanup
     search_tags: [fishing1, onset, deprecate]
 
   - path: scripts/report-binary-library-epochs.py
@@ -1561,8 +1572,8 @@ deprecation_ledger:
     replacement: none_required_for_primary_workflow
     last_touched_commit: 5d374a46
     reference_scan_summary: no_active_doc_refs_found_in_current_sweep
-    archive_location: pending
-    removal_commit_when_done: pending
+    archive_location: docs/ps1/archaeology/retired-scripts/
+    removal_commit_when_done: pending_main_tree_cleanup
     search_tags: [binary-library, epochs, deprecate]
 
   - path: scripts/verify-fishing1-head-clean.sh
@@ -1572,9 +1583,34 @@ deprecation_ledger:
     replacement: direct_fgpilot_validation_on_current_head
     last_touched_commit: 047c1685
     reference_scan_summary: no_active_doc_refs_found_in_current_sweep
-    archive_location: pending
-    removal_commit_when_done: pending
+    archive_location: docs/ps1/archaeology/retired-scripts/
+    removal_commit_when_done: pending_main_tree_cleanup
     search_tags: [fishing1, head-clean, deprecate]
+
+  - path: binary-library/
+    category: generated_artifact_tree
+    disposition: manifest_and_sample_rebuild_complete_payloads_awaiting_archive
+    reason: >
+      ~117 GB of regenerable CD images (.bin), PSX executables (.exe), and
+      cues (.cue) across 3,350 historical builds. Provenance preserved via
+      per-file manifest; rebuild feasibility proven (non-deterministic) at
+      commit f29320f8. No longer part of the current scene-by-scene workflow.
+    replacement: >
+      docs/ps1/archaeology/binary-library-manifest.{csv,json} +
+      binary-library/index.{csv,json} + binary-library/SUMMARY.txt +
+      each entry's metadata.json. Archived payloads rebuildable on demand
+      from the manifest's regeneration_command field.
+    last_touched_commit: f29320f8
+    reference_scan_summary: >
+      binary-library-era scripts already archived; no remaining primary-doc
+      references (regtest harness docs annotated as secondary).
+    archive_location: pending_user_confirmation
+    removal_commit_when_done: pending_human_gate
+    search_tags: [binary-library, payload-archive, phase-04, awaiting-destination]
+    required_before_removal:
+      - manifest generated   (done: docs/ps1/archaeology/binary-library-manifest.{csv,json})
+      - sample rebuild proven (done: f29320f8, non-deterministic; see sample_rebuild_proof in manifest.json)
+      - archive destination confirmed by user (pending)
 
 future_cleanup_phases:
   - id: phase_01_protect_baseline

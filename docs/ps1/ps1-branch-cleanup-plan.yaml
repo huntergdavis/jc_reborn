@@ -41,6 +41,25 @@ execution_log:
       - "Sample rebuild: checked out f29320f8, ran build-ps1.sh + make-cd-image.sh against the hydrated jc_resources asset bundle; produced a valid .bin/.cue, but bytes diverge from stored SHAs (exe fell back to manual PS1 link at that commit; iso differs by 37KB, consistent with mkpsxiso timestamp embedding). Rebuild is PROVEN feasible from retained metadata + jc_resources + Docker image — byte-identical reproduction is not guaranteed."
       - "Archived 13 binary-library-era scripts to docs/ps1/archaeology/retired-scripts/ (see README.md there). Main tree had them as untracked files — git had already lost tracking of them at some earlier point."
       - "HUMAN GATE: archive destination for ~117 GB of exe/iso/cue payloads still required before binary-library/ payloads can be removed."
+  - pass_date: 2026-04-22
+    agent_session_commit: pending
+    phases_completed:
+      - phase_04_retire_binary_library_surface (destructive half — user chose delete, not external archive)
+      - phase_05_prune_or_archive_other_heavy_artifacts
+      - phase_06_refresh_configs_and_reference_indices (partial)
+    clears_prior_deferred_phase:
+      - phase_04_retire_binary_library_surface
+      - phase_05_prune_or_archive_other_heavy_artifacts
+    notes:
+      - "User decision 2026-04-22: archive destination = DELETE. No external archive for binary-library/ payloads; SHAs + commit provenance in manifest are sufficient for future rebuild-on-demand."
+      - "binary-library/ (118 GB): deleted entirely after top-level index.csv/index.json/SUMMARY.txt were copied to docs/ps1/archaeology/binary-library-{index.csv,index.json,SUMMARY.txt}."
+      - "Build logs (560 MB): dropped (not archived) per same user decision."
+      - "regtest-references/ (12 GB → 4.8 MB): pruned to metadata.json + result.json + review.html per scene (189 files). Per-scene frames and frames-png deleted."
+      - "vision-artifacts/ (117 MB → 30 MB): dropped three redundant selfcheck duplicates (vision-reference-selfcheck-20260329, -v2, -v3); kept -v4 plus fishing1-full-annotation-review and vision-reference-pipeline-current."
+      - "host-script-review/ (9.5 MB): moved under docs/ps1/archaeology/host-script-review/ (in-repo archive)."
+      - "Disk freed: ~130 GB from the working tree. Git history still holds deleted blobs — a future `git gc --aggressive` or history rewrite could reclaim more if needed."
+      - "The 13 retired scripts in docs/ps1/archaeology/retired-scripts/ stay tracked (user kept them — small and potentially valuable). Main tree's scripts/ still has untracked copies; left alone per user direction."
+      - "Primary reference scene (FISHING 1) and its supporting assets are untouched: generated/ps1/foreground/FISHING1.FG1, host-results/ is gitignored, sound_ps1.c / foreground_pilot.c unchanged."
 repo_root: "."
 branch: ps1
 head_commit_at_plan_creation: 12641bfc
@@ -1589,28 +1608,62 @@ deprecation_ledger:
 
   - path: binary-library/
     category: generated_artifact_tree
-    disposition: manifest_and_sample_rebuild_complete_payloads_awaiting_archive
+    disposition: deleted_outright_no_external_archive
     reason: >
-      ~117 GB of regenerable CD images (.bin), PSX executables (.exe), and
-      cues (.cue) across 3,350 historical builds. Provenance preserved via
-      per-file manifest; rebuild feasibility proven (non-deterministic) at
-      commit f29320f8. No longer part of the current scene-by-scene workflow.
+      ~118 GB of regenerable CD images, PSX executables, cues, and build logs
+      across 6,902 historical builds (3,350 successful). Per user decision
+      2026-04-22, payloads deleted rather than archived externally —
+      SHAs and commit provenance in the manifest are sufficient for
+      rebuild-on-demand.
     replacement: >
       docs/ps1/archaeology/binary-library-manifest.{csv,json} +
-      binary-library/index.{csv,json} + binary-library/SUMMARY.txt +
-      each entry's metadata.json. Archived payloads rebuildable on demand
-      from the manifest's regeneration_command field.
+      docs/ps1/archaeology/binary-library-index.{csv,json} +
+      docs/ps1/archaeology/binary-library-SUMMARY.txt +
+      docs/ps1/archaeology/retired-scripts/.
+      Rebuildable on demand via each row's regeneration_command.
     last_touched_commit: f29320f8
     reference_scan_summary: >
       binary-library-era scripts already archived; no remaining primary-doc
       references (regtest harness docs annotated as secondary).
-    archive_location: pending_user_confirmation
-    removal_commit_when_done: pending_human_gate
-    search_tags: [binary-library, payload-archive, phase-04, awaiting-destination]
-    required_before_removal:
-      - manifest generated   (done: docs/ps1/archaeology/binary-library-manifest.{csv,json})
-      - sample rebuild proven (done: f29320f8, non-deterministic; see sample_rebuild_proof in manifest.json)
-      - archive destination confirmed by user (pending)
+    archive_location: deleted_not_archived
+    removal_commit_when_done: see_execution_log_pass_2026_04_22_phase_04_5
+    search_tags: [binary-library, payload-deleted, phase-04]
+
+  - path: regtest-references/
+    category: generated_artifact_tree
+    disposition: pruned_to_metadata_subset
+    reason: >
+      12 GB of per-scene reference frames. Per user decision 2026-04-22,
+      pruned to metadata.json + result.json + review.html per scene
+      (4.8 MB, 189 files) under the <100 MB budget. Frames regenerable
+      via scripts/capture-reference-frames.sh.
+    replacement: per-scene metadata JSONs + HTML reports remain; frames dropped
+    archive_location: in_repo_pruned
+    removal_commit_when_done: see_execution_log_pass_2026_04_22_phase_04_5
+    search_tags: [regtest-references, pruned, phase-05]
+
+  - path: vision-artifacts/
+    category: generated_artifact_tree
+    disposition: pruned_redundant_duplicates
+    reason: >
+      117 MB of vision/VLM selfcheck outputs. Three near-identical
+      selfcheck copies (20260329 / -v2 / -v3) dropped; latest -v4 plus
+      fishing1-full-annotation-review and vision-reference-pipeline-current
+      kept. Under <100 MB budget.
+    archive_location: in_repo_pruned
+    removal_commit_when_done: see_execution_log_pass_2026_04_22_phase_04_5
+    search_tags: [vision-artifacts, pruned, phase-05]
+
+  - path: host-script-review/
+    category: generated_artifact_tree
+    disposition: moved_to_in_repo_archaeology
+    reason: >
+      9.5 MB of host-script regression review artifacts. Small enough to
+      keep in-repo; moved under docs/ps1/archaeology/host-script-review/
+      alongside other archaeology surfaces.
+    archive_location: docs/ps1/archaeology/host-script-review/
+    removal_commit_when_done: see_execution_log_pass_2026_04_22_phase_04_5
+    search_tags: [host-script-review, archived-in-repo, phase-05]
 
 future_cleanup_phases:
   - id: phase_01_protect_baseline

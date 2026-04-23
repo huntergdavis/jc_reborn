@@ -1,0 +1,116 @@
+{
+  "scenes": {
+    "FISHING 1": {
+      "scene_signature": "d14b40d3fb855f5c122d",
+      "timeline_signature": "0:background_only > 20:background_only > 40:background_only > 60:background_only > 80:johnny_only",
+      "dominant_frame_state": "background_only",
+      "dominant_activity": "idle_background",
+      "transition_points": [
+        {
+          "frame_number": 80,
+          "from": "background_only",
+          "to": "johnny_only"
+        }
+      ],
+      "frames": [
+        {
+          "frame_number": 0,
+          "frame_state": "background_only",
+          "primary_subject": "none",
+          "primary_activity": "idle_background",
+          "frame_signature": "2ade26fa17ea6ebf"
+        },
+        {
+          "frame_number": 20,
+          "frame_state": "background_only",
+          "primary_subject": "none",
+          "primary_activity": "idle_background",
+          "frame_signature": "1e76666c6b3a69fe"
+        },
+        {
+          "frame_number": 40,
+          "frame_state": "background_only",
+          "primary_subject": "none",
+          "primary_activity": "idle_background",
+          "frame_signature": "1e76666c6b3a69fe"
+        },
+        {
+          "frame_number": 60,
+          "frame_state": "background_only",
+          "primary_subject": "none",
+          "primary_activity": "idle_background",
+          "frame_signature": "1e76666c6b3a69fe"
+        },
+        {
+          "frame_number": 80,
+          "frame_state": "johnny_only",
+          "primary_subject": "johnny",
+          "primary_activity": "walking_activity",
+          "frame_signature": "ad90f1db0967e4c5"
+        }
+      ]
+    },
+    "MARY 1": {
+      "scene_signature": "c9856615c81a3a8572c6",
+      "timeline_signature": "0:background_only > 50:background_only > 100:johnny_in_mary_scene > 150:johnny_in_mary_scene > 200:johnny_in_mary_scene > 250:johnny_fishing",
+      "dominant_frame_state": "johnny_in_mary_scene",
+      "dominant_activity": "walking_activity",
+      "transition_points": [
+        {
+          "frame_number": 100,
+          "from": "background_only",
+          "to": "johnny_in_mary_scene"
+        },
+        {
+          "frame_number": 250,
+          "from": "johnny_in_mary_scene",
+          "to": "johnny_fishing"
+        }
+      ],
+      "frames": [
+        {
+          "frame_number": 0,
+          "frame_state": "background_only",
+          "primary_subject": "none",
+          "primary_activity": "idle_background",
+          "frame_signature": "2ade26fa17ea6ebf"
+        },
+        {
+          "frame_number": 50,
+          "frame_state": "background_only",
+          "primary_subject": "none",
+          "primary_activity": "idle_background",
+          "frame_signature": "befebd05033e35e8"
+        },
+        {
+          "frame_number": 100,
+          "frame_state": "johnny_in_mary_scene",
+          "primary_subject": "johnny",
+          "primary_activity": "walking_activity",
+          "frame_signature": "d551df5ef128ca11"
+        },
+        {
+          "frame_number": 150,
+          "frame_state": "johnny_in_mary_scene",
+          "primary_subject": "johnny",
+          "primary_activity": "walking_activity",
+          "frame_signature": "32d4a39b5cbfa5a7"
+        },
+        {
+          "frame_number": 200,
+          "frame_state": "johnny_in_mary_scene",
+          "primary_subject": "johnny",
+          "primary_activity": "walking_activity",
+          "frame_signature": "d551df5ef128ca11"
+        },
+        {
+          "frame_number": 250,
+          "frame_state": "johnny_fishing",
+          "primary_subject": "johnny",
+          "primary_activity": "fishing_activity",
+          "frame_signature": "f386c9662b59f103"
+        }
+      ]
+    }
+  }
+}

@@ -1,7 +1,0 @@
-/project/build-ps1/CMakeFiles/jcreborn.dir
-/project/build-ps1/CMakeFiles/edit_cache.dir
-/project/build-ps1/CMakeFiles/rebuild_cache.dir
-/project/build-ps1/CMakeFiles/list_install_components.dir
-/project/build-ps1/CMakeFiles/install.dir
-/project/build-ps1/CMakeFiles/install/local.dir
-/project/build-ps1/CMakeFiles/install/strip.dir

@@ -171,15 +171,46 @@ for ((capture_index=2; capture_index<=CAPTURE_COUNT; capture_index++)); do
     fi
 done
 
+# Emergency timeout so a forgotten DuckStation session can't run overnight
+# and fill the disk with log / screenshot artifacts. Override via env:
+#   RUN_TIMEOUT_SECONDS=0       -> disable (old behavior)
+#   RUN_TIMEOUT_SECONDS=1800    -> 30 min, etc.
+RUN_TIMEOUT_SECONDS="${RUN_TIMEOUT_SECONDS:-300}"
+
 echo ""
 echo "======================================"
 echo "Build complete! DuckStation running..."
 echo "Press Escape in emulator or Ctrl+C here to stop"
+if [ "$RUN_TIMEOUT_SECONDS" -gt 0 ]; then
+    echo "Emergency timeout: ${RUN_TIMEOUT_SECONDS}s (override with RUN_TIMEOUT_SECONDS=0)"
+fi
 echo "Screenshots in: $SCREENSHOT_DIR"
 echo "======================================"
 
-# Wait for DuckStation to exit (user must manually close it)
+# Background watchdog: if DuckStation is still alive after the deadline,
+# TERM it (then KILL if that doesn't take). No-op when disabled.
+if [ "$RUN_TIMEOUT_SECONDS" -gt 0 ]; then
+    (
+        sleep "$RUN_TIMEOUT_SECONDS"
+        if kill -0 "$DUCK_PID" 2>/dev/null; then
+            echo "" >&2
+            echo "rebuild-and-let-run.sh: emergency timeout reached, killing DuckStation (pid $DUCK_PID)." >&2
+            kill -TERM "$DUCK_PID" 2>/dev/null || true
+            sleep 5
+            kill -KILL "$DUCK_PID" 2>/dev/null || true
+        fi
+    ) &
+    WATCHDOG_PID=$!
+fi
+
+# Wait for DuckStation to exit (user closes it, or watchdog fires)
 wait $DUCK_PID 2>/dev/null || true
+
+# If Duck exited naturally before the deadline, cancel the sleeping watchdog
+if [ -n "${WATCHDOG_PID:-}" ]; then
+    kill "$WATCHDOG_PID" 2>/dev/null || true
+    wait "$WATCHDOG_PID" 2>/dev/null || true
+fi
 
 echo "DuckStation closed."
 exit 0
